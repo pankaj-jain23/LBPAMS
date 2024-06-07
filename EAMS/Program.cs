@@ -45,6 +45,7 @@ builder.Services.AddDbContextPool<EamsContext>(options =>
             // Adjust maxRetryCount and maxRetryDelay as needed.
         });
 });
+
 builder.Services
     .AddIdentity<UserRegistration, IdentityRole>()
     .AddEntityFrameworkStores<EamsContext>()
@@ -111,6 +112,8 @@ builder.Services.AddTransient<INotificationRepository, NotificationRepository>()
 builder.Services.AddTransient<IUserConnectionService, UserConnectionService>();
 builder.Services.AddTransient<IUserConnectionServiceRepository, UserConnectionServiceRepository>();
 builder.Services.AddTransient<IRealTime, RealTimeService>();
+builder.Services.AddTransient<IServicePlusService,ServicePlusService >();
+builder.Services.AddTransient<IServicePlusRepository,ServicePlusRepository >();
 //builder.Services.AddHostedService<DatabaseListenerService>();
 
 builder.Services.AddSwaggerGen(opt =>
