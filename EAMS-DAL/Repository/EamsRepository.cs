@@ -9,19 +9,23 @@ using EAMS_ACore.Models.BLOModels;
 using EAMS_ACore.Models.Polling_Personal_Randomisation_Models;
 using EAMS_ACore.Models.Polling_Personal_Randomization_Models;
 using EAMS_ACore.Models.PollingStationFormModels;
+using EAMS_ACore.Models.PublicModels;
 using EAMS_ACore.Models.QueueModel;
 using EAMS_ACore.ReportModels;
 using EAMS_ACore.SignalRModels;
 using EAMS_DAL.DBContext;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 
 namespace EAMS_DAL.Repository
@@ -614,7 +618,7 @@ namespace EAMS_DAL.Repository
                 StateMasterId = d.StateMasterId,
                 ElectionTypeId = d.ElectionTypeId,
                 StateStatus = d.StateStatus
-            })
+            }).OrderBy(d=>d.StateMasterId)
                 .ToListAsync();
 
             return stateList;
@@ -5752,6 +5756,8 @@ namespace EAMS_DAL.Repository
 
             return eventActivityList;
         }
+
+
         #endregion
 
         #region PC based dashboard methods
@@ -14014,7 +14020,112 @@ namespace EAMS_DAL.Repository
         }
 
 
-        public async Task<List<SectorOfficerPendencyBooth>> GetBoothWiseSOEventWiseCount(string stateId, string districtId, string assemblyId)
+        public async Task<List<SectorOfficerPendencybySoNames>> GetSONamesEventWiseCount(string stateId, string districtId, string assemblyId)
+        {
+            //var getAssemblyRecord = _context.AssemblyMaster.FirstOrDefault(d => d.AssemblyMasterId == Convert.ToInt32(assemblyId));
+
+            var soListmain = new List<SectorOfficerPendencybySoNames>();
+
+            // Establish a connection to the PostgreSQL database
+            await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("Postgres"));
+            await connection.OpenAsync();
+
+            var command = new NpgsqlCommand("SELECT * FROM sogetlistbyassembly(@state_master_id, @district_master_id, @assembly_master_id)", connection);
+            command.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateId));
+            command.Parameters.AddWithValue("@district_master_id", Convert.ToInt32(districtId));
+            command.Parameters.AddWithValue("@assembly_master_id", Convert.ToInt32(assemblyId));
+
+            // Execute the command and read the results
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                // Create a new EventActivityBoothWise object and populate its properties from the reader
+                var soList = new SectorOfficerPendencybySoNames
+                {
+                    Key = GenerateRandomAlphanumericString(6), // You need to define this method to generate a random alphanumeric string
+                    MasterId = reader.IsDBNull(0) ? (int?)null : reader.GetInt32(0),
+                    Name = reader.IsDBNull(1) ? null : reader.GetString(1),
+                    Type = "SO", // Assuming this is the type for SO
+                    AssignedSOMobile = reader.IsDBNull(2) ? null : reader.GetString(2),
+                    AssignedSOName = reader.IsDBNull(1) ? null : reader.GetString(1),
+
+                    PartyDispatch = reader.IsDBNull(4) ? null : reader.GetString(4),
+                    PartyArrived = reader.IsDBNull(5) ? null : reader.GetString(5),
+                    SetupPollingStation = reader.IsDBNull(6) ? null : reader.GetString(6),
+                    MockPollDone = reader.IsDBNull(7) ? null : reader.GetString(7),
+                    PollStarted = reader.IsDBNull(8) ? null : reader.GetString(8),
+                    PollEnded = reader.IsDBNull(9) ? null : reader.GetString(9),
+                    MCEVMOff = reader.IsDBNull(10) ? null : reader.GetString(10),
+                    PartyDeparted = reader.IsDBNull(11) ? null : reader.GetString(11),
+                    EVMDeposited = reader.IsDBNull(12) ? null : reader.GetString(12),
+                    PartyReachedAtCollection = reader.IsDBNull(13) ? null : reader.GetString(13),
+                    FinalVotesValue = reader.IsDBNull(14) ? null : reader.GetString(14),
+                    Children = new List<object>()
+                };
+
+                // Add the object to the list
+                soListmain.Add(soList);
+            }
+
+            return soListmain;
+        }
+
+        public async Task<List<SectorOfficerPendencyBooth>> GetBoothWiseSOEventWiseCount(string soMasterId)
+        {
+
+            var getsoRecord = _context.SectorOfficerMaster.FirstOrDefault(d => d.SOMasterId == Convert.ToInt32(soMasterId));
+            var getAssemblyRecord = _context.AssemblyMaster.FirstOrDefault(d => d.AssemblyCode == getsoRecord.SoAssemblyCode && d.StateMasterId == getsoRecord.StateMasterId);
+            var eventActivityList = new List<SectorOfficerPendencyBooth>();
+
+            // Establish a connection to the PostgreSQL database
+            await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("Postgres"));
+            await connection.OpenAsync();
+
+            //var command = new NpgsqlCommand("SELECT * FROM getboothwiseeventlistbyid_sopendency(@state_master_id, @district_master_id, @assembly_master_id)", connection);
+            var command = new NpgsqlCommand("SELECT * FROM getboothwiseeventlistbyid_sopendency_NEW(@so_master_id,@assembly_master_id)", connection);
+            command.Parameters.AddWithValue("@so_master_id", Convert.ToInt32(soMasterId));
+            command.Parameters.AddWithValue("@assembly_master_id", getAssemblyRecord.AssemblyMasterId);
+
+            // Execute the command and read the results
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                // Create a new EventActivityBoothWise object and populate its properties from the reader
+                var eventActivityBoothWise = new SectorOfficerPendencyBooth
+                {
+                    Key = GenerateRandomAlphanumericString(6), // You need to define this method to generate a random alphanumeric string
+                    MasterId = reader.IsDBNull(0) ? (int?)null : reader.GetInt32(0),
+                    Name = reader.IsDBNull(1) ? null : reader.GetString(1),
+                    Type = "Booth", // Assuming this is the type for booth
+                    AssignedSOMobile = reader.IsDBNull(3) ? null : reader.GetString(3),
+                    AssignedSOName = reader.IsDBNull(2) ? null : reader.GetString(2),
+                    PartyDispatch = reader.IsDBNull(4) ? (int?)null : reader.GetInt32(4),
+                    PartyArrived = reader.IsDBNull(5) ? (int?)null : reader.GetInt32(5),
+                    SetupPollingStation = reader.IsDBNull(6) ? (int?)null : reader.GetInt32(6),
+                    MockPollDone = reader.IsDBNull(7) ? (int?)null : reader.GetInt32(7),
+                    PollStarted = reader.IsDBNull(8) ? (int?)null : reader.GetInt32(8),
+                    VoterTurnOutValue = reader.IsDBNull(16) ? (int?)null : reader.GetInt32(16),
+                    QueueValue = reader.IsDBNull(14) ? (int?)null : reader.GetInt32(14),
+                    FinalVotesValue = reader.IsDBNull(15) ? (int?)null : reader.GetInt32(15),
+                    PollEnded = reader.IsDBNull(9) ? (int?)null : reader.GetInt32(9),
+                    MCEVMOff = reader.IsDBNull(10) ? (int?)null : reader.GetInt32(10),
+                    PartyDeparted = reader.IsDBNull(11) ? (int?)null : reader.GetInt32(11),
+                    EVMDeposited = reader.IsDBNull(12) ? (int?)null : reader.GetInt32(12),
+                    PartyReachedAtCollection = reader.IsDBNull(13) ? (int?)null : reader.GetInt32(13)
+                };
+
+                // Add the object to the list
+                eventActivityList.Add(eventActivityBoothWise);
+            }
+
+            return eventActivityList;
+        }
+
+
+
+        /* public async Task<List<SectorOfficerPendencyBooth>> GetBoothWiseSOEventWiseCount(string stateId, string districtId, string assemblyId)
         {
             var eventActivityList = new List<SectorOfficerPendencyBooth>();
 
@@ -14054,13 +14165,6 @@ namespace EAMS_DAL.Repository
                     PartyDeparted = reader.IsDBNull(11) ? (int?)null : reader.GetInt32(11),
                     EVMDeposited = reader.IsDBNull(12) ? (int?)null : reader.GetInt32(12),
                     PartyReachedAtCollection = reader.IsDBNull(13) ? (int?)null : reader.GetInt32(13)
-
-
-
-
-
-
-
                 };
 
                 // Add the object to the list
@@ -14068,7 +14172,7 @@ namespace EAMS_DAL.Repository
             }
 
             return eventActivityList;
-        }
+        }*/
         #endregion
 
         #region BLOBoothMaster
@@ -14626,33 +14730,238 @@ namespace EAMS_DAL.Repository
             }
             else
             {
-                return new ServiceResponse { IsSucceed = false, Message = "Not Added" };
+                existingPPR.StateMasterId = pPR.StateMasterId;
+                existingPPR.DistrictMasterId = pPR.DistrictMasterId;
+                existingPPR.RandomizationTaskDetailMasterId = pPR.RandomizationTaskDetailMasterId;
+                existingPPR.CurrentRound = pPR.CurrentRound;
+                existingPPR.DateOfRound = pPR.DateOfRound;
+                existingPPR.DateOfCompletedRound = pPR.DateOfCompletedRound;
+                existingPPR.DateOfPostponedRound = pPR.DateOfPostponedRound;
+                _context.PPR.Update(existingPPR);
+                  _context.SaveChanges();
+                return new ServiceResponse { IsSucceed = true, Message = "Updated Successfully" };
             }
         }
-
-        public async Task<List<PPR>> GetRandomizationListByStateId(int stateMasterId)
+       
+        public async Task<int> GetRoundCountByRandomizationTaskId(int? randomizationTaskId,int? stateMasterId)
         {
-            return await _context.PPR.Where(d => d.StateMasterId == stateMasterId).ToListAsync();
+            var totalRound = await _context.RandomizationTaskDetail.Where(d => d.RandomizationTaskDetailMasterId == randomizationTaskId&&d.StateMasterId==stateMasterId).FirstOrDefaultAsync();
+            if (totalRound is not null)
+                return totalRound.NumberOfRound;
+            else
+                return 0;
         }
+        public async Task<List<RandomizationList>> GetRandomizationListByStateId(int stateMasterId)
+        {
+            // Retrieve the state information
+            var state = await _context.StateMaster
+                                      .Where(s => s.StateMasterId == stateMasterId)
+                                      .Select(s => new { s.StateMasterId, s.StateName })
+                                      .FirstOrDefaultAsync();
+
+            // Retrieve the district information
+            var districtList = await _context.DistrictMaster
+                                             .Where(d => d.StateMasterId == stateMasterId)
+                                             .ToListAsync();
+
+            // Retrieve the PPR records
+            var pprList = await _context.PPR
+                                        .Where(p => p.StateMasterId == stateMasterId)
+                                        .ToListAsync();
+
+            // Retrieve the task details
+            var taskList = await _context.RandomizationTaskDetail
+                                         .Where(t => t.StateMasterId == stateMasterId)
+                                         .ToListAsync();
+
+            // Create the list of RandomizationList objects
+            var randomizationList = pprList.Select(ppr => new RandomizationList
+            {
+                PPRMasterId = ppr.PPRMasterId,
+                StateMasterId = state.StateMasterId,
+                StateName = state.StateName,
+                DistrictMasterId = ppr.DistrictMasterId ?? 0, // Default to 0 if no district found
+                DistrictName = districtList.FirstOrDefault(d => d.DistrictMasterId == ppr.DistrictMasterId)?.DistrictName ?? "Unknown", // Default to "Unknown" if no district found
+                TaskId=ppr.RandomizationTaskDetailMasterId,
+                TaskName = taskList.FirstOrDefault(t => t.RandomizationTaskDetailMasterId == ppr.RandomizationTaskDetailMasterId)?.TaskName ?? "Unknown", // Default to "Unknown" if no task found
+                TotalRound = taskList.FirstOrDefault(t => t.RandomizationTaskDetailMasterId == ppr.RandomizationTaskDetailMasterId)?.NumberOfRound ?? 0, // Default to "Unknown" if no task found
+               RoundNumber = ppr.CurrentRound,
+                StartDate = ppr.DateOfRound,
+                EndDate = ppr.DateOfCompletedRound,
+                PostponedDate = ppr.DateOfPostponedRound
+            }).ToList();
+
+            return randomizationList;
+        }
+        public async Task<RandomizationList> GetRandomizationById(int pprMasterId)
+        {
+            var pprRecord= await _context.PPR.FirstOrDefaultAsync(d=>d.PPRMasterId==pprMasterId);
+            // Retrieve the task details
+            var task = await _context.RandomizationTaskDetail
+                          .Where(t => t.RandomizationTaskDetailMasterId == pprRecord.RandomizationTaskDetailMasterId)
+                          .Select(t => new { t.TaskName ,t.RandomizationTaskDetailMasterId,t.NumberOfRound})
+                          .FirstOrDefaultAsync();
+            var randomization = new RandomizationList
+            {
+                
+                PPRMasterId = pprRecord.PPRMasterId,
+                StateMasterId = pprRecord.StateMasterId,
+                DistrictMasterId = pprRecord.DistrictMasterId,
+                TaskId=task?.RandomizationTaskDetailMasterId ?? 0,
+                TaskName = task?.TaskName ?? "Unknown", 
+                TotalRound = task?.NumberOfRound ?? 0, 
+                RoundNumber = pprRecord.CurrentRound,
+                StartDate = pprRecord.DateOfRound,
+                EndDate = pprRecord.DateOfCompletedRound,
+                PostponedDate = pprRecord.DateOfPostponedRound
+            };
+
+            return randomization;
+        }
+        public async Task<List<RandomizationTableList>> GetRandomizationTableListByStateId(int stateMasterId)
+        {
+            var recordOfRounds = await _context.PPR
+                .Where(d => d.StateMasterId == stateMasterId)
+                .ToListAsync();
+            var randomizationTasks = await _context.RandomizationTaskDetail.ToListAsync();
+            var state = await _context.StateMaster.FirstOrDefaultAsync(d => d.StateMasterId == stateMasterId);
+            var districtList = await _context.DistrictMaster.Where(d => d.StateMasterId == stateMasterId).ToListAsync();
+
+            var groupedTasks = recordOfRounds
+                .GroupBy(p => new { p.DistrictMasterId, p.RandomizationTaskDetailMasterId })
+                .GroupBy(g => g.Key.DistrictMasterId)
+                .Select(districtGroup => new RandomizationTableList
+                {
+                    StateMasterId = stateMasterId,
+                    StateName = state.StateName,
+                    DistrictMasterId = districtGroup.Key.Value, // Ensure DistrictMasterId is not null
+                    DistrictName = districtList.FirstOrDefault(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtGroup.Key.Value).DistrictName,
+                    Tasks = districtGroup
+                        .Select(taskGroup => new
+                        {
+                            TaskName = randomizationTasks.First(t => t.RandomizationTaskDetailMasterId == taskGroup.Key.RandomizationTaskDetailMasterId).TaskName,
+                            Rounds = taskGroup.Select(p => new RoundDetails
+                            {
+                                RoundNumber = p.CurrentRound,
+                                StartDate = p.DateOfRound,
+                                EndDate = p.DateOfCompletedRound,
+                                PostponedDate = p.DateOfPostponedRound
+                            }).ToList()
+                        })
+                        .GroupBy(x => x.TaskName) // Group by TaskName to get latest task
+                        .Select(g => g.First()) // Select only the first (latest) task with its rounds
+                        .Select(t => new RandomizationTaskRounds
+                        {
+                            TaskName = t.TaskName,
+                            Rounds = t.Rounds
+                        })
+                        .ToList()
+                }).ToList();
+
+            return groupedTasks;
+        }
+
+
+        public async Task<RandomizationTableList> GetRandomizationListByDistrictId(int stateMasterId, int districtMasterId)
+        {
+            var recordOfRounds = await _context.PPR
+                .Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId)
+                .ToListAsync();
+
+            var randomizationTasks = await _context.RandomizationTaskDetail.ToListAsync();
+            var state = await _context.StateMaster.FirstOrDefaultAsync(d => d.StateMasterId == stateMasterId);
+            var district = await _context.DistrictMaster.FirstOrDefaultAsync(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId);
+            var taskGroups = recordOfRounds
+                .GroupBy(p => p.RandomizationTaskDetailMasterId)
+                .Select(group => new RandomizationTaskRounds
+                {
+                    TaskName = randomizationTasks.First(t => t.RandomizationTaskDetailMasterId == group.Key).TaskName,
+                    Rounds = group.Select(p => new RoundDetails
+                    {
+                        RoundNumber = p.CurrentRound,
+                        StartDate = p.DateOfRound,
+                        EndDate = p.DateOfCompletedRound,
+                        PostponedDate = p.DateOfPostponedRound
+                    }).ToList()
+                }).ToList();
+
+            return new RandomizationTableList
+            {
+                StateMasterId = stateMasterId,
+                StateName=state.StateName,
+                DistrictMasterId = districtMasterId,
+                DistrictName= district.DistrictName,
+                Tasks = taskGroups
+            };
+        }
+
+
         public async Task<ServiceResponse> AddRandomizationTaskDetail(RandomizationTaskDetail randomizationTaskDetail)
         {
-            var isExist = await _context.RandomizationTaskDetail.FirstOrDefaultAsync(d => d.StateMasterId == randomizationTaskDetail.StateMasterId);
+            var existingTaskDetail = await _context.RandomizationTaskDetail
+                .FirstOrDefaultAsync(d => d.StateMasterId == randomizationTaskDetail.StateMasterId
+                                          && d.TaskName == randomizationTaskDetail.TaskName);
 
-            if (isExist == null)
+            if (existingTaskDetail != null)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "Task with the same name already exists for this state" };
+            }
+            else
             {
                 _context.RandomizationTaskDetail.Add(randomizationTaskDetail);
                 await _context.SaveChangesAsync();
                 return new ServiceResponse { IsSucceed = true, Message = "Added Successfully" };
             }
-            else
-            {
-                return new ServiceResponse { IsSucceed = false, Message = "Not Added" };
-            }
         }
+        public async Task<int> GetCurrentRoundByRandomizationById(int? stateMasterId, int? districtMasterId, int? randomizationTaskDetailMasterId)
+        {
+            // Ensure all parameters are not null
+            if (stateMasterId == null || districtMasterId == null || randomizationTaskDetailMasterId == null)
+            {
+                throw new ArgumentNullException("One or more parameters are null");
+            }
+
+            // Query to get the current round
+            var currentRound = await _context.PPR
+                .Where(d => d.StateMasterId == stateMasterId &&
+                            d.DistrictMasterId == districtMasterId &&
+                            d.RandomizationTaskDetailMasterId == randomizationTaskDetailMasterId)
+                .OrderByDescending(d => d.DateOfRound)
+                .Select(d => d.CurrentRound)
+                .FirstOrDefaultAsync(); // Use FirstOrDefaultAsync to get the single integer result
+
+            return currentRound;
+        }
+
         public async Task<List<RandomizationTaskDetail>> GetRandomizationTaskListByStateId(int stateMasterId)
         {
             return await _context.RandomizationTaskDetail.Where(d => d.StateMasterId == stateMasterId).ToListAsync();
         }
+
+
+        public async Task<ServiceResponse> UpdateRandomizationById(PPR ppr)
+        {
+            var record = await _context.PPR.FirstOrDefaultAsync(d => d.PPRMasterId == ppr.PPRMasterId);
+
+            if (record == null)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "Record not found" };
+            }
+
+            record.StateMasterId = ppr.StateMasterId;
+            record.DistrictMasterId = ppr.DistrictMasterId;
+            record.RandomizationTaskDetailMasterId = ppr.RandomizationTaskDetailMasterId;
+            record.CurrentRound = ppr.CurrentRound;
+            record.DateOfRound = ppr.DateOfRound;
+            record.DateOfCompletedRound = ppr.DateOfCompletedRound;
+            record.DateOfPostponedRound = ppr.DateOfPostponedRound;
+
+            _context.PPR.Update(record);
+            await _context.SaveChangesAsync();
+
+            return new ServiceResponse { IsSucceed = true, Message = "Record updated successfully" };
+        }
+
         #endregion
 
 
@@ -14976,6 +15285,22 @@ namespace EAMS_DAL.Repository
             {
                 return new ServiceResponse { IsSucceed = false, Message = "Not added " };
             }
+        }
+
+        #endregion
+
+        #region KYC Public Details
+        public async Task<ServiceResponse> AddKYCDetails(Kyc kyc)
+        {
+            _context.Kyc.Add(kyc);
+            _context.SaveChanges();
+
+
+            return new ServiceResponse { IsSucceed = true ,Message="Successfully added"}; 
+        }
+        public async Task<List<Kyc>> GetKYCDetails()
+        {
+            return await _context.Kyc.ToListAsync();
         }
         #endregion
     }

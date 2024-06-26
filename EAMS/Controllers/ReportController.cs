@@ -628,25 +628,50 @@ namespace EAMS.Controllers
 
 
 
+        //[HttpGet]
+        //[Route("GetSOBoothWiseEvenCountReport")]
+        //[Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,ARO")]
+        //public async Task<IActionResult> GetSOWiseSOEvenCountPendency(string stateId, string districtId, string assemblyId)
+        //{
+        //    var eventAssemblyList = await _EAMSService.GetBoothWiseSOEventWiseCount(stateId, districtId,assemblyId);
+        //    if (eventAssemblyList is not null)
+        //        return Ok(eventAssemblyList);
+        //    else
+        //        return NotFound();
+        //}
+
+
         [HttpGet]
         [Route("GetSOBoothWiseEvenCountReport")]
         [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,ARO")]
-        public async Task<IActionResult> GetSOWiseSOEvenCountPendency(string stateId, string districtId, string assemblyId)
+        public async Task<IActionResult> GetSOWiseSOEvenCountPendency(string soMasterId)
         {
-            var eventAssemblyList = await _EAMSService.GetBoothWiseSOEventWiseCount(stateId, districtId,assemblyId);
+            var eventAssemblyList = await _EAMSService.GetBoothWiseSOEventWiseCount(soMasterId);
+            if (eventAssemblyList is not null)
+                return Ok(eventAssemblyList);
+            else
+                return NotFound();
+        }
+        [HttpGet]
+        [Route("GetSONamesEventWiseCount")]
+        [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,ARO")]
+        public async Task<IActionResult> GetSONamesEventWiseCounts(string stateMasterId, string districtMasterId,string assemblymasterId)
+        {
+            var eventAssemblyList = await _EAMSService.GetSONamesEventWiseCount(stateMasterId,districtMasterId,assemblymasterId);
             if (eventAssemblyList is not null)
                 return Ok(eventAssemblyList);
             else
                 return NotFound();
         }
 
+        
 
 
         #endregion
 
 
         #region BLO Report based on District
-        
+
         [HttpPost]
         [Route("GetBLOQueueCountReportBoothWise")]
         [Authorize]

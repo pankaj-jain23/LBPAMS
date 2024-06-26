@@ -5,7 +5,6 @@ namespace EAMS.ViewModels
     public class AddStateMasterViewModel
     {
         [Required(ErrorMessage = "State Name is required")]
-        
         public string StateName { get; set; }
 
         [Required(ErrorMessage = "State Code is required")]

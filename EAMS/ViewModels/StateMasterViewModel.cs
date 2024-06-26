@@ -1,12 +1,8 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-
-namespace EAMS.ViewModels
+﻿namespace EAMS.ViewModels
 {
     public class StateMasterViewModel
     {
         public int StateId { get; set; }
-  
         public string StateName { get; set; }
         public string? SecondLanguage { get; set; }
         public string StateCode { get; set; }

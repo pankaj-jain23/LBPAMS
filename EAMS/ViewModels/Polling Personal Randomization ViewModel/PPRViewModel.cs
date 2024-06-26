@@ -3,13 +3,22 @@
     public class PPRViewModel
     {
         public int StateMasterId { get; set; }
-        public int? DistrictMasterId { get; set; }
-        public int? PCMasterId { get; set; }
-        public int? AssemblyMasterId { get; set; }
+        public int? DistrictMasterId { get; set; }       
         public int? RandomizationTaskDetailMasterId { get; set; } 
-        public int NumberOfRounds { get; set; }
-        public DateTime? DateOfRound { get; set; }
-        public DateTime? DateOfCompletedRound { get; set; }
-        public DateTime? DateOfPostponedRound { get; set; }
+        public int CurrentRound { get; set; }
+        public string? DateOfRound { get; set; }
+        public string? DateOfCompletedRound { get; set; }
+        public string? DateOfPostponedRound { get; set; }
+    }
+    public class PPRViewUpdateModel
+    {
+        public int PPRMasterId { get; set; }
+        public int StateMasterId { get; set; }
+        public int? DistrictMasterId { get; set; }
+        public int? RandomizationTaskDetailMasterId { get; set; }
+        public int CurrentRound { get; set; }
+        public string? DateOfRound { get; set; }
+        public string? DateOfCompletedRound { get; set; }
+        public string? DateOfPostponedRound { get; set; }
     }
 }

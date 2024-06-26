@@ -6,6 +6,7 @@ using EAMS_ACore.Models.BLOModels;
 using EAMS_ACore.Models.Polling_Personal_Randomisation_Models;
 using EAMS_ACore.Models.Polling_Personal_Randomization_Models;
 using EAMS_ACore.Models.PollingStationFormModels;
+using EAMS_ACore.Models.PublicModels;
 using EAMS_ACore.Models.QueueModel;
 using EAMS_ACore.ReportModels;
 using EAMS_ACore.SignalRModels;
@@ -196,8 +197,10 @@ namespace EAMS_ACore.Interfaces
         #region
         Task<List<SectorOfficerPendency>> GetDistrictWiseSOCountEventWiseCount(string stateMasterId);
         Task<List<SectorOfficerPendencyAssembly>> GetAssemblyWiseSOCountEventWiseCount(string stateMasterId, string districtMasterId);
-        Task<List<SectorOfficerPendencyBooth>> GetBoothWiseSOEventWiseCount(string stateMasterId, string districtMasterId,string assemblyMasterid);
+        //Task<List<SectorOfficerPendencyBooth>> GetBoothWiseSOEventWiseCount(string stateMasterId, string districtMasterId,string assemblyMasterid);
+        Task<List<SectorOfficerPendencyBooth>> GetBoothWiseSOEventWiseCount(string soMasterId);
         
+        Task<List<SectorOfficerPendencybySoNames>> GetSONamesEventWiseCount(string stateMasterId, string districtMasterId,string assemblyMasterid);
         #endregion
 
         Task<List<CombinedMaster>> AppNotDownload(string stateMasterId);
@@ -223,7 +226,13 @@ namespace EAMS_ACore.Interfaces
         #region Randomization
 
         Task<ServiceResponse> AddRandomization(PPR pPR);
-        Task<List<PPR>> GetRandomizationListByStateId(int stateMasterId);
+        Task <int>GetRoundCountByRandomizationTaskId(int? randomizationId, int? stateMasterId);
+        Task<int> GetCurrentRoundByRandomizationById(int? stateMasterId, int? districtmasterId, int? randomizationTaskDetailMasterId);
+        Task<List<RandomizationList>> GetRandomizationListByStateId(int stateMasterId);
+        Task<RandomizationList> GetRandomizationById(int pprMasterId);
+        Task<List<RandomizationTableList>> GetRandomizationTableListByStateId(int stateMasterId);
+        Task<RandomizationTableList> GetRandomizationListByDistrictId(int stateMasterId,int districtMasterId);
+        Task<ServiceResponse> UpdateRandomizationById(PPR pPR);
         Task<List<RandomizationTaskDetail>> GetRandomizationTaskListByStateId(int stateMasterId);
         Task<ServiceResponse> AddRandomizationTaskDetail(RandomizationTaskDetail randomizationTaskDetail);
 
@@ -249,5 +258,9 @@ namespace EAMS_ACore.Interfaces
         Task<ServiceResponse> AddMobileVersion(MobileVersion mobileVersion);
         #endregion
 
+        #region KYC Public Details
+        Task<ServiceResponse> AddKYCDetails(Kyc kyc);
+        Task<List<Kyc>> GetKYCDetails();
+        #endregion
     }
 }

@@ -5,6 +5,7 @@ using EAMS.ViewModels.BLOMaster;
 using EAMS.ViewModels.ChartViewModel;
 using EAMS.ViewModels.Polling_Personal_Randomization_ViewModel;
 using EAMS.ViewModels.PSFormViewModel;
+using EAMS.ViewModels.PublicModels;
 using EAMS.ViewModels.QueueViewModel;
 using EAMS.ViewModels.ReportViewModel;
 using EAMS_ACore;
@@ -15,6 +16,7 @@ using EAMS_ACore.Models.BLOModels;
 using EAMS_ACore.Models.Polling_Personal_Randomisation_Models;
 using EAMS_ACore.Models.Polling_Personal_Randomization_Models;
 using EAMS_ACore.Models.PollingStationFormModels;
+using EAMS_ACore.Models.PublicModels;
 using EAMS_ACore.Models.QueueModel;
 using EAMS_ACore.NotificationModels;
 using EAMS_ACore.ReportModels;
@@ -584,17 +586,25 @@ namespace EAMS.Helper
 
             #region Randomization
             CreateMap<PPRViewModel, PPR>()
-             .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
-             .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
-             .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
-             .ForMember(dest => dest.PCMasterId, opt => opt.MapFrom(src => src.PCMasterId))
-             .ForMember(dest => dest.RandomizationTaskDetailMasterId, opt => opt.MapFrom(src => src.RandomizationTaskDetailMasterId))
-             .ForMember(dest => dest.NumberOfRounds, opt => opt.MapFrom(src => src.NumberOfRounds))
-             .ForMember(dest => dest.DateOfRound, opt => opt.MapFrom(src => src.DateOfRound))
-             .ForMember(dest => dest.DateOfPostponedRound, opt => opt.MapFrom(src => src.DateOfPostponedRound))
-             .ForMember(dest => dest.DateOfCompletedRound, opt => opt.MapFrom(src => src.DateOfCompletedRound))
+       .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+       .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+       .ForMember(dest => dest.RandomizationTaskDetailMasterId, opt => opt.MapFrom(src => src.RandomizationTaskDetailMasterId))
+       .ForMember(dest => dest.CurrentRound, opt => opt.MapFrom(src => src.CurrentRound))
+       .ForMember(dest => dest.DateOfRound, opt => opt.MapFrom(src => ParseAndConvertToUtc(src.DateOfRound)))
+       .ForMember(dest => dest.DateOfPostponedRound, opt => opt.MapFrom(src => ParseAndConvertToUtc(src.DateOfPostponedRound)))
+       .ForMember(dest => dest.DateOfCompletedRound, opt => opt.MapFrom(src => ParseAndConvertToUtc(src.DateOfCompletedRound)))
+       .ReverseMap();
+              CreateMap<PPRViewUpdateModel, PPR>()
+       .ForMember(dest => dest.PPRMasterId, opt => opt.MapFrom(src => src.PPRMasterId))
+       .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+       .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+       .ForMember(dest => dest.RandomizationTaskDetailMasterId, opt => opt.MapFrom(src => src.RandomizationTaskDetailMasterId))
+       .ForMember(dest => dest.CurrentRound, opt => opt.MapFrom(src => src.CurrentRound))
+       .ForMember(dest => dest.DateOfRound, opt => opt.MapFrom(src => ParseAndConvertToUtc(src.DateOfRound)))
+       .ForMember(dest => dest.DateOfPostponedRound, opt => opt.MapFrom(src => ParseAndConvertToUtc(src.DateOfPostponedRound)))
+       .ForMember(dest => dest.DateOfCompletedRound, opt => opt.MapFrom(src => ParseAndConvertToUtc(src.DateOfCompletedRound)))
+       .ReverseMap();
 
-            .ReverseMap();
 
             CreateMap<RandomizationTaskDetailViewModel, RandomizationTaskDetail>()
                   .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
@@ -633,7 +643,28 @@ namespace EAMS.Helper
 
          .ReverseMap();
             #endregion
+
+            #region KYCViewModel KYC
+            CreateMap<KycViewModel, Kyc>()
+             .ForMember(dest => dest.NominationPdfPath, opt => opt.Ignore())
+
+            .ReverseMap();
+            #endregion
+
+          
+        }
+        #region Convert DateTime UTC
+        private DateTime? ParseAndConvertToUtc(string dateTimeString)
+        {
+            if (string.IsNullOrEmpty(dateTimeString))
+            {
+                return null;
+            }
+
+            DateTime parsedDateTime = DateTime.Parse(dateTimeString);
+            return parsedDateTime.ToUniversalTime();
         }
 
+        #endregion
     }
 }

@@ -8,6 +8,7 @@ using EAMS_ACore.Models.ElectionType;
 using EAMS_ACore.Models.Polling_Personal_Randomisation_Models;
 using EAMS_ACore.Models.Polling_Personal_Randomization_Models;
 using EAMS_ACore.Models.PollingStationFormModels;
+using EAMS_ACore.Models.PublicModels;
 using EAMS_ACore.Models.QueueModel;
 using EAMS_ACore.NotificationModels;
 using EAMS_ACore.SignalRModels;
@@ -64,6 +65,7 @@ public partial class EamsContext : IdentityDbContext<UserRegistration>
     public virtual DbSet<RandomizationTaskDetail> RandomizationTaskDetail { get; set; }
     public virtual DbSet<BLOMaster> BLOMaster { get; set; } 
     public virtual DbSet<MobileVersion> MobileVersion { get; set; } 
+    public virtual DbSet<Kyc> Kyc { get; set; } 
   //  public virtual DbSet<BLOBoothMaster> BLOBoothMaster { get; set; } 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

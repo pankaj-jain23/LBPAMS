@@ -3,6 +3,7 @@ using System;
 using EAMS_DAL.DBContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EAMS_DAL.Migrations
 {
     [DbContext(typeof(EamsContext))]
-    partial class EamsContextModelSnapshot : ModelSnapshot
+    [Migration("20240613082209_addedrandomization")]
+    partial class addedrandomization
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1365,6 +1368,9 @@ namespace EAMS_DAL.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PPRMasterId"));
 
+                    b.Property<int?>("AssemblyMasterId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("CurrentRound")
                         .HasColumnType("integer");
 
@@ -1378,6 +1384,9 @@ namespace EAMS_DAL.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("DistrictMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("PCMasterId")
                         .HasColumnType("integer");
 
                     b.Property<int>("RandomizationTaskDetailMasterId")
@@ -1412,64 +1421,6 @@ namespace EAMS_DAL.Migrations
                     b.HasKey("RandomizationTaskDetailMasterId");
 
                     b.ToTable("RandomizationTaskDetail");
-                });
-
-            modelBuilder.Entity("EAMS_ACore.Models.PublicModels.Kyc", b =>
-                {
-                    b.Property<int>("KycMasterId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("KycMasterId"));
-
-                    b.Property<int?>("BlockMasterId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("CandidateName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int?>("DistrictMasterId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("ElectionType")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("FatherName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int?>("MCorporationMasterId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("MCouncilMasterId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("NagaraPanchayatMasterId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("NominationPdfPath")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Option1")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Option2")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("PSMasterId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("StateMasterId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("ZPMasterId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("KycMasterId");
-
-                    b.ToTable("Kyc");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.QueueModel.QIS", b =>

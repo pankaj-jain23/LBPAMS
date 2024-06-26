@@ -10,6 +10,7 @@ using EAMS_ACore.Models.BLOModels;
 using EAMS_ACore.Models.Polling_Personal_Randomisation_Models;
 using EAMS_ACore.Models.Polling_Personal_Randomization_Models;
 using EAMS_ACore.Models.PollingStationFormModels;
+using EAMS_ACore.Models.PublicModels;
 using EAMS_ACore.Models.QueueModel;
 using EAMS_ACore.ReportModels;
 using EAMS_ACore.SignalRModels;
@@ -153,7 +154,7 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetSectorOfficersListById(stateMasterId, districtMasterId, assemblyMasterId);
         }
-    
+
         public async Task<List<CombinedMaster>> AppNotDownload(string stateMasterId)
         {
             return await _eamsRepository.AppNotDownload(stateMasterId);
@@ -727,7 +728,7 @@ namespace EAMS_BLL.Services
                                         electionInfoRecord.Male = electionInfoMaster.Male;
                                         electionInfoRecord.Female = electionInfoMaster.Female;
                                         electionInfoRecord.Transgender = electionInfoMaster.Transgender;
-                                        electionInfoRecord.EDC=electionInfoMaster.EDC;
+                                        electionInfoRecord.EDC = electionInfoMaster.EDC;
                                         return await _eamsRepository.EventActivity(electionInfoRecord);
                                         //}
                                         //else
@@ -799,11 +800,11 @@ namespace EAMS_BLL.Services
                 {
                     //if (electionInfoRecord.IsPollEnded == false || electionInfoRecord.IsPollEnded == null)
                     //{
-                        //
-                        electionInfoRecord.IsPollEnded = electionInfoMaster.IsPollEnded;
-                        electionInfoRecord.IsPollEndedLastUpdate = BharatDateTime();
-                        electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-                        return await _eamsRepository.EventActivity(electionInfoRecord);
+                    //
+                    electionInfoRecord.IsPollEnded = electionInfoMaster.IsPollEnded;
+                    electionInfoRecord.IsPollEndedLastUpdate = BharatDateTime();
+                    electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
+                    return await _eamsRepository.EventActivity(electionInfoRecord);
                     //}
                     //else
                     //{
@@ -3103,11 +3104,23 @@ namespace EAMS_BLL.Services
 
             return await _eamsRepository.GetAssemblyWiseSOCountEventWiseCount(stateMasterId, districtmasterid);
         }
-        public async Task<List<SectorOfficerPendencyBooth>> GetBoothWiseSOEventWiseCount(string stateMasterId, string districtmasterid, string assemblyMasterid)
+        //public async Task<List<SectorOfficerPendencyBooth>> GetBoothWiseSOEventWiseCount(string stateMasterId, string districtmasterid, string assemblyMasterid)
+        //{
+
+        //    return await _eamsRepository.GetBoothWiseSOEventWiseCount(stateMasterId, districtmasterid, assemblyMasterid);
+        //}
+
+        public async Task<List<SectorOfficerPendencyBooth>> GetBoothWiseSOEventWiseCount(string soMasterId)
         {
 
-            return await _eamsRepository.GetBoothWiseSOEventWiseCount(stateMasterId, districtmasterid, assemblyMasterid);
+            return await _eamsRepository.GetBoothWiseSOEventWiseCount(soMasterId);
         }
+        public async Task<List<SectorOfficerPendencybySoNames>> GetSONamesEventWiseCount(string stateMasterId, string districtmasterid, string assemblyMasterid)
+        {
+
+            return await _eamsRepository.GetSONamesEventWiseCount(stateMasterId, districtmasterid, assemblyMasterid);
+        }
+
 
 
         #endregion
@@ -3164,14 +3177,38 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.AddRandomization(pPR);
         }
+        public async Task<int> GetRoundCountByRandomizationTaskId(int? randomizationTaskId, int? stateMasterId)
+        {
+            return await _eamsRepository.GetRoundCountByRandomizationTaskId(randomizationTaskId,stateMasterId);
+        } 
+        public async Task<int> GetCurrentRoundByRandomizationById(int? stateMasterId, int? districtmasterId, int? randomizationTaskDetailMasterId)
+        {
+            return await _eamsRepository.GetCurrentRoundByRandomizationById(stateMasterId, districtmasterId, randomizationTaskDetailMasterId);
+        }
         public async Task<ServiceResponse> AddRandomizationTaskDetail(RandomizationTaskDetail randomizationTaskDetail)
         {
             return await _eamsRepository.AddRandomizationTaskDetail(randomizationTaskDetail);
         }
 
-        public async Task<List<PPR>> GetRandomizationListByStateId(int stateMasterId)
+        public async Task<List<RandomizationList>> GetRandomizationListByStateId(int stateMasterId)
         {
             return await _eamsRepository.GetRandomizationListByStateId(stateMasterId);
+        } 
+        public async Task<RandomizationList> GetRandomizationById(int pprMasterId)
+        {
+            return await _eamsRepository.GetRandomizationById(pprMasterId);
+        } 
+        public async Task<List<RandomizationTableList>> GetRandomizationTableListByStateId(int stateMasterId)
+        {
+            return await _eamsRepository.GetRandomizationTableListByStateId(stateMasterId);
+        }
+        public async Task<RandomizationTableList> GetRandomizationListByDistrictId(int stateMasterId, int districtMasterId)
+        {
+            return await _eamsRepository.GetRandomizationListByDistrictId(stateMasterId, districtMasterId);
+        }
+        public async Task<ServiceResponse> UpdateRandomizationById(PPR pPR)
+        {
+            return await _eamsRepository.UpdateRandomizationById(pPR);
         }
         public async Task<List<RandomizationTaskDetail>> GetRandomizationTaskListByStateId(int stateMasterId)
         {
@@ -3188,7 +3225,7 @@ namespace EAMS_BLL.Services
         }
         #endregion
 
-
+        #region BLO
         public async Task<List<BLOBoothAssignedQueueCount>> GetBLOQueueCount(BoothReportModel boothReportModel)
         {
 
@@ -3205,11 +3242,13 @@ namespace EAMS_BLL.Services
             return await _eamsRepository.GetAssignedBLOs(boothReportModel);
         }
 
-        public async Task<List<BLOBoothAssignedQueueCount>> GetBLOQueueCountOpen(string statemasterid,string districtmasterid )
+        public async Task<List<BLOBoothAssignedQueueCount>> GetBLOQueueCountOpen(string statemasterid, string districtmasterid)
         {
 
-            return await _eamsRepository.GetBLOQueueCountOpen(statemasterid,districtmasterid);
+            return await _eamsRepository.GetBLOQueueCountOpen(statemasterid, districtmasterid);
         }
+        #endregion
+
         #region Mobile Version
         public async Task<MobileVersion> GetMobileVersionById(string stateMasterId)
         {
@@ -3221,6 +3260,19 @@ namespace EAMS_BLL.Services
             return await _eamsRepository.AddMobileVersion(mobileVersion);
         }
 
+
+        #endregion
+
+        #region KYC Public Details
+        public async Task<ServiceResponse> AddKYCDetails(Kyc kyc)
+        {
+            return await _eamsRepository.AddKYCDetails(kyc);
+        }
+        public async Task<List<Kyc>> GetKYCDetails()
+        {
+            return await _eamsRepository.GetKYCDetails();
+
+        }
         #endregion
     }
 }

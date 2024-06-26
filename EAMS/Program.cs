@@ -45,7 +45,6 @@ builder.Services.AddDbContextPool<EamsContext>(options =>
             // Adjust maxRetryCount and maxRetryDelay as needed.
         });
 });
-
 builder.Services
     .AddIdentity<UserRegistration, IdentityRole>()
     .AddEntityFrameworkStores<EamsContext>()
@@ -103,17 +102,15 @@ builder.Services
         };
     });
 
-builder.Services.AddTransient<IAuthService, AuthService>();
-builder.Services.AddTransient<IAuthRepository, AuthRepository>();
-builder.Services.AddTransient<IEamsService, EamsService>();
-builder.Services.AddTransient<IEamsRepository, EamsRepository>();
-builder.Services.AddTransient<INotificationService, NotificationService>();
-builder.Services.AddTransient<INotificationRepository, NotificationRepository>();
-builder.Services.AddTransient<IUserConnectionService, UserConnectionService>();
-builder.Services.AddTransient<IUserConnectionServiceRepository, UserConnectionServiceRepository>();
-builder.Services.AddTransient<IRealTime, RealTimeService>();
-builder.Services.AddTransient<IServicePlusService,ServicePlusService >();
-builder.Services.AddTransient<IServicePlusRepository,ServicePlusRepository >();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IEamsService, EamsService>();
+builder.Services.AddScoped<IEamsRepository, EamsRepository>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<IUserConnectionService, UserConnectionService>();
+builder.Services.AddScoped<IUserConnectionServiceRepository, UserConnectionServiceRepository>();
+builder.Services.AddScoped<IRealTime, RealTimeService>();
 //builder.Services.AddHostedService<DatabaseListenerService>();
 
 builder.Services.AddSwaggerGen(opt =>
@@ -196,7 +193,7 @@ app.Use(async (context, next) =>
 
 app.UseSwagger();
 app.UseSwaggerUI();
-
+app.UseStaticFiles();
 app.UseCors();
 app.UseWebSockets();
 
