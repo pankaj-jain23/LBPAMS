@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using EAMS_ACore.Models.ElectionType;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace EAMS_ACore
 {
@@ -12,7 +13,7 @@ namespace EAMS_ACore
             get;
             set;
         }
-        public int ElectionTypeId { get; set; }
+      
 
         [ForeignKey("StateMasterId")]
         public virtual StateMaster? StateMaster
@@ -43,6 +44,18 @@ namespace EAMS_ACore
             get;
             set;
         }
+        public int ElectionTypeMasterId
+        {
+            get;
+            set;
+        }
+        [ForeignKey("ElectionTypeMasterId")]
+        public virtual ElectionTypeMaster? ElectionTypeMaster
+        {
+            get;
+            set;
+        }
+
         public string BoothCode_No { get; set; }
 
 

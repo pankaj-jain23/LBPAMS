@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using EAMS_ACore.Models.ElectionType;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace EAMS_ACore
 {
@@ -10,8 +11,18 @@ namespace EAMS_ACore
         public int AssemblyCode { get; set; }
 
         public string? AssemblyType { get; set; }
-        public int ElectionTypeId { get; set; }
-
+        
+        public int ElectionTypeMasterId
+        {
+            get;
+            set;
+        }
+        [ForeignKey("ElectionTypeMasterId")]
+        public virtual ElectionTypeMaster? ElectionTypeMaster
+        {
+            get;
+            set;
+        }
 
         public int StateMasterId
         {

@@ -455,15 +455,7 @@ namespace EAMS.Controllers
             if (ModelState.IsValid)
             {
                 var mappedData = _mapper.Map<AddAssemblyMasterViewModel, AssemblyMaster>(addAssemblyMasterViewModel);
-                var electionType = User.Claims.FirstOrDefault(c => c.Type == "ElectionType").Value;
-                if (electionType == "LS")
-                {
-                    mappedData.ElectionTypeId = 1;
-                }
-                else if (electionType == "VS")
-                {
-                    mappedData.ElectionTypeId = 2;
-                }
+                 
 
                 var result = await _EAMSService.AddAssemblies(mappedData);
                 switch (result.Status)
@@ -874,14 +866,7 @@ namespace EAMS.Controllers
                             {
                                 var mappedData = _mapper.Map<BoothMasterViewModel, BoothMaster>(BoothMasterViewModel);
                                 var electionType = User.Claims.FirstOrDefault(c => c.Type == "ElectionType").Value;
-                                if (electionType == "LS")
-                                {
-                                    mappedData.ElectionTypeId = 1;
-                                }
-                                else if (electionType == "VS")
-                                {
-                                    mappedData.ElectionTypeId = 2;
-                                }
+                               
                                 var result = await _EAMSService.AddBooth(mappedData);
                                 switch (result.Status)
                                 {

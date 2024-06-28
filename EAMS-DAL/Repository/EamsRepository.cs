@@ -1211,9 +1211,8 @@ namespace EAMS_DAL.Repository
         {
             try
             {
-                var assemblieExist = await _context.AssemblyMaster.Where(p => p.AssemblyName == assemblyMaster.AssemblyName || p.AssemblyCode == assemblyMaster.AssemblyCode && p.StateMasterId == assemblyMaster.StateMasterId && p.ElectionTypeId == assemblyMaster.ElectionTypeId).FirstOrDefaultAsync();
-                //var assemblieExist = await _context.AssemblyMaster.Where(p => (p.AssemblyName == assemblyMaster.AssemblyName || p.AssemblyCode == assemblyMaster.AssemblyCode) && p.StateMasterId == assemblyMaster.StateMasterId).FirstOrDefaultAsync();
-
+                var assemblieExist = await _context.AssemblyMaster.Where(p => p.AssemblyName == assemblyMaster.AssemblyName || p.AssemblyCode == assemblyMaster.AssemblyCode && p.StateMasterId == assemblyMaster.StateMasterId && p.ElectionTypeMasterId == assemblyMaster.ElectionTypeMasterId).FirstOrDefaultAsync();
+               
                 if (assemblieExist == null)
                 {
 
@@ -1952,7 +1951,7 @@ namespace EAMS_DAL.Repository
                                  p.BoothCode_No == boothMaster.BoothCode_No &&
                                   p.StateMasterId == boothMaster.StateMasterId &&
                                   p.AssemblyMasterId == boothMaster.AssemblyMasterId &&
-                                  p.ElectionTypeId == boothMaster.ElectionTypeId).ToListAsync();
+                                  p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId).ToListAsync();
 
 
 
@@ -14833,13 +14832,13 @@ namespace EAMS_DAL.Repository
                 .Select(districtGroup => new RandomizationTableList
                 {
                     StateMasterId = stateMasterId,
-                    StateName = state.StateName,
+                    StateName = state?.StateName, // Check if state is not null
                     DistrictMasterId = districtGroup.Key.Value, // Ensure DistrictMasterId is not null
-                    DistrictName = districtList.FirstOrDefault(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtGroup.Key.Value).DistrictName,
+                    DistrictName = districtList.FirstOrDefault(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtGroup.Key.Value)?.DistrictName, // Use FirstOrDefault and check for null
                     Tasks = districtGroup
                         .Select(taskGroup => new
                         {
-                            TaskName = randomizationTasks.First(t => t.RandomizationTaskDetailMasterId == taskGroup.Key.RandomizationTaskDetailMasterId).TaskName,
+                            TaskName = randomizationTasks.FirstOrDefault(t => t.RandomizationTaskDetailMasterId == taskGroup.Key.RandomizationTaskDetailMasterId)?.TaskName, // Use FirstOrDefault and check for null
                             Rounds = taskGroup.Select(p => new RoundDetails
                             {
                                 RoundNumber = p.CurrentRound,
@@ -14848,6 +14847,7 @@ namespace EAMS_DAL.Repository
                                 PostponedDate = p.DateOfPostponedRound
                             }).ToList()
                         })
+                        .Where(t => t.TaskName != null) // Ensure TaskName is not null before proceeding
                         .GroupBy(x => x.TaskName) // Group by TaskName to get latest task
                         .Select(g => g.First()) // Select only the first (latest) task with its rounds
                         .Select(t => new RandomizationTaskRounds

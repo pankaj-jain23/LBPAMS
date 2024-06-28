@@ -17,7 +17,12 @@ namespace EAMS.ViewModels
         public int DistrictMasterId { get; set; }
 
         //[Required(ErrorMessage = "PC Master Id is required")]
-        public int PCMasterId { get; set; }
+        public int? PCMasterId { get; set; }
+        public int ElectionTypeMasterId
+        {
+            get;
+            set;
+        }
 
         [Required(ErrorMessage = "Assembly Type is required")]
         public string? AssemblyType { get; set; }

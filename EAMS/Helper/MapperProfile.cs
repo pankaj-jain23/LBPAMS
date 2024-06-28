@@ -177,6 +177,7 @@ namespace EAMS.Helper
     .ForMember(dest => dest.AssemblyName, opt => opt.MapFrom(src => src.AssemblyName))
     .ForMember(dest => dest.AssemblyCode, opt => opt.MapFrom(src => src.AssemblyCode))
     .ForMember(dest => dest.PCMasterId, opt => opt.MapFrom(src => src.PCMasterId))
+   
     .ForMember(dest => dest.AssemblyType, opt => opt.MapFrom(src => src.AssemblyType))
     .ForMember(dest => dest.AssemblyStatus, opt => opt.MapFrom(src => src.IsStatus))
         .ForMember(dest => dest.TotalBooths, opt => opt.MapFrom(src => src.TotalBooths))
@@ -189,6 +190,7 @@ namespace EAMS.Helper
    .ForMember(dest => dest.AssemblyName, opt => opt.MapFrom(src => src.AssemblyName))
    .ForMember(dest => dest.AssemblyCode, opt => opt.MapFrom(src => src.AssemblyCode))
    .ForMember(dest => dest.PCMasterId, opt => opt.MapFrom(src => src.PCMasterId))
+   .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
    .ForMember(dest => dest.AssemblyType, opt => opt.MapFrom(src => src.AssemblyType))
    .ForMember(dest => dest.AssemblyStatus, opt => opt.MapFrom(src => src.IsStatus))
             .ForMember(dest => dest.TotalBooths, opt => opt.MapFrom(src => src.TotalBooths));
@@ -227,6 +229,7 @@ namespace EAMS.Helper
                 .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
                 .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
                 .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+                .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
                 .ForMember(dest => dest.BoothName, opt => opt.MapFrom(src => src.BoothName))
                 .ForMember(dest => dest.BoothCode_No, opt => opt.MapFrom(src => src.BoothCode_No))
                 .ForMember(dest => dest.BoothNoAuxy, opt => opt.MapFrom(src => src.BoothNoAuxy))

@@ -3,6 +3,7 @@ using System;
 using EAMS_DAL.DBContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EAMS_DAL.Migrations
 {
     [DbContext(typeof(EamsContext))]
-    partial class EamsContextModelSnapshot : ModelSnapshot
+    [Migration("20240628091128_addedelectiontypeallmaster")]
+    partial class addedelectiontypeallmaster
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -53,6 +56,9 @@ namespace EAMS_DAL.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("DistrictMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ElectionTypeId")
                         .HasColumnType("integer");
 
                     b.Property<int>("ElectionTypeMasterId")
@@ -302,7 +308,7 @@ namespace EAMS_DAL.Migrations
                     b.Property<int>("DistrictMasterId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("ElectionTypeMasterId")
+                    b.Property<int>("ElectionTypeId")
                         .HasColumnType("integer");
 
                     b.Property<int?>("Female")
@@ -343,8 +349,6 @@ namespace EAMS_DAL.Migrations
                     b.HasIndex("AssemblyMasterId");
 
                     b.HasIndex("DistrictMasterId");
-
-                    b.HasIndex("ElectionTypeMasterId");
 
                     b.HasIndex("StateMasterId");
 
@@ -2094,12 +2098,6 @@ namespace EAMS_DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("EAMS_ACore.Models.ElectionType.ElectionTypeMaster", "ElectionTypeMaster")
-                        .WithMany()
-                        .HasForeignKey("ElectionTypeMasterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("EAMS_ACore.StateMaster", "StateMaster")
                         .WithMany("BoothMaster")
                         .HasForeignKey("StateMasterId")
@@ -2109,8 +2107,6 @@ namespace EAMS_DAL.Migrations
                     b.Navigation("AssemblyMaster");
 
                     b.Navigation("DistrictMaster");
-
-                    b.Navigation("ElectionTypeMaster");
 
                     b.Navigation("StateMaster");
                 });
