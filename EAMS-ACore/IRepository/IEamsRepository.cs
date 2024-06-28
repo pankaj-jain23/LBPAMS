@@ -3,6 +3,7 @@ using EAMS.ViewModels.PSFormViewModel;
 using EAMS_ACore.HelperModels;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
+using EAMS_ACore.Models.ElectionType;
 using EAMS_ACore.Models.Polling_Personal_Randomisation_Models;
 using EAMS_ACore.Models.Polling_Personal_Randomization_Models;
 using EAMS_ACore.Models.PollingStationFormModels;
@@ -268,6 +269,12 @@ namespace EAMS_ACore.IRepository
         #region KYC Public Details
         Task<ServiceResponse> AddKYCDetails(Kyc kyc);
         Task<List<Kyc>> GetKYCDetails();
+        #endregion
+
+        #region ElectionType Master
+
+        Task<List<ElectionTypeMaster>> GetAllElectionTypes();
+
         #endregion
     }
 }

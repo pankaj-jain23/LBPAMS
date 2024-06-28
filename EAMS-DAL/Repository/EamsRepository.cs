@@ -6,6 +6,7 @@ using EAMS_ACore.IAuthRepository;
 using EAMS_ACore.IRepository;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
+using EAMS_ACore.Models.ElectionType;
 using EAMS_ACore.Models.Polling_Personal_Randomisation_Models;
 using EAMS_ACore.Models.Polling_Personal_Randomization_Models;
 using EAMS_ACore.Models.PollingStationFormModels;
@@ -15302,6 +15303,25 @@ namespace EAMS_DAL.Repository
         {
             return await _context.Kyc.ToListAsync();
         }
+        #endregion
+
+        #region Election Type Master
+        public async Task<List<ElectionTypeMaster>> GetAllElectionTypes()
+        {
+
+            var elecTypeData = await _context.ElectionTypeMaster.OrderBy(d => d.ElectionTypeMasterId)
+    .Select(d => new ElectionTypeMaster
+    {
+        ElectionTypeMasterId = d.ElectionTypeMasterId,
+        ElectionType = d.ElectionType,
+        ElectionStatus = d.ElectionStatus
+        
+    })
+    .ToListAsync();
+
+            return elecTypeData;
+        }
+
         #endregion
     }
 }

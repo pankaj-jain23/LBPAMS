@@ -3828,5 +3828,32 @@ namespace EAMS.Controllers
 
         #endregion
 
+        #region Election Type Master
+        [HttpGet]
+        [Route("GetElectionType")]
+        [Authorize]
+        public async Task<IActionResult> GetAllElectionTypes()
+        {
+                var elecTypeList = await _EAMSService.GetAllElectionTypes();  // Corrected to await the asynchronous method
+                if (elecTypeList != null)
+                {
+                    var data = new
+                    {
+                        count = elecTypeList.Count,
+                        data = elecTypeList
+                    };
+                    return Ok(data);
+                }
+                else
+                {
+                    return NotFound("Data Not Found");
+                }
+           
+
+
+        }
+
+        #endregion
+
     }
 }
