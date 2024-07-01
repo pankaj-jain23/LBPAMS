@@ -10,8 +10,7 @@ namespace EAMS.ViewModels
         [Required(ErrorMessage = "State Code is required")]
         public string StateCode { get; set; }         
                 
-        [Required(ErrorMessage = "ElectionTypeId is required")]
-        public int ElectionTypeId { get; set; }
+        
 
         [Required(ErrorMessage = "Sttaus is required")]
         public bool IsStatus { get; set; }

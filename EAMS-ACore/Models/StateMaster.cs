@@ -11,7 +11,7 @@ namespace EAMS_ACore
         public string StateName { get; set; }
 
         public string StateCode { get; set; }
-        public int ElectionTypeId { get; set; }
+       
 
         public DateTime? StateCreatedAt { get; set; }
 

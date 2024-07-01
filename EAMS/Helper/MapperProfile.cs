@@ -138,7 +138,7 @@ namespace EAMS.Helper
                 .ForMember(dest => dest.StateCode, opt => opt.MapFrom(src => src.StateCode))
                 .ForMember(dest => dest.StateStatus, opt => opt.MapFrom(src => src.IsStatus))
                 .ForMember(dest => dest.IsGenderCapturedinVoterTurnOut, opt => opt.MapFrom(src => src.IsGenderCapturedinVoterTurnOut))
-                .ForMember(dest => dest.ElectionTypeId, opt => opt.MapFrom(src => src.ElectionTypeId))
+               
                 .ReverseMap();
 
             #endregion
@@ -147,7 +147,7 @@ namespace EAMS.Helper
             CreateMap<AddStateMasterViewModel, StateMaster>()
                 .ForMember(dest => dest.StateName, opt => opt.MapFrom(src => src.StateName))
                 .ForMember(dest => dest.StateCode, opt => opt.MapFrom(src => src.StateCode))
-                .ForMember(dest => dest.ElectionTypeId, opt => opt.MapFrom(src => src.ElectionTypeId))
+                 
                 .ForMember(dest => dest.StateStatus, opt => opt.MapFrom(src => src.IsStatus))
                 .ForMember(dest => dest.IsGenderCapturedinVoterTurnOut, opt => opt.MapFrom(src => src.IsGenderCapturedinVoterTurnOut))
 

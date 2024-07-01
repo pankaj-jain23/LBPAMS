@@ -617,7 +617,7 @@ namespace EAMS_DAL.Repository
                 StateName = d.StateName,
                 SecondLanguage = d.SecondLanguage,
                 StateMasterId = d.StateMasterId,
-                ElectionTypeId = d.ElectionTypeId,
+               
                 StateStatus = d.StateStatus
             }).OrderBy(d=>d.StateMasterId)
                 .ToListAsync();
@@ -737,7 +737,7 @@ namespace EAMS_DAL.Repository
                     stateMasterRecord.StateStatus = stateMaster.StateStatus;
                     stateMasterRecord.StateUpdatedAt = BharatDateTime();
                     stateMasterRecord.IsGenderCapturedinVoterTurnOut = stateMaster.IsGenderCapturedinVoterTurnOut;
-                    stateMasterRecord.ElectionTypeId = stateMaster.ElectionTypeId;
+                    
                     _context.StateMaster.Update(stateMasterRecord);
                     _context.SaveChanges();
 
@@ -771,7 +771,7 @@ namespace EAMS_DAL.Repository
             {
 
                 var stateExist = _context.StateMaster
-    .Where(p => (p.StateCode == stateMaster.StateCode || p.StateName == stateMaster.StateName) && p.ElectionTypeId == stateMaster.ElectionTypeId).FirstOrDefault();
+    .Where(p => (p.StateCode == stateMaster.StateCode || p.StateName == stateMaster.StateName)  ).FirstOrDefault();
 
 
                 if (stateExist == null)
@@ -926,12 +926,12 @@ namespace EAMS_DAL.Repository
         {
             try
             {
-                var isExist = _context.DistrictMaster.Where(p => (p.DistrictName == districtMaster.DistrictName && p.StateMasterId == districtMaster.StateMasterId) && p.ElectionTypeId == districtMaster.ElectionTypeId).FirstOrDefault();
+                var isExist = _context.DistrictMaster.Where(p => (p.DistrictName == districtMaster.DistrictName && p.StateMasterId == districtMaster.StateMasterId)  ).FirstOrDefault();
                 var isStateActive = _context.StateMaster.Where(p => p.StateMasterId == districtMaster.StateMasterId).FirstOrDefault();
                 if (isStateActive.StateStatus)
                     if (isExist == null)
                     {
-                        var isExistCode = _context.DistrictMaster.Where(p => p.DistrictCode == districtMaster.DistrictCode && p.StateMasterId == districtMaster.StateMasterId && p.ElectionTypeId == districtMaster.ElectionTypeId).FirstOrDefault();
+                        var isExistCode = _context.DistrictMaster.Where(p => p.DistrictCode == districtMaster.DistrictCode && p.StateMasterId == districtMaster.StateMasterId  ).FirstOrDefault();
                         if (isExistCode == null)
                         {
                             districtMaster.DistrictCreatedAt = BharatDateTime(); ;

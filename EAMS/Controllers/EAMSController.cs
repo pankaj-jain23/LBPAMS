@@ -155,7 +155,7 @@ namespace EAMS.Controllers
                         StateName = stateViewModel.StateName,
                         StateStatus = stateViewModel.IsStatus,
                         IsGenderCapturedinVoterTurnOut = stateViewModel.IsGenderCapturedinVoterTurnOut,
-                        ElectionTypeId = stateViewModel.ElectionTypeId
+                       
                     };
                     var state = await _EAMSService.UpdateStateById(stateMaster);
                     switch (state.Status)
@@ -189,7 +189,7 @@ namespace EAMS.Controllers
 
         [HttpPost]
         [Route("AddState")]
-        [Authorize]
+      //  [Authorize]
         public async Task<IActionResult> AddState(AddStateMasterViewModel addStateMasterViewModel)
         {
             if (ModelState.IsValid)
@@ -326,16 +326,8 @@ namespace EAMS.Controllers
             if (ModelState.IsValid)
             {
 
-                var mappedData = _mapper.Map<AddDistrictMasterViewModel, DistrictMaster>(addDistrictViewModel);
-                var electionType = User.Claims.FirstOrDefault(c => c.Type == "ElectionType").Value;
-                if (electionType == "LS")
-                {
-                    mappedData.ElectionTypeId = 1;
-                }
-                else if (electionType == "VS")
-                {
-                    mappedData.ElectionTypeId = 2;
-                }
+                var mappedData = _mapper.Map<AddDistrictMasterViewModel, DistrictMaster>(addDistrictViewModel);              
+               
                 var result = await _EAMSService.AddDistrict(mappedData);
                 switch (result.Status)
                 {
