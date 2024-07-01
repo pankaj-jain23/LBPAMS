@@ -9,6 +9,6 @@
 
         public bool IsStatus { get; set; }
         public bool IsGenderCapturedinVoterTurnOut { get; set; }
-        public int ElectionTypeId { get; set; }
+     
     }
 }

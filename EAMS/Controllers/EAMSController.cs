@@ -140,14 +140,7 @@ namespace EAMS.Controllers
                 if (ModelState.IsValid)
                 {
                     var electionType = User.Claims.FirstOrDefault(c => c.Type == "ElectionType").Value;
-                    if (electionType == "LS")
-                    {
-                        stateViewModel.ElectionTypeId = 1;
-                    }
-                    else if (electionType == "VS")
-                    {
-                        stateViewModel.ElectionTypeId = 2;
-                    }
+                   
                     StateMaster stateMaster = new StateMaster()
                     {
                         StateMasterId = stateViewModel.StateId,
