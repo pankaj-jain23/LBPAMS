@@ -9,6 +9,7 @@ using EAMS_ACore.HelperModels;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
+using EAMS_ACore.Models.ElectionType;
 using EAMS_ACore.Models.PollingStationFormModels;
 using EAMS_ACore.Models.QueueModel;
 using Microsoft.AspNetCore.Authorization;
@@ -485,7 +486,8 @@ namespace EAMS.Controllers
                     PcMasterId = assemblyRecord.ParliamentConstituencyMaster.PCMasterId,
                     PcName = assemblyRecord.ParliamentConstituencyMaster.PcName,
                     IsStatus = assemblyRecord.AssemblyStatus,
-                    totalBooths = assemblyRecord.TotalBooths
+                    totalBooths = assemblyRecord.TotalBooths,
+                    ElectionTypeMasterId=assemblyRecord.ElectionTypeMasterId
 
                 };
 

@@ -39,7 +39,10 @@
         public string? RecentOTP { get; set; }
         public DateTime? OTPExpireTime { get; set; }
         public int? OTPAttempts { get; set; }
+        public int ElectionTypeMasterId { get; set; }
+
         
+
     }
 }
 

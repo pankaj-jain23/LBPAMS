@@ -164,6 +164,7 @@ namespace EAMS.Helper
                  .ForMember(dest => dest.SecondLanguage, opt => opt.MapFrom(src => src.SecondLanguage))
                .ForMember(dest => dest.DistrictCode, opt => opt.MapFrom(src => src.DistrictCode))
                .ForMember(dest => dest.IsStatus, opt => opt.MapFrom(src => src.DistrictStatus))
+               
                .ReverseMap();
 
             #endregion
@@ -177,6 +178,7 @@ namespace EAMS.Helper
     .ForMember(dest => dest.AssemblyName, opt => opt.MapFrom(src => src.AssemblyName))
     .ForMember(dest => dest.AssemblyCode, opt => opt.MapFrom(src => src.AssemblyCode))
     .ForMember(dest => dest.PCMasterId, opt => opt.MapFrom(src => src.PCMasterId))
+    .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
    
     .ForMember(dest => dest.AssemblyType, opt => opt.MapFrom(src => src.AssemblyType))
     .ForMember(dest => dest.AssemblyStatus, opt => opt.MapFrom(src => src.IsStatus))

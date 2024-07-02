@@ -20,6 +20,9 @@ namespace EAMS.ViewModels
         [Required(ErrorMessage = "Assembly Type is required")]
         public string? AssemblyType { get; set; }
 
+        [Required(ErrorMessage = "Election Type is required")]
+        public int ElectionTypeMasterId { get; set; }
+
         [Required(ErrorMessage = "Status is required")]
         public bool IsStatus { get; set; }
         public int TotalBooths { get; set; }
