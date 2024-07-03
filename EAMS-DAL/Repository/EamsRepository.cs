@@ -1219,7 +1219,7 @@ namespace EAMS_DAL.Repository
         {
             try
             {
-                var assemblieExist = await _context.AssemblyMaster.Where(p => p.AssemblyName == assemblyMaster.AssemblyName || p.AssemblyCode == assemblyMaster.AssemblyCode && p.StateMasterId == assemblyMaster.StateMasterId && p.ElectionTypeMasterId == assemblyMaster.ElectionTypeMasterId).FirstOrDefaultAsync();
+                var assemblieExist = await _context.AssemblyMaster.Where(p => p.AssemblyCode == assemblyMaster.AssemblyCode && p.StateMasterId == assemblyMaster.StateMasterId && p.ElectionTypeMasterId == assemblyMaster.ElectionTypeMasterId).FirstOrDefaultAsync();
                
                 if (assemblieExist == null)
                 {
@@ -1235,7 +1235,7 @@ namespace EAMS_DAL.Repository
                 }
                 else
                 {
-                    return new Response { Status = RequestStatusEnum.BadRequest, Message = assemblyMaster.AssemblyName + "Same Assembly Already Exists " };
+                    return new Response { Status = RequestStatusEnum.BadRequest, Message = assemblyMaster.AssemblyName + "Same Assembly Code Already Exists in the selected Election Type" };
 
                 }
 
