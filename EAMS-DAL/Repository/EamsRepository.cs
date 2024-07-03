@@ -1008,6 +1008,41 @@ namespace EAMS_DAL.Repository
             }
         }
 
+        public async Task<List<CombinedMaster>> GetAssembliesByElectionType(string stateId, string districtId,string electionTypeMasterId)
+        {
+            var isStateActive = _context.StateMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateId)).FirstOrDefault();
+            var isDistrictActive = _context.DistrictMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateId) && d.DistrictMasterId == Convert.ToInt32(districtId)).FirstOrDefault();
+             if (isStateActive.StateStatus && isDistrictActive.DistrictStatus)
+            {
+                var innerJoin = from asemb in _context.AssemblyMaster.Where(d => d.DistrictMasterId == Convert.ToInt32(districtId) && d.ElectionTypeMasterId == Convert.ToInt32(electionTypeMasterId)) // outer sequence
+                                join dist in _context.DistrictMaster // inner sequence 
+                                on asemb.DistrictMasterId equals dist.DistrictMasterId // key selector
+                                join state in _context.StateMaster // additional join for StateMaster
+                                on dist.StateMasterId equals state.StateMasterId // key selector for StateMaster
+                                where state.StateMasterId == Convert.ToInt32(stateId) // condition for StateMasterId equal to 21
+                                orderby asemb.AssemblyMasterId
+                                select new CombinedMaster
+                                { // result selector 
+                                    StateName = state.StateName,
+                                    DistrictId = dist.DistrictMasterId,
+                                    DistrictName = dist.DistrictName,
+                                    DistrictCode = dist.DistrictCode,
+                                    AssemblyId = asemb.AssemblyMasterId,
+                                    AssemblyName = asemb.AssemblyName,
+                                    SecondLanguage = asemb.SecondLanguage,
+                                    AssemblyCode = asemb.AssemblyCode,
+                                    IsStatus = asemb.AssemblyStatus,
+                                    ElectionTypeMasterId = asemb.ElectionTypeMasterId
+                                };
+
+                return await innerJoin.ToListAsync();
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         public async Task<Response> UpdateAssembliesById(AssemblyMaster assemblyMaster)
         {
             var assembliesMasterRecords = _context.AssemblyMaster.Where(d => d.AssemblyMasterId == assemblyMaster.AssemblyMasterId).FirstOrDefault();
@@ -1019,9 +1054,9 @@ namespace EAMS_DAL.Repository
                 if (isAssemblyCodeExist.Count == 0)
                 {
                     
-                    var isExistName = await _context.AssemblyMaster.Where(p => p.AssemblyName == assemblyMaster.AssemblyName && p.StateMasterId == assemblyMaster.StateMasterId && p.ElectionTypeMasterId==assemblyMaster.ElectionTypeMasterId && p.AssemblyMasterId != assemblyMaster.AssemblyMasterId).ToListAsync();
-                    if (isExistName.Count == 0)
-                    {
+                    //var isExistName = await _context.AssemblyMaster.Where(p => p.AssemblyName == assemblyMaster.AssemblyName && p.StateMasterId == assemblyMaster.StateMasterId && p.ElectionTypeMasterId==assemblyMaster.ElectionTypeMasterId && p.AssemblyMasterId != assemblyMaster.AssemblyMasterId).ToListAsync();
+                    //if (isExistName.Count == 0)
+                    //{
                         var assembliesMasterRecord = _context.AssemblyMaster.Where(d => d.AssemblyMasterId == assemblyMaster.AssemblyMasterId).FirstOrDefault();
 
                         if (assembliesMasterRecord != null)
@@ -1065,10 +1100,7 @@ namespace EAMS_DAL.Repository
 
                                 }
                                 else
-                                {
-                                    
-                                    
-                                        assembliesMasterRecord.AssemblyName = assemblyMaster.AssemblyName;
+                                {   assembliesMasterRecord.AssemblyName = assemblyMaster.AssemblyName;
                                     assembliesMasterRecord.AssemblyCode = assemblyMaster.AssemblyCode;
                                     assembliesMasterRecord.AssemblyType = assemblyMaster.AssemblyType;
                                     assembliesMasterRecord.AssemblyStatus = assemblyMaster.AssemblyStatus;
@@ -1100,11 +1132,11 @@ namespace EAMS_DAL.Repository
 
                         }
 
-                    }
-                    else
-                    {
-                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Assembly with Same Name Already Exists in the State: " + string.Join(", ", isExistName.Select(p => $"{p.AssemblyName} ({p.AssemblyCode})")) };
-                    }
+                    //}
+                    //else
+                    //{
+                    //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Assembly with Same Name Already Exists in the State: " + string.Join(", ", isExistName.Select(p => $"{p.AssemblyName} ({p.AssemblyCode})")) };
+                    //}
 
 
                 }
@@ -2399,7 +2431,7 @@ namespace EAMS_DAL.Repository
             }
 
         }
-
+      
         public async Task<Response> BoothMapping(List<BoothMaster> boothMasters)
         {
             string anyBoothLocationFalse = "";
@@ -2409,9 +2441,7 @@ namespace EAMS_DAL.Repository
                 var existingBooth = _context.BoothMaster.Where(d =>
                         d.StateMasterId == boothMaster.StateMasterId &&
                         d.DistrictMasterId == boothMaster.DistrictMasterId &&
-                        d.AssemblyMasterId == boothMaster.AssemblyMasterId && d.BoothMasterId == boothMaster.BoothMasterId).FirstOrDefault();
-
-
+                        d.AssemblyMasterId == boothMaster.AssemblyMasterId && d.BoothMasterId == boothMaster.BoothMasterId && d.ElectionTypeMasterId== boothMaster.ElectionTypeMasterId).FirstOrDefault();
                 if (existingBooth != null)
                 {
                     //if (existingBooth.LocationMasterId > 0)

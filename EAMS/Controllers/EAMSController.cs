@@ -373,7 +373,7 @@ namespace EAMS.Controllers
 
         #endregion
 
-        #region Assembliy Master
+        #region Assembliy Master 
         [HttpGet]
         [Route("GetAssembliesListById")]
         //[Authorize]
@@ -382,6 +382,36 @@ namespace EAMS.Controllers
             if (stateId != null && districtId != null)
             {
                 var assemblyList = await _EAMSService.GetAssemblies(stateId, districtId);  // Corrected to await the asynchronous method
+                if (assemblyList != null)
+                {
+                    var data = new
+                    {
+                        count = assemblyList.Count,
+                        data = assemblyList
+                    };
+                    return Ok(data);
+                }
+                else
+                {
+                    return NotFound("Data Not Found");
+                }
+            }
+            else
+            {
+                return BadRequest("State and District Master Id's cannot be null");
+            }
+
+
+        }
+
+        [HttpGet]
+        [Route("GetAssembliesListByElectitionTypeId")]
+        //[Authorize]
+        public async Task<IActionResult> AssembliesListByElectitionTypeId(string stateId, string districtId, string electionTypeId)
+        {
+            if (stateId != null && districtId != null && electionTypeId != null)
+            {
+                var assemblyList = await _EAMSService.GetAssembliesByElectionType(stateId, districtId, electionTypeId);  // Corrected to await the asynchronous method
                 if (assemblyList != null)
                 {
                     var data = new

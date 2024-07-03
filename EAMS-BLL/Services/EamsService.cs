@@ -124,7 +124,11 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetAssemblies(stateId, districtId);
         }
-
+        public async Task<List<CombinedMaster>> GetAssembliesByElectionType(string stateId, string districtId,string electionTypeId)
+        {
+            return await _eamsRepository.GetAssembliesByElectionType(stateId,districtId,electionTypeId);
+        }
+        
         public async Task<Response> UpdateAssembliesById(AssemblyMaster assemblyMaster)
         {
             return await _eamsRepository.UpdateAssembliesById(assemblyMaster);

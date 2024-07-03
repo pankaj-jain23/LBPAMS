@@ -39,7 +39,8 @@ namespace EAMS_ACore.Interfaces
         #endregion
 
         #region Assembly Master
-        Task<List<CombinedMaster>> GetAssemblies(string stateId, string assemblyId);
+        Task<List<CombinedMaster>> GetAssemblies(string stateId, string districtMasterId);
+        Task<List<CombinedMaster>> GetAssembliesByElectionType(string stateId, string districtMasterId, string electionTypeId);
         Task<Response> UpdateAssembliesById(AssemblyMaster assemblyMaster);
         Task<Response> UpdatePC(ParliamentConstituencyMaster pcMaster);
         Task<Response> AddAssemblies(AssemblyMaster assemblyMaster);
