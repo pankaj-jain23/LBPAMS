@@ -971,9 +971,9 @@ namespace EAMS_DAL.Repository
             return districtRecord;
         }
         #endregion
-
+        
         #region Assembly Master
-        public async Task<List<CombinedMaster>> GetAssemblies(string stateId, string districtId)
+        public async Task<List<CombinedMaster>> GetAssemblies(string stateId, string districtId,string electionTypeId)
         {
             var isStateActive = _context.StateMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateId)).FirstOrDefault();
             var isDistrictActive = _context.DistrictMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateId) && d.DistrictMasterId == Convert.ToInt32(districtId)).FirstOrDefault();
@@ -986,7 +986,7 @@ namespace EAMS_DAL.Repository
                                 on dist.StateMasterId equals state.StateMasterId // key selector for StateMaster
                                 join elec in _context.ElectionTypeMaster
                                 on asemb.ElectionTypeMasterId equals elec.ElectionTypeMasterId
-                                where state.StateMasterId == Convert.ToInt32(stateId) // condition for StateMasterId equal to 21
+                                where state.StateMasterId == Convert.ToInt32(stateId) && asemb.ElectionTypeMasterId== Convert.ToInt32(electionTypeId) // condition for StateMasterId equal to 21
                                 orderby asemb.AssemblyMasterId
                                 select new CombinedMaster
                                 { // result selector 

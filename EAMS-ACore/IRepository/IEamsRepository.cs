@@ -39,7 +39,7 @@ namespace EAMS_ACore.IRepository
         #endregion
 
         #region Assembly Master
-        Task<List<CombinedMaster>> GetAssemblies(string stateId, string districtId);
+        Task<List<CombinedMaster>> GetAssemblies(string stateId, string districtId, string electionTypeId);
         Task<List<CombinedMaster>> GetAssembliesByElectionType(string stateId, string districtId,string electionTypeId);
         Task<Response> UpdateAssembliesById(AssemblyMaster assemblyMaster);
         Task<Response> UpdatePC(ParliamentConstituencyMaster pcMaster);

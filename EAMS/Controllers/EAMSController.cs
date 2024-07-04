@@ -377,11 +377,11 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetAssembliesListById")]
         //[Authorize]
-        public async Task<IActionResult> AssembliesListById(string stateId, string districtId)
+        public async Task<IActionResult> AssembliesListById(string stateId, string districtId,string electionTypeId)
         {
             if (stateId != null && districtId != null)
             {
-                var assemblyList = await _EAMSService.GetAssemblies(stateId, districtId);  // Corrected to await the asynchronous method
+                var assemblyList = await _EAMSService.GetAssemblies(stateId, districtId,electionTypeId);  // Corrected to await the asynchronous method
                 if (assemblyList != null)
                 {
                     var data = new

@@ -120,9 +120,9 @@ namespace EAMS_BLL.Services
         #endregion   
 
         #region Assembly  Master
-        public async Task<List<CombinedMaster>> GetAssemblies(string stateId, string districtId)
+        public async Task<List<CombinedMaster>> GetAssemblies(string stateId, string districtId,string electionTypeId)
         {
-            return await _eamsRepository.GetAssemblies(stateId, districtId);
+            return await _eamsRepository.GetAssemblies(stateId, districtId,electionTypeId);
         }
         public async Task<List<CombinedMaster>> GetAssembliesByElectionType(string stateId, string districtId,string electionTypeId)
         {
