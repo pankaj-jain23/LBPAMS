@@ -517,7 +517,8 @@ namespace EAMS.Controllers
                     PcName = assemblyRecord.ParliamentConstituencyMaster.PcName,
                     IsStatus = assemblyRecord.AssemblyStatus,
                     totalBooths = assemblyRecord.TotalBooths,
-                    ElectionTypeMasterId=assemblyRecord.ElectionTypeMasterId
+                    ElectionTypeMasterId=assemblyRecord.ElectionTypeMasterId,
+                    ElectionTypeName=assemblyRecord.ElectionTypeMaster.ElectionType
 
                 };
 
@@ -1094,7 +1095,9 @@ namespace EAMS.Controllers
                     Male = boothRecord.Male,
                     Female = boothRecord.Female,
                     Transgender = boothRecord.Transgender,
-                    LocationMasterId = boothRecord.LocationMasterId
+                    LocationMasterId = boothRecord.LocationMasterId,
+                    ElectionTypeMasterId = boothRecord.ElectionTypeMaster.ElectionTypeMasterId,
+                    ElectionTypeName = boothRecord.ElectionTypeMaster.ElectionType
 
                 };
 

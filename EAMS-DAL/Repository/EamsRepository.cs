@@ -984,6 +984,8 @@ namespace EAMS_DAL.Repository
                                 on asemb.DistrictMasterId equals dist.DistrictMasterId // key selector
                                 join state in _context.StateMaster // additional join for StateMaster
                                 on dist.StateMasterId equals state.StateMasterId // key selector for StateMaster
+                                join elec in _context.ElectionTypeMaster
+                                on asemb.ElectionTypeMasterId equals elec.ElectionTypeMasterId
                                 where state.StateMasterId == Convert.ToInt32(stateId) // condition for StateMasterId equal to 21
                                 orderby asemb.AssemblyMasterId
                                 select new CombinedMaster
@@ -997,7 +999,8 @@ namespace EAMS_DAL.Repository
                                     SecondLanguage = asemb.SecondLanguage,
                                     AssemblyCode = asemb.AssemblyCode,
                                     IsStatus = asemb.AssemblyStatus,
-                                    ElectionTypeMasterId=asemb.ElectionTypeMasterId
+                                    ElectionTypeMasterId=asemb.ElectionTypeMasterId,
+                                    ElectionTypeName=elec.ElectionType
                                 };
 
                 return await innerJoin.ToListAsync();
@@ -1310,7 +1313,7 @@ namespace EAMS_DAL.Repository
         }
         public async Task<AssemblyMaster> GetAssemblyById(string assemblyMasterId)
         {
-            var assemblyRecord = await _context.AssemblyMaster.Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.ParliamentConstituencyMaster).Where(d => d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId)).FirstOrDefaultAsync();
+            var assemblyRecord = await _context.AssemblyMaster.Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.ParliamentConstituencyMaster).Include(d => d.ElectionTypeMaster).Where(d => d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId)).FirstOrDefaultAsync();
             return assemblyRecord;
         }
 
@@ -1792,6 +1795,8 @@ namespace EAMS_DAL.Repository
                                 on asem.DistrictMasterId equals dist.DistrictMasterId
                                 join state in _context.StateMaster
                                  on dist.StateMasterId equals state.StateMasterId
+                                 join elec in _context.ElectionTypeMaster
+                                 on bt.ElectionTypeMasterId equals elec.ElectionTypeMasterId
 
                                 select new CombinedMaster
                                 {
@@ -1809,7 +1814,9 @@ namespace EAMS_DAL.Repository
                                     BoothCode_No = bt.BoothCode_No,
                                     IsAssigned = bt.IsAssigned,
                                     IsStatus = bt.BoothStatus,
-                                    LocationMasterId = bt.LocationMasterId
+                                    LocationMasterId = bt.LocationMasterId,
+                                    ElectionTypeMasterId=bt.ElectionTypeMasterId,
+                                    ElectionTypeName=elec.ElectionType
 
 
                                 };
@@ -2576,7 +2583,7 @@ namespace EAMS_DAL.Repository
         }
         public async Task<BoothMaster> GetBoothById(string boothMasterId)
         {
-            var boothRecord = await _context.BoothMaster.Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Where(d => d.BoothMasterId == Convert.ToInt32(boothMasterId)).FirstOrDefaultAsync();
+            var boothRecord = await _context.BoothMaster.Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d=>d.ElectionTypeMaster).Where(d => d.BoothMasterId == Convert.ToInt32(boothMasterId)).FirstOrDefaultAsync();
 
             return boothRecord;
         }
