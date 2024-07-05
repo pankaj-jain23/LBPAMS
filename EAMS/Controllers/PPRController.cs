@@ -38,11 +38,7 @@ namespace EAMS.Controllers
 
             var isRandomizationAdded = await _eamsService.GetCurrentRoundByRandomizationById(pprViewModel.StateMasterId, pprViewModel.DistrictMasterId, pprViewModel.RandomizationTaskDetailMasterId);
 
-            if (isRandomizationAdded != 0 && isRandomizationAdded != null)
-            {
-                return BadRequest("Randomization already started, please proceed to update randomization.");
-            }
-
+            
             var roundCount = await _eamsService.GetRoundCountByRandomizationTaskId(pprViewModel.RandomizationTaskDetailMasterId, pprViewModel.StateMasterId);
 
             if (pprViewModel.CurrentRound > roundCount)

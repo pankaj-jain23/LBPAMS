@@ -17,6 +17,8 @@ namespace EAMS_ACore.Models.ElectionType
         public string ElectionType { get; set; }
         public bool ElectionStatus { get; set; }
 
+        public string? Hierarchy1 {  get; set; }
+        public string? Hierarchy2 {  get; set; }
         
 
     }
