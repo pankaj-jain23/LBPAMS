@@ -259,6 +259,7 @@ namespace EAMS.Helper
                  .ForMember(dest => dest.AssignedBy, opt => opt.MapFrom(src => src.AssignedBy))
                 .ForMember(dest => dest.AssignedTo, opt => opt.MapFrom(src => src.AssignedTo))
                 .ForMember(dest => dest.IsAssigned, opt => opt.MapFrom(src => src.IsAssigned))
+                .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
 
 
              .ReverseMap();
@@ -319,6 +320,7 @@ namespace EAMS.Helper
               .ForMember(dest => dest.SoDesignation, opt => opt.MapFrom(src => src.SoDesignation))
               .ForMember(dest => dest.SoAssemblyCode, opt => opt.MapFrom(src => src.SoAssemblyCode))
               .ForMember(dest => dest.SoStatus, opt => opt.MapFrom(src => src.IsStatus))
+              .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
               .ReverseMap();
             #endregion
 
@@ -331,6 +333,7 @@ namespace EAMS.Helper
               .ForMember(dest => dest.SoDesignation, opt => opt.MapFrom(src => src.SoDesignation))
               .ForMember(dest => dest.SoAssemblyCode, opt => opt.MapFrom(src => src.SoAssemblyCode))
               .ForMember(dest => dest.SoStatus, opt => opt.MapFrom(src => src.IsStatus))
+              .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
               .ReverseMap();
             #endregion
 
@@ -344,6 +347,7 @@ namespace EAMS.Helper
                 .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
                 .ForMember(dest => dest.IsAssigned, opt => opt.MapFrom(src => src.IsAssigned))
                 .ForMember(dest => dest.BoothAuxy, opt => opt.MapFrom(src => src.BoothAuxy))
+                .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
 
 
              .ReverseMap();

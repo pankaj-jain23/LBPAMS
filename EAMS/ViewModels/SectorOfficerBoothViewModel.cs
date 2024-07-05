@@ -12,6 +12,7 @@
         public string BoothCode_No { get; set; }
         public string? BoothAuxy { get; set; }
         public bool IsAssigned { get; set; }
+        public int ElectionTypeMasterId { get; set; }
 
     }
 }

@@ -20,5 +20,6 @@ namespace EAMS.ViewModels
         public string SoMobile { get; set; }
 
         public bool? IsStatus { get; set; }
+        public int ElectionTypeMasterId { get; set; }
     }
 }

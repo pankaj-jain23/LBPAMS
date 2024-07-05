@@ -1581,8 +1581,16 @@ namespace EAMS_DAL.Repository
             {
                 var existSo = _context.SectorOfficerMaster.Where(so => so.SoMobile == sectorOfficerMaster.SoMobile).FirstOrDefault();
                 var assembly = _context.AssemblyMaster.Where(d => d.AssemblyCode == existSo.SoAssemblyCode && d.StateMasterId == existSo.StateMasterId).FirstOrDefault();
+                if (assembly != null)
+                {
+                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "SO User WIth given Mobile Number already exist" };
 
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "SO User WIth given Mobile Number : " + sectorOfficerMaster.SoMobile + " " + "Already Exists with following Details " + " " + existSo.SoName + " , " + " AssemblyCode - " + existSo.SoAssemblyCode + " " + "ARO Assembly Name - " + " " + assembly.AssemblyName };
+                }
+                else
+                {
+                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "SO User WIth given Mobile Number : " + sectorOfficerMaster.SoMobile + " " + "Already Exists with following Details " + " " + existSo.SoName + " , " + " AssemblyCode - " + existSo.SoAssemblyCode + " " + "Assembly Name - " + " " + assembly.AssemblyName };
+
+                }
 
 
             }
@@ -1592,66 +1600,105 @@ namespace EAMS_DAL.Repository
         {
             var existingSectorOfficer = await _context.SectorOfficerMaster
                                                        .FirstOrDefaultAsync(so => so.SOMasterId == updatedSectorOfficer.SOMasterId);
-
+            
             if (existingSectorOfficer == null)
             {
 
                 return new Response { Status = RequestStatusEnum.BadRequest, Message = "SO User" + updatedSectorOfficer.SoName + " " + "Not found" };
             }
 
-
+            
             if (updatedSectorOfficer.SoStatus == true)
             {
                 //check if true (then state,district,assembly acive
-                var assemblyActive = _context.AssemblyMaster.Where(p => p.AssemblyCode == existingSectorOfficer.SoAssemblyCode && p.StateMasterId == existingSectorOfficer.StateMasterId).Select(p => p.AssemblyStatus).FirstOrDefault();
+                var assemblyActive = _context.AssemblyMaster.Where(p => p.AssemblyCode == existingSectorOfficer.SoAssemblyCode && p.StateMasterId == existingSectorOfficer.StateMasterId && p.ElectionTypeMasterId==existingSectorOfficer.ElectionTypeMasterId).Select(p => p.AssemblyStatus).FirstOrDefault();
                 if (assemblyActive == true)
-                { // Check if the mobile number is unique among other sector officers (excluding the current one being updated)
+                { 
+                     // Check if the mobile number is unique among other sector officers (excluding the current one being updated)
                     var isMobileUnique = await _context.SectorOfficerMaster.AnyAsync(so => so.SoMobile == updatedSectorOfficer.SoMobile);
                     if (string.Equals(updatedSectorOfficer.SoMobile, existingSectorOfficer.SoMobile, StringComparison.OrdinalIgnoreCase))
                     {
+                        var isAssemblyRecord = _context.AssemblyMaster.Where(d => d.AssemblyCode == existingSectorOfficer.SoAssemblyCode && d.StateMasterId == existingSectorOfficer.StateMasterId && d.ElectionTypeMasterId == existingSectorOfficer.ElectionTypeMasterId).FirstOrDefault();
+                        if (isAssemblyRecord != null && isAssemblyRecord.AssemblyStatus == true)
+                        {//check election type should be same of assembly
+                            if (isAssemblyRecord.ElectionTypeMasterId == updatedSectorOfficer.ElectionTypeMasterId)
+                            {
+
+                                if (isAssemblyRecord.StateMasterId == existingSectorOfficer.StateMasterId && isAssemblyRecord.AssemblyCode == existingSectorOfficer.SoAssemblyCode && isAssemblyRecord.ElectionTypeMasterId == existingSectorOfficer.ElectionTypeMasterId)
+                                {
+                                    existingSectorOfficer.SoName = updatedSectorOfficer.SoName;
+                                    existingSectorOfficer.SoMobile = updatedSectorOfficer.SoMobile;
+                                    existingSectorOfficer.SoOfficeName = updatedSectorOfficer.SoOfficeName;
+                                    existingSectorOfficer.SoAssemblyCode = updatedSectorOfficer.SoAssemblyCode;
+                                    existingSectorOfficer.SoDesignation = updatedSectorOfficer.SoDesignation;
+                                    existingSectorOfficer.SoStatus = updatedSectorOfficer.SoStatus;
+                                    existingSectorOfficer.ElectionTypeMasterId = updatedSectorOfficer.ElectionTypeMasterId;
+                                    existingSectorOfficer.SOUpdatedAt = BharatDateTime();
+
+                                    _context.SectorOfficerMaster.Update(existingSectorOfficer);
+                                    await _context.SaveChangesAsync();
 
 
+                                    return new Response { Status = RequestStatusEnum.OK, Message = "SO User " + existingSectorOfficer.SoName + " " + "updated successfully" };
 
-                        existingSectorOfficer.SoName = updatedSectorOfficer.SoName;
-                        existingSectorOfficer.SoMobile = updatedSectorOfficer.SoMobile;
-                        existingSectorOfficer.SoOfficeName = updatedSectorOfficer.SoOfficeName;
-                        existingSectorOfficer.SoAssemblyCode = updatedSectorOfficer.SoAssemblyCode;
-                        existingSectorOfficer.SoDesignation = updatedSectorOfficer.SoDesignation;
-                        existingSectorOfficer.SoStatus = updatedSectorOfficer.SoStatus;
-                        existingSectorOfficer.SOUpdatedAt = BharatDateTime();
+                                }
+                                else
+                                {
+                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please check State, AssemblyCode & Election Type are not same" };
 
-                        _context.SectorOfficerMaster.Update(existingSectorOfficer);
-                        await _context.SaveChangesAsync();
+                                }
+                            }
+                            else
+                            {
+                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Election Type invalid for the selected Assembly."};
 
-
-                        return new Response { Status = RequestStatusEnum.OK, Message = "SO User " + existingSectorOfficer.SoName + " " + "updated successfully" };
-                    }
-                    else
-                    {
-                        if (isMobileUnique == false)
-                        {
-                            existingSectorOfficer.SoName = updatedSectorOfficer.SoName;
-                            existingSectorOfficer.SoMobile = updatedSectorOfficer.SoMobile;
-                            existingSectorOfficer.SoOfficeName = updatedSectorOfficer.SoOfficeName;
-                            existingSectorOfficer.SoAssemblyCode = updatedSectorOfficer.SoAssemblyCode;
-                            existingSectorOfficer.SoDesignation = updatedSectorOfficer.SoDesignation;
-                            existingSectorOfficer.SoStatus = updatedSectorOfficer.SoStatus;
-                            existingSectorOfficer.SOUpdatedAt = BharatDateTime();
-
-                            _context.SectorOfficerMaster.Update(existingSectorOfficer);
-                            await _context.SaveChangesAsync();
-                            return new Response { Status = RequestStatusEnum.OK, Message = "SO User " + existingSectorOfficer.SoName + " " + "updated successfully" };
-
+                            }
                         }
                         else
                         {
-                            var existSo = _context.SectorOfficerMaster.Where(so => so.SoMobile == updatedSectorOfficer.SoMobile).FirstOrDefault();
-                            var assembly = _context.AssemblyMaster.Where(d => d.AssemblyCode == existSo.SoAssemblyCode).FirstOrDefault();
-
-                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "SO User WIth given Mobile Number : " + updatedSectorOfficer.SoMobile + " " + "Already Exists with following Details " + " " + existSo.SoName + " , " + " AssemblyCode - " + existSo.SoAssemblyCode + " " + "ARO Assembly Name - " + " " + assembly.AssemblyName };
+                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Assembly is not active !" };
 
                         }
 
+
+                    }
+                    else
+                    {
+                        var isAssemblyRecords = _context.AssemblyMaster.Where(d => d.AssemblyCode == existingSectorOfficer.SoAssemblyCode && d.StateMasterId == existingSectorOfficer.StateMasterId && d.ElectionTypeMasterId == existingSectorOfficer.ElectionTypeMasterId).FirstOrDefault();
+
+                        if (isAssemblyRecords.ElectionTypeMasterId == updatedSectorOfficer.ElectionTypeMasterId)
+                        {
+
+                            if (isMobileUnique == false)
+                            {
+                                existingSectorOfficer.SoName = updatedSectorOfficer.SoName;
+                                existingSectorOfficer.SoMobile = updatedSectorOfficer.SoMobile;
+                                existingSectorOfficer.SoOfficeName = updatedSectorOfficer.SoOfficeName;
+                                existingSectorOfficer.SoAssemblyCode = updatedSectorOfficer.SoAssemblyCode;
+                                existingSectorOfficer.SoDesignation = updatedSectorOfficer.SoDesignation;
+                                existingSectorOfficer.SoStatus = updatedSectorOfficer.SoStatus;
+                                existingSectorOfficer.ElectionTypeMasterId = updatedSectorOfficer.ElectionTypeMasterId;
+                                existingSectorOfficer.SOUpdatedAt = BharatDateTime();
+
+                                _context.SectorOfficerMaster.Update(existingSectorOfficer);
+                                await _context.SaveChangesAsync();
+                                return new Response { Status = RequestStatusEnum.OK, Message = "SO User " + existingSectorOfficer.SoName + " " + "updated successfully" };
+
+                            }
+                            else
+                            {
+                                var existSo = _context.SectorOfficerMaster.Where(so => so.SoMobile == updatedSectorOfficer.SoMobile).FirstOrDefault();
+                                var assembly = _context.AssemblyMaster.Where(d => d.AssemblyCode == existSo.SoAssemblyCode).FirstOrDefault();
+
+                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "SO User WIth given Mobile Number : " + updatedSectorOfficer.SoMobile + " " + "Already Exists with following Details " + " " + existSo.SoName + " , " + " AssemblyCode - " + existSo.SoAssemblyCode + " " + "Assembly Name - " + " " + assembly.AssemblyName };
+
+                            }
+                        }
+                        else
+                        {
+                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Election Type is invalid for the selected Assembly." };
+
+                        }
                     }
 
                 }
@@ -1675,27 +1722,38 @@ namespace EAMS_DAL.Repository
                     var isMobileUnique = await _context.SectorOfficerMaster.AnyAsync(so => so.SoMobile == updatedSectorOfficer.SoMobile);
                     if (string.Equals(updatedSectorOfficer.SoMobile, existingSectorOfficer.SoMobile, StringComparison.OrdinalIgnoreCase))
                     {
+                        var isAssemblyRecords = _context.AssemblyMaster.Where(d => d.AssemblyCode == updatedSectorOfficer.SoAssemblyCode && d.StateMasterId == updatedSectorOfficer.StateMasterId && d.ElectionTypeMasterId == updatedSectorOfficer.ElectionTypeMasterId).FirstOrDefault();
+
+                        if (isAssemblyRecords.ElectionTypeMasterId == updatedSectorOfficer.ElectionTypeMasterId)
+                        {
+
+                            existingSectorOfficer.SoName = updatedSectorOfficer.SoName;
+                            existingSectorOfficer.SoMobile = updatedSectorOfficer.SoMobile;
+                            existingSectorOfficer.SoOfficeName = updatedSectorOfficer.SoOfficeName;
+                            existingSectorOfficer.SoAssemblyCode = updatedSectorOfficer.SoAssemblyCode;
+                            existingSectorOfficer.SoDesignation = updatedSectorOfficer.SoDesignation;
+                            existingSectorOfficer.SoStatus = updatedSectorOfficer.SoStatus;
+                            existingSectorOfficer.ElectionTypeMasterId = updatedSectorOfficer.ElectionTypeMasterId;
+                            existingSectorOfficer.SOUpdatedAt = BharatDateTime();
+
+                            _context.SectorOfficerMaster.Update(existingSectorOfficer);
+                            await _context.SaveChangesAsync();
 
 
+                            return new Response { Status = RequestStatusEnum.OK, Message = "SO User " + existingSectorOfficer.SoName + " " + "updated successfully" };
+                        
+                        }
+                        else
+                        {
+                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Election Type is invalid for the selected Assembly." };
 
-                        existingSectorOfficer.SoName = updatedSectorOfficer.SoName;
-                        existingSectorOfficer.SoMobile = updatedSectorOfficer.SoMobile;
-                        existingSectorOfficer.SoOfficeName = updatedSectorOfficer.SoOfficeName;
-                        existingSectorOfficer.SoAssemblyCode = updatedSectorOfficer.SoAssemblyCode;
-                        existingSectorOfficer.SoDesignation = updatedSectorOfficer.SoDesignation;
-                        existingSectorOfficer.SoStatus = updatedSectorOfficer.SoStatus;
-                        existingSectorOfficer.SOUpdatedAt = BharatDateTime();
-
-                        _context.SectorOfficerMaster.Update(existingSectorOfficer);
-                        await _context.SaveChangesAsync();
-
-
-                        return new Response { Status = RequestStatusEnum.OK, Message = "SO User " + existingSectorOfficer.SoName + " " + "updated successfully" };
+                        }
                     }
                     else
                     {
                         if (isMobileUnique == false)
                         {
+
                             existingSectorOfficer.SoName = updatedSectorOfficer.SoName;
                             existingSectorOfficer.SoMobile = updatedSectorOfficer.SoMobile;
                             existingSectorOfficer.SoOfficeName = updatedSectorOfficer.SoOfficeName;
@@ -1703,7 +1761,7 @@ namespace EAMS_DAL.Repository
                             existingSectorOfficer.SoDesignation = updatedSectorOfficer.SoDesignation;
                             existingSectorOfficer.SoStatus = updatedSectorOfficer.SoStatus;
                             existingSectorOfficer.SOUpdatedAt = BharatDateTime();
-
+                            existingSectorOfficer.ElectionTypeMasterId = updatedSectorOfficer.ElectionTypeMasterId;
                             _context.SectorOfficerMaster.Update(existingSectorOfficer);
                             await _context.SaveChangesAsync();
                             return new Response { Status = RequestStatusEnum.OK, Message = "SO User " + existingSectorOfficer.SoName + " " + "updated successfully" };

@@ -22,6 +22,7 @@ namespace EAMS.ViewModels
         [Required(ErrorMessage = "Is Assigned Status is required")]
 
         public bool IsAssigned { get; set; }
-
+        [Required(ErrorMessage = "Election Type Master Id is required")]
+        public int ElectionTypeMasterId { get; set; }
     }
 }

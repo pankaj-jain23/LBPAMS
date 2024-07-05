@@ -607,18 +607,8 @@ namespace EAMS.Controllers
             {
                 if (addSectorOfficerViewModel.SoAssemblyCode > 0)
                 {
-                    var electionType = User.Claims.FirstOrDefault(d => d.Type == "ElectionType").Value;
+                  
                     var mappedData = _mapper.Map<SectorOfficerMaster>(addSectorOfficerViewModel);
-                    if (electionType == "LS")
-                    {
-                        mappedData.ElectionTypeMasterId = 1;
-
-                    }
-                    else if (electionType == "VS")
-                    {
-                        mappedData.ElectionTypeMasterId = 2;
-
-                    }
                     var result = await _EAMSService.AddSectorOfficer(mappedData);
 
                     switch (result.Status)
@@ -987,6 +977,7 @@ namespace EAMS.Controllers
                                 AssignedBy = boothMappingViewModel.AssignedBy,
                                 AssignedTo = boothMappingViewModel.AssignedTo,
                                 IsAssigned = boothMappingViewModel.IsAssigned,
+                                ElectionTypeMasterId=boothMappingViewModel.ElectionTypeMasterId,
                             };
 
                             boothMasters.Add(boothMaster);
