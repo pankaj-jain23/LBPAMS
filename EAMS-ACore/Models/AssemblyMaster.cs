@@ -47,7 +47,7 @@ namespace EAMS_ACore
             get;
             set;
         }
-        public int PCMasterId
+        public int? PCMasterId
         {
             get;
             set;

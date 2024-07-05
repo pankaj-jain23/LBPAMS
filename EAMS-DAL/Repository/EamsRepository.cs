@@ -1536,17 +1536,18 @@ namespace EAMS_DAL.Repository
         public async Task<Response> AddSectorOfficer(SectorOfficerMaster sectorOfficerMaster)
         {
             var isExist = _context.SectorOfficerMaster.Where(d => d.SoMobile == sectorOfficerMaster.SoMobile && d.ElectionTypeMasterId == sectorOfficerMaster.ElectionTypeMasterId && d.StateMasterId == sectorOfficerMaster.StateMasterId).FirstOrDefault();
-            var isExistCount = _context.SectorOfficerMaster.Where(d => d.SoMobile == sectorOfficerMaster.SoMobile).Count();
+            var isExistCount = _context.SectorOfficerMaster.Where(d => d.SoMobile == sectorOfficerMaster.SoMobile && d.ElectionTypeMasterId== sectorOfficerMaster.ElectionTypeMasterId).Count();
 
             if (isExistCount > 2)
             {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "SO User " + sectorOfficerMaster.SoName + " " + "Already Exist more than for two states" };
+                return new Response { Status = RequestStatusEnum.BadRequest, Message = "SO User " + sectorOfficerMaster.SoName + " " + "Already Exists more than 2 in this this election Type" };
             }
 
 
-            if (isExist == null || isExist.ElectionTypeMasterId != sectorOfficerMaster.ElectionTypeMasterId)
+            //     if (isExist == null || isExist.ElectionTypeMasterId != sectorOfficerMaster.ElectionTypeMasterId)
+            if (isExist == null)
             {
-                var isAssemblyRecord = _context.AssemblyMaster.Where(d => d.AssemblyCode == sectorOfficerMaster.SoAssemblyCode && d.StateMasterId == sectorOfficerMaster.StateMasterId).FirstOrDefault();
+                var isAssemblyRecord = _context.AssemblyMaster.Where(d => d.AssemblyCode == sectorOfficerMaster.SoAssemblyCode && d.StateMasterId == sectorOfficerMaster.StateMasterId && d.ElectionTypeMasterId== sectorOfficerMaster.ElectionTypeMasterId).FirstOrDefault();
                 if (isAssemblyRecord != null && isAssemblyRecord.AssemblyStatus == true)
                 {
                     //check number already exists
