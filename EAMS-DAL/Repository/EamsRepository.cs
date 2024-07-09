@@ -15444,7 +15444,9 @@ namespace EAMS_DAL.Repository
     {
         ElectionTypeMasterId = d.ElectionTypeMasterId,
         ElectionType = d.ElectionType,
-        ElectionStatus = d.ElectionStatus
+        ElectionStatus = d.ElectionStatus,
+        Hierarchy1=d.Hierarchy1,
+        Hierarchy2=d.Hierarchy2
         
     })
     .ToListAsync();
