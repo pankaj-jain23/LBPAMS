@@ -21,5 +21,6 @@ namespace EAMS.ViewModels
 
         public bool? IsStatus { get; set; }
         public int ElectionTypeMasterId { get; set; }
+        //public string? ElectionTypeMasterId { get; set; }
     }
 }

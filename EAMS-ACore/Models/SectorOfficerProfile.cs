@@ -10,5 +10,7 @@
         public string ElectionType { get; set; }
         public string OfficerRole { get; set; }
         public List<string> BoothNo { get; set; }
+        public int ElectionTypeMasterId { get; set; }
+        public string ElectionTypeName { get; set; }
     }
 }

@@ -50,7 +50,7 @@ namespace EAMS_ACore.IRepository
         Task<ElectionInfoMaster> GetElectionInfoRecord(int boothMasterId);
         Task<AssemblyMaster> GetAssemblyByCode(string assemblyCode,string stateMasterId);
         Task<AssemblyMaster> GetAssemblyByCodeandState(string assemblyCode, string stateMasterId);
-
+        
         #endregion
 
         #region SO Master
@@ -275,7 +275,7 @@ namespace EAMS_ACore.IRepository
         #region ElectionType Master
 
         Task<List<ElectionTypeMaster>> GetAllElectionTypes();
-
+        Task<ElectionTypeMaster> GetElectionTypeById(string elecTypeId);
         #endregion
     }
 }

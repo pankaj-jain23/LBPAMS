@@ -57,6 +57,8 @@ namespace EAMS_ACore.Models
         public string SoName { get; set; }
         public string SoMobile { get; set; }
         public bool IsStatus { get; set; }
+        public int ElectionTypeMasterId { get; set; }
+        public string ElectionTypeName { get; set; }
     }
 
 

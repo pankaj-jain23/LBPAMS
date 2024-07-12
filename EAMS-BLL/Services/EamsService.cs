@@ -203,6 +203,7 @@ namespace EAMS_BLL.Services
             //var stateRecord = await _eamsRepository.GetStateById(soRecord.StateMasterId.ToString());
             //var districtRecord = await _eamsRepository.GetDistrictRecordById(stateRecord);
             var soCustomRecord = await _eamsRepository.GetAssemblyByCodeandState(soRecord.SoAssemblyCode.ToString(), soRecord.StateMasterId.ToString());
+            var getElectionTypeRecord = await _eamsRepository.GetElectionTypeById(soRecord.ElectionTypeMasterId.ToString());
             SectorOfficerMasterCustom sectorOfficerMasterCustom = new SectorOfficerMasterCustom()
             {
                 StateMasterId = soCustomRecord.StateMasterId,
@@ -219,7 +220,9 @@ namespace EAMS_BLL.Services
                 SoMobile = soRecord.SoMobile,
                 SoOfficeName = soRecord.SoOfficeName,
                 SoDesignation = soRecord.SoDesignation,
-                IsStatus = soRecord.SoStatus
+                IsStatus = soRecord.SoStatus,
+                ElectionTypeMasterId=soRecord.ElectionTypeMasterId,
+                ElectionTypeName= getElectionTypeRecord.ElectionType,
 
 
             };

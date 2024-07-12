@@ -1350,6 +1350,7 @@ namespace EAMS_DAL.Repository
             var assemblyRecord = await _context.AssemblyMaster.Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.ParliamentConstituencyMaster).Where(d => d.AssemblyCode == Convert.ToInt32(assemblyCode) && d.StateMasterId == Convert.ToInt32(stateMasterid)).FirstOrDefaultAsync();
             return assemblyRecord;
         }
+        
         public async Task<List<AssemblyMaster>> GetAssemblyByPCId(string stateMasterid, string PcMasterId)
         {
 
@@ -1514,6 +1515,7 @@ namespace EAMS_DAL.Repository
             var soAssembly = _context.AssemblyMaster.Where(d => d.AssemblyCode == soRecord.SoAssemblyCode && d.StateMasterId == soRecord.StateMasterId).FirstOrDefault();
             var soDistrict = _context.DistrictMaster.Where(d => d.DistrictMasterId == soAssembly.DistrictMasterId && d.StateMasterId == soAssembly.StateMasterId).FirstOrDefault();
             var soState = _context.StateMaster.Where(d => d.StateMasterId == soDistrict.StateMasterId).FirstOrDefault();
+            //var soState = _context.ElectionTypeMaster.Where(d => d.ElectionTypeMasterId == soDistrict.StateMasterId).FirstOrDefault();
             SectorOfficerProfile sectorOfficerProfile = new SectorOfficerProfile()
             {
                 StateName = soState.StateName,
@@ -1522,7 +1524,8 @@ namespace EAMS_DAL.Repository
                 AssemblyCode = soAssembly.AssemblyCode.ToString(),
                 SoName = soRecord.SoName,
                 OfficerRole = "SO",
-                ElectionType = soRecord.ElectionTypeMasterId == 1 ? "LS" : (soRecord.ElectionTypeMasterId == 2 ? "VS" : null),
+                //ElectionTypeMasterId=
+                //ElectionType = soRecord.ElectionTypeMasterId == 1 ? "LS" : (soRecord.ElectionTypeMasterId == 2 ? "VS" : null),
                 //BoothNo = _context.BoothMaster.Where(p => p.AssignedTo == soId).Select(p => p.BoothCode_No.ToString()).ToList().OrderBy(p=>p.)
                 BoothNo = _context.BoothMaster.Where(p => p.AssignedTo == soId).OrderBy(p => Convert.ToInt32(p.BoothCode_No)).Select(p => p.BoothCode_No.ToString()).ToList()
 
@@ -15453,7 +15456,12 @@ namespace EAMS_DAL.Repository
 
             return elecTypeData;
         }
+        public async Task<ElectionTypeMaster> GetElectionTypeById(string electionTypeId)
+        {
+            var electionTypeRecord = await _context.ElectionTypeMaster.Where(d => d.ElectionTypeMasterId == Convert.ToInt32(electionTypeId)).FirstOrDefaultAsync();
 
+            return electionTypeRecord;
+        }
         #endregion
     }
 }
