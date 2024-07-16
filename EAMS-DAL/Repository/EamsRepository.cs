@@ -1254,7 +1254,7 @@ namespace EAMS_DAL.Repository
         {
             try
             {
-                var assemblieExist = await _context.AssemblyMaster.Where(p => p.AssemblyCode == assemblyMaster.AssemblyCode && p.StateMasterId == assemblyMaster.StateMasterId && p.ElectionTypeMasterId == assemblyMaster.ElectionTypeMasterId).FirstOrDefaultAsync();
+                var assemblieExist = await _context.AssemblyMaster.Where(p => p.AssemblyCode == assemblyMaster.AssemblyCode && p.StateMasterId == assemblyMaster.StateMasterId&&p.DistrictMasterId==assemblyMaster.DistrictMasterId && p.ElectionTypeMasterId == assemblyMaster.ElectionTypeMasterId).FirstOrDefaultAsync();
                
                 if (assemblieExist == null)
                 {

@@ -9,7 +9,6 @@ using EAMS_ACore.HelperModels;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
-using EAMS_ACore.Models.ElectionType;
 using EAMS_ACore.Models.PollingStationFormModels;
 using EAMS_ACore.Models.QueueModel;
 using Microsoft.AspNetCore.Authorization;
@@ -465,7 +464,7 @@ namespace EAMS.Controllers
 
         [HttpPost]
         [Route("AddAssemblies")]
-        [Authorize]
+        //[Authorize]
         public async Task<IActionResult> AddAssemblies(AddAssemblyMasterViewModel addAssemblyMasterViewModel)
         {
             if (ModelState.IsValid)
