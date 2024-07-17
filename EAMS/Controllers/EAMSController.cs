@@ -105,6 +105,47 @@ namespace EAMS.Controllers
 
         #endregion
 
+        #region MasterUpdation Status
+        [HttpPut]
+        [Route("DeleteMasterStatus")]
+        [Authorize]
+        public async Task<IActionResult> DeleteMaster(DeleteMasterStatusViewModel deleteMasterStatus)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var mappedData = _mapper.Map<DeleteMasterStatus>(deleteMasterStatus);
+                    var isSucceed = await _EAMSService.DeleteMasterStatus(mappedData);
+
+                    if (isSucceed.IsSucceed)
+                    {
+                        //_logger.LogInformation("Master status updated successfully.");
+                        return Ok(isSucceed);
+                    }
+                    else
+                    {
+                        // _logger.LogError($"Failed to update master status. Error: {isSucceed.Message}");
+                        return BadRequest(isSucceed);
+                    }
+                }
+                else
+                {
+                    var validationErrors = ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault();
+                    // _logger.LogWarning($"UpdateMaster: {validationErrors}");
+                    return BadRequest(validationErrors);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"DeleteMaster: {ex.Message}");
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
+
+        #endregion
+
+
         #region State master
         [HttpGet]
         [Route("StateList")]

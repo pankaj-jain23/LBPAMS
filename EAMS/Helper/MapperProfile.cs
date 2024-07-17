@@ -130,6 +130,11 @@ namespace EAMS.Helper
             CreateMap<UpdateMasterStatusViewModel, UpdateMasterStatus>().ReverseMap();
             #endregion
 
+            #region DeleteStatusViewModel DeleteMasterStatus
+
+            CreateMap<DeleteMasterStatusViewModel, DeleteMasterStatus>().ReverseMap();
+            #endregion
+
             #region StateMasterViewModel and  StateMaster 
             CreateMap<StateMasterViewModel, StateMaster>()
                 .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateId))

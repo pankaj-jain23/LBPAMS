@@ -556,6 +556,320 @@ namespace EAMS_DAL.Repository
         }
         #endregion
 
+        #region DeleteMaster
+        public async Task<ServiceResponse> DeleteMasterStatus(DeleteMasterStatus updateMasterStatus)
+        {
+            switch (updateMasterStatus.Type)
+            {
+                case "StateMaster":
+
+                    var stateRecord = await _context.StateMaster.FirstOrDefaultAsync(d => d.StateMasterId == Convert.ToInt32(updateMasterStatus.Id));
+
+                    if (stateRecord != null)
+                    {
+                        
+                            var districtsActiveOfState = await _context.DistrictMaster
+                                .Where(d => d.StateMasterId == stateRecord.StateMasterId && d.DistrictStatus == true)
+                                .ToListAsync();
+
+                            if (districtsActiveOfState.Count > 0)
+                            {
+                                return new ServiceResponse { IsSucceed = false, Message = "Districts are active under this State. Make sure they are Inactive first." };
+                            }
+                            else
+                            {
+                                //stateRecord.StateStatus = updateMasterStatus.IsStatus;
+                                //_context.StateMaster.Update(stateRecord);
+                                //await _context.SaveChangesAsync();
+
+                                return new ServiceResponse { IsSucceed = true, Message = "State Updated Successfuly" };
+                            }
+                       
+                     
+
+                    }
+                    else
+                    {
+                        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
+                    }
+
+                case "DistrictMaster":
+                    var districtId = Convert.ToInt32(updateMasterStatus.Id);
+                    var districtRecord = await _context.DistrictMaster.FirstOrDefaultAsync(d => d.DistrictMasterId == districtId);
+
+                    if (districtRecord != null)
+                    {                                               
+                            var stateactive = await _context.StateMaster.AnyAsync(s => s.StateMasterId == districtRecord.StateMasterId && s.StateStatus == true);
+                            if (stateactive == false)
+                            {
+                                return new ServiceResponse { IsSucceed = false, Message = "State must be active in order to set District status to true." };
+
+                            }
+                            else
+                            {
+                                //districtRecord.DistrictStatus = updateMasterStatus.IsStatus;
+                                _context.DistrictMaster.Update(districtRecord);
+                                await _context.SaveChangesAsync();
+
+                                return new ServiceResponse { IsSucceed = true, Message = "District Updated Successfuly" };
+
+                            }
+                        }
+                    else
+                    {
+                        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
+                    }
+
+                case "PCMaster":
+                    var pcId = Convert.ToInt32(updateMasterStatus.Id);
+                    var pcRecord = await _context.ParliamentConstituencyMaster.FirstOrDefaultAsync(d => d.PCMasterId == pcId);
+
+                    if (pcRecord != null)
+                    {                   
+                            var stactive = await _context.StateMaster.AnyAsync(s => s.StateMasterId == pcRecord.StateMasterId && s.StateStatus == true);
+
+                            if (stactive == false)
+                            {
+                                return new ServiceResponse { IsSucceed = false, Message = "State must be active in order to set PC status to true." };
+
+                            }
+                            else
+                            {
+                                //pcRecord.PcStatus = updateMasterStatus.IsStatus;
+                                _context.ParliamentConstituencyMaster.Update(pcRecord);
+                                await _context.SaveChangesAsync();
+
+                                return new ServiceResponse { IsSucceed = true, Message = "PC Updated Successfuly." };
+
+                            }
+                    }
+                    else
+                    {
+                        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
+                    }
+
+                case "AssemblyMaster":
+                    var assemblyMaster = await _context.AssemblyMaster.Where(d => d.AssemblyMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
+
+                    if (assemblyMaster != null)
+                    {
+                        //if (updateMasterStatus.IsStatus == false)
+                        //{
+                            var boothsActiveOfAssembly = await _context.BoothMaster
+                                .Where(d => d.StateMasterId == assemblyMaster.StateMasterId && d.DistrictMasterId == assemblyMaster.DistrictMasterId && d.AssemblyMasterId == assemblyMaster.AssemblyMasterId && d.BoothStatus == true)
+                                .ToListAsync();
+
+                            if (boothsActiveOfAssembly.Count > 0)
+                            {
+                                return new ServiceResponse
+                                {
+                                    IsSucceed = false,
+                                    Message = "Booths are active under this State Assembly. Make sure they are Inactive first"
+                                };
+                            }
+                            else
+                            {
+                                //assemblyMaster.AssemblyStatus = updateMasterStatus.IsStatus;
+                                _context.AssemblyMaster.Update(assemblyMaster);
+                                _context.SaveChanges();
+                                return new ServiceResponse { IsSucceed = true, Message = "Assembly Updated Successfuly." };
+                            }
+                       // }
+
+                       
+
+                    }
+                    else
+                    {
+                        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
+                    }
+
+                case "SOMaster":
+                    var isSOExist = await _context.SectorOfficerMaster.Where(d => d.SOMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
+                    if (isSOExist != null)
+                    {
+                        var assemblyActive = await _context.AssemblyMaster.Where(p => p.AssemblyCode == isSOExist.SoAssemblyCode && p.StateMasterId == isSOExist.StateMasterId).Select(p => p.AssemblyStatus).FirstOrDefaultAsync();
+                        if (assemblyActive == true)
+                        {
+                            // isSOExist.SoStatus = updateMasterStatus.IsStatus;
+                            _context.SectorOfficerMaster.Update(isSOExist);
+                            _context.SaveChanges();
+                            return new ServiceResponse { IsSucceed = true, Message = "So Status Updated Successfully" };
+                        }
+                        else
+                        {
+                            return new ServiceResponse { IsSucceed = false, Message = "Assembly is not Active od this Sector officer" };
+
+                        }
+                    }
+                                                         
+                    else
+                    {
+                        return new ServiceResponse { IsSucceed = false, Message = "Sector Officer Record Not Found." };
+                    }
+
+                case "BoothMaster":
+                    var isBoothExist = await _context.BoothMaster.Where(d => d.BoothMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
+                    if (isBoothExist != null)
+                    {
+                        var electionInfoRecord = await _context.ElectionInfoMaster
+      .Where(d => d.StateMasterId == isBoothExist.StateMasterId && d.DistrictMasterId == isBoothExist.DistrictMasterId && d.AssemblyMasterId == isBoothExist.AssemblyMasterId && d.BoothMasterId == isBoothExist.BoothMasterId)
+      .FirstOrDefaultAsync();
+                        if (electionInfoRecord == null)
+                        {
+                            if (isBoothExist.AssignedTo == null || isBoothExist.AssignedTo == "" ) 
+                            {
+                                if(isBoothExist.AssignedToBLO == null || isBoothExist.AssignedToBLO == "")
+                                {
+                                    _context.BoothMaster.Remove(isBoothExist);
+                                    await _context.SaveChangesAsync();
+                                    return new ServiceResponse { IsSucceed = true, Message = "Booth is deleted successfully." };
+
+                                }
+                                else
+                                {
+                                    return new ServiceResponse { IsSucceed = false, Message = "Booth is allocated to a BLO, Kindly Release Booth First." };
+
+                                }
+
+                            }
+                            else
+                            {
+                                return new ServiceResponse { IsSucceed = false, Message = "Booth is allocated to a Sector Officer, Kindly Release Booth First." };
+                            }
+                        }
+                        else
+                        {
+
+                            return new ServiceResponse { IsSucceed = false, Message = "Election Info Record found aganist this Booth, thus can't deleted" };
+
+                        }
+
+                    }
+                    else
+                    {
+                        return new ServiceResponse
+                        {
+                            IsSucceed = false,
+                        };
+                    }
+
+                case "LocationMaster":
+                    var locationMaster = await _context.PollingLocationMaster.Where(d => d.LocationMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
+
+                    if (locationMaster != null)
+                    {
+                        
+                            var boothhavingLocation = await _context.BoothMaster.Where(b => b.LocationMasterId == Convert.ToInt32(updateMasterStatus.Id)).ToListAsync();
+
+                            if (boothhavingLocation.Count > 0)
+                            {
+                                //booths having this location id so, check are they assigned to any so 
+                                string boothsAssigned = "";
+
+                                foreach (var boothrec in boothhavingLocation)
+                                {
+                                    if (boothrec.AssignedTo != null)
+                                    {
+                                        boothsAssigned += boothrec.AssignedTo + ",";
+                                    }
+
+                                }
+                                if (boothsAssigned != "")
+                                {
+                                    return new ServiceResponse { IsSucceed = false, Message = "Booths are mapped to Sector Officer (s), kindly release booths first and then location can be inactive." };
+
+                                }
+                                else
+                                {
+
+                                  //  locationMaster.Status = updateMasterStatus.IsStatus;
+                                    _context.PollingLocationMaster.Update(locationMaster);
+
+                                    await _context.SaveChangesAsync();
+                                    return new ServiceResponse { IsSucceed = true, Message = "Status Updated Succesfully." };
+                                }
+
+                            }
+                            else
+                            { // no booths it can be inactive
+                                //locationMaster.Status = updateMasterStatus.IsStatus;
+                                _context.PollingLocationMaster.Update(locationMaster);
+
+                                await _context.SaveChangesAsync();
+                                return new ServiceResponse { IsSucceed = true, Message = "Status Updated Succesfully." };
+
+
+
+                            }
+
+
+                        
+
+                      
+
+                    }
+                    else
+                    {
+                        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
+                    }
+
+                case "HelpDesk":
+
+                    var helpdeskRecord = await _context.HelpDeskDetail.FirstOrDefaultAsync(d => d.HelpDeskMasterId == Convert.ToInt32(updateMasterStatus.Id));
+
+                    if (helpdeskRecord != null)
+                    {
+                       // helpdeskRecord.IsStatus = updateMasterStatus.IsStatus;
+                        _context.HelpDeskDetail.Update(helpdeskRecord);
+                        await _context.SaveChangesAsync();
+
+                        return new ServiceResponse { IsSucceed = true, Message = "HelpDesk Record Updated Successfuly" };
+
+                    }
+                    else
+                    {
+                        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
+                    }
+
+                case "BLO":
+                    var isBLOExist = await _context.BLOMaster.Where(d => d.BLOMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
+                    if (isBLOExist != null)
+                    {
+
+                        
+
+                            var assemblyActive = await _context.AssemblyMaster.Where(p => p.AssemblyCode == isBLOExist.AssemblyMasterId && p.StateMasterId == isBLOExist.StateMasterId).Select(p => p.AssemblyStatus).FirstOrDefaultAsync();
+                            if (assemblyActive == true)
+                            {
+                              //  isBLOExist.BLOStatus = updateMasterStatus.IsStatus;
+                                _context.BLOMaster.Update(isBLOExist);
+                                _context.SaveChanges();
+                                return new ServiceResponse { IsSucceed = true, Message = "BLO Status Updated Successfully" };
+                            }
+                            else
+                            {
+                                return new ServiceResponse { IsSucceed = false, Message = "Assembly is not Active od this BLO" };
+
+                            }
+                        
+                       
+
+                    }
+                    else
+                    {
+                        return new ServiceResponse { IsSucceed = false, Message = "Sector Officer Record Not Found." };
+                    }
+                default:
+                    return new ServiceResponse
+                    {
+                        IsSucceed = false,
+                    };
+
+            }
+        }
+        #endregion
+
         #region Common method
         private DateTime? ConvertStringToUtcDateTime(string dateString)
         {

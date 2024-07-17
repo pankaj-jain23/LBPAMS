@@ -20,6 +20,7 @@ namespace EAMS_ACore.IRepository
     {
         #region UpdateMasterStatus
         Task<ServiceResponse> UpdateMasterStatus(UpdateMasterStatus updateMasterStatus);
+        Task<ServiceResponse> DeleteMasterStatus(DeleteMasterStatus updateMasterStatus);
         #endregion
         
         Task<Response> ResetAccounts(string stateMasterId);

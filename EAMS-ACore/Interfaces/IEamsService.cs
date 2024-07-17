@@ -20,6 +20,7 @@ namespace EAMS_ACore.Interfaces
     {
         #region UpdateMasterStatus
         Task<ServiceResponse> UpdateMasterStatus(UpdateMasterStatus updateMasterStatus);
+        Task<ServiceResponse> DeleteMasterStatus(DeleteMasterStatus updateMasterStatus);
         #endregion
 
         #region State Master

@@ -66,6 +66,31 @@ namespace EAMS_BLL.Services
         #endregion
 
 
+        #region DeleteMaster
+        public async Task<ServiceResponse> DeleteMasterStatus(DeleteMasterStatus updateMasterStatus)
+        {
+            var isSucced = await _eamsRepository.DeleteMasterStatus(updateMasterStatus);
+            if (isSucced.IsSucceed)
+            {
+                return new ServiceResponse
+                {
+                    IsSucceed = true,
+                    Message = isSucced.Message,
+                };
+
+            }
+            else
+            {
+                return new ServiceResponse
+                {
+                    IsSucceed = false,
+                    Message = isSucced.Message
+                };
+            }
+        }
+        #endregion
+
+
         #region State Master
 
         public async Task<List<StateMaster>> GetState()
