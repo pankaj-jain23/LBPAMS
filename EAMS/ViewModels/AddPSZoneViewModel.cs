@@ -1,18 +1,11 @@
 ﻿using EAMS_ACore.Models.ElectionType;
-using System;
-using System.Collections.Generic;
+using EAMS_ACore;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace EAMS_ACore.Models
+namespace LBPAMS.ViewModels
 {
-    public class PSZone
+    public class AddPSZoneViewModel
     {
-        [Key]
-        public int PSZoneMasterId { get; set; }
         public string PSZoneName { get; set; }
         public int PSZoneCode { get; set; }
 
@@ -23,48 +16,33 @@ namespace EAMS_ACore.Models
             get;
             set;
         }
-        [ForeignKey("ElectionTypeMasterId")]
-        public virtual ElectionTypeMaster? ElectionTypeMaster
-        {
-            get;
-            set;
-        }
+        
 
         public int StateMasterId
         {
             get;
             set;
         }
-        [ForeignKey("StateMasterId")]
-        public virtual StateMaster? StateMaster
-        {
-            get;
-            set;
-        }
+        
 
         public int DistrictMasterId
         {
             get;
             set;
         }
-        [ForeignKey("DistrictMasterId")]
-        public virtual DistrictMaster? DistrictMaster
+        
+        public int? PCMasterId
         {
             get;
             set;
         }
-      
+        
         public int AssemblyMasterId
         {
             get;
             set;
         }
-        [ForeignKey("AssemblyMasterId")]
-        public virtual AssemblyMaster? AssemblyMaster
-        {
-            get;
-            set;
-        }
+        
         public int PSZoneBooths { get; set; }
         public string? PSZoneCategory { get; set; }
         public DateTime? PSZoneCreatedAt { get; set; }
@@ -74,10 +52,5 @@ namespace EAMS_ACore.Models
         public DateTime? PSZoneDeletedAt { get; set; }
         public bool PSZoneStatus { get; set; }
         public string? SecondLanguage { get; set; }
-        public virtual List<BoothMaster> BoothMaster
-        {
-            get;
-            set;
-        }
     }
 }

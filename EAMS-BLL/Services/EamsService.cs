@@ -145,15 +145,15 @@ namespace EAMS_BLL.Services
         #endregion   
 
         #region Assembly  Master
-        public async Task<List<CombinedMaster>> GetAssemblies(string stateId, string districtId,string electionTypeId)
+        public async Task<List<CombinedMaster>> GetAssemblies(string stateId, string districtId, string electionTypeId)
         {
-            return await _eamsRepository.GetAssemblies(stateId, districtId,electionTypeId);
+            return await _eamsRepository.GetAssemblies(stateId, districtId, electionTypeId);
         }
-        public async Task<List<CombinedMaster>> GetAssembliesByElectionType(string stateId, string districtId,string electionTypeId)
+        public async Task<List<CombinedMaster>> GetAssembliesByElectionType(string stateId, string districtId, string electionTypeId)
         {
-            return await _eamsRepository.GetAssembliesByElectionType(stateId,districtId,electionTypeId);
+            return await _eamsRepository.GetAssembliesByElectionType(stateId, districtId, electionTypeId);
         }
-        
+
         public async Task<Response> UpdateAssembliesById(AssemblyMaster assemblyMaster)
         {
             return await _eamsRepository.UpdateAssembliesById(assemblyMaster);
@@ -246,8 +246,8 @@ namespace EAMS_BLL.Services
                 SoOfficeName = soRecord.SoOfficeName,
                 SoDesignation = soRecord.SoDesignation,
                 IsStatus = soRecord.SoStatus,
-                ElectionTypeMasterId=soRecord.ElectionTypeMasterId,
-                ElectionTypeName= getElectionTypeRecord.ElectionType,
+                ElectionTypeMasterId = soRecord.ElectionTypeMasterId,
+                ElectionTypeName = getElectionTypeRecord.ElectionType,
 
 
             };
@@ -3212,8 +3212,8 @@ namespace EAMS_BLL.Services
         }
         public async Task<int> GetRoundCountByRandomizationTaskId(int? randomizationTaskId, int? stateMasterId)
         {
-            return await _eamsRepository.GetRoundCountByRandomizationTaskId(randomizationTaskId,stateMasterId);
-        } 
+            return await _eamsRepository.GetRoundCountByRandomizationTaskId(randomizationTaskId, stateMasterId);
+        }
         public async Task<int> GetCurrentRoundByRandomizationById(int? stateMasterId, int? districtmasterId, int? randomizationTaskDetailMasterId)
         {
             return await _eamsRepository.GetCurrentRoundByRandomizationById(stateMasterId, districtmasterId, randomizationTaskDetailMasterId);
@@ -3226,11 +3226,11 @@ namespace EAMS_BLL.Services
         public async Task<List<RandomizationList>> GetRandomizationListByStateId(int stateMasterId)
         {
             return await _eamsRepository.GetRandomizationListByStateId(stateMasterId);
-        } 
+        }
         public async Task<RandomizationList> GetRandomizationById(int pprMasterId)
         {
             return await _eamsRepository.GetRandomizationById(pprMasterId);
-        } 
+        }
         public async Task<List<RandomizationTableList>> GetRandomizationTableListByStateId(int stateMasterId)
         {
             return await _eamsRepository.GetRandomizationTableListByStateId(stateMasterId);
@@ -3313,6 +3313,18 @@ namespace EAMS_BLL.Services
         public async Task<List<ElectionTypeMaster>> GetAllElectionTypes()
         {
             return await _eamsRepository.GetAllElectionTypes();
+        }
+        #endregion
+
+        #region PSZone
+        public async Task<Response> AddPSZone(PSZone pSZone)
+        {
+
+            return await _eamsRepository.AddPSZone(pSZone);
+        }
+        public async Task<List<PSZone>> GetPSZoneListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        {
+            return await _eamsRepository.GetPSZoneListById(stateMasterId,districtMasterId,assemblyMasterId);
         }
         #endregion
     }

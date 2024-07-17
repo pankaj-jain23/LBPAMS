@@ -15777,5 +15777,52 @@ namespace EAMS_DAL.Repository
             return electionTypeRecord;
         }
         #endregion
+
+        #region PSZone
+        public async Task<Response> AddPSZone(PSZone pSZone)
+        {
+            try
+            {
+                var ispsZoneExist = await _context.PSZone.Where(p => p.PSZoneCode == pSZone.PSZoneCode && p.StateMasterId == pSZone.StateMasterId && p.DistrictMasterId == pSZone.DistrictMasterId && p.AssemblyMasterId == pSZone.AssemblyMasterId && p.ElectionTypeMasterId == pSZone.ElectionTypeMasterId).FirstOrDefaultAsync();
+                
+                if (ispsZoneExist == null)
+                {
+
+                    pSZone.PSZoneCreatedAt = BharatDateTime();
+                    _context.PSZone.Add(pSZone);
+                    _context.SaveChanges();
+
+                    return new Response { Status = RequestStatusEnum.OK, Message = pSZone.PSZoneName + "Added Successfully" };
+
+
+
+                }
+                else
+                {
+                    return new Response { Status = RequestStatusEnum.BadRequest, Message = ispsZoneExist.PSZoneName + "Same PS Zone Code Already Exists in the selected Election Type" };
+
+                }
+
+            }
+
+            catch (Exception ex)
+            {
+                return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
+            }
+
+        }
+        public async Task<List<PSZone>> GetPSZoneListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        {
+            var getPsZone = await _context.PSZone.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId).ToListAsync();
+            if (getPsZone != null)
+            {
+                return getPsZone;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        #endregion
     }
 }

@@ -42,4 +42,8 @@
     <ProjectReference Include="..\EAMS-DAL\LBPAMS-DAL.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\pdfs\" />
+  </ItemGroup>
+
 </Project>

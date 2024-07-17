@@ -11,6 +11,7 @@ using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
 using EAMS_ACore.Models.PollingStationFormModels;
 using EAMS_ACore.Models.QueueModel;
+using LBPAMS.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -181,7 +182,7 @@ namespace EAMS.Controllers
                 if (ModelState.IsValid)
                 {
                     var electionType = User.Claims.FirstOrDefault(c => c.Type == "ElectionType").Value;
-                   
+
                     StateMaster stateMaster = new StateMaster()
                     {
                         StateMasterId = stateViewModel.StateId,
@@ -189,7 +190,7 @@ namespace EAMS.Controllers
                         StateName = stateViewModel.StateName,
                         StateStatus = stateViewModel.IsStatus,
                         IsGenderCapturedinVoterTurnOut = stateViewModel.IsGenderCapturedinVoterTurnOut,
-                       
+
                     };
                     var state = await _EAMSService.UpdateStateById(stateMaster);
                     switch (state.Status)
@@ -223,7 +224,7 @@ namespace EAMS.Controllers
 
         [HttpPost]
         [Route("AddState")]
-      //  [Authorize]
+        [Authorize]
         public async Task<IActionResult> AddState(AddStateMasterViewModel addStateMasterViewModel)
         {
             if (ModelState.IsValid)
@@ -360,8 +361,8 @@ namespace EAMS.Controllers
             if (ModelState.IsValid)
             {
 
-                var mappedData = _mapper.Map<AddDistrictMasterViewModel, DistrictMaster>(addDistrictViewModel);              
-               
+                var mappedData = _mapper.Map<AddDistrictMasterViewModel, DistrictMaster>(addDistrictViewModel);
+
                 var result = await _EAMSService.AddDistrict(mappedData);
                 switch (result.Status)
                 {
@@ -417,11 +418,11 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetAssembliesListById")]
         //[Authorize]
-        public async Task<IActionResult> AssembliesListById(string stateId, string districtId,string electionTypeId)
+        public async Task<IActionResult> AssembliesListById(string stateId, string districtId, string electionTypeId)
         {
             if (stateId != null && districtId != null)
             {
-                var assemblyList = await _EAMSService.GetAssemblies(stateId, districtId,electionTypeId);  // Corrected to await the asynchronous method
+                var assemblyList = await _EAMSService.GetAssemblies(stateId, districtId, electionTypeId);  // Corrected to await the asynchronous method
                 if (assemblyList != null)
                 {
                     var data = new
@@ -511,7 +512,7 @@ namespace EAMS.Controllers
             if (ModelState.IsValid)
             {
                 var mappedData = _mapper.Map<AddAssemblyMasterViewModel, AssemblyMaster>(addAssemblyMasterViewModel);
-                 
+
 
                 var result = await _EAMSService.AddAssemblies(mappedData);
                 switch (result.Status)
@@ -557,8 +558,8 @@ namespace EAMS.Controllers
                     PcName = assemblyRecord.ParliamentConstituencyMaster.PcName,
                     IsStatus = assemblyRecord.AssemblyStatus,
                     totalBooths = assemblyRecord.TotalBooths,
-                    ElectionTypeMasterId=assemblyRecord.ElectionTypeMasterId,
-                    ElectionTypeName=assemblyRecord.ElectionTypeMaster.ElectionType
+                    ElectionTypeMasterId = assemblyRecord.ElectionTypeMasterId,
+                    ElectionTypeName = assemblyRecord.ElectionTypeMaster.ElectionType
 
                 };
 
@@ -647,7 +648,7 @@ namespace EAMS.Controllers
             {
                 if (addSectorOfficerViewModel.SoAssemblyCode > 0)
                 {
-                  
+
                     var mappedData = _mapper.Map<SectorOfficerMaster>(addSectorOfficerViewModel);
                     var result = await _EAMSService.AddSectorOfficer(mappedData);
 
@@ -914,7 +915,7 @@ namespace EAMS.Controllers
                             {
                                 var mappedData = _mapper.Map<BoothMasterViewModel, BoothMaster>(BoothMasterViewModel);
                                 var electionType = User.Claims.FirstOrDefault(c => c.Type == "ElectionType").Value;
-                               
+
                                 var result = await _EAMSService.AddBooth(mappedData);
                                 switch (result.Status)
                                 {
@@ -1017,7 +1018,7 @@ namespace EAMS.Controllers
                                 AssignedBy = boothMappingViewModel.AssignedBy,
                                 AssignedTo = boothMappingViewModel.AssignedTo,
                                 IsAssigned = boothMappingViewModel.IsAssigned,
-                                ElectionTypeMasterId=boothMappingViewModel.ElectionTypeMasterId,
+                                ElectionTypeMasterId = boothMappingViewModel.ElectionTypeMasterId,
                             };
 
                             boothMasters.Add(boothMaster);
@@ -1548,6 +1549,72 @@ namespace EAMS.Controllers
             {
                 return BadRequest("No Record Found");
             }
+        }
+        #endregion
+
+        #region PSZone
+        [HttpPost]
+        [Route("AddPSZone")]
+        [Authorize]
+        public async Task<IActionResult> AddPSZone(AddPSZoneViewModel addPSZoneViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                var mappedData = _mapper.Map<AddPSZoneViewModel, PSZone>(addPSZoneViewModel);
+
+
+                var result = await _EAMSService.AddPSZone(mappedData);
+                switch (result.Status)
+                {
+                    case RequestStatusEnum.OK:
+                        return Ok(result.Message);
+                    case RequestStatusEnum.BadRequest:
+                        return BadRequest(result.Message);
+                    case RequestStatusEnum.NotFound:
+                        return NotFound(result.Message);
+
+                    default:
+                        return StatusCode(500, "Internal Server Error");
+                }
+
+            }
+            else
+            {
+                return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
+            }
+        }
+
+        [HttpGet("GetPSZoneListById")]
+        [Authorize]
+        public async Task<IActionResult> GetPSZoneListById(int stateMasterId, int districtMasterId, int assemblyMasterId )
+        {
+            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null)
+            {
+                var psZoneList = await _EAMSService.GetPSZoneListById(stateMasterId, districtMasterId, assemblyMasterId);  // Corrected to await the asynchronous method
+                if (psZoneList != null)
+                {
+                    var data = new
+                    {
+                        count = psZoneList.Count,
+                        data = psZoneList.ToList(),
+                        //data = boothList.OrderBy(p => Int32.Parse(p.BoothCode_No)).ToList(),
+
+                    };
+                    return Ok(data);
+
+                }
+                else
+                {
+                    return NotFound("Booth Not Found");
+
+                }
+            }
+            else
+            {
+
+                return BadRequest("State, District and Assembly Master Id's cannot be null");
+            }
+
         }
         #endregion
 
@@ -3871,7 +3938,7 @@ namespace EAMS.Controllers
             else
             {
 
-                return BadRequest( );
+                return BadRequest();
             }
 
         }
@@ -3885,21 +3952,21 @@ namespace EAMS.Controllers
         [Authorize]
         public async Task<IActionResult> GetAllElectionTypes()
         {
-                var elecTypeList = await _EAMSService.GetAllElectionTypes();  // Corrected to await the asynchronous method
-                if (elecTypeList != null)
+            var elecTypeList = await _EAMSService.GetAllElectionTypes();  // Corrected to await the asynchronous method
+            if (elecTypeList != null)
+            {
+                var data = new
                 {
-                    var data = new
-                    {
-                        count = elecTypeList.Count,
-                        data = elecTypeList
-                    };
-                    return Ok(data);
-                }
-                else
-                {
-                    return NotFound("Data Not Found");
-                }
-           
+                    count = elecTypeList.Count,
+                    data = elecTypeList
+                };
+                return Ok(data);
+            }
+            else
+            {
+                return NotFound("Data Not Found");
+            }
+
 
 
         }

@@ -185,8 +185,8 @@ namespace EAMS_ACore.Interfaces
         Task<List<VTPSReportReportModel>> GetVoterTurnOutPollingStationReports(BoothReportModel boothReportModel);
         Task<List<VTReportModel>> GetVoterTurnOutConsolidatedReports(BoothReportModel boothReportModel);
         //Task<List<VTReportModel>> GetSlotBasedVoterTurnOutReport(SlotVTReportModel boothReportModel);
-        
-        #region
+
+        #region GetChartConsolidatedReport
 
 
         Task<List<ChartConsolidatedReport>> GetChartConsolidatedReport(ChartReportModel boothReportModel);
@@ -247,7 +247,7 @@ namespace EAMS_ACore.Interfaces
         #endregion
 
 
-        #region
+        #region BLO
         Task<List<BLOBoothAssignedQueueCount>> GetBLOQueueCount(BoothReportModel boothReportModel);
         Task<List<BLOBoothAssignedQueueCount>> GetUnassignedBLOs(BoothReportModel boothReportModel);
         Task<List<BLOBoothAssignedQueueCount>> GetAssignedBLOs(BoothReportModel boothReportModel);
@@ -268,6 +268,11 @@ namespace EAMS_ACore.Interfaces
 
         #region Election Type Master
         Task<List<ElectionTypeMaster>> GetAllElectionTypes();
+        #endregion
+
+        #region PSZone
+        Task<Response> AddPSZone(PSZone pSZone );
+        Task<List<PSZone>> GetPSZoneListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
         #endregion
     }
 }

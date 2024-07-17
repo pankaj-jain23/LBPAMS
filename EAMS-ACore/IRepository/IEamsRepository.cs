@@ -278,5 +278,10 @@ namespace EAMS_ACore.IRepository
         Task<List<ElectionTypeMaster>> GetAllElectionTypes();
         Task<ElectionTypeMaster> GetElectionTypeById(string elecTypeId);
         #endregion
+
+        #region PSZone
+        Task<Response> AddPSZone(PSZone pSZone);
+        Task<List<PSZone>> GetPSZoneListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
+        #endregion
     }
 }

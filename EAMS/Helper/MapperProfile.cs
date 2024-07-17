@@ -20,6 +20,7 @@ using EAMS_ACore.Models.PublicModels;
 using EAMS_ACore.Models.QueueModel;
 using EAMS_ACore.NotificationModels;
 using EAMS_ACore.ReportModels;
+using LBPAMS.ViewModels;
 
 namespace EAMS.Helper
 {
@@ -665,7 +666,26 @@ namespace EAMS.Helper
             .ReverseMap();
             #endregion
 
-          
+            #region AddPSZoneViewModel PSZone
+            CreateMap<AddPSZoneViewModel, PSZone>()
+                .ForMember(dest => dest.PSZoneName, opt => opt.MapFrom(src => src.PSZoneName))
+                .ForMember(dest => dest.PSZoneCode, opt => opt.MapFrom(src => src.PSZoneCode))
+                .ForMember(dest => dest.PSZoneType, opt => opt.MapFrom(src => src.PSZoneType))
+                .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+                .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+                .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+              
+                .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+                .ForMember(dest => dest.PSZoneBooths, opt => opt.MapFrom(src => src.PSZoneBooths))
+                .ForMember(dest => dest.PSZoneCategory, opt => opt.MapFrom(src => src.PSZoneCategory))
+                .ForMember(dest => dest.PSZoneCreatedAt, opt => opt.MapFrom(src => src.PSZoneCreatedAt))
+                .ForMember(dest => dest.PSZoneUpdatedAt, opt => opt.MapFrom(src => src.PSZoneUpdatedAt))
+                .ForMember(dest => dest.PSZoneDeletedAt, opt => opt.MapFrom(src => src.PSZoneDeletedAt))
+                .ForMember(dest => dest.PSZoneStatus, opt => opt.MapFrom(src => src.PSZoneStatus))
+                .ForMember(dest => dest.SecondLanguage, opt => opt.MapFrom(src => src.SecondLanguage))
+                .ReverseMap();
+            #endregion
+
         }
         #region Convert DateTime UTC
         private DateTime? ParseAndConvertToUtc(string dateTimeString)
