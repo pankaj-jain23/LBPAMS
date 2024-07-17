@@ -1,4 +1,5 @@
-﻿using EAMS_ACore.Models.ElectionType;
+﻿using EAMS_ACore.Models;
+using EAMS_ACore.Models.ElectionType;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace EAMS_ACore
@@ -55,10 +56,20 @@ namespace EAMS_ACore
             get;
             set;
         }
-
+        public int? PSZoneMasterId
+        {
+            get;
+            set;
+        }
+        [ForeignKey("PSZoneMasterId")]
+        public virtual PSZone? PSZone
+        {
+            get;
+            set;
+        }
         public string BoothCode_No { get; set; }
 
-
+        public string? Category { get; set; }
         public int? TotalVoters { get; set; }
         public int? Male { get; set; }
         public int? Female { get; set; }
@@ -87,7 +98,11 @@ namespace EAMS_ACore
         public bool IsAssigned { get; set; }
         public int? LocationMasterId { get; set; }
         public bool IsPSOFormDone { get; set; }
-
+        public virtual List<SarpanchWards> SarpanchWards
+        {
+            get;
+            set;
+        }
 
 
     }

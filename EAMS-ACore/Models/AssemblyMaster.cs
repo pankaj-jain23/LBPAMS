@@ -1,4 +1,5 @@
-﻿using EAMS_ACore.Models.ElectionType;
+﻿using EAMS_ACore.Models;
+using EAMS_ACore.Models.ElectionType;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace EAMS_ACore
@@ -68,6 +69,11 @@ namespace EAMS_ACore
         public bool AssemblyStatus { get; set; }
         public string? SecondLanguage { get; set; }
         public virtual List<BoothMaster> BoothMaster
+        {
+            get;
+            set;
+        }
+        public virtual List<PSZone> PSZone
         {
             get;
             set;

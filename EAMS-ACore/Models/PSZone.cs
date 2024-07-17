@@ -9,14 +9,14 @@ using System.Threading.Tasks;
 
 namespace EAMS_ACore.Models
 {
-    public class Level4
+    public class PSZone
     {
         [Key]
-        public int Level4MasterId { get; set; }
-        public string Level4Name { get; set; }
-        public int Level4Code { get; set; }
+        public int PSZoneMasterId { get; set; }
+        public string PSZoneName { get; set; }
+        public int PSZoneCode { get; set; }
 
-        public string? Level4Type { get; set; }
+        public string? PSZoneType { get; set; }
 
         public int ElectionTypeMasterId
         {
@@ -64,14 +64,25 @@ namespace EAMS_ACore.Models
             get;
             set;
         }
+        public int AssemblyMasterId
+        {
+            get;
+            set;
+        }
+        [ForeignKey("AssemblyMasterId")]
+        public virtual AssemblyMaster? AssemblyMaster
+        {
+            get;
+            set;
+        }
+        public int PSZoneBooths { get; set; }
+        public string? PSZoneCategory { get; set; }
+        public DateTime? PSZoneCreatedAt { get; set; }
 
-        public int TotalLevel4 { get; set; }
-        public DateTime? Level4CreatedAt { get; set; }
+        public DateTime? PSZoneUpdatedAt { get; set; }
 
-        public DateTime? Level4UpdatedAt { get; set; }
-
-        public DateTime? Level4DeletedAt { get; set; }
-        public bool Level4Status { get; set; }
+        public DateTime? PSZoneDeletedAt { get; set; }
+        public bool PSZoneStatus { get; set; }
         public string? SecondLanguage { get; set; }
         public virtual List<BoothMaster> BoothMaster
         {

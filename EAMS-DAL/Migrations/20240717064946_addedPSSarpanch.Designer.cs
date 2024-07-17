@@ -3,6 +3,7 @@ using System;
 using EAMS_DAL.DBContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EAMS_DAL.Migrations
 {
     [DbContext(typeof(EamsContext))]
-    partial class EamsContextModelSnapshot : ModelSnapshot
+    [Migration("20240717064946_addedPSSarpanch")]
+    partial class addedPSSarpanch
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -329,7 +332,7 @@ namespace EAMS_DAL.Migrations
                     b.Property<int?>("Male")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("PSZoneMasterId")
+                    b.Property<int>("PSZoneMasterId")
                         .HasColumnType("integer");
 
                     b.Property<string>("SecondLanguage")
@@ -2248,7 +2251,9 @@ namespace EAMS_DAL.Migrations
 
                     b.HasOne("EAMS_ACore.Models.PSZone", "PSZone")
                         .WithMany("BoothMaster")
-                        .HasForeignKey("PSZoneMasterId");
+                        .HasForeignKey("PSZoneMasterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("EAMS_ACore.StateMaster", "StateMaster")
                         .WithMany("BoothMaster")

@@ -34,6 +34,8 @@ public partial class EamsContext : IdentityDbContext<UserRegistration>
 
     public virtual DbSet<AssemblyMaster> AssemblyMaster { get; set; }
     public virtual DbSet<BoothMaster> BoothMaster { get; set; }
+    public virtual DbSet<PSZone> PSZone { get; set; }
+    public virtual DbSet<SarpanchWards> SarpanchWards { get; set; }
     public virtual DbSet<EventMaster> EventMaster { get; set; }
     public virtual DbSet<DistrictMaster> DistrictMaster { get; set; }
     public virtual DbSet<ParliamentConstituencyMaster> ParliamentConstituencyMaster { get; set; }
