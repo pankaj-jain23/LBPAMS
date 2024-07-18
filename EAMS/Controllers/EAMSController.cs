@@ -106,7 +106,7 @@ namespace EAMS.Controllers
 
         #endregion
 
-        #region MasterUpdation Status
+        #region Master Deletion Status
         [HttpPut]
         [Route("DeleteMasterStatus")]
         [Authorize]
