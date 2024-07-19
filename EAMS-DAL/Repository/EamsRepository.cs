@@ -569,7 +569,7 @@ namespace EAMS_DAL.Repository
                     {
                         
                             var districtsActiveOfState = await _context.DistrictMaster
-                                .Where(d => d.StateMasterId == stateRecord.StateMasterId && d.DistrictStatus == true)
+                                .Where(d => d.StateMasterId == stateRecord.StateMasterId)
                                 .ToListAsync();
 
                             if (districtsActiveOfState.Count > 0)
@@ -578,11 +578,11 @@ namespace EAMS_DAL.Repository
                             }
                             else
                             {
-                                //stateRecord.StateStatus = updateMasterStatus.IsStatus;
-                                //_context.StateMaster.Update(stateRecord);
-                                //await _context.SaveChangesAsync();
 
-                                return new ServiceResponse { IsSucceed = true, Message = "State Updated Successfuly" };
+                            _context.StateMaster.Remove(stateRecord);
+                            await _context.SaveChangesAsync();
+                            return new ServiceResponse { IsSucceed = false, Message = "State deleted successfully." };
+                                                        
                             }
                        
                      
@@ -599,28 +599,28 @@ namespace EAMS_DAL.Repository
 
                     if (districtRecord != null)
                     {                                               
-                            var stateactive = await _context.StateMaster.AnyAsync(s => s.StateMasterId == districtRecord.StateMasterId && s.StateStatus == true);
-                            if (stateactive == false)
+                            var assembliesRecord = await _context.AssemblyMaster.Where(s => s.DistrictMasterId == districtRecord.DistrictMasterId).ToListAsync();
+                            if (assembliesRecord.Count > 0)
                             {
-                                return new ServiceResponse { IsSucceed = false, Message = "State must be active in order to set District status to true." };
+                                return new ServiceResponse { IsSucceed = false, Message = "Assemblies Exist aganist this District, can't delete" };
 
                             }
                             else
                             {
-                                //districtRecord.DistrictStatus = updateMasterStatus.IsStatus;
-                                _context.DistrictMaster.Update(districtRecord);
-                                await _context.SaveChangesAsync();
 
-                                return new ServiceResponse { IsSucceed = true, Message = "District Updated Successfuly" };
 
-                            }
+                            _context.DistrictMaster.Remove(districtRecord);
+                            await _context.SaveChangesAsync();
+                            return new ServiceResponse { IsSucceed = false, Message = "District deleted successfully." };
+
                         }
+                    }
                     else
                     {
                         return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
                     }
 
-                case "PCMaster":
+                case "PCMasters":
                     var pcId = Convert.ToInt32(updateMasterStatus.Id);
                     var pcRecord = await _context.ParliamentConstituencyMaster.FirstOrDefaultAsync(d => d.PCMasterId == pcId);
 
@@ -669,10 +669,10 @@ namespace EAMS_DAL.Repository
                             }
                             else
                             {
-                                //assemblyMaster.AssemblyStatus = updateMasterStatus.IsStatus;
-                                _context.AssemblyMaster.Update(assemblyMaster);
-                                _context.SaveChanges();
-                                return new ServiceResponse { IsSucceed = true, Message = "Assembly Updated Successfuly." };
+                               _context.AssemblyMaster.Remove(assemblyMaster);
+                            await _context.SaveChangesAsync();
+                            return new ServiceResponse { IsSucceed = true, Message = "Assembly Deleted Succesfully." };
+                            
                             }
                        // }
 
@@ -688,17 +688,17 @@ namespace EAMS_DAL.Repository
                     var isSOExist = await _context.SectorOfficerMaster.Where(d => d.SOMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
                     if (isSOExist != null)
                     {
-                        var assemblyActive = await _context.AssemblyMaster.Where(p => p.AssemblyCode == isSOExist.SoAssemblyCode && p.StateMasterId == isSOExist.StateMasterId).Select(p => p.AssemblyStatus).FirstOrDefaultAsync();
-                        if (assemblyActive == true)
+                        var boothsAllocated = await _context.BoothMaster.Where(p => p.AssignedTo == isSOExist.SOMasterId.ToString()).ToListAsync();
+                        if (boothsAllocated.Count == 0)
                         {
                             // isSOExist.SoStatus = updateMasterStatus.IsStatus;
-                            _context.SectorOfficerMaster.Update(isSOExist);
-                            _context.SaveChanges();
-                            return new ServiceResponse { IsSucceed = true, Message = "So Status Updated Successfully" };
+                            _context.SectorOfficerMaster.Remove(isSOExist);
+                            await _context.SaveChangesAsync();
+                            return new ServiceResponse { IsSucceed = true, Message = "So Deleted Successfully" };
                         }
                         else
                         {
-                            return new ServiceResponse { IsSucceed = false, Message = "Assembly is not Active od this Sector officer" };
+                            return new ServiceResponse { IsSucceed = false, Message = "Booths Assignedto this SO, kindly release them !" };
 
                         }
                     }
@@ -764,40 +764,14 @@ namespace EAMS_DAL.Repository
 
                             if (boothhavingLocation.Count > 0)
                             {
-                                //booths having this location id so, check are they assigned to any so 
-                                string boothsAssigned = "";
+                            return new ServiceResponse { IsSucceed = true, Message = "Booths mapped with this Location, Kindly Release." };
 
-                                foreach (var boothrec in boothhavingLocation)
-                                {
-                                    if (boothrec.AssignedTo != null)
-                                    {
-                                        boothsAssigned += boothrec.AssignedTo + ",";
-                                    }
-
-                                }
-                                if (boothsAssigned != "")
-                                {
-                                    return new ServiceResponse { IsSucceed = false, Message = "Booths are mapped to Sector Officer (s), kindly release booths first and then location can be inactive." };
-
-                                }
-                                else
-                                {
-
-                                  //  locationMaster.Status = updateMasterStatus.IsStatus;
-                                    _context.PollingLocationMaster.Update(locationMaster);
-
-                                    await _context.SaveChangesAsync();
-                                    return new ServiceResponse { IsSucceed = true, Message = "Status Updated Succesfully." };
-                                }
-
-                            }
-                            else
-                            { // no booths it can be inactive
-                                //locationMaster.Status = updateMasterStatus.IsStatus;
-                                _context.PollingLocationMaster.Update(locationMaster);
-
-                                await _context.SaveChangesAsync();
-                                return new ServiceResponse { IsSucceed = true, Message = "Status Updated Succesfully." };
+                    }
+                    else
+                      { 
+                            _context.PollingLocationMaster.Remove(locationMaster);
+                            await _context.SaveChangesAsync();
+                            return new ServiceResponse { IsSucceed = true, Message = "Location Deleted Succesfully." };
 
 
 
@@ -820,11 +794,12 @@ namespace EAMS_DAL.Repository
 
                     if (helpdeskRecord != null)
                     {
-                       // helpdeskRecord.IsStatus = updateMasterStatus.IsStatus;
-                        _context.HelpDeskDetail.Update(helpdeskRecord);
+                        // helpdeskRecord.IsStatus = updateMasterStatus.IsStatus;
+                        _context.HelpDeskDetail.Remove(helpdeskRecord);
                         await _context.SaveChangesAsync();
+                        return new ServiceResponse { IsSucceed = true, Message = "HelpDesk Record is deleted successfully." };
 
-                        return new ServiceResponse { IsSucceed = true, Message = "HelpDesk Record Updated Successfuly" };
+                        
 
                     }
                     else
@@ -835,21 +810,19 @@ namespace EAMS_DAL.Repository
                 case "BLO":
                     var isBLOExist = await _context.BLOMaster.Where(d => d.BLOMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
                     if (isBLOExist != null)
-                    {
+                    {                       
 
-                        
+                            var assemblyActive = await _context.BoothMaster.Where(p => p.AssignedToBLO == isBLOExist.BLOMasterId.ToString()).ToListAsync();
+                            if (assemblyActive.Count == 0)
+                            {
+                            _context.BLOMaster.Remove(isBLOExist);
+                            await _context.SaveChangesAsync();
+                            return new ServiceResponse { IsSucceed = true, Message = "BLO Record is deleted successfully." };
 
-                            var assemblyActive = await _context.AssemblyMaster.Where(p => p.AssemblyCode == isBLOExist.AssemblyMasterId && p.StateMasterId == isBLOExist.StateMasterId).Select(p => p.AssemblyStatus).FirstOrDefaultAsync();
-                            if (assemblyActive == true)
+                        }
+                        else
                             {
-                              //  isBLOExist.BLOStatus = updateMasterStatus.IsStatus;
-                                _context.BLOMaster.Update(isBLOExist);
-                                _context.SaveChanges();
-                                return new ServiceResponse { IsSucceed = true, Message = "BLO Status Updated Successfully" };
-                            }
-                            else
-                            {
-                                return new ServiceResponse { IsSucceed = false, Message = "Assembly is not Active od this BLO" };
+                                return new ServiceResponse { IsSucceed = false, Message = "Booths assigned to BLO, kindly release first" };
 
                             }
                         
