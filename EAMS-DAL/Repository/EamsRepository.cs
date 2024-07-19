@@ -619,36 +619,7 @@ namespace EAMS_DAL.Repository
                     {
                         return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
                     }
-
-                case "PCMasters":
-                    var pcId = Convert.ToInt32(updateMasterStatus.Id);
-                    var pcRecord = await _context.ParliamentConstituencyMaster.FirstOrDefaultAsync(d => d.PCMasterId == pcId);
-
-                    if (pcRecord != null)
-                    {                   
-                            var stactive = await _context.StateMaster.AnyAsync(s => s.StateMasterId == pcRecord.StateMasterId && s.StateStatus == true);
-
-                            if (stactive == false)
-                            {
-                                return new ServiceResponse { IsSucceed = false, Message = "State must be active in order to set PC status to true." };
-
-                            }
-                            else
-                            {
-                                //pcRecord.PcStatus = updateMasterStatus.IsStatus;
-                                _context.ParliamentConstituencyMaster.Update(pcRecord);
-                                await _context.SaveChangesAsync();
-
-                                return new ServiceResponse { IsSucceed = true, Message = "PC Updated Successfuly." };
-
-                            }
-                    }
-                    else
-                    {
-                        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
-                    }
-
-                case "AssemblyMaster":
+                    case "AssemblyMaster":
                     var assemblyMaster = await _context.AssemblyMaster.Where(d => d.AssemblyMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
 
                     if (assemblyMaster != null)
