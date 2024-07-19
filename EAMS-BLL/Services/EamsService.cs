@@ -3326,6 +3326,18 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetPSZoneListById(stateMasterId,districtMasterId,assemblyMasterId);
         }
-        #endregion
-    }
+        public async Task<PSZone> GetPSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId)
+        {
+            return await _eamsRepository.GetPSZoneById(stateMasterId, districtMasterId, assemblyMasterId, pSZoneMasterId);
+        }
+        public async Task<Response> UpdatePSZone(PSZone pSZone)
+        {
+            return await _eamsRepository.UpdatePSZone(pSZone);
+        } 
+        public async Task<Response> DeletePSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId)
+        {
+            return await _eamsRepository.DeletePSZoneById(stateMasterId,districtMasterId,assemblyMasterId,pSZoneMasterId);
+        }
+            #endregion
+        }
 }

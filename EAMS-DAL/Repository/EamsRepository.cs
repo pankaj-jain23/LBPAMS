@@ -15767,6 +15767,127 @@ namespace EAMS_DAL.Repository
                 return null;
             }
         }
+        public async Task<Response> UpdatePSZone(PSZone pSZone)
+        {
+            // Check if the PSZone entity exists in the database
+            var existingPsZone = await _context.PSZone
+                .Where(d => d.PSZoneMasterId == pSZone.PSZoneMasterId)
+                .FirstOrDefaultAsync();
+
+            if (existingPsZone == null)
+            {
+                return new Response
+                {
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = "PSZone not found."
+                };
+            }
+
+            // Update the properties of the existing entity
+            existingPsZone.PSZoneName = pSZone.PSZoneName;
+            existingPsZone.PSZoneCode = pSZone.PSZoneCode;
+            existingPsZone.PSZoneType = pSZone.PSZoneType;
+            existingPsZone.ElectionTypeMasterId = pSZone.ElectionTypeMasterId;
+            existingPsZone.StateMasterId = pSZone.StateMasterId;
+            existingPsZone.DistrictMasterId = pSZone.DistrictMasterId;
+            existingPsZone.AssemblyMasterId = pSZone.AssemblyMasterId;
+            existingPsZone.PSZoneBooths = pSZone.PSZoneBooths;
+            existingPsZone.PSZoneCategory = pSZone.PSZoneCategory;
+            existingPsZone.SecondLanguage = pSZone.SecondLanguage;
+            existingPsZone.PSZoneUpdatedAt = DateTime.UtcNow;
+            existingPsZone.PSZoneStatus = pSZone.PSZoneStatus;
+
+            // Save changes to the database
+            try
+            {
+                await _context.SaveChangesAsync();
+                return new Response
+                {
+                    Status = RequestStatusEnum.OK,
+                    Message = "PSZone updated successfully."
+                };
+            }
+            catch (Exception ex)
+            {
+                // Handle any errors that may have occurred
+                return new Response
+                {
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = $"An error occurred: {ex.Message}"
+                };
+            }
+        }
+        public async Task<PSZone> GetPSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId)
+        {
+            
+
+            // Retrieve the PSZone entity from the database
+            var psZone = await _context.PSZone
+                .Where(d => d.StateMasterId == stateMasterId &&
+                            d.DistrictMasterId == districtMasterId &&
+                            d.AssemblyMasterId == assemblyMasterId &&
+                            d.PSZoneMasterId == pSZoneMasterId)
+                .FirstOrDefaultAsync();
+
+            // Check if the PSZone entity exists
+            if (psZone == null)
+            {
+            
+                return null;
+            }
+
+             
+            return psZone;
+        }
+        public async Task<Response> DeletePSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId)
+        {
+            // Validate the input ID
+            if (pSZoneMasterId <= 0)
+            {
+                return new Response
+                {
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = "Invalid PSZoneMasterId provided."
+                };
+            }
+
+            // Check if the PSZone entity exists in the database
+            var psZone = await _context.PSZone
+                .Where(d => d.PSZoneMasterId == pSZoneMasterId&&d.StateMasterId==stateMasterId&&d.DistrictMasterId==districtMasterId&&d.AssemblyMasterId==assemblyMasterId)
+                .FirstOrDefaultAsync();
+
+            if (psZone == null)
+            {
+                return new Response
+                {
+                    Status=RequestStatusEnum.BadRequest,
+                    Message = "PSZone not found."
+                };
+            }
+
+            // Perform the deletion
+            try
+            {
+                _context.PSZone.Remove(psZone);
+                await _context.SaveChangesAsync();
+
+                return new Response
+                {
+                    Status = RequestStatusEnum.OK,
+                    Message = "PSZone deleted successfully."
+                };
+            }
+            catch (Exception ex)
+            {
+                // Handle any errors that may have occurred during deletion
+                return new Response
+                {
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = $"An error occurred: {ex.Message}"
+                };
+            }
+        }
+
         #endregion
     }
 }

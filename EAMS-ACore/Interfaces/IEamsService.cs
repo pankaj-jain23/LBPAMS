@@ -273,6 +273,9 @@ namespace EAMS_ACore.Interfaces
         #region PSZone
         Task<Response> AddPSZone(PSZone pSZone );
         Task<List<PSZone>> GetPSZoneListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
+        Task<PSZone> GetPSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId,int pSZoneMasterId);
+        Task<Response> UpdatePSZone(PSZone pSZone);
+        Task<Response> DeletePSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId);
         #endregion
     }
 }

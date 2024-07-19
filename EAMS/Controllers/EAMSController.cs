@@ -1616,6 +1616,90 @@ namespace EAMS.Controllers
             }
 
         }
+
+        [HttpPut]
+        [Route("UpdatePSZone")]
+        [Authorize]
+        public async Task<IActionResult> UpdatePSZone(UpdatePSZoneViewModel updatePSZoneViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                var mappedData = _mapper.Map<UpdatePSZoneViewModel, PSZone>(updatePSZoneViewModel);
+                var result = await _EAMSService.UpdatePSZone(mappedData);
+                switch (result.Status)
+                {
+                    case RequestStatusEnum.OK:
+                        return Ok(result.Message);
+                    case RequestStatusEnum.BadRequest:
+                        return BadRequest(result.Message);
+                    case RequestStatusEnum.NotFound:
+                        return NotFound(result.Message);
+
+                    default:
+                        return StatusCode(500, "Internal Server Error");
+                }
+
+            }
+            else
+            {
+                return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
+            }
+        }
+
+        [HttpGet("GetPSZoneById")]
+        [Authorize]
+        public async Task<IActionResult> GetPSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId,int pSZoneMasterId)
+        {
+            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && pSZoneMasterId != null)
+            {
+                var psZoneList = await _EAMSService.GetPSZoneById(stateMasterId, districtMasterId, assemblyMasterId, pSZoneMasterId);  // Corrected to await the asynchronous method
+                if (psZoneList != null)
+                {
+                    
+                    return Ok(psZoneList);
+
+                }
+                else
+                {
+                    return NotFound("Booth Not Found");
+
+                }
+            }
+            else
+            {
+
+                return BadRequest("Master Id's cannot be null");
+            }
+
+        }
+     
+        [HttpDelete("DeletePSZoneById")]
+        [Authorize]
+        public async Task<IActionResult> DeletePSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId)
+        {
+            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && pSZoneMasterId != null)
+            {
+                var psZoneList = await _EAMSService.DeletePSZoneById(stateMasterId, districtMasterId, assemblyMasterId, pSZoneMasterId);  // Corrected to await the asynchronous method
+                if (psZoneList != null)
+                {
+                    
+                    return Ok(psZoneList);
+
+                }
+                else
+                {
+                    return NotFound("Zone Not Found");
+
+                }
+            }
+            else
+            {
+
+                return BadRequest(" Master Id's cannot be null");
+            }
+
+        }
+
         #endregion
 
         #region Event Activity
