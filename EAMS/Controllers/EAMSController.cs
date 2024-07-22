@@ -107,7 +107,7 @@ namespace EAMS.Controllers
         #endregion
 
         #region Master Deletion Status
-        [HttpPut]
+        [HttpDelete]
         [Route("DeleteMasterStatus")]
         [Authorize]
         public async Task<IActionResult> DeleteMaster(DeleteMasterStatusViewModel deleteMasterStatus)
@@ -1689,6 +1689,156 @@ namespace EAMS.Controllers
                 else
                 {
                     return NotFound("Zone Not Found");
+
+                }
+            }
+            else
+            {
+
+                return BadRequest(" Master Id's cannot be null");
+            }
+
+        }
+
+        #endregion
+
+        #region SarpanchWards
+        [HttpPost]
+        [Route("AddSarpanchWards")]
+        [Authorize]
+        public async Task<IActionResult> AddSarpanchWards(AddSarpanchWardsViewModel addSarpanchWardsViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                var mappedData = _mapper.Map<AddSarpanchWardsViewModel, SarpanchWards>(addSarpanchWardsViewModel);
+
+
+                var result = await _EAMSService.AddSarpanchWards(mappedData);
+                switch (result.Status)
+                {
+                    case RequestStatusEnum.OK:
+                        return Ok(result.Message);
+                    case RequestStatusEnum.BadRequest:
+                        return BadRequest(result.Message);
+                    case RequestStatusEnum.NotFound:
+                        return NotFound(result.Message);
+
+                    default:
+                        return StatusCode(500, "Internal Server Error");
+                }
+
+            }
+            else
+            {
+                return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
+            }
+        }
+
+        [HttpGet("GetSarpanchWardsListById")]
+        [Authorize]
+        public async Task<IActionResult> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId,int boothMasterId)
+        {
+            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null)
+            {
+                var psZoneList = await _EAMSService.GetSarpanchWardsListById(stateMasterId, districtMasterId, assemblyMasterId, boothMasterId);  // Corrected to await the asynchronous method
+                if (psZoneList != null)
+                {
+                    var data = new
+                    {
+                        count = psZoneList.Count,
+                        data = psZoneList.ToList(),
+                        //data = boothList.OrderBy(p => Int32.Parse(p.BoothCode_No)).ToList(),
+
+                    };
+                    return Ok(data);
+
+                }
+                else
+                {
+                    return NotFound("Booth Not Found");
+
+                }
+            }
+            else
+            {
+
+                return BadRequest("State, District and Assembly Master Id's cannot be null");
+            }
+
+        }
+
+        [HttpPut]
+        [Route("UpdateSarpanchWards")]
+        [Authorize]
+        public async Task<IActionResult> UpdateSarpanchWards(UpdateSarpanchWardsViewModel updateSarpanchWardsViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                var mappedData = _mapper.Map<UpdateSarpanchWardsViewModel, SarpanchWards>(updateSarpanchWardsViewModel);
+                var result = await _EAMSService.UpdateSarpanchWards(mappedData);
+                switch (result.Status)
+                {
+                    case RequestStatusEnum.OK:
+                        return Ok(result.Message);
+                    case RequestStatusEnum.BadRequest:
+                        return BadRequest(result.Message);
+                    case RequestStatusEnum.NotFound:
+                        return NotFound(result.Message);
+
+                    default:
+                        return StatusCode(500, "Internal Server Error");
+                }
+
+            }
+            else
+            {
+                return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
+            }
+        }
+
+        [HttpGet("GetSarpanchWardsById")]
+        [Authorize]
+        public async Task<IActionResult> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId)
+        {
+            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && boothMasterId != null && wardsMasterId != null)
+            {
+                var wardsList = await _EAMSService.GetSarpanchWardsById(stateMasterId, districtMasterId, assemblyMasterId, boothMasterId, wardsMasterId);  // Corrected to await the asynchronous method
+                if (wardsList != null)
+                {
+
+                    return Ok(wardsList);
+
+                }
+                else
+                {
+                    return NotFound("Booth Not Found");
+
+                }
+            }
+            else
+            {
+
+                return BadRequest("Master Id's cannot be null");
+            }
+
+        }
+
+        [HttpDelete("DeleteSarpanchWardsById")]
+        [Authorize]
+        public async Task<IActionResult> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId)
+        {
+            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && boothMasterId != null && wardsMasterId != null)
+            {
+                var isDelete =await _EAMSService.DeleteSarpanchWardsById(stateMasterId, districtMasterId, assemblyMasterId, boothMasterId, wardsMasterId);  // Corrected to await the asynchronous method
+                if (isDelete != null)
+                {
+
+                    return Ok(isDelete);
+
+                }
+                else
+                {
+                    return NotFound("Not Found");
 
                 }
             }

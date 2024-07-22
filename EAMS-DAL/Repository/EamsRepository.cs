@@ -15889,5 +15889,161 @@ namespace EAMS_DAL.Repository
         }
 
         #endregion
+
+        #region SarpanchWards
+        public async Task<Response> AddSarpanchWards(SarpanchWards sarpanchWards)
+        {
+            try
+            {
+                var ispsZoneExist = await _context.SarpanchWards.Where(p => p.SarpanchWardsCode == sarpanchWards.SarpanchWardsCode && p.StateMasterId == sarpanchWards.StateMasterId && p.DistrictMasterId == sarpanchWards.DistrictMasterId && p.AssemblyMasterId == sarpanchWards.AssemblyMasterId && p.ElectionTypeMasterId == sarpanchWards.ElectionTypeMasterId).FirstOrDefaultAsync();
+
+                if (ispsZoneExist == null)
+                {
+
+                    sarpanchWards.SarpanchWardsCreatedAt = BharatDateTime();
+                    _context.SarpanchWards.Add(sarpanchWards);
+                    _context.SaveChanges();
+
+                    return new Response { Status = RequestStatusEnum.OK, Message = sarpanchWards.SarpanchWardsName + "Added Successfully" };
+
+
+
+                }
+                else
+                {
+                    return new Response { Status = RequestStatusEnum.BadRequest, Message = ispsZoneExist.SarpanchWardsName + "Same PS Zone Code Already Exists in the selected Election Type" };
+
+                }
+
+            }
+
+            catch (Exception ex)
+            {
+                return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
+            }
+        }
+        public async Task<List<SarpanchWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId)
+        {
+            var getPsZone = await _context.SarpanchWards.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId&&d.BoothMasterId==boothMasterId).ToListAsync();
+            if (getPsZone != null)
+            {
+                return getPsZone;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public async Task<Response> UpdateSarpanchWards(SarpanchWards sarpanchWards)
+        {
+            // Check if the SarpanchWards entity exists in the database
+            var existingSarpanchWards = await _context.SarpanchWards
+                .Where(d => d.SarpanchWardsMasterId == sarpanchWards.SarpanchWardsMasterId)
+                .FirstOrDefaultAsync();
+
+            if (existingSarpanchWards == null)
+            {
+                return new Response
+                {
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = "Wards not found."
+                };
+            }
+
+            // Update the properties of the existing entity
+            existingSarpanchWards.SarpanchWardsName = sarpanchWards.SarpanchWardsName;
+            existingSarpanchWards.SarpanchWardsCode = sarpanchWards.SarpanchWardsCode;
+            existingSarpanchWards.SarpanchWardsType = sarpanchWards.SarpanchWardsType;
+            existingSarpanchWards.ElectionTypeMasterId = sarpanchWards.ElectionTypeMasterId;
+            existingSarpanchWards.StateMasterId = sarpanchWards.StateMasterId;
+            existingSarpanchWards.DistrictMasterId = sarpanchWards.DistrictMasterId;
+            existingSarpanchWards.AssemblyMasterId = sarpanchWards.AssemblyMasterId;
+            existingSarpanchWards.BoothMasterId = sarpanchWards.BoothMasterId;
+            existingSarpanchWards.SarpanchWardsCategory = sarpanchWards.SarpanchWardsCategory;
+            existingSarpanchWards.SarpanchWardsUpdatedAt = DateTime.UtcNow;
+            existingSarpanchWards.SarpanchWardsDeletedAt = sarpanchWards.SarpanchWardsDeletedAt;
+            existingSarpanchWards.SarpanchWardsStatus = sarpanchWards.SarpanchWardsStatus;
+            existingSarpanchWards.SecondLanguage = sarpanchWards.SecondLanguage;
+
+            // Save changes to the database
+            try
+            {
+                await _context.SaveChangesAsync();
+                return new Response
+                {
+                    Status = RequestStatusEnum.OK,
+                    Message = "Sarpanch Wards updated successfully."
+                };
+            }
+            catch (Exception ex)
+            {
+                // Handle any errors that may have occurred
+                return new Response
+                {
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = $"An error occurred: {ex.Message}"
+                };
+            }
+        }
+        public async Task<SarpanchWards> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId)
+        {
+            var sarpanchWards = await _context.SarpanchWards
+                .Where(w => w.StateMasterId == stateMasterId &&
+                            w.DistrictMasterId == districtMasterId &&
+                            w.AssemblyMasterId == assemblyMasterId &&
+                            w.BoothMasterId == boothMasterId &&
+                            w.SarpanchWardsMasterId == wardsMasterId)
+                .FirstOrDefaultAsync();
+
+            if (sarpanchWards == null)
+            {
+                return null;
+            }
+
+            return sarpanchWards;
+        }
+
+
+        public async Task<Response> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId)
+        {
+            var sarpanchWards = await _context.SarpanchWards
+                .Where(w => w.StateMasterId == stateMasterId &&
+                            w.DistrictMasterId == districtMasterId &&
+                            w.AssemblyMasterId == assemblyMasterId &&
+                            w.BoothMasterId == boothMasterId &&
+                            w.SarpanchWardsMasterId == wardsMasterId)
+                .FirstOrDefaultAsync();
+
+            if (sarpanchWards == null)
+            {
+                return new Response
+                {
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = "Sarpanch Ward not found."
+                };
+            }
+
+            _context.SarpanchWards.Remove(sarpanchWards);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return new Response
+                {
+                    Status = RequestStatusEnum.OK,
+                    Message = "Sarpanch Ward deleted successfully."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response
+                {
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = $"An error occurred: {ex.Message}"
+                };
+            }
+        }
+
+        #endregion
     }
 }

@@ -1,18 +1,11 @@
 ﻿using EAMS_ACore.Models.ElectionType;
-using System;
-using System.Collections.Generic;
+using EAMS_ACore;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace EAMS_ACore.Models
+namespace LBPAMS.ViewModels
 {
-    public class SarpanchWards
+    public class AddSarpanchWardsViewModel
     {
-        [Key]
-        public int SarpanchWardsMasterId { get; set; }
         public string SarpanchWardsName { get; set; }
         public int SarpanchWardsCode { get; set; }
 
@@ -23,59 +16,34 @@ namespace EAMS_ACore.Models
             get;
             set;
         }
-        [ForeignKey("ElectionTypeMasterId")]
-        public virtual ElectionTypeMaster? ElectionTypeMaster
-        {
-            get;
-            set;
-        }
+        
 
         public int StateMasterId
         {
             get;
             set;
         }
-        [ForeignKey("StateMasterId")]
-        public virtual StateMaster? StateMaster
-        {
-            get;
-            set;
-        }
+       
 
         public int DistrictMasterId
         {
             get;
             set;
         }
-        [ForeignKey("DistrictMasterId")]
-        public virtual DistrictMaster? DistrictMaster
-        {
-            get;
-            set;
-        }
         
+         
         public int AssemblyMasterId
         {
             get;
             set;
         }
-        [ForeignKey("AssemblyMasterId")]
-        public virtual AssemblyMaster? AssemblyMaster
-        {
-            get;
-            set;
-        }
+      
         public int BoothMasterId
         {
             get;
             set;
         }
-        [ForeignKey("BoothMasterId")]
-        public virtual BoothMaster? BoothMaster
-        {
-            get;
-            set;
-        }
+        
         public string? SarpanchWardsCategory { get; set; }
         public DateTime? SarpanchWardsCreatedAt { get; set; }
 
@@ -84,6 +52,56 @@ namespace EAMS_ACore.Models
         public DateTime? SarpanchWardsDeletedAt { get; set; }
         public bool SarpanchWardsStatus { get; set; }
         public string? SecondLanguage { get; set; }
-        
+    }
+    public class UpdateSarpanchWardsViewModel
+    {
+        public int SarpanchWardsMasterId { get; set; }
+        public int MyProperty { get; set; }
+        public string SarpanchWardsName { get; set; }
+        public int SarpanchWardsCode { get; set; }
+
+        public string? SarpanchWardsType { get; set; }
+
+        public int ElectionTypeMasterId
+        {
+            get;
+            set;
+        }
+
+
+        public int StateMasterId
+        {
+            get;
+            set;
+        }
+
+
+        public int DistrictMasterId
+        {
+            get;
+            set;
+        }
+
+
+        public int AssemblyMasterId
+        {
+            get;
+            set;
+        }
+
+        public int BoothMasterId
+        {
+            get;
+            set;
+        }
+
+        public string? SarpanchWardsCategory { get; set; }
+        public DateTime? SarpanchWardsCreatedAt { get; set; }
+
+        public DateTime? SarpanchWardsUpdatedAt { get; set; }
+
+        public DateTime? SarpanchWardsDeletedAt { get; set; }
+        public bool SarpanchWardsStatus { get; set; }
+        public string? SecondLanguage { get; set; }
     }
 }

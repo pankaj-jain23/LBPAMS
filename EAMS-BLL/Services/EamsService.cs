@@ -2843,9 +2843,46 @@ namespace EAMS_BLL.Services
         {
             return _eamsRepository.GetPollInterruptionHistoryById(boothMasterId);
         }
+        public string GetInterruptionReason(string reason)
+        {
+            int interruptionreason = Convert.ToInt16(reason);
+            string reasonStatus = "";
+            if ((InterruptionReason)interruptionreason == InterruptionReason.EVMFault)
+            {
+                reasonStatus = InterruptionReason.EVMFault.ToString();
 
+
+
+            }
+            else if ((InterruptionReason)interruptionreason == InterruptionReason.LawAndOrder)
+            {
+                reasonStatus = InterruptionReason.LawAndOrder.ToString();
+            }
+            else
+            {
+                reasonStatus = "";
+            }
+            return reasonStatus;
+        }
+
+        public Task<List<PollInterruptionDashboard>> GetPollInterruptionDashboard(ClaimsIdentity claimsIdentity)
+        {
+            return _eamsRepository.GetPollInterruptionDashboard(claimsIdentity);
+        }
+
+        public Task<int> GetPollInterruptionDashboardCount(ClaimsIdentity claimsIdentity)
+        {
+            return _eamsRepository.GetPollInterruptionDashboardCount(claimsIdentity);
+        }
+
+        public Task<List<PollInterruptionDashboard>> GetBoothListBySoIdfoInterruption(ClaimsIdentity claimsIdentity)
+        {
+            return _eamsRepository.GetBoothListBySoIdfoInterruption(claimsIdentity);
+        }
 
         #endregion
+
+        #region common Methods Event Activity
         static bool IsHHmmFormat(string timeString)
         {
             DateTime dummyDate; // A dummy date to use for parsing
@@ -2949,40 +2986,8 @@ namespace EAMS_BLL.Services
                 return false;
             }
         }
-        public string GetInterruptionReason(string reason)
-        {
-            int interruptionreason = Convert.ToInt16(reason);
-            string reasonStatus = "";
-            if ((InterruptionReason)interruptionreason == InterruptionReason.EVMFault)
-            {
-                reasonStatus = InterruptionReason.EVMFault.ToString();
-
-
-
-            }
-            else if ((InterruptionReason)interruptionreason == InterruptionReason.LawAndOrder)
-            {
-                reasonStatus = InterruptionReason.LawAndOrder.ToString();
-            }
-            else
-            {
-                reasonStatus = "";
-            }
-            return reasonStatus;
-        }
-
-        public Task<List<PollInterruptionDashboard>> GetPollInterruptionDashboard(ClaimsIdentity claimsIdentity)
-        {
-            return _eamsRepository.GetPollInterruptionDashboard(claimsIdentity);
-        }
-        public Task<int> GetPollInterruptionDashboardCount(ClaimsIdentity claimsIdentity)
-        {
-            return _eamsRepository.GetPollInterruptionDashboardCount(claimsIdentity);
-        }
-        public Task<List<PollInterruptionDashboard>> GetBoothListBySoIdfoInterruption(ClaimsIdentity claimsIdentity)
-        {
-            return _eamsRepository.GetBoothListBySoIdfoInterruption(claimsIdentity);
-        }
+        #endregion
+       
 
         #region PSOFORM
         public async Task<Response> AddPSOForm(PollingStationMaster pollingStationMaster, ClaimsIdentity claimsIdentity)
@@ -3324,7 +3329,7 @@ namespace EAMS_BLL.Services
         }
         public async Task<List<PSZone>> GetPSZoneListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            return await _eamsRepository.GetPSZoneListById(stateMasterId,districtMasterId,assemblyMasterId);
+            return await _eamsRepository.GetPSZoneListById(stateMasterId, districtMasterId, assemblyMasterId);
         }
         public async Task<PSZone> GetPSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId)
         {
@@ -3333,11 +3338,38 @@ namespace EAMS_BLL.Services
         public async Task<Response> UpdatePSZone(PSZone pSZone)
         {
             return await _eamsRepository.UpdatePSZone(pSZone);
-        } 
+        }
         public async Task<Response> DeletePSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId)
         {
-            return await _eamsRepository.DeletePSZoneById(stateMasterId,districtMasterId,assemblyMasterId,pSZoneMasterId);
+            return await _eamsRepository.DeletePSZoneById(stateMasterId, districtMasterId, assemblyMasterId, pSZoneMasterId);
         }
-            #endregion
+        #endregion
+
+        #region SarpanchWards
+        public async Task<Response> AddSarpanchWards(SarpanchWards sarpanchWards)
+        {
+
+            return await _eamsRepository.AddSarpanchWards(sarpanchWards);
         }
+        public async Task<List<SarpanchWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId)
+        {
+            return await _eamsRepository.GetSarpanchWardsListById(stateMasterId, districtMasterId, assemblyMasterId, boothMasterId);
+        }
+        public async Task<Response> UpdateSarpanchWards(SarpanchWards sarpanchWards)
+        {
+            return await _eamsRepository.UpdateSarpanchWards(sarpanchWards);
+        }
+
+        public async Task<SarpanchWards> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId)
+        {
+            return await _eamsRepository.GetSarpanchWardsById(stateMasterId,districtMasterId,assemblyMasterId,boothMasterId,wardsMasterId);
+        }
+
+        public async Task<Response> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId)
+        {
+            return await _eamsRepository.DeleteSarpanchWardsById(stateMasterId, districtMasterId, assemblyMasterId, boothMasterId, wardsMasterId);
+        }
+
+        #endregion
+    }
 }

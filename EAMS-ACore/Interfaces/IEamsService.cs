@@ -277,5 +277,14 @@ namespace EAMS_ACore.Interfaces
         Task<Response> UpdatePSZone(PSZone pSZone);
         Task<Response> DeletePSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId);
         #endregion
+
+        #region SarpanchWards
+        Task<Response> AddSarpanchWards(SarpanchWards sarpanchWards);
+        Task<List<SarpanchWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId);
+        Task<Response> UpdateSarpanchWards(SarpanchWards sarpanchWards);
+        Task<SarpanchWards> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId);
+
+         Task<Response> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId);
+        #endregion
     }
 }

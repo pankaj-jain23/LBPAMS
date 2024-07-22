@@ -144,7 +144,7 @@ namespace EAMS.Helper
                 .ForMember(dest => dest.StateCode, opt => opt.MapFrom(src => src.StateCode))
                 .ForMember(dest => dest.StateStatus, opt => opt.MapFrom(src => src.IsStatus))
                 .ForMember(dest => dest.IsGenderCapturedinVoterTurnOut, opt => opt.MapFrom(src => src.IsGenderCapturedinVoterTurnOut))
-               
+
                 .ReverseMap();
 
             #endregion
@@ -153,7 +153,7 @@ namespace EAMS.Helper
             CreateMap<AddStateMasterViewModel, StateMaster>()
                 .ForMember(dest => dest.StateName, opt => opt.MapFrom(src => src.StateName))
                 .ForMember(dest => dest.StateCode, opt => opt.MapFrom(src => src.StateCode))
-                 
+
                 .ForMember(dest => dest.StateStatus, opt => opt.MapFrom(src => src.IsStatus))
                 .ForMember(dest => dest.IsGenderCapturedinVoterTurnOut, opt => opt.MapFrom(src => src.IsGenderCapturedinVoterTurnOut))
 
@@ -170,7 +170,7 @@ namespace EAMS.Helper
                  .ForMember(dest => dest.SecondLanguage, opt => opt.MapFrom(src => src.SecondLanguage))
                .ForMember(dest => dest.DistrictCode, opt => opt.MapFrom(src => src.DistrictCode))
                .ForMember(dest => dest.IsStatus, opt => opt.MapFrom(src => src.DistrictStatus))
-               
+
                .ReverseMap();
 
             #endregion
@@ -185,7 +185,7 @@ namespace EAMS.Helper
     .ForMember(dest => dest.AssemblyCode, opt => opt.MapFrom(src => src.AssemblyCode))
     .ForMember(dest => dest.PCMasterId, opt => opt.MapFrom(src => src.PCMasterId))
     .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
-   
+
     .ForMember(dest => dest.AssemblyType, opt => opt.MapFrom(src => src.AssemblyType))
     .ForMember(dest => dest.AssemblyStatus, opt => opt.MapFrom(src => src.IsStatus))
         .ForMember(dest => dest.TotalBooths, opt => opt.MapFrom(src => src.TotalBooths))
@@ -609,16 +609,16 @@ namespace EAMS.Helper
        .ForMember(dest => dest.DateOfPostponedRound, opt => opt.MapFrom(src => ParseAndConvertToUtc(src.DateOfPostponedRound)))
        .ForMember(dest => dest.DateOfCompletedRound, opt => opt.MapFrom(src => ParseAndConvertToUtc(src.DateOfCompletedRound)))
        .ReverseMap();
-              CreateMap<PPRViewUpdateModel, PPR>()
-       .ForMember(dest => dest.PPRMasterId, opt => opt.MapFrom(src => src.PPRMasterId))
-       .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
-       .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
-       .ForMember(dest => dest.RandomizationTaskDetailMasterId, opt => opt.MapFrom(src => src.RandomizationTaskDetailMasterId))
-       .ForMember(dest => dest.CurrentRound, opt => opt.MapFrom(src => src.CurrentRound))
-       .ForMember(dest => dest.DateOfRound, opt => opt.MapFrom(src => ParseAndConvertToUtc(src.DateOfRound)))
-       .ForMember(dest => dest.DateOfPostponedRound, opt => opt.MapFrom(src => ParseAndConvertToUtc(src.DateOfPostponedRound)))
-       .ForMember(dest => dest.DateOfCompletedRound, opt => opt.MapFrom(src => ParseAndConvertToUtc(src.DateOfCompletedRound)))
-       .ReverseMap();
+            CreateMap<PPRViewUpdateModel, PPR>()
+     .ForMember(dest => dest.PPRMasterId, opt => opt.MapFrom(src => src.PPRMasterId))
+     .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+     .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+     .ForMember(dest => dest.RandomizationTaskDetailMasterId, opt => opt.MapFrom(src => src.RandomizationTaskDetailMasterId))
+     .ForMember(dest => dest.CurrentRound, opt => opt.MapFrom(src => src.CurrentRound))
+     .ForMember(dest => dest.DateOfRound, opt => opt.MapFrom(src => ParseAndConvertToUtc(src.DateOfRound)))
+     .ForMember(dest => dest.DateOfPostponedRound, opt => opt.MapFrom(src => ParseAndConvertToUtc(src.DateOfPostponedRound)))
+     .ForMember(dest => dest.DateOfCompletedRound, opt => opt.MapFrom(src => ParseAndConvertToUtc(src.DateOfCompletedRound)))
+     .ReverseMap();
 
 
             CreateMap<RandomizationTaskDetailViewModel, RandomizationTaskDetail>()
@@ -674,7 +674,7 @@ namespace EAMS.Helper
                 .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
                 .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
                 .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
-              
+
                 .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
                 .ForMember(dest => dest.PSZoneBooths, opt => opt.MapFrom(src => src.PSZoneBooths))
                 .ForMember(dest => dest.PSZoneCategory, opt => opt.MapFrom(src => src.PSZoneCategory))
@@ -683,7 +683,7 @@ namespace EAMS.Helper
                 .ForMember(dest => dest.PSZoneDeletedAt, opt => opt.MapFrom(src => src.PSZoneDeletedAt))
                 .ForMember(dest => dest.PSZoneStatus, opt => opt.MapFrom(src => src.PSZoneStatus))
                 .ForMember(dest => dest.SecondLanguage, opt => opt.MapFrom(src => src.SecondLanguage))
-                .ReverseMap();   
+                .ReverseMap();
             CreateMap<UpdatePSZoneViewModel, PSZone>()
                 .ForMember(dest => dest.PSZoneMasterId, opt => opt.MapFrom(src => src.PSZoneMasterId))
                 .ForMember(dest => dest.PSZoneName, opt => opt.MapFrom(src => src.PSZoneName))
@@ -692,7 +692,7 @@ namespace EAMS.Helper
                 .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
                 .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
                 .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
-              
+
                 .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
                 .ForMember(dest => dest.PSZoneBooths, opt => opt.MapFrom(src => src.PSZoneBooths))
                 .ForMember(dest => dest.PSZoneCategory, opt => opt.MapFrom(src => src.PSZoneCategory))
@@ -704,6 +704,41 @@ namespace EAMS.Helper
                 .ReverseMap();
             #endregion
 
+            #region AddSarpanchWardsViewModel
+            CreateMap<AddSarpanchWardsViewModel, SarpanchWards>()
+                     .ForMember(dest => dest.SarpanchWardsName, opt => opt.MapFrom(src => src.SarpanchWardsName))
+                     .ForMember(dest => dest.SarpanchWardsCode, opt => opt.MapFrom(src => src.SarpanchWardsCode))
+                     .ForMember(dest => dest.SarpanchWardsType, opt => opt.MapFrom(src => src.SarpanchWardsType))
+                     .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+                     .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+                     .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+                     .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+                     .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
+                     .ForMember(dest => dest.SarpanchWardsCategory, opt => opt.MapFrom(src => src.SarpanchWardsCategory))
+                     .ForMember(dest => dest.SarpanchWardsCreatedAt, opt => opt.MapFrom(src => src.SarpanchWardsCreatedAt))
+                     .ForMember(dest => dest.SarpanchWardsUpdatedAt, opt => opt.MapFrom(src => src.SarpanchWardsUpdatedAt))
+                     .ForMember(dest => dest.SarpanchWardsDeletedAt, opt => opt.MapFrom(src => src.SarpanchWardsDeletedAt))
+                     .ForMember(dest => dest.SarpanchWardsStatus, opt => opt.MapFrom(src => src.SarpanchWardsStatus))
+                     .ForMember(dest => dest.SecondLanguage, opt => opt.MapFrom(src => src.SecondLanguage))
+            .ReverseMap();
+            CreateMap<UpdateSarpanchWardsViewModel, SarpanchWards>()
+                     .ForMember(dest => dest.SarpanchWardsMasterId, opt => opt.MapFrom(src => src.SarpanchWardsMasterId))
+                     .ForMember(dest => dest.SarpanchWardsName, opt => opt.MapFrom(src => src.SarpanchWardsName))
+                     .ForMember(dest => dest.SarpanchWardsCode, opt => opt.MapFrom(src => src.SarpanchWardsCode))
+                     .ForMember(dest => dest.SarpanchWardsType, opt => opt.MapFrom(src => src.SarpanchWardsType))
+                     .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+                     .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+                     .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+                     .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+                     .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
+                     .ForMember(dest => dest.SarpanchWardsCategory, opt => opt.MapFrom(src => src.SarpanchWardsCategory))
+                     .ForMember(dest => dest.SarpanchWardsCreatedAt, opt => opt.MapFrom(src => src.SarpanchWardsCreatedAt))
+                     .ForMember(dest => dest.SarpanchWardsUpdatedAt, opt => opt.MapFrom(src => src.SarpanchWardsUpdatedAt))
+                     .ForMember(dest => dest.SarpanchWardsDeletedAt, opt => opt.MapFrom(src => src.SarpanchWardsDeletedAt))
+                     .ForMember(dest => dest.SarpanchWardsStatus, opt => opt.MapFrom(src => src.SarpanchWardsStatus))
+                     .ForMember(dest => dest.SecondLanguage, opt => opt.MapFrom(src => src.SecondLanguage))
+            .ReverseMap();
+            #endregion
         }
         #region Convert DateTime UTC
         private DateTime? ParseAndConvertToUtc(string dateTimeString)
