@@ -97,7 +97,10 @@ namespace EAMS.Controllers
                 PSMasterId = kyc.PSMasterId,
                 MCorporationMasterId = kyc.MCorporationMasterId,
                 MCouncilMasterId = kyc.MCouncilMasterId,
-                NagaraPanchayatMasterId = kyc.NagaraPanchayatMasterId,
+                NPMasterId = kyc.NPMasterId,
+                PSZoneMasterId = kyc.PSZoneMasterId,
+                SarpanchWardsMasterId = kyc.SarpanchWardsMasterId,
+                WardMasterId = kyc.WardMasterId,
                 CandidateName = kyc.CandidateName,
                 FatherName = kyc.FatherName,
                 NominationPdfPath = !string.IsNullOrEmpty(kyc.NominationPdfPath)

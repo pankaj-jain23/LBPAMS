@@ -110,13 +110,18 @@ namespace EAMS.Controllers
         [HttpDelete]
         [Route("DeleteMasterStatus")]
         [Authorize]
-        public async Task<IActionResult> DeleteMaster(DeleteMasterStatusViewModel deleteMasterStatus)
+        public async Task<IActionResult> DeleteMaster(string Id,string type)
         {
+            DeleteMasterStatusViewModel deleteMasterStatusViewModel =new DeleteMasterStatusViewModel()
+            {
+                Id = Id,
+                Type = type,
+            };
             try
             {
                 if (ModelState.IsValid)
                 {
-                    var mappedData = _mapper.Map<DeleteMasterStatus>(deleteMasterStatus);
+                    var mappedData = _mapper.Map<DeleteMasterStatus>(deleteMasterStatusViewModel);
                     var isSucceed = await _EAMSService.DeleteMasterStatus(mappedData);
 
                     if (isSucceed.IsSucceed)

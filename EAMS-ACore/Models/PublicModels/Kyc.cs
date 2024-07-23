@@ -35,16 +35,21 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
+        public int? WardMasterId
+        {
+            get;
+            set;
+        }
         public int? ZPMasterId
         {
             get;
             set;
-        }
+        }  
         public int? PSMasterId
         {
             get;
             set;
-        }
+        } 
         public int? MCorporationMasterId
         {
             get;
@@ -55,11 +60,13 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
-        public int? NagaraPanchayatMasterId
+        public int? NPMasterId
         {
             get;
             set;
         }
+        public int PSZoneMasterId { get; set; }
+        public int SarpanchWardsMasterId { get; set; }
         public string CandidateName
         {
             get;

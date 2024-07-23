@@ -73,7 +73,7 @@ namespace EAMS_DAL.Repository
                                 _context.StateMaster.Update(stateRecord);
                                 await _context.SaveChangesAsync();
 
-                                return new ServiceResponse { IsSucceed = true, Message = "State Updated Successfuly" };
+                                return new ServiceResponse { IsSucceed = true, Message = "State Deactivated Successfuly" };
                             }
                         }
                         else if (updateMasterStatus.IsStatus == true)
@@ -82,7 +82,7 @@ namespace EAMS_DAL.Repository
                             _context.StateMaster.Update(stateRecord);
                             await _context.SaveChangesAsync();
 
-                            return new ServiceResponse { IsSucceed = true, Message = "State Updated Successfuly" };
+                            return new ServiceResponse { IsSucceed = true, Message = "State Activated Successfuly" };
                         }
                         else
                         {
@@ -118,7 +118,7 @@ namespace EAMS_DAL.Repository
                                 _context.DistrictMaster.Update(districtRecord);
                                 await _context.SaveChangesAsync();
 
-                                return new ServiceResponse { IsSucceed = true, Message = "District Updated Successfuly" };
+                                return new ServiceResponse { IsSucceed = true, Message = "District Deactivated Successfuly" };
                             }
                         }
                         else if (updateMasterStatus.IsStatus == true)
@@ -135,7 +135,7 @@ namespace EAMS_DAL.Repository
                                 _context.DistrictMaster.Update(districtRecord);
                                 await _context.SaveChangesAsync();
 
-                                return new ServiceResponse { IsSucceed = true, Message = "District Updated Successfuly" };
+                                return new ServiceResponse { IsSucceed = true, Message = "District Activated Successfuly" };
 
                             }
                         }
@@ -235,7 +235,7 @@ namespace EAMS_DAL.Repository
                                 assemblyMaster.AssemblyStatus = updateMasterStatus.IsStatus;
                                 _context.AssemblyMaster.Update(assemblyMaster);
                                 _context.SaveChanges();
-                                return new ServiceResponse { IsSucceed = true, Message = "Assembly Updated Successfuly." };
+                                return new ServiceResponse { IsSucceed = true, Message = "Deactivated Successfuly." };
                             }
                         }
 
@@ -244,21 +244,21 @@ namespace EAMS_DAL.Repository
 
                         {
                             // under discussion that pc district here mandatory to active
-                            if (!await _context.ParliamentConstituencyMaster.AnyAsync(s => s.PCMasterId == assemblyMaster.PCMasterId && s.PcStatus == true) || !await _context.DistrictMaster.AnyAsync(s => s.DistrictMasterId == assemblyMaster.DistrictMasterId && s.DistrictStatus == true))
-                            {
-                                return new ServiceResponse
-                                {
-                                    IsSucceed = false,
-                                    Message = "District & PC must be active in order to activate Assembly."
-                                };
-                            }
-                            else
-                            {
+                            //if (!await _context.ParliamentConstituencyMaster.AnyAsync(s => s.PCMasterId == assemblyMaster.PCMasterId && s.PcStatus == true) || !await _context.DistrictMaster.AnyAsync(s => s.DistrictMasterId == assemblyMaster.DistrictMasterId && s.DistrictStatus == true))
+                            //{
+                            //    return new ServiceResponse
+                            //    {
+                            //        IsSucceed = false,
+                            //        Message = "District & PC must be active in order to activate Assembly."
+                            //    };
+                            //}
+                            //else
+                            //{
                                 assemblyMaster.AssemblyStatus = updateMasterStatus.IsStatus;
                                 _context.AssemblyMaster.Update(assemblyMaster);
                                 _context.SaveChanges();
-                                return new ServiceResponse { IsSucceed = true, Message = "Assembly Updated Successfuly." };
-                            }
+                                return new ServiceResponse { IsSucceed = true, Message = "Activated Successfuly." };
+                            //}
 
                         }
                         else
@@ -287,7 +287,7 @@ namespace EAMS_DAL.Repository
                                 isSOExist.SoStatus = updateMasterStatus.IsStatus;
                                 _context.SectorOfficerMaster.Update(isSOExist);
                                 _context.SaveChanges();
-                                return new ServiceResponse { IsSucceed = true, Message = "So Status Updated Successfully" };
+                                return new ServiceResponse { IsSucceed = true, Message = "SO Activated Successfully" };
                             }
                             else
                             {
@@ -306,7 +306,7 @@ namespace EAMS_DAL.Repository
                                 isSOExist.SoStatus = updateMasterStatus.IsStatus;
                                 _context.SectorOfficerMaster.Update(isSOExist);
                                 _context.SaveChanges();
-                                return new ServiceResponse { IsSucceed = true, Message = "So Status Updated Successfully" };
+                                return new ServiceResponse { IsSucceed = true, Message = "SO Deactivated Successfully" };
 
                             }
                             else
@@ -348,7 +348,7 @@ namespace EAMS_DAL.Repository
                                     isBoothExist.LocationMasterId = null;
                                     _context.BoothMaster.Update(isBoothExist);
                                     await _context.SaveChangesAsync();
-                                    return new ServiceResponse { IsSucceed = true, Message = "Booth is Unmapped from Location and Booth is Inactive." };
+                                    return new ServiceResponse { IsSucceed = true, Message = "Booth is Unmapped from Location and Booth is Deactivated." };
 
                                 }
                                 else if (updateMasterStatus.IsStatus == true)
@@ -364,7 +364,7 @@ namespace EAMS_DAL.Repository
                                         isBoothExist.BoothStatus = updateMasterStatus.IsStatus;
                                         _context.BoothMaster.Update(isBoothExist);
                                         await _context.SaveChangesAsync();
-                                        return new ServiceResponse { IsSucceed = true, Message = "Booth Status Updated succcessfully, Kindly Map booth location." };
+                                        return new ServiceResponse { IsSucceed = true, Message = "Booth Activated succcessfully, Kindly Map booth location." };
 
                                     }
                                 }
