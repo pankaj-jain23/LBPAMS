@@ -581,7 +581,7 @@ namespace EAMS_DAL.Repository
 
                             _context.StateMaster.Remove(stateRecord);
                             await _context.SaveChangesAsync();
-                            return new ServiceResponse { IsSucceed = false, Message = "State deleted successfully." };
+                            return new ServiceResponse { IsSucceed = true, Message = "State deleted successfully." };
                                                         
                             }
                        
@@ -611,7 +611,7 @@ namespace EAMS_DAL.Repository
 
                             _context.DistrictMaster.Remove(districtRecord);
                             await _context.SaveChangesAsync();
-                            return new ServiceResponse { IsSucceed = false, Message = "District deleted successfully." };
+                            return new ServiceResponse { IsSucceed = true, Message = "District deleted successfully." };
 
                         }
                     }
