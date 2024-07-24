@@ -94,7 +94,9 @@ namespace EAMS_DAL.Repository
                     else
                     {
                         return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
+
                     }
+
 
                 case "DistrictMaster":
                     var districtId = Convert.ToInt32(updateMasterStatus.Id);
@@ -152,6 +154,7 @@ namespace EAMS_DAL.Repository
                     {
                         return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
                     }
+
 
                 case "PCMaster":
                     var pcId = Convert.ToInt32(updateMasterStatus.Id);
@@ -254,10 +257,10 @@ namespace EAMS_DAL.Repository
                             //}
                             //else
                             //{
-                                assemblyMaster.AssemblyStatus = updateMasterStatus.IsStatus;
-                                _context.AssemblyMaster.Update(assemblyMaster);
-                                _context.SaveChanges();
-                                return new ServiceResponse { IsSucceed = true, Message = "Activated Successfuly." };
+                            assemblyMaster.AssemblyStatus = updateMasterStatus.IsStatus;
+                            _context.AssemblyMaster.Update(assemblyMaster);
+                            _context.SaveChanges();
+                            return new ServiceResponse { IsSucceed = true, Message = "Activated Successfuly." };
                             //}
 
                         }
@@ -509,7 +512,7 @@ namespace EAMS_DAL.Repository
                             }
                             else
                             {
-                                return new ServiceResponse { IsSucceed = false, Message = "Assembly is not Active od this BLO" };
+                                return new ServiceResponse { IsSucceed = false, Message = "Assembly is not Active of this BLO" };
 
                             }
                         }
@@ -546,6 +549,66 @@ namespace EAMS_DAL.Repository
                     {
                         return new ServiceResponse { IsSucceed = false, Message = "Sector Officer Record Not Found." };
                     }
+
+
+                case "PSZONE":
+                    var psZone = await _context.PSZone
+                        .Where(d => d.PSZoneMasterId == Convert.ToInt32(updateMasterStatus.Id))
+                        .FirstOrDefaultAsync();
+
+                    if (psZone == null)
+                    {
+                        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
+                    }
+
+                    if (updateMasterStatus.IsStatus)
+                    {
+                        var assembly = await _context.AssemblyMaster
+                            .Where(d => d.AssemblyMasterId == psZone.AssemblyMasterId)
+                            .FirstOrDefaultAsync();
+
+                        if (assembly?.AssemblyStatus == true)
+                        {
+                            return new ServiceResponse { IsSucceed = false, Message = "Assembly is already active. Please deactivate it first." };
+                        }
+                    }
+
+                    psZone.PSZoneStatus = updateMasterStatus.IsStatus;
+                    _context.PSZone.Update(psZone);
+                    await _context.SaveChangesAsync();
+
+                    string message = psZone.PSZoneStatus ? "Zone Activated Successfully" : "Zone Deactivated Successfully";
+                    return new ServiceResponse { IsSucceed = psZone.PSZoneStatus, Message = message };
+           
+                case "SPWards":
+                    var spWards = await _context.SarpanchWards
+                        .Where(d => d.SarpanchWardsMasterId == Convert.ToInt32(updateMasterStatus.Id))
+                        .FirstOrDefaultAsync();
+
+                    if (spWards == null)
+                    {
+                        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
+                    }
+
+                    if (updateMasterStatus.IsStatus)
+                    {
+                        var boothMaster = await _context.BoothMaster
+                            .Where(d => d.BoothMasterId == spWards.BoothMasterId)
+                            .FirstOrDefaultAsync();
+
+                        if (boothMaster?.BoothStatus == true)
+                        {
+                            return new ServiceResponse { IsSucceed = false, Message = "Booth is already active. Please deactivate it first." };
+                        }
+                    }
+
+                    spWards.SarpanchWardsStatus = updateMasterStatus.IsStatus;
+                    _context.SarpanchWards.Update(spWards);
+                    await _context.SaveChangesAsync();
+
+                    string messageSp = spWards.SarpanchWardsStatus ? "Ward Activated Successfully" : "Ward Deactivated Successfully";
+                    return new ServiceResponse { IsSucceed = spWards.SarpanchWardsStatus, Message = messageSp };
+
                 default:
                     return new ServiceResponse
                     {
@@ -567,25 +630,25 @@ namespace EAMS_DAL.Repository
 
                     if (stateRecord != null)
                     {
-                        
-                            var districtsActiveOfState = await _context.DistrictMaster
-                                .Where(d => d.StateMasterId == stateRecord.StateMasterId)
-                                .ToListAsync();
 
-                            if (districtsActiveOfState.Count > 0)
-                            {
-                                return new ServiceResponse { IsSucceed = false, Message = "Districts are active under this State. Make sure they are Inactive first." };
-                            }
-                            else
-                            {
+                        var districtsActiveOfState = await _context.DistrictMaster
+                            .Where(d => d.StateMasterId == stateRecord.StateMasterId)
+                            .ToListAsync();
+
+                        if (districtsActiveOfState.Count > 0)
+                        {
+                            return new ServiceResponse { IsSucceed = false, Message = "Districts are active under this State. Make sure they are Inactive first." };
+                        }
+                        else
+                        {
 
                             _context.StateMaster.Remove(stateRecord);
                             await _context.SaveChangesAsync();
                             return new ServiceResponse { IsSucceed = true, Message = "State deleted successfully." };
-                                                        
-                            }
-                       
-                     
+
+                        }
+
+
 
                     }
                     else
@@ -598,15 +661,15 @@ namespace EAMS_DAL.Repository
                     var districtRecord = await _context.DistrictMaster.FirstOrDefaultAsync(d => d.DistrictMasterId == districtId);
 
                     if (districtRecord != null)
-                    {                                               
-                            var assembliesRecord = await _context.AssemblyMaster.Where(s => s.DistrictMasterId == districtRecord.DistrictMasterId).ToListAsync();
-                            if (assembliesRecord.Count > 0)
-                            {
-                                return new ServiceResponse { IsSucceed = false, Message = "Assemblies Exist aganist this District, can't delete" };
+                    {
+                        var assembliesRecord = await _context.AssemblyMaster.Where(s => s.DistrictMasterId == districtRecord.DistrictMasterId).ToListAsync();
+                        if (assembliesRecord.Count > 0)
+                        {
+                            return new ServiceResponse { IsSucceed = false, Message = "Assemblies Exist aganist this District, can't delete" };
 
-                            }
-                            else
-                            {
+                        }
+                        else
+                        {
 
 
                             _context.DistrictMaster.Remove(districtRecord);
@@ -619,35 +682,35 @@ namespace EAMS_DAL.Repository
                     {
                         return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
                     }
-                    case "AssemblyMaster":
+                case "AssemblyMaster":
                     var assemblyMaster = await _context.AssemblyMaster.Where(d => d.AssemblyMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
 
                     if (assemblyMaster != null)
                     {
                         //if (updateMasterStatus.IsStatus == false)
                         //{
-                            var boothsActiveOfAssembly = await _context.BoothMaster
-                                .Where(d => d.StateMasterId == assemblyMaster.StateMasterId && d.DistrictMasterId == assemblyMaster.DistrictMasterId && d.AssemblyMasterId == assemblyMaster.AssemblyMasterId && d.BoothStatus == true)
-                                .ToListAsync();
+                        var boothsActiveOfAssembly = await _context.BoothMaster
+                            .Where(d => d.StateMasterId == assemblyMaster.StateMasterId && d.DistrictMasterId == assemblyMaster.DistrictMasterId && d.AssemblyMasterId == assemblyMaster.AssemblyMasterId && d.BoothStatus == true)
+                            .ToListAsync();
 
-                            if (boothsActiveOfAssembly.Count > 0)
+                        if (boothsActiveOfAssembly.Count > 0)
+                        {
+                            return new ServiceResponse
                             {
-                                return new ServiceResponse
-                                {
-                                    IsSucceed = false,
-                                    Message = "Booths are active under this State Assembly. Make sure they are Inactive first"
-                                };
-                            }
-                            else
-                            {
-                               _context.AssemblyMaster.Remove(assemblyMaster);
+                                IsSucceed = false,
+                                Message = "Booths are active under this State Assembly. Make sure they are Inactive first"
+                            };
+                        }
+                        else
+                        {
+                            _context.AssemblyMaster.Remove(assemblyMaster);
                             await _context.SaveChangesAsync();
                             return new ServiceResponse { IsSucceed = true, Message = "Assembly Deleted Succesfully." };
-                            
-                            }
-                       // }
 
-                       
+                        }
+                        // }
+
+
 
                     }
                     else
@@ -673,7 +736,7 @@ namespace EAMS_DAL.Repository
 
                         }
                     }
-                                                         
+
                     else
                     {
                         return new ServiceResponse { IsSucceed = false, Message = "Sector Officer Record Not Found." };
@@ -688,9 +751,9 @@ namespace EAMS_DAL.Repository
       .FirstOrDefaultAsync();
                         if (electionInfoRecord == null)
                         {
-                            if (isBoothExist.AssignedTo == null || isBoothExist.AssignedTo == "" ) 
+                            if (isBoothExist.AssignedTo == null || isBoothExist.AssignedTo == "")
                             {
-                                if(isBoothExist.AssignedToBLO == null || isBoothExist.AssignedToBLO == "")
+                                if (isBoothExist.AssignedToBLO == null || isBoothExist.AssignedToBLO == "")
                                 {
                                     _context.BoothMaster.Remove(isBoothExist);
                                     await _context.SaveChangesAsync();
@@ -730,28 +793,28 @@ namespace EAMS_DAL.Repository
 
                     if (locationMaster != null)
                     {
-                        
-                            var boothhavingLocation = await _context.BoothMaster.Where(b => b.LocationMasterId == Convert.ToInt32(updateMasterStatus.Id)).ToListAsync();
 
-                            if (boothhavingLocation.Count > 0)
-                            {
+                        var boothhavingLocation = await _context.BoothMaster.Where(b => b.LocationMasterId == Convert.ToInt32(updateMasterStatus.Id)).ToListAsync();
+
+                        if (boothhavingLocation.Count > 0)
+                        {
                             return new ServiceResponse { IsSucceed = true, Message = "Booths mapped with this Location, Kindly Release." };
 
-                    }
-                    else
-                      { 
+                        }
+                        else
+                        {
                             _context.PollingLocationMaster.Remove(locationMaster);
                             await _context.SaveChangesAsync();
                             return new ServiceResponse { IsSucceed = true, Message = "Location Deleted Succesfully." };
 
 
 
-                            }
+                        }
 
 
-                        
 
-                      
+
+
 
                     }
                     else
@@ -770,7 +833,7 @@ namespace EAMS_DAL.Repository
                         await _context.SaveChangesAsync();
                         return new ServiceResponse { IsSucceed = true, Message = "HelpDesk Record is deleted successfully." };
 
-                        
+
 
                     }
                     else
@@ -781,23 +844,23 @@ namespace EAMS_DAL.Repository
                 case "BLO":
                     var isBLOExist = await _context.BLOMaster.Where(d => d.BLOMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
                     if (isBLOExist != null)
-                    {                       
+                    {
 
-                            var assemblyActive = await _context.BoothMaster.Where(p => p.AssignedToBLO == isBLOExist.BLOMasterId.ToString()).ToListAsync();
-                            if (assemblyActive.Count == 0)
-                            {
+                        var assemblyActive = await _context.BoothMaster.Where(p => p.AssignedToBLO == isBLOExist.BLOMasterId.ToString()).ToListAsync();
+                        if (assemblyActive.Count == 0)
+                        {
                             _context.BLOMaster.Remove(isBLOExist);
                             await _context.SaveChangesAsync();
                             return new ServiceResponse { IsSucceed = true, Message = "BLO Record is deleted successfully." };
 
                         }
                         else
-                            {
-                                return new ServiceResponse { IsSucceed = false, Message = "Booths assigned to BLO, kindly release first" };
+                        {
+                            return new ServiceResponse { IsSucceed = false, Message = "Booths assigned to BLO, kindly release first" };
 
-                            }
-                        
-                       
+                        }
+
+
 
                     }
                     else
@@ -875,9 +938,9 @@ namespace EAMS_DAL.Repository
                 StateName = d.StateName,
                 SecondLanguage = d.SecondLanguage,
                 StateMasterId = d.StateMasterId,
-               
+
                 StateStatus = d.StateStatus
-            }).OrderBy(d=>d.StateMasterId)
+            }).OrderBy(d => d.StateMasterId)
                 .ToListAsync();
 
             return stateList;
@@ -995,7 +1058,7 @@ namespace EAMS_DAL.Repository
                     stateMasterRecord.StateStatus = stateMaster.StateStatus;
                     stateMasterRecord.StateUpdatedAt = BharatDateTime();
                     stateMasterRecord.IsGenderCapturedinVoterTurnOut = stateMaster.IsGenderCapturedinVoterTurnOut;
-                    
+
                     _context.StateMaster.Update(stateMasterRecord);
                     _context.SaveChanges();
 
@@ -1029,7 +1092,7 @@ namespace EAMS_DAL.Repository
             {
 
                 var stateExist = _context.StateMaster
-    .Where(p => (p.StateCode == stateMaster.StateCode || p.StateName == stateMaster.StateName)  ).FirstOrDefault();
+    .Where(p => (p.StateCode == stateMaster.StateCode || p.StateName == stateMaster.StateName)).FirstOrDefault();
 
 
                 if (stateExist == null)
@@ -1184,12 +1247,12 @@ namespace EAMS_DAL.Repository
         {
             try
             {
-                var isExist = _context.DistrictMaster.Where(p => (p.DistrictName == districtMaster.DistrictName && p.StateMasterId == districtMaster.StateMasterId)  ).FirstOrDefault();
+                var isExist = _context.DistrictMaster.Where(p => (p.DistrictName == districtMaster.DistrictName && p.StateMasterId == districtMaster.StateMasterId)).FirstOrDefault();
                 var isStateActive = _context.StateMaster.Where(p => p.StateMasterId == districtMaster.StateMasterId).FirstOrDefault();
                 if (isStateActive.StateStatus)
                     if (isExist == null)
                     {
-                        var isExistCode = _context.DistrictMaster.Where(p => p.DistrictCode == districtMaster.DistrictCode && p.StateMasterId == districtMaster.StateMasterId  ).FirstOrDefault();
+                        var isExistCode = _context.DistrictMaster.Where(p => p.DistrictCode == districtMaster.DistrictCode && p.StateMasterId == districtMaster.StateMasterId).FirstOrDefault();
                         if (isExistCode == null)
                         {
                             districtMaster.DistrictCreatedAt = BharatDateTime(); ;
@@ -1229,9 +1292,9 @@ namespace EAMS_DAL.Repository
             return districtRecord;
         }
         #endregion
-        
+
         #region Assembly Master
-        public async Task<List<CombinedMaster>> GetAssemblies(string stateId, string districtId,string electionTypeId)
+        public async Task<List<CombinedMaster>> GetAssemblies(string stateId, string districtId, string electionTypeId)
         {
             var isStateActive = _context.StateMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateId)).FirstOrDefault();
             var isDistrictActive = _context.DistrictMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateId) && d.DistrictMasterId == Convert.ToInt32(districtId)).FirstOrDefault();
@@ -1244,7 +1307,7 @@ namespace EAMS_DAL.Repository
                                 on dist.StateMasterId equals state.StateMasterId // key selector for StateMaster
                                 join elec in _context.ElectionTypeMaster
                                 on asemb.ElectionTypeMasterId equals elec.ElectionTypeMasterId
-                                where state.StateMasterId == Convert.ToInt32(stateId) && asemb.ElectionTypeMasterId== Convert.ToInt32(electionTypeId) // condition for StateMasterId equal to 21
+                                where state.StateMasterId == Convert.ToInt32(stateId) && asemb.ElectionTypeMasterId == Convert.ToInt32(electionTypeId) // condition for StateMasterId equal to 21
                                 orderby asemb.AssemblyMasterId
                                 select new CombinedMaster
                                 { // result selector 
@@ -1257,8 +1320,8 @@ namespace EAMS_DAL.Repository
                                     SecondLanguage = asemb.SecondLanguage,
                                     AssemblyCode = asemb.AssemblyCode,
                                     IsStatus = asemb.AssemblyStatus,
-                                    ElectionTypeMasterId=asemb.ElectionTypeMasterId,
-                                    ElectionTypeName=elec.ElectionType
+                                    ElectionTypeMasterId = asemb.ElectionTypeMasterId,
+                                    ElectionTypeName = elec.ElectionType
                                 };
 
                 return await innerJoin.ToListAsync();
@@ -1269,11 +1332,11 @@ namespace EAMS_DAL.Repository
             }
         }
 
-        public async Task<List<CombinedMaster>> GetAssembliesByElectionType(string stateId, string districtId,string electionTypeMasterId)
+        public async Task<List<CombinedMaster>> GetAssembliesByElectionType(string stateId, string districtId, string electionTypeMasterId)
         {
             var isStateActive = _context.StateMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateId)).FirstOrDefault();
             var isDistrictActive = _context.DistrictMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateId) && d.DistrictMasterId == Convert.ToInt32(districtId)).FirstOrDefault();
-             if (isStateActive.StateStatus && isDistrictActive.DistrictStatus)
+            if (isStateActive.StateStatus && isDistrictActive.DistrictStatus)
             {
                 var innerJoin = from asemb in _context.AssemblyMaster.Where(d => d.DistrictMasterId == Convert.ToInt32(districtId) && d.ElectionTypeMasterId == Convert.ToInt32(electionTypeMasterId)) // outer sequence
                                 join dist in _context.DistrictMaster // inner sequence 
@@ -1310,88 +1373,89 @@ namespace EAMS_DAL.Repository
 
             if (assembliesMasterRecords != null)
             {
-        
-                var isAssemblyCodeExist = await _context.AssemblyMaster.Where(p => p.AssemblyCode == assemblyMaster.AssemblyCode && p.StateMasterId == assemblyMaster.StateMasterId && p.ElectionTypeMasterId==assemblyMaster.ElectionTypeMasterId && p.AssemblyMasterId != assemblyMaster.AssemblyMasterId).ToListAsync();
+
+                var isAssemblyCodeExist = await _context.AssemblyMaster.Where(p => p.AssemblyCode == assemblyMaster.AssemblyCode && p.StateMasterId == assemblyMaster.StateMasterId && p.ElectionTypeMasterId == assemblyMaster.ElectionTypeMasterId && p.AssemblyMasterId != assemblyMaster.AssemblyMasterId).ToListAsync();
                 if (isAssemblyCodeExist.Count == 0)
                 {
-                    
+
                     //var isExistName = await _context.AssemblyMaster.Where(p => p.AssemblyName == assemblyMaster.AssemblyName && p.StateMasterId == assemblyMaster.StateMasterId && p.ElectionTypeMasterId==assemblyMaster.ElectionTypeMasterId && p.AssemblyMasterId != assemblyMaster.AssemblyMasterId).ToListAsync();
                     //if (isExistName.Count == 0)
                     //{
-                        var assembliesMasterRecord = _context.AssemblyMaster.Where(d => d.AssemblyMasterId == assemblyMaster.AssemblyMasterId).FirstOrDefault();
+                    var assembliesMasterRecord = _context.AssemblyMaster.Where(d => d.AssemblyMasterId == assemblyMaster.AssemblyMasterId).FirstOrDefault();
 
-                        if (assembliesMasterRecord != null)
+                    if (assembliesMasterRecord != null)
+                    {
+                        if (assemblyMaster.AssemblyStatus == false)
                         {
-                            if (assemblyMaster.AssemblyStatus == false)
+                            var boothsActiveOfAssembly = _context.BoothMaster
+                                .Where(d => d.StateMasterId == assemblyMaster.StateMasterId && d.DistrictMasterId == assemblyMaster.DistrictMasterId && d.AssemblyMasterId == assemblyMaster.AssemblyMasterId && d.BoothStatus == true)
+                                .ToList();
+
+                            if (boothsActiveOfAssembly.Count > 0)
                             {
-                                var boothsActiveOfAssembly = _context.BoothMaster
-                                    .Where(d => d.StateMasterId == assemblyMaster.StateMasterId && d.DistrictMasterId == assemblyMaster.DistrictMasterId && d.AssemblyMasterId == assemblyMaster.AssemblyMasterId && d.BoothStatus == true)
-                                    .ToList();
 
-                                if (boothsActiveOfAssembly.Count > 0)
-                                {
-
-                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Booths are active under this State Assembly. Make sure they are Inactive first." };
-                                }
-                                else
-                                {
-                                    assembliesMasterRecord.AssemblyName = assemblyMaster.AssemblyName;
-                                    assembliesMasterRecord.AssemblyCode = assemblyMaster.AssemblyCode;
-                                    assembliesMasterRecord.AssemblyType = assemblyMaster.AssemblyType;
-                                    assembliesMasterRecord.AssemblyStatus = assemblyMaster.AssemblyStatus;
-                                    assembliesMasterRecord.AssemblyUpdatedAt = BharatDateTime();
-                                    assembliesMasterRecord.ElectionTypeMasterId = assemblyMaster.ElectionTypeMasterId;
-                                    assembliesMasterRecord.DistrictMasterId = assemblyMaster.DistrictMasterId;
-                                    assembliesMasterRecord.StateMasterId = assemblyMaster.StateMasterId;
-                                    assembliesMasterRecord.PCMasterId = assemblyMaster.PCMasterId;
-                                    assembliesMasterRecord.TotalBooths = assemblyMaster.TotalBooths;
-                                    _context.AssemblyMaster.Update(assembliesMasterRecord);
-                                    await _context.SaveChangesAsync();
-
-                                    return new Response { Status = RequestStatusEnum.OK, Message = "Assembly Updated Successfully" + assemblyMaster.AssemblyName };
-                                }
+                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Booths are active under this State Assembly. Make sure they are Inactive first." };
                             }
-                            else if (assemblyMaster.AssemblyStatus == true)
+                            else
                             {
-                                //if (!_context.ParliamentConstituencyMaster.Any(s => s.PCMasterId == assemblyMaster.PCMasterId && s.PcStatus == true) || !_context.DistrictMaster.Any(s => s.DistrictMasterId == assemblyMaster.DistrictMasterId && s.DistrictStatus == true))
-                                //{
-                                if (!_context.DistrictMaster.Any(s => s.DistrictMasterId == assemblyMaster.DistrictMasterId && s.DistrictStatus == true))
-                                {
-                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "District must be active in order to activate Assembly." };
+                                assembliesMasterRecord.AssemblyName = assemblyMaster.AssemblyName;
+                                assembliesMasterRecord.AssemblyCode = assemblyMaster.AssemblyCode;
+                                assembliesMasterRecord.AssemblyType = assemblyMaster.AssemblyType;
+                                assembliesMasterRecord.AssemblyStatus = assemblyMaster.AssemblyStatus;
+                                assembliesMasterRecord.AssemblyUpdatedAt = BharatDateTime();
+                                assembliesMasterRecord.ElectionTypeMasterId = assemblyMaster.ElectionTypeMasterId;
+                                assembliesMasterRecord.DistrictMasterId = assemblyMaster.DistrictMasterId;
+                                assembliesMasterRecord.StateMasterId = assemblyMaster.StateMasterId;
+                                assembliesMasterRecord.PCMasterId = assemblyMaster.PCMasterId;
+                                assembliesMasterRecord.TotalBooths = assemblyMaster.TotalBooths;
+                                _context.AssemblyMaster.Update(assembliesMasterRecord);
+                                await _context.SaveChangesAsync();
 
-                                }
-                                else
-                                {   assembliesMasterRecord.AssemblyName = assemblyMaster.AssemblyName;
-                                    assembliesMasterRecord.AssemblyCode = assemblyMaster.AssemblyCode;
-                                    assembliesMasterRecord.AssemblyType = assemblyMaster.AssemblyType;
-                                    assembliesMasterRecord.AssemblyStatus = assemblyMaster.AssemblyStatus;
-                                    assembliesMasterRecord.AssemblyUpdatedAt = BharatDateTime();
-                                    assembliesMasterRecord.DistrictMasterId = assemblyMaster.DistrictMasterId;
-                                    assembliesMasterRecord.StateMasterId = assemblyMaster.StateMasterId;
-                                    assembliesMasterRecord.PCMasterId = assemblyMaster.PCMasterId;
-                                    assembliesMasterRecord.TotalBooths = assemblyMaster.TotalBooths;
-                                    assembliesMasterRecord.ElectionTypeMasterId = assemblyMaster.ElectionTypeMasterId;
-                                    _context.AssemblyMaster.Update(assembliesMasterRecord);
-                                    await _context.SaveChangesAsync();
-
-                                    return new Response { Status = RequestStatusEnum.OK, Message = "Assembly Updated Successfully" + assemblyMaster.AssemblyName };
-                                }
+                                return new Response { Status = RequestStatusEnum.OK, Message = "Assembly Updated Successfully" + assemblyMaster.AssemblyName };
+                            }
+                        }
+                        else if (assemblyMaster.AssemblyStatus == true)
+                        {
+                            //if (!_context.ParliamentConstituencyMaster.Any(s => s.PCMasterId == assemblyMaster.PCMasterId && s.PcStatus == true) || !_context.DistrictMaster.Any(s => s.DistrictMasterId == assemblyMaster.DistrictMasterId && s.DistrictStatus == true))
+                            //{
+                            if (!_context.DistrictMaster.Any(s => s.DistrictMasterId == assemblyMaster.DistrictMasterId && s.DistrictStatus == true))
+                            {
+                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "District must be active in order to activate Assembly." };
 
                             }
                             else
                             {
-                                return new Response { Status = RequestStatusEnum.OK, Message = "Status cant be empty" };
+                                assembliesMasterRecord.AssemblyName = assemblyMaster.AssemblyName;
+                                assembliesMasterRecord.AssemblyCode = assemblyMaster.AssemblyCode;
+                                assembliesMasterRecord.AssemblyType = assemblyMaster.AssemblyType;
+                                assembliesMasterRecord.AssemblyStatus = assemblyMaster.AssemblyStatus;
+                                assembliesMasterRecord.AssemblyUpdatedAt = BharatDateTime();
+                                assembliesMasterRecord.DistrictMasterId = assemblyMaster.DistrictMasterId;
+                                assembliesMasterRecord.StateMasterId = assemblyMaster.StateMasterId;
+                                assembliesMasterRecord.PCMasterId = assemblyMaster.PCMasterId;
+                                assembliesMasterRecord.TotalBooths = assemblyMaster.TotalBooths;
+                                assembliesMasterRecord.ElectionTypeMasterId = assemblyMaster.ElectionTypeMasterId;
+                                _context.AssemblyMaster.Update(assembliesMasterRecord);
+                                await _context.SaveChangesAsync();
 
+                                return new Response { Status = RequestStatusEnum.OK, Message = "Assembly Updated Successfully" + assemblyMaster.AssemblyName };
                             }
-
-
 
                         }
                         else
                         {
-                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Pc record Not Found." };
+                            return new Response { Status = RequestStatusEnum.OK, Message = "Status cant be empty" };
 
                         }
+
+
+
+                    }
+                    else
+                    {
+                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Pc record Not Found." };
+
+                    }
 
                     //}
                     //else
@@ -1512,8 +1576,8 @@ namespace EAMS_DAL.Repository
         {
             try
             {
-                var assemblieExist = await _context.AssemblyMaster.Where(p => p.AssemblyCode == assemblyMaster.AssemblyCode && p.StateMasterId == assemblyMaster.StateMasterId&&p.DistrictMasterId==assemblyMaster.DistrictMasterId && p.ElectionTypeMasterId == assemblyMaster.ElectionTypeMasterId).FirstOrDefaultAsync();
-               
+                var assemblieExist = await _context.AssemblyMaster.Where(p => p.AssemblyCode == assemblyMaster.AssemblyCode && p.StateMasterId == assemblyMaster.StateMasterId && p.DistrictMasterId == assemblyMaster.DistrictMasterId && p.ElectionTypeMasterId == assemblyMaster.ElectionTypeMasterId).FirstOrDefaultAsync();
+
                 if (assemblieExist == null)
                 {
 
@@ -1608,7 +1672,7 @@ namespace EAMS_DAL.Repository
             var assemblyRecord = await _context.AssemblyMaster.Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.ParliamentConstituencyMaster).Where(d => d.AssemblyCode == Convert.ToInt32(assemblyCode) && d.StateMasterId == Convert.ToInt32(stateMasterid)).FirstOrDefaultAsync();
             return assemblyRecord;
         }
-        
+
         public async Task<List<AssemblyMaster>> GetAssemblyByPCId(string stateMasterid, string PcMasterId)
         {
 
@@ -1645,7 +1709,7 @@ namespace EAMS_DAL.Repository
         AssemblyType = d.AssemblyType,
         AssemblyStatus = d.AssemblyStatus,
         AssemblyCreatedAt = d.AssemblyCreatedAt,
-        ElectionTypeMasterId=d.ElectionTypeMasterId
+        ElectionTypeMasterId = d.ElectionTypeMasterId
     })
     .ToListAsync();
 
@@ -1797,7 +1861,7 @@ namespace EAMS_DAL.Repository
         public async Task<Response> AddSectorOfficer(SectorOfficerMaster sectorOfficerMaster)
         {
             var isExist = _context.SectorOfficerMaster.Where(d => d.SoMobile == sectorOfficerMaster.SoMobile && d.ElectionTypeMasterId == sectorOfficerMaster.ElectionTypeMasterId && d.StateMasterId == sectorOfficerMaster.StateMasterId).FirstOrDefault();
-            var isExistCount = _context.SectorOfficerMaster.Where(d => d.SoMobile == sectorOfficerMaster.SoMobile && d.ElectionTypeMasterId== sectorOfficerMaster.ElectionTypeMasterId).Count();
+            var isExistCount = _context.SectorOfficerMaster.Where(d => d.SoMobile == sectorOfficerMaster.SoMobile && d.ElectionTypeMasterId == sectorOfficerMaster.ElectionTypeMasterId).Count();
 
             if (isExistCount > 2)
             {
@@ -1808,7 +1872,7 @@ namespace EAMS_DAL.Repository
             //     if (isExist == null || isExist.ElectionTypeMasterId != sectorOfficerMaster.ElectionTypeMasterId)
             if (isExist == null)
             {
-                var isAssemblyRecord = _context.AssemblyMaster.Where(d => d.AssemblyCode == sectorOfficerMaster.SoAssemblyCode && d.StateMasterId == sectorOfficerMaster.StateMasterId && d.ElectionTypeMasterId== sectorOfficerMaster.ElectionTypeMasterId).FirstOrDefault();
+                var isAssemblyRecord = _context.AssemblyMaster.Where(d => d.AssemblyCode == sectorOfficerMaster.SoAssemblyCode && d.StateMasterId == sectorOfficerMaster.StateMasterId && d.ElectionTypeMasterId == sectorOfficerMaster.ElectionTypeMasterId).FirstOrDefault();
                 if (isAssemblyRecord != null && isAssemblyRecord.AssemblyStatus == true)
                 {
                     //check number already exists
@@ -1861,21 +1925,21 @@ namespace EAMS_DAL.Repository
         {
             var existingSectorOfficer = await _context.SectorOfficerMaster
                                                        .FirstOrDefaultAsync(so => so.SOMasterId == updatedSectorOfficer.SOMasterId);
-            
+
             if (existingSectorOfficer == null)
             {
 
                 return new Response { Status = RequestStatusEnum.BadRequest, Message = "SO User" + updatedSectorOfficer.SoName + " " + "Not found" };
             }
 
-            
+
             if (updatedSectorOfficer.SoStatus == true)
             {
                 //check if true (then state,district,assembly acive
-                var assemblyActive = _context.AssemblyMaster.Where(p => p.AssemblyCode == existingSectorOfficer.SoAssemblyCode && p.StateMasterId == existingSectorOfficer.StateMasterId && p.ElectionTypeMasterId==existingSectorOfficer.ElectionTypeMasterId).Select(p => p.AssemblyStatus).FirstOrDefault();
+                var assemblyActive = _context.AssemblyMaster.Where(p => p.AssemblyCode == existingSectorOfficer.SoAssemblyCode && p.StateMasterId == existingSectorOfficer.StateMasterId && p.ElectionTypeMasterId == existingSectorOfficer.ElectionTypeMasterId).Select(p => p.AssemblyStatus).FirstOrDefault();
                 if (assemblyActive == true)
-                { 
-                     // Check if the mobile number is unique among other sector officers (excluding the current one being updated)
+                {
+                    // Check if the mobile number is unique among other sector officers (excluding the current one being updated)
                     var isMobileUnique = await _context.SectorOfficerMaster.AnyAsync(so => so.SoMobile == updatedSectorOfficer.SoMobile);
                     if (string.Equals(updatedSectorOfficer.SoMobile, existingSectorOfficer.SoMobile, StringComparison.OrdinalIgnoreCase))
                     {
@@ -1911,7 +1975,7 @@ namespace EAMS_DAL.Repository
                             }
                             else
                             {
-                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Election Type invalid for the selected Assembly."};
+                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Election Type invalid for the selected Assembly." };
 
                             }
                         }
@@ -2002,7 +2066,7 @@ namespace EAMS_DAL.Repository
 
 
                             return new Response { Status = RequestStatusEnum.OK, Message = "SO User " + existingSectorOfficer.SoName + " " + "updated successfully" };
-                        
+
                         }
                         else
                         {
@@ -2115,8 +2179,8 @@ namespace EAMS_DAL.Repository
                                 on asem.DistrictMasterId equals dist.DistrictMasterId
                                 join state in _context.StateMaster
                                  on dist.StateMasterId equals state.StateMasterId
-                                 join elec in _context.ElectionTypeMaster
-                                 on bt.ElectionTypeMasterId equals elec.ElectionTypeMasterId
+                                join elec in _context.ElectionTypeMaster
+                                on bt.ElectionTypeMasterId equals elec.ElectionTypeMasterId
 
                                 select new CombinedMaster
                                 {
@@ -2135,8 +2199,8 @@ namespace EAMS_DAL.Repository
                                     IsAssigned = bt.IsAssigned,
                                     IsStatus = bt.BoothStatus,
                                     LocationMasterId = bt.LocationMasterId,
-                                    ElectionTypeMasterId=bt.ElectionTypeMasterId,
-                                    ElectionTypeName=elec.ElectionType
+                                    ElectionTypeMasterId = bt.ElectionTypeMasterId,
+                                    ElectionTypeName = elec.ElectionType
 
 
                                 };
@@ -2642,7 +2706,7 @@ namespace EAMS_DAL.Repository
                                     {  // can update only 4 fields
                                         if (existingbooth.BoothName == boothMaster.BoothName && existingbooth.BoothCode_No == boothMaster.BoothCode_No &&
                                             existingbooth.DistrictMasterId == boothMaster.DistrictMasterId && existingbooth.AssemblyMasterId == boothMaster.AssemblyMasterId
-                                            && existingbooth.BoothStatus == boothMaster.BoothStatus && existingbooth.BoothNoAuxy == boothMaster.BoothNoAuxy && existingbooth.ElectionTypeMasterId== boothMaster.ElectionTypeMasterId)
+                                            && existingbooth.BoothStatus == boothMaster.BoothStatus && existingbooth.BoothNoAuxy == boothMaster.BoothNoAuxy && existingbooth.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId)
                                         {
 
                                             if (boothMaster.BoothStatus == false)
@@ -2758,7 +2822,7 @@ namespace EAMS_DAL.Repository
             }
 
         }
-      
+
         public async Task<Response> BoothMapping(List<BoothMaster> boothMasters)
         {
             string anyBoothLocationFalse = "";
@@ -2768,7 +2832,7 @@ namespace EAMS_DAL.Repository
                 var existingBooth = _context.BoothMaster.Where(d =>
                         d.StateMasterId == boothMaster.StateMasterId &&
                         d.DistrictMasterId == boothMaster.DistrictMasterId &&
-                        d.AssemblyMasterId == boothMaster.AssemblyMasterId && d.BoothMasterId == boothMaster.BoothMasterId && d.ElectionTypeMasterId== boothMaster.ElectionTypeMasterId).FirstOrDefault();
+                        d.AssemblyMasterId == boothMaster.AssemblyMasterId && d.BoothMasterId == boothMaster.BoothMasterId && d.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId).FirstOrDefault();
                 if (existingBooth != null)
                 {
                     //if (existingBooth.LocationMasterId > 0)
@@ -2903,7 +2967,7 @@ namespace EAMS_DAL.Repository
         }
         public async Task<BoothMaster> GetBoothById(string boothMasterId)
         {
-            var boothRecord = await _context.BoothMaster.Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d=>d.ElectionTypeMaster).Where(d => d.BoothMasterId == Convert.ToInt32(boothMasterId)).FirstOrDefaultAsync();
+            var boothRecord = await _context.BoothMaster.Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.ElectionTypeMaster).Where(d => d.BoothMasterId == Convert.ToInt32(boothMasterId)).FirstOrDefaultAsync();
 
             return boothRecord;
         }
@@ -15129,14 +15193,14 @@ namespace EAMS_DAL.Repository
                 existingPPR.DateOfCompletedRound = pPR.DateOfCompletedRound;
                 existingPPR.DateOfPostponedRound = pPR.DateOfPostponedRound;
                 _context.PPR.Update(existingPPR);
-                  _context.SaveChanges();
+                _context.SaveChanges();
                 return new ServiceResponse { IsSucceed = true, Message = "Updated Successfully" };
             }
         }
-       
-        public async Task<int> GetRoundCountByRandomizationTaskId(int? randomizationTaskId,int? stateMasterId)
+
+        public async Task<int> GetRoundCountByRandomizationTaskId(int? randomizationTaskId, int? stateMasterId)
         {
-            var totalRound = await _context.RandomizationTaskDetail.Where(d => d.RandomizationTaskDetailMasterId == randomizationTaskId&&d.StateMasterId==stateMasterId).FirstOrDefaultAsync();
+            var totalRound = await _context.RandomizationTaskDetail.Where(d => d.RandomizationTaskDetailMasterId == randomizationTaskId && d.StateMasterId == stateMasterId).FirstOrDefaultAsync();
             if (totalRound is not null)
                 return totalRound.NumberOfRound;
             else
@@ -15173,10 +15237,10 @@ namespace EAMS_DAL.Repository
                 StateName = state.StateName,
                 DistrictMasterId = ppr.DistrictMasterId ?? 0, // Default to 0 if no district found
                 DistrictName = districtList.FirstOrDefault(d => d.DistrictMasterId == ppr.DistrictMasterId)?.DistrictName ?? "Unknown", // Default to "Unknown" if no district found
-                TaskId=ppr.RandomizationTaskDetailMasterId,
+                TaskId = ppr.RandomizationTaskDetailMasterId,
                 TaskName = taskList.FirstOrDefault(t => t.RandomizationTaskDetailMasterId == ppr.RandomizationTaskDetailMasterId)?.TaskName ?? "Unknown", // Default to "Unknown" if no task found
                 TotalRound = taskList.FirstOrDefault(t => t.RandomizationTaskDetailMasterId == ppr.RandomizationTaskDetailMasterId)?.NumberOfRound ?? 0, // Default to "Unknown" if no task found
-               RoundNumber = ppr.CurrentRound,
+                RoundNumber = ppr.CurrentRound,
                 StartDate = ppr.DateOfRound,
                 EndDate = ppr.DateOfCompletedRound,
                 PostponedDate = ppr.DateOfPostponedRound
@@ -15186,21 +15250,21 @@ namespace EAMS_DAL.Repository
         }
         public async Task<RandomizationList> GetRandomizationById(int pprMasterId)
         {
-            var pprRecord= await _context.PPR.FirstOrDefaultAsync(d=>d.PPRMasterId==pprMasterId);
+            var pprRecord = await _context.PPR.FirstOrDefaultAsync(d => d.PPRMasterId == pprMasterId);
             // Retrieve the task details
             var task = await _context.RandomizationTaskDetail
                           .Where(t => t.RandomizationTaskDetailMasterId == pprRecord.RandomizationTaskDetailMasterId)
-                          .Select(t => new { t.TaskName ,t.RandomizationTaskDetailMasterId,t.NumberOfRound})
+                          .Select(t => new { t.TaskName, t.RandomizationTaskDetailMasterId, t.NumberOfRound })
                           .FirstOrDefaultAsync();
             var randomization = new RandomizationList
             {
-                
+
                 PPRMasterId = pprRecord.PPRMasterId,
                 StateMasterId = pprRecord.StateMasterId,
                 DistrictMasterId = pprRecord.DistrictMasterId,
-                TaskId=task?.RandomizationTaskDetailMasterId ?? 0,
-                TaskName = task?.TaskName ?? "Unknown", 
-                TotalRound = task?.NumberOfRound ?? 0, 
+                TaskId = task?.RandomizationTaskDetailMasterId ?? 0,
+                TaskName = task?.TaskName ?? "Unknown",
+                TotalRound = task?.NumberOfRound ?? 0,
                 RoundNumber = pprRecord.CurrentRound,
                 StartDate = pprRecord.DateOfRound,
                 EndDate = pprRecord.DateOfCompletedRound,
@@ -15280,9 +15344,9 @@ namespace EAMS_DAL.Repository
             return new RandomizationTableList
             {
                 StateMasterId = stateMasterId,
-                StateName=state.StateName,
+                StateName = state.StateName,
                 DistrictMasterId = districtMasterId,
-                DistrictName= district.DistrictName,
+                DistrictName = district.DistrictName,
                 Tasks = taskGroups
             };
         }
@@ -15688,7 +15752,7 @@ namespace EAMS_DAL.Repository
             _context.SaveChanges();
 
 
-            return new ServiceResponse { IsSucceed = true ,Message="Successfully added"}; 
+            return new ServiceResponse { IsSucceed = true, Message = "Successfully added" };
         }
         public async Task<List<Kyc>> GetKYCDetails()
         {
@@ -15706,9 +15770,9 @@ namespace EAMS_DAL.Repository
         ElectionTypeMasterId = d.ElectionTypeMasterId,
         ElectionType = d.ElectionType,
         ElectionStatus = d.ElectionStatus,
-        Hierarchy1=d.Hierarchy1,
-        Hierarchy2=d.Hierarchy2
-        
+        Hierarchy1 = d.Hierarchy1,
+        Hierarchy2 = d.Hierarchy2
+
     })
     .ToListAsync();
 
@@ -15728,7 +15792,7 @@ namespace EAMS_DAL.Repository
             try
             {
                 var ispsZoneExist = await _context.PSZone.Where(p => p.PSZoneCode == pSZone.PSZoneCode && p.StateMasterId == pSZone.StateMasterId && p.DistrictMasterId == pSZone.DistrictMasterId && p.AssemblyMasterId == pSZone.AssemblyMasterId && p.ElectionTypeMasterId == pSZone.ElectionTypeMasterId).FirstOrDefaultAsync();
-                
+
                 if (ispsZoneExist == null)
                 {
 
@@ -15819,10 +15883,10 @@ namespace EAMS_DAL.Repository
         }
         public async Task<PSZone> GetPSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId)
         {
-            
+
 
             // Retrieve the PSZone entity from the database
-            var psZone = await _context.PSZone
+            var psZone = await _context.PSZone.Include(d=>d.StateMaster).Include(d=>d.DistrictMaster).Include(d=>d.AssemblyMaster)
                 .Where(d => d.StateMasterId == stateMasterId &&
                             d.DistrictMasterId == districtMasterId &&
                             d.AssemblyMasterId == assemblyMasterId &&
@@ -15832,11 +15896,11 @@ namespace EAMS_DAL.Repository
             // Check if the PSZone entity exists
             if (psZone == null)
             {
-            
+
                 return null;
             }
 
-             
+
             return psZone;
         }
         public async Task<Response> DeletePSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId)
@@ -15853,14 +15917,14 @@ namespace EAMS_DAL.Repository
 
             // Check if the PSZone entity exists in the database
             var psZone = await _context.PSZone
-                .Where(d => d.PSZoneMasterId == pSZoneMasterId&&d.StateMasterId==stateMasterId&&d.DistrictMasterId==districtMasterId&&d.AssemblyMasterId==assemblyMasterId)
+                .Where(d => d.PSZoneMasterId == pSZoneMasterId && d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId)
                 .FirstOrDefaultAsync();
 
             if (psZone == null)
             {
                 return new Response
                 {
-                    Status=RequestStatusEnum.BadRequest,
+                    Status = RequestStatusEnum.BadRequest,
                     Message = "PSZone not found."
                 };
             }
@@ -15924,7 +15988,7 @@ namespace EAMS_DAL.Repository
         }
         public async Task<List<SarpanchWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId)
         {
-            var getPsZone = await _context.SarpanchWards.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId&&d.BoothMasterId==boothMasterId).ToListAsync();
+            var getPsZone = await _context.SarpanchWards.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.BoothMasterId == boothMasterId).ToListAsync();
             if (getPsZone != null)
             {
                 return getPsZone;
