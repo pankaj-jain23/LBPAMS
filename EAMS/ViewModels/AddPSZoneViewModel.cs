@@ -50,7 +50,7 @@ namespace LBPAMS.ViewModels
         public DateTime? PSZoneUpdatedAt { get; set; }
 
         public DateTime? PSZoneDeletedAt { get; set; }
-        public bool PSZoneStatus { get; set; }
+        public bool IsStatus { get; set; }
         public string? SecondLanguage { get; set; }
     }
     public class UpdatePSZoneViewModel
@@ -100,7 +100,7 @@ namespace LBPAMS.ViewModels
         public DateTime? PSZoneUpdatedAt { get; set; }
 
         public DateTime? PSZoneDeletedAt { get; set; }
-        public bool PSZoneStatus { get; set; }
+        public bool IsStatus { get; set; }
         public string? SecondLanguage { get; set; }
     }
 }

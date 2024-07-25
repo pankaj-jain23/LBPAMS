@@ -561,7 +561,7 @@ namespace EAMS_DAL.Repository
                         return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
                     }
 
-                    if (updateMasterStatus.IsStatus)
+                    if (updateMasterStatus.IsStatus==false)
                     {
                         var assembly = await _context.AssemblyMaster
                             .Where(d => d.AssemblyMasterId == psZone.AssemblyMasterId)
@@ -590,7 +590,7 @@ namespace EAMS_DAL.Repository
                         return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
                     }
 
-                    if (updateMasterStatus.IsStatus)
+                    if (updateMasterStatus.IsStatus==false)
                     {
                         var boothMaster = await _context.BoothMaster
                             .Where(d => d.BoothMasterId == spWards.BoothMasterId)
@@ -15886,7 +15886,7 @@ namespace EAMS_DAL.Repository
 
 
             // Retrieve the PSZone entity from the database
-            var psZone = await _context.PSZone.Include(d=>d.StateMaster).Include(d=>d.DistrictMaster).Include(d=>d.AssemblyMaster)
+            var psZone = await _context.PSZone
                 .Where(d => d.StateMasterId == stateMasterId &&
                             d.DistrictMasterId == districtMasterId &&
                             d.AssemblyMasterId == assemblyMasterId &&

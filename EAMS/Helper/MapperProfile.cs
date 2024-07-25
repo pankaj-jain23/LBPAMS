@@ -681,7 +681,7 @@ namespace EAMS.Helper
                 .ForMember(dest => dest.PSZoneCreatedAt, opt => opt.MapFrom(src => src.PSZoneCreatedAt))
                 .ForMember(dest => dest.PSZoneUpdatedAt, opt => opt.MapFrom(src => src.PSZoneUpdatedAt))
                 .ForMember(dest => dest.PSZoneDeletedAt, opt => opt.MapFrom(src => src.PSZoneDeletedAt))
-                .ForMember(dest => dest.PSZoneStatus, opt => opt.MapFrom(src => src.PSZoneStatus))
+                .ForMember(dest => dest.PSZoneStatus, opt => opt.MapFrom(src => src.IsStatus))
                 .ForMember(dest => dest.SecondLanguage, opt => opt.MapFrom(src => src.SecondLanguage))
                 .ReverseMap();
             CreateMap<UpdatePSZoneViewModel, PSZone>()
@@ -699,7 +699,7 @@ namespace EAMS.Helper
                 .ForMember(dest => dest.PSZoneCreatedAt, opt => opt.MapFrom(src => src.PSZoneCreatedAt))
                 .ForMember(dest => dest.PSZoneUpdatedAt, opt => opt.MapFrom(src => src.PSZoneUpdatedAt))
                 .ForMember(dest => dest.PSZoneDeletedAt, opt => opt.MapFrom(src => src.PSZoneDeletedAt))
-                .ForMember(dest => dest.PSZoneStatus, opt => opt.MapFrom(src => src.PSZoneStatus))
+                .ForMember(dest => dest.PSZoneStatus, opt => opt.MapFrom(src => src.IsStatus))
                 .ForMember(dest => dest.SecondLanguage, opt => opt.MapFrom(src => src.SecondLanguage))
                 .ReverseMap();
             #endregion
@@ -718,7 +718,7 @@ namespace EAMS.Helper
                      .ForMember(dest => dest.SarpanchWardsCreatedAt, opt => opt.MapFrom(src => src.SarpanchWardsCreatedAt))
                      .ForMember(dest => dest.SarpanchWardsUpdatedAt, opt => opt.MapFrom(src => src.SarpanchWardsUpdatedAt))
                      .ForMember(dest => dest.SarpanchWardsDeletedAt, opt => opt.MapFrom(src => src.SarpanchWardsDeletedAt))
-                     .ForMember(dest => dest.SarpanchWardsStatus, opt => opt.MapFrom(src => src.SarpanchWardsStatus))
+                     .ForMember(dest => dest.SarpanchWardsStatus, opt => opt.MapFrom(src => src.IsStatus))
                      .ForMember(dest => dest.SecondLanguage, opt => opt.MapFrom(src => src.SecondLanguage))
             .ReverseMap();
             CreateMap<UpdateSarpanchWardsViewModel, SarpanchWards>()
@@ -735,7 +735,7 @@ namespace EAMS.Helper
                      .ForMember(dest => dest.SarpanchWardsCreatedAt, opt => opt.MapFrom(src => src.SarpanchWardsCreatedAt))
                      .ForMember(dest => dest.SarpanchWardsUpdatedAt, opt => opt.MapFrom(src => src.SarpanchWardsUpdatedAt))
                      .ForMember(dest => dest.SarpanchWardsDeletedAt, opt => opt.MapFrom(src => src.SarpanchWardsDeletedAt))
-                     .ForMember(dest => dest.SarpanchWardsStatus, opt => opt.MapFrom(src => src.SarpanchWardsStatus))
+                     .ForMember(dest => dest.SarpanchWardsStatus, opt => opt.MapFrom(src => src.IsStatus))
                      .ForMember(dest => dest.SecondLanguage, opt => opt.MapFrom(src => src.SecondLanguage))
             .ReverseMap();
             #endregion
