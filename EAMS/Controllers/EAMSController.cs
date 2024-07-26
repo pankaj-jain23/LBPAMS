@@ -764,11 +764,12 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetBoothListById")]
         //[Authorize]
-        public async Task<IActionResult> BoothListById(string stateMasterId, string districtMasterId, string assemblyMasterId)
+        public async Task<IActionResult> BoothListById(string stateMasterId, string districtMasterId, string assemblyMasterId, string pSZoneMasterId)
         {
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null)
             {
-                var boothList = await _EAMSService.GetBoothListById(stateMasterId, districtMasterId, assemblyMasterId);  // Corrected to await the asynchronous method
+              //  var boothList = await _EAMSService.GetBoothListById(stateMasterId, districtMasterId, assemblyMasterId, pSZoneMasterId);  // Corrected to await the asynchronous method
+                var boothList = await _EAMSService.GetBoothListByIdwithPsZone(stateMasterId, districtMasterId, assemblyMasterId, pSZoneMasterId);  // Corrected to await the asynchronous method
                 if (boothList != null)
                 {
                     var data = new
