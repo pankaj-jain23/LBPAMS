@@ -83,7 +83,7 @@ namespace EAMS_ACore.Models
 
         public DateTime? SarpanchWardsDeletedAt { get; set; }
         public bool SarpanchWardsStatus { get; set; }
-        public string? SecondLanguage { get; set; }
+     
         
     }
 }

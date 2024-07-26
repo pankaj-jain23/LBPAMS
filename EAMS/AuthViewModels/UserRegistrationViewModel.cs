@@ -4,6 +4,7 @@ namespace EAMS.AuthViewModels
 {
     public class UserRegistrationViewModel
     {
+        public int? ElectionTypeMasterId { get; set; }
         public List<StateViewModel> UserStates { get; set; }
 
         [Required(ErrorMessage = "PhoneNumber is required")]

@@ -2190,6 +2190,7 @@ namespace EAMS_DAL.Repository
                                     AssemblyName = asem.AssemblyName,
                                     AssemblyCode = asem.AssemblyCode,
                                     BoothMasterId = bt.BoothMasterId,
+                                    PSZoneMasterId=bt.PSZoneMasterId,
                                     //BoothName = bt.BoothName + "(" + bt.BoothCode_No + ")",
                                     //BoothName = bt.BoothName + (bt.BoothNoAuxy != "0" ? $"({bt.BoothCode_No}-{bt.BoothNoAuxy})" : $"({bt.BoothCode_No})"),
                                     BoothName = $"{bt.BoothName}{(bt.BoothNoAuxy != "0" ? $"-{bt.BoothNoAuxy}" : "")}({bt.BoothCode_No})",
@@ -15859,7 +15860,7 @@ namespace EAMS_DAL.Repository
             existingPsZone.AssemblyMasterId = pSZone.AssemblyMasterId;
             existingPsZone.PSZoneBooths = pSZone.PSZoneBooths;
             existingPsZone.PSZoneCategory = pSZone.PSZoneCategory;
-            existingPsZone.SecondLanguage = pSZone.SecondLanguage;
+            
             existingPsZone.PSZoneUpdatedAt = DateTime.UtcNow;
             existingPsZone.PSZoneStatus = pSZone.PSZoneStatus;
 
@@ -16029,7 +16030,7 @@ namespace EAMS_DAL.Repository
             existingSarpanchWards.SarpanchWardsUpdatedAt = DateTime.UtcNow;
             existingSarpanchWards.SarpanchWardsDeletedAt = sarpanchWards.SarpanchWardsDeletedAt;
             existingSarpanchWards.SarpanchWardsStatus = sarpanchWards.SarpanchWardsStatus;
-            existingSarpanchWards.SecondLanguage = sarpanchWards.SecondLanguage;
+            
 
             // Save changes to the database
             try

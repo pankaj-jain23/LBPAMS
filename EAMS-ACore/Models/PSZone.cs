@@ -73,7 +73,7 @@ namespace EAMS_ACore.Models
 
         public DateTime? PSZoneDeletedAt { get; set; }
         public bool PSZoneStatus { get; set; }
-        public string? SecondLanguage { get; set; }
+    
         public virtual List<BoothMaster> BoothMaster
         {
             get;

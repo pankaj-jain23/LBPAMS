@@ -37,6 +37,7 @@ namespace EAMS.Helper
 
             #region UserRegistration UserRegistration  
             CreateMap<UserRegistrationViewModel, UserRegistration>()
+            .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName))
             .ForMember(dest => dest.PasswordHash, opt => opt.MapFrom(src => src.Password))
@@ -683,7 +684,7 @@ namespace EAMS.Helper
                 .ForMember(dest => dest.PSZoneUpdatedAt, opt => opt.MapFrom(src => src.PSZoneUpdatedAt))
                 .ForMember(dest => dest.PSZoneDeletedAt, opt => opt.MapFrom(src => src.PSZoneDeletedAt))
                 .ForMember(dest => dest.PSZoneStatus, opt => opt.MapFrom(src => src.IsStatus))
-                .ForMember(dest => dest.SecondLanguage, opt => opt.MapFrom(src => src.SecondLanguage))
+              
                 .ReverseMap();
             CreateMap<UpdatePSZoneViewModel, PSZone>()
                 .ForMember(dest => dest.PSZoneMasterId, opt => opt.MapFrom(src => src.PSZoneMasterId))
@@ -701,7 +702,7 @@ namespace EAMS.Helper
                 .ForMember(dest => dest.PSZoneUpdatedAt, opt => opt.MapFrom(src => src.PSZoneUpdatedAt))
                 .ForMember(dest => dest.PSZoneDeletedAt, opt => opt.MapFrom(src => src.PSZoneDeletedAt))
                 .ForMember(dest => dest.PSZoneStatus, opt => opt.MapFrom(src => src.IsStatus))
-                .ForMember(dest => dest.SecondLanguage, opt => opt.MapFrom(src => src.SecondLanguage))
+               
                 .ReverseMap();
             #endregion
 
@@ -720,7 +721,7 @@ namespace EAMS.Helper
                      .ForMember(dest => dest.SarpanchWardsUpdatedAt, opt => opt.MapFrom(src => src.SarpanchWardsUpdatedAt))
                      .ForMember(dest => dest.SarpanchWardsDeletedAt, opt => opt.MapFrom(src => src.SarpanchWardsDeletedAt))
                      .ForMember(dest => dest.SarpanchWardsStatus, opt => opt.MapFrom(src => src.IsStatus))
-                     .ForMember(dest => dest.SecondLanguage, opt => opt.MapFrom(src => src.SecondLanguage))
+                    
             .ReverseMap();
             CreateMap<UpdateSarpanchWardsViewModel, SarpanchWards>()
                      .ForMember(dest => dest.SarpanchWardsMasterId, opt => opt.MapFrom(src => src.SarpanchWardsMasterId))
@@ -737,7 +738,7 @@ namespace EAMS.Helper
                      .ForMember(dest => dest.SarpanchWardsUpdatedAt, opt => opt.MapFrom(src => src.SarpanchWardsUpdatedAt))
                      .ForMember(dest => dest.SarpanchWardsDeletedAt, opt => opt.MapFrom(src => src.SarpanchWardsDeletedAt))
                      .ForMember(dest => dest.SarpanchWardsStatus, opt => opt.MapFrom(src => src.IsStatus))
-                     .ForMember(dest => dest.SecondLanguage, opt => opt.MapFrom(src => src.SecondLanguage))
+                   
             .ReverseMap();
             #endregion
         }

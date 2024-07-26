@@ -51,7 +51,7 @@ namespace LBPAMS.ViewModels
 
         public DateTime? SarpanchWardsDeletedAt { get; set; }
         public bool IsStatus { get; set; }
-        public string? SecondLanguage { get; set; }
+      
     }
     public class UpdateSarpanchWardsViewModel
     {
@@ -102,6 +102,6 @@ namespace LBPAMS.ViewModels
 
         public DateTime? SarpanchWardsDeletedAt { get; set; }
         public bool IsStatus { get; set; }
-        public string? SecondLanguage { get; set; }
+       
     }
 }

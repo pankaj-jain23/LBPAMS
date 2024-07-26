@@ -8,6 +8,7 @@ namespace EAMS_ACore.AuthModels
 {
     public class UserRegistration : IdentityUser
     {
+        public int? ElectionTypeMasterId { get; set; }
         public virtual List<UserState> UserStates { get; set; }
         public DateTime? OTPGeneratedTime { get; set; }
         public string? OTP { get; set; }
