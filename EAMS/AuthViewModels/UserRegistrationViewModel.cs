@@ -16,7 +16,7 @@ namespace EAMS.AuthViewModels
         [Required(ErrorMessage = "Password is required")]
         public string Password { get; set; }
 
-      
+
 
         [Required(ErrorMessage = "Role is Required")]
         public List<string>? RoleId
@@ -45,7 +45,12 @@ namespace EAMS.AuthViewModels
     public class AssemblyViewModel
     {
         public int AssemblyMasterId { get; set; }
+        public List<PSZoneViewModel> PSZone{ get; set; }
     }
 
+    public class PSZoneViewModel
+    {
 
+        public int PSZoneMasterId { get; set; }
+    }
 }

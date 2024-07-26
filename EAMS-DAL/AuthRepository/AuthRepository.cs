@@ -366,6 +366,24 @@ namespace EAMS_DAL.AuthRepository
                             }
 
                         }
+                        if (isExist.Any(d => d.Name.Contains("PSZone")))
+                        {
+
+                            foreach (var district in userState.UserDistrict)
+                            {
+                               foreach(var assembly in district.UserAssembly)
+                                {
+                                    if (assembly.AssemblyMasterId != 0)
+                                    {
+                                        
+                                        userState.UserPCConstituency = null;
+                                    }
+                                }
+
+                            }
+                            
+
+                        }
 
                     }
 
@@ -610,9 +628,9 @@ namespace EAMS_DAL.AuthRepository
             {
                 var userSubDetails = await _context.UserState.Where(u => u.Id == userId)
                     .Include(u => u.UserDistrict)
-                        .ThenInclude(d => d.UserAssembly)
+                        .ThenInclude(d => d.UserAssembly).ThenInclude(d=>d.UserPSZone)
                     .Include(u => u.UserPCConstituency)
-                        .ThenInclude(pc => pc.UserAssembly)
+                        .ThenInclude(pc => pc.UserAssembly) 
                     .ToListAsync();
 
 

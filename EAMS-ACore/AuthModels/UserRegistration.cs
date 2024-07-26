@@ -66,6 +66,18 @@ namespace EAMS_ACore.AuthModels
         public int? UserPCConstituencyId { get; set; }
         [ForeignKey("UserPCConstituencyId")]
         public virtual UserPCConstituency UserPCConstituency { get; set; }
+        public virtual List<UserPSZone> UserPSZone { get; set; }
+    }
+    public class UserPSZone
+    {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int UserPSZoneId { get; set; }
+        public int? PSZoneMasterId { get; set; }
+        public int? UserAssemblyId { get; set; }
+        [ForeignKey("UserAssemblyId")]
+        public virtual UserAssembly UserAssembly { get; set; }
+
     }
 
 

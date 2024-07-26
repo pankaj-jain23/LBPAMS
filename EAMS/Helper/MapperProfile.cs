@@ -57,7 +57,10 @@ namespace EAMS.Helper
                 .ForMember(dest => dest.UserAssembly, opt => opt.MapFrom(src => src.Assemblies));
 
             CreateMap<AssemblyViewModel, UserAssembly>()
-                .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId));
+                .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))  
+                .ForMember(dest => dest.UserPSZone, opt => opt.MapFrom(src => src.PSZone));  
+            CreateMap<PSZoneViewModel, UserPSZone>()
+                .ForMember(dest => dest.PSZoneMasterId, opt => opt.MapFrom(src => src.PSZoneMasterId));
 
 
             #endregion

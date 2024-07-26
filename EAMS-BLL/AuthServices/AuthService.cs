@@ -101,12 +101,12 @@ namespace EAMS_BLL.AuthServices
                         }
                         if (_Token.AccessToken.LSToken == null)
                         {
-                            authClaims.Add(new Claim("ElectionType", "LS"));
+                            authClaims.Add(new Claim("ElectionTypeMasterId", user.ElectionTypeMasterId.ToString()));
 
                         }
                         else if (_Token.AccessToken.VSToken == null)
                         {
-                            authClaims.Add(new Claim("ElectionType", "VS"));
+                            authClaims.Add(new Claim("ElectionTypeMasterId", user.ElectionTypeMasterId.ToString()));
 
 
                         }
@@ -180,6 +180,7 @@ namespace EAMS_BLL.AuthServices
                 new Claim("DistrictMasterId",
                       userProfile.UserDistrict.Count() > 1 ? "0" :
                       (userProfile.UserDistrict.FirstOrDefault()?.DistrictMasterId?.ToString() ?? "0")),
+
                new Claim("PCMasterId",
                       userProfile.UserPCConstituency.Count() > 1 ? "0" :
                       (userProfile.UserPCConstituency.FirstOrDefault()?.PCMasterId?.ToString() ?? "0"))
@@ -192,9 +193,17 @@ namespace EAMS_BLL.AuthServices
             }
             else if (userProfile.UserDistrict.FirstOrDefault() != null)
             {
-                var assemblyId = userProfile.UserDistrict.FirstOrDefault()?.UserAssembly?.FirstOrDefault()?.AssemblyMasterId;
+                var firstUserDistrict = userProfile.UserDistrict.FirstOrDefault();
+                var assembly = firstUserDistrict?.UserAssembly.FirstOrDefault();
+                var psZone = assembly?.UserPSZone.FirstOrDefault();
+
+                var assemblyId = assembly?.AssemblyMasterId;
+                var psZoneId = psZone?.PSZoneMasterId;
+
                 authClaims.Add(new Claim("AssemblyMasterId", assemblyId?.ToString() ?? "0"));
+                authClaims.Add(new Claim("PSZoneMasterId", psZoneId?.ToString() ?? "0"));
             }
+
             else
             {
                 authClaims.Add(new Claim("AssemblyMasterId", "0"));
