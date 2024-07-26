@@ -413,6 +413,7 @@ namespace EAMS.Helper
         .ForMember(dest => dest.Transgender, opt => opt.MapFrom(src => src.Transgender))
         .ForMember(dest => dest.EDC, opt => opt.MapFrom(src => src.EDC))
         .ForMember(dest => dest.IsQueueUndo, opt => opt.MapFrom(src => src.IsQueueUndo))
+        .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
 
          .ReverseMap();
             #endregion

@@ -36,7 +36,11 @@ namespace EAMS.ViewModels
 
         public bool? IsQueueUndo { get; set; }
         public string? EDC { get; set; }
-
+        public int ElectionTypeMasterId
+        {
+            get;
+            set;
+        }
         //public string? UserType { get;set; }
     }
 }

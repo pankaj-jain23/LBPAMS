@@ -30,7 +30,7 @@ namespace EAMS_ACore.Models
         public bool? IsMockPollDone { get; set; }
         public DateTime? MockPollDoneLastUpdate { get; set; }
         public int? NoOfPollingAgents { get; set; }
-        
+
         public bool? IsPollStarted { get; set; }
         public DateTime? PollStartedLastUpdate { get; set; }
 
@@ -66,7 +66,11 @@ namespace EAMS_ACore.Models
         public int? EDC { get; set; }
 
         public bool? IsQueueUndo { get; set; }
-
+        public int ElectionTypeMasterId
+        {
+            get;
+            set;
+        }
         //public string? UserType { get; set; }
     }
 

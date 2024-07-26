@@ -3944,10 +3944,10 @@ namespace EAMS_DAL.Repository
         public async Task<Response> EventActivity(ElectionInfoMaster electionInfoMaster)
         {
             try
-            {
+            { // added electionTypeMasterId check
                 var electionRecord = await _context.ElectionInfoMaster.Where(d => d.StateMasterId == electionInfoMaster.StateMasterId &&
                          d.DistrictMasterId == electionInfoMaster.DistrictMasterId && d.AssemblyMasterId == electionInfoMaster.AssemblyMasterId &&
-                         d.BoothMasterId == electionInfoMaster.BoothMasterId).FirstOrDefaultAsync();
+                         d.BoothMasterId == electionInfoMaster.BoothMasterId && d.ElectionTypeMasterId == electionInfoMaster.ElectionTypeMasterId).FirstOrDefaultAsync();
 
 
                 if (electionRecord != null)
@@ -3959,7 +3959,8 @@ namespace EAMS_DAL.Repository
                 }
                 else
                 {
-                    var boothExists = await _context.BoothMaster.AnyAsync(p => p.BoothMasterId == electionInfoMaster.BoothMasterId && p.StateMasterId == electionInfoMaster.StateMasterId && p.DistrictMasterId == electionInfoMaster.DistrictMasterId && p.BoothMasterId == electionInfoMaster.BoothMasterId && p.IsAssigned == true);
+                    // added electionTypeMasterId check
+                    var boothExists = await _context.BoothMaster.AnyAsync(p => p.BoothMasterId == electionInfoMaster.BoothMasterId && p.StateMasterId == electionInfoMaster.StateMasterId && p.DistrictMasterId == electionInfoMaster.DistrictMasterId && p.BoothMasterId == electionInfoMaster.BoothMasterId && p.IsAssigned == true && p.ElectionTypeMasterId == electionInfoMaster.ElectionTypeMasterId);
 
                     if (boothExists == true)
                     {
@@ -3992,10 +3993,11 @@ namespace EAMS_DAL.Repository
         }
         public async Task<ElectionInfoMaster> EventUpdationStatus(ElectionInfoMaster electionInfoMaster)
         {
+            // added electionTypeMasterId check
             var electionInfoRecord = _context.ElectionInfoMaster.Where(d => d.StateMasterId == electionInfoMaster.StateMasterId
             && d.DistrictMasterId == electionInfoMaster.DistrictMasterId &&
             d.AssemblyMasterId == electionInfoMaster.AssemblyMasterId
-            && d.BoothMasterId == electionInfoMaster.BoothMasterId
+            && d.BoothMasterId == electionInfoMaster.BoothMasterId && d.ElectionTypeMasterId == electionInfoMaster.ElectionTypeMasterId
             ).FirstOrDefault();
             return electionInfoRecord;
         }
