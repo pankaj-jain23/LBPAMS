@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace EAMS_ACore.Models.PublicModels
 {
@@ -25,48 +20,27 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
-        public int? ElectionType
+        public int? ElectionTypeMasterId
         {
             get;
             set;
         }
-        public int? BlockMasterId
+        public int? PsZoneMasterId
         {
             get;
             set;
         }
-        public int? WardMasterId
+
+        public int? BoothMasterId
         {
             get;
             set;
         }
-        public int? ZPMasterId
-        {
-            get;
-            set;
-        }  
-        public int? PSMasterId
-        {
-            get;
-            set;
-        } 
-        public int? MCorporationMasterId
+        public int? SarpanchWardsMasterId
         {
             get;
             set;
         }
-        public int? MCouncilMasterId
-        {
-            get;
-            set;
-        }
-        public int? NPMasterId
-        {
-            get;
-            set;
-        }
-        public int PSZoneMasterId { get; set; }
-        public int SarpanchWardsMasterId { get; set; }
         public string CandidateName
         {
             get;

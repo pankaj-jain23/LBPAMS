@@ -71,14 +71,24 @@ namespace EAMS_DAL.AuthRepository
 
         public async Task<List<Role>> GetRoles()
         {
-            var identityRoles = await _roleManager.Roles.Where(d => d.Name != "SO").ToListAsync();
+            // Define the roles you want to exclude
+            var excludedRoles = new List<string> { "SO", "PC", "ECI" };
+
+            // Retrieve roles excluding the specified ones
+            var identityRoles = await _roleManager.Roles
+                .Where(d => !excludedRoles.Contains(d.Name))
+                .ToListAsync();
+
+            // Map the identity roles to your Role model
             var roles = identityRoles.Select(identityRole => new Role
             {
                 RoleId = identityRole.Id,
                 RoleName = identityRole.Name
             }).ToList();
+
             return roles;
         }
+
         #endregion
 
         public async Task<List<UserRegistration>> GetUsersByRoleId(string roleId)

@@ -920,7 +920,7 @@ namespace EAMS.Controllers
                             if (boothsEntered.Count < asemRecord.TotalBooths)
                             {
                                 var mappedData = _mapper.Map<BoothMasterViewModel, BoothMaster>(BoothMasterViewModel);
-                                var electionType = User.Claims.FirstOrDefault(c => c.Type == "ElectionType").Value;
+                                var electionType = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId").Value;
 
                                 var result = await _EAMSService.AddBooth(mappedData);
                                 switch (result.Status)

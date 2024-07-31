@@ -13,54 +13,23 @@
             get;
             set;
         }
-        public int? ElectionType
+        public int? ElectionTypeMasterId
         {
             get;
             set;
         }
-        public int? BlockMasterId
+        public int? PsZoneMasterId
         {
             get;
             set;
         }
-        public int? WardMasterId
+        public int? BoothMasterId
         {
             get;
             set;
         }
-        public int? ZPMasterId
-        {
-            get;
-            set;
-        }
-        public int? PSMasterId
-        {
-            get;
-            set;
-        }
-        public int? MCorporationMasterId
-        {
-            get;
-            set;
-        }
-        public int? MCouncilMasterId
-        {
-            get;
-            set;
-        }
-        public int? NPMasterId
-        {
-            get;
-            set;
-        }
-        public int PSZoneMasterId { get; set; }
-        public int SarpanchWardsMasterId { get; set; }
-        public string CandidateName
-        {
-            get;
-            set;
-        }
-        public string FatherName
+
+        public int? SarpanchWardsMasterId
         {
             get;
             set;
@@ -70,15 +39,15 @@
             get;
             set;
         }
-        public string? Option1
+        public string CandidateName
         {
-
-            get; set;
+            get;
+            set;
         }
-        public string? Option2
+        public string FatherName
         {
-
-            get; set;
+            get;
+            set;
         }
     }
 

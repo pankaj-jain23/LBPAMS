@@ -27,6 +27,7 @@ namespace EAMS.Controllers
             _eamsService = eamsService;
         }
 
+        #region KYC
         [HttpPost("AddKYCDetails")]
         public async Task<IActionResult> AddKyc([FromForm] KycViewModel kycViewModel)
         {
@@ -60,7 +61,7 @@ namespace EAMS.Controllers
             var result = await _eamsService.AddKYCDetails(kyc);
 
             // Check if adding KYC details was successful
-            if (result.IsSucceed==true)
+            if (result.IsSucceed == true)
             {
                 // Construct the base URL for PDF paths
                 var request = HttpContext.Request;
@@ -91,27 +92,21 @@ namespace EAMS.Controllers
                 KycMasterId = kyc.KycMasterId,
                 StateMasterId = kyc.StateMasterId,
                 DistrictMasterId = kyc.DistrictMasterId,
-                ElectionType = kyc.ElectionType,
-                BlockMasterId = kyc.BlockMasterId,
-                ZPMasterId = kyc.ZPMasterId,
-                PSMasterId = kyc.PSMasterId,
-                MCorporationMasterId = kyc.MCorporationMasterId,
-                MCouncilMasterId = kyc.MCouncilMasterId,
-                NPMasterId = kyc.NPMasterId,
-                PSZoneMasterId = kyc.PSZoneMasterId,
+                ElectionTypeMasterId = kyc.ElectionTypeMasterId,
                 SarpanchWardsMasterId = kyc.SarpanchWardsMasterId,
-                WardMasterId = kyc.WardMasterId,
+                BoothMasterId = kyc.BoothMasterId,
                 CandidateName = kyc.CandidateName,
                 FatherName = kyc.FatherName,
                 NominationPdfPath = !string.IsNullOrEmpty(kyc.NominationPdfPath)
                     ? $"{baseUrl}/{Path.GetFileName(kyc.NominationPdfPath)}"
                     : null,
-                Option1 = kyc.Option1,
-                Option2 = kyc.Option2
+
             }).ToList();
 
             return Ok(kycResponses);
         }
+        #endregion
+
 
 
     }

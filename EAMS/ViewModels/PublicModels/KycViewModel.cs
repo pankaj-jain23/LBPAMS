@@ -4,7 +4,7 @@ namespace EAMS.ViewModels.PublicModels
 {
     public class KycViewModel
     {
-      
+
         public int StateMasterId
         {
             get;
@@ -15,42 +15,28 @@ namespace EAMS.ViewModels.PublicModels
             get;
             set;
         }
-        public int? ElectionType
+        public int? ElectionTypeMasterId
         {
             get;
             set;
         }
-        public int? BlockMasterId
+        public int? PsZoneMasterId
         {
             get;
             set;
         }
-        public int? ZPMasterId
+
+        public int? BoothMasterId
         {
             get;
             set;
         }
-        public int? PSMasterId
-        {
-            get;
-            set;
+        public int? SarpanchWardsMasterId 
+        { 
+            get; 
+            set; 
         }
-        public int? MCorporationMasterId
-        {
-            get;
-            set;
-        }
-        public int? MCouncilMasterId
-        {
-            get;
-            set;
-        }
-        public int? NagaraPanchayatMasterId
-        {
-            get;
-            set;
-        }
-        public IFormFile NominationPdf 
+        public IFormFile NominationPdf
         {
             get;
             set;
@@ -65,17 +51,6 @@ namespace EAMS.ViewModels.PublicModels
             get;
             set;
         }
-        [JsonIgnore]
-        public string? Option1
-        {
 
-            get; set;
-        }
-        [JsonIgnore]
-        public string? Option2
-        {
-
-            get; set;
-        }
     }
 }
