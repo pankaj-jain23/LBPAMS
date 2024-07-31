@@ -20,6 +20,7 @@ namespace EAMS_ACore.Models
         public int? Transgender { get; set; }
         public int? PCMasterId { get; set; }
         public string UserType { get; set; }
+        public int ElectionTypeMasterId { get;set; }
 
     }
 }

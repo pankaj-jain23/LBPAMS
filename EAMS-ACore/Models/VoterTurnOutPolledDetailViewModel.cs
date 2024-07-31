@@ -32,6 +32,6 @@ namespace EAMS_ACore.Models
         public string? TotalAvailableFemale { get; set; }
         public string? TotalAvailableTransgender { get; set; }
 
-
+        public int ElectionTypeMasterId { get; set; }
     }
 }

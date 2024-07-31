@@ -4145,6 +4145,7 @@ namespace EAMS_DAL.Repository
                                                     VoteEnabled = true,
                                                     IsLastSlot = SlotRecord.IsLastSlot,
                                                     Message = "Slot is Available",
+                                                    ElectionTypeMasterId=electionInfoRecord.ElectionTypeMasterId
 
                                                 };
                                                 if (isGenderCptureRequired == true)
@@ -4156,6 +4157,7 @@ namespace EAMS_DAL.Repository
                                                     model.TotalAvailableMale = boothExists.Male.ToString();
                                                     model.TotalAvailableFemale = boothExists.Female.ToString();
                                                     model.TotalAvailableTransgender = boothExists.Transgender.ToString();
+                                                    model.ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId;
                                                 }
                                                 else
                                                 {
@@ -4185,6 +4187,7 @@ namespace EAMS_DAL.Repository
                                                             TotalVoters = boothExists.TotalVoters,
                                                             VotesPolled = 0,
                                                             VoteEnabled = false,
+                                                            ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId,
                                                             Message = "Voter Turn Out Already Entered For Slot. Please enter values in Next Slot :" + nextSlotRecord.EndTime + " " + "T0" + " " + nextSlotRecord.LockTime
 
                                                         };
@@ -4198,6 +4201,7 @@ namespace EAMS_DAL.Repository
                                                             model.TotalAvailableMale = boothExists.Male.ToString();
                                                             model.TotalAvailableFemale = boothExists.Female.ToString();
                                                             model.TotalAvailableTransgender = boothExists.Transgender.ToString();
+                                                            model.ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId;
                                                         }
                                                         else
                                                         {
@@ -4219,6 +4223,7 @@ namespace EAMS_DAL.Repository
                                                     LockTime = SlotRecord.LockTime,
                                                     VoteEnabled = false, // but freeze it if already entered for thi sslot
                                                     IsLastSlot = SlotRecord.IsLastSlot,
+                                                    ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId,
                                                     Message = msg
                                                 };
                                                 if (isGenderCptureRequired == true)
@@ -4230,6 +4235,7 @@ namespace EAMS_DAL.Repository
                                                     model.TotalAvailableMale = boothExists.Male.ToString();
                                                     model.TotalAvailableFemale = boothExists.Female.ToString();
                                                     model.TotalAvailableTransgender = boothExists.Transgender.ToString();
+                                                    model.ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId;
                                                 }
                                                 else
                                                 {
@@ -4250,7 +4256,8 @@ namespace EAMS_DAL.Repository
                                                 LockTime = SlotRecord.LockTime,
                                                 IsLastSlot = SlotRecord.IsLastSlot,
                                                 VoteEnabled = false,
-                                                Message = "Voter Turn Out Closed, Kindly Proceed for Voter in Queue"
+                                                Message = "Voter Turn Out Closed, Kindly Proceed for Voter in Queue",
+                                                ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId
                                             };
 
                                             if (isGenderCptureRequired == true)
@@ -4263,6 +4270,7 @@ namespace EAMS_DAL.Repository
                                                 model.TotalAvailableMale = boothExists.Male.ToString();
                                                 model.TotalAvailableFemale = boothExists.Female.ToString();
                                                 model.TotalAvailableTransgender = boothExists.Transgender.ToString();
+                                                model.ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId;
 
                                             }
                                             else
@@ -4285,6 +4293,7 @@ namespace EAMS_DAL.Repository
                                             IsLastSlot = SlotRecord.IsLastSlot,
                                             VoteEnabled = true,
                                             Message = "Slot is Available",
+                                            ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId
                                         };
                                         if (isGenderCptureRequired == true)
                                         {
@@ -4295,6 +4304,7 @@ namespace EAMS_DAL.Repository
                                             model.TotalAvailableMale = boothExists.Male.ToString();
                                             model.TotalAvailableFemale = boothExists.Female.ToString();
                                             model.TotalAvailableTransgender = boothExists.Transgender.ToString();
+                                            model.ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId;
                                         }
                                         else
                                         {
@@ -4318,7 +4328,8 @@ namespace EAMS_DAL.Repository
                                                 VotesPolled = polldetail.VotesPolled,
                                                 VotesPolledRecivedTime = polldetail.VotesPolledRecivedTime,
                                                 VoteEnabled = false,
-                                                Message = "Voter Turn Out Closed, Kindly Proceed for Voter in Queue"
+                                                Message = "Voter Turn Out Closed, Kindly Proceed for Voter in Queue",
+                                                ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId
 
                                             };
 
@@ -4331,6 +4342,7 @@ namespace EAMS_DAL.Repository
                                                 model.TotalAvailableMale = boothExists.Male.ToString();
                                                 model.TotalAvailableFemale = boothExists.Female.ToString();
                                                 model.TotalAvailableTransgender = boothExists.Transgender.ToString();
+                                                model.ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId;
                                             }
                                             else
                                             {
@@ -4346,7 +4358,9 @@ namespace EAMS_DAL.Repository
                                                 VotesPolled = 0,
                                                 VotesPolledRecivedTime = null,
                                                 VoteEnabled = false,
-                                                Message = "Voter Turn Out Closed, You have entered no values in the Slots. Kindly Proceed for Queue."
+                                                Message = "Voter Turn Out Closed, You have entered no values in the Slots. Kindly Proceed for Queue.",
+                                                ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId
+
                                             };
                                             if (isGenderCptureRequired == true)
                                             {
@@ -4354,6 +4368,7 @@ namespace EAMS_DAL.Repository
                                                 model.TotalAvailableMale = boothExists.Male.ToString();
                                                 model.TotalAvailableFemale = boothExists.Female.ToString();
                                                 model.TotalAvailableTransgender = boothExists.Transgender.ToString();
+                                                model.ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId;
                                             }
                                             else
                                             {
@@ -4378,7 +4393,8 @@ namespace EAMS_DAL.Repository
                                                     VotesPolled = polldetail.VotesPolled,
                                                     VotesPolledRecivedTime = polldetail.VotesPolledRecivedTime,
                                                     VoteEnabled = false,
-                                                    Message = "Slot not available. Next Slot Duration :" + nextSlotRecord.EndTime + " " + "T0" + " " + nextSlotRecord.LockTime
+                                                    Message = "Slot not available. Next Slot Duration :" + nextSlotRecord.EndTime + " " + "T0" + " " + nextSlotRecord.LockTime,
+                                                    ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId
 
                                                 };
                                                 if (isGenderCptureRequired == true)
@@ -4390,6 +4406,7 @@ namespace EAMS_DAL.Repository
                                                     model.TotalAvailableMale = boothExists.Male.ToString();
                                                     model.TotalAvailableFemale = boothExists.Female.ToString();
                                                     model.TotalAvailableTransgender = boothExists.Transgender.ToString();
+                                                    model.ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId;
                                                 }
                                                 else
                                                 {
@@ -4404,7 +4421,8 @@ namespace EAMS_DAL.Repository
                                                     TotalVoters = boothExists.TotalVoters,
                                                     VotesPolled = 0,
                                                     VoteEnabled = false,
-                                                    Message = "Slot not available. Next Slot Duration :" + nextSlotRecord.EndTime + " " + "T0" + " " + nextSlotRecord.LockTime
+                                                    Message = "Slot not available. Next Slot Duration :" + nextSlotRecord.EndTime + " " + "T0" + " " + nextSlotRecord.LockTime,
+                                                    ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId
 
                                                 };
                                                 if (isGenderCptureRequired == true)
@@ -4416,6 +4434,7 @@ namespace EAMS_DAL.Repository
                                                     model.TotalAvailableMale = boothExists.Male.ToString();
                                                     model.TotalAvailableFemale = boothExists.Female.ToString();
                                                     model.TotalAvailableTransgender = boothExists.Transgender.ToString();
+                                                    model.ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId;
                                                 }
                                                 else
                                                 {
@@ -4443,6 +4462,7 @@ namespace EAMS_DAL.Repository
                                                 model.TotalAvailableMale = boothExists.Male.ToString();
                                                 model.TotalAvailableFemale = boothExists.Female.ToString();
                                                 model.TotalAvailableTransgender = boothExists.Transgender.ToString();
+                                                model.ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId;
                                             }
                                             else
                                             {
@@ -4469,6 +4489,7 @@ namespace EAMS_DAL.Repository
                                     VotesPolled = 0,
                                     VotesPolledRecivedTime = null,
                                     VoteEnabled = false,
+                                    ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId,
                                     Message = "Booth Record Not Found."
 
                                 };
@@ -4494,6 +4515,7 @@ namespace EAMS_DAL.Repository
                                 VotesPolled = 0,
                                 VotesPolledRecivedTime = null,
                                 VoteEnabled = false,
+                                ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId,
                                 Message = "Poll not started, Please try after Poll start."
 
                             };
@@ -4506,6 +4528,7 @@ namespace EAMS_DAL.Repository
                                 model.TotalAvailableMale = boothExists.Male.ToString();
                                 model.TotalAvailableFemale = boothExists.Female.ToString();
                                 model.TotalAvailableTransgender = boothExists.Transgender.ToString();
+                                model.ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId;
                             }
                             else
                             {
@@ -4513,6 +4536,10 @@ namespace EAMS_DAL.Repository
                             }
                         }
                     }
+                    
+                    
+                    
+                    
                     else
                     {
                         model = new VoterTurnOutPolledDetailViewModel()
@@ -4522,6 +4549,7 @@ namespace EAMS_DAL.Repository
                             VotesPolled = 0,
                             VotesPolledRecivedTime = null,
                             VoteEnabled = false,
+                            ElectionTypeMasterId = 0,
                             Message = "Please Check you Previous Events of this booth,Election Info record Not Found."
 
 
@@ -4711,8 +4739,9 @@ namespace EAMS_DAL.Repository
                                             VotesPolledTime = polldetail.VotesPolledRecivedTime,
                                             RemainingVotes = boothExists.TotalVoters - polldetail.VotesPolled,
                                             VoteEnabled = true,
-                                            Message = "Queue is Available"
-
+                                            Message = "Queue is Available",
+                                            ElectionTypeMasterId=electionInfoRecord.ElectionTypeMasterId
+                                           
 
                                         };
                                     }
@@ -4724,7 +4753,8 @@ namespace EAMS_DAL.Repository
                                             TotalVoters = boothExists.TotalVoters,
                                             RemainingVotes = boothExists.TotalVoters - 0,
                                             VoteEnabled = true,
-                                            Message = "Queue is Available, You have not entered any value in Voter Turn Out of this Booth."
+                                            Message = "Queue is Available, You have not entered any value in Voter Turn Out of this Booth.",
+                                            ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId
 
 
                                         };
@@ -4742,6 +4772,7 @@ namespace EAMS_DAL.Repository
                                         VotesPolledTime = electionInfoRecord.VoterInQueueLastUpdate,
                                         VoteEnabled = false,
                                         RemainingVotes = null,
+                                        ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId,
                                         Message = "Queue will be Open at Specified Time."
 
 
@@ -4761,7 +4792,7 @@ namespace EAMS_DAL.Repository
                                     VotesPolledTime = electionInfoRecord.VoterInQueueLastUpdate,
                                     VoteEnabled = false,
                                     RemainingVotes = null,
-                                    //Message = "Queue will be Open at Specified Time."
+                                    ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId,
                                     Message = "Voter Turn Out Not Updated Yet."
 
                                 };
@@ -4777,7 +4808,8 @@ namespace EAMS_DAL.Repository
                                 VotesPolled = electionInfoRecord.VoterInQueue,
                                 VotesPolledTime = electionInfoRecord.VoterInQueueLastUpdate,
                                 VoteEnabled = false,
-                                Message = "Queue Already Done."
+                                ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId,
+                                 Message = "Queue Already Done."
 
                             };
                         }
@@ -4794,6 +4826,7 @@ namespace EAMS_DAL.Repository
                             VotesPolled = null,
                             VotesPolledTime = null,
                             VoteEnabled = false,
+                            ElectionTypeMasterId = 0,
                             Message = "Please Update Previous Events of this Booth, Election Info Record Not Found."
 
 
@@ -4813,7 +4846,9 @@ namespace EAMS_DAL.Repository
                         VotesPolled = null,
                         VotesPolledTime = null,
                         VoteEnabled = false,
-                        Message = "Booth record Not Found"
+                        Message = "Booth record Not Found",
+                        ElectionTypeMasterId = 0,
+
 
 
                     };
@@ -4947,10 +4982,8 @@ namespace EAMS_DAL.Repository
                                                             EventMasterId = Convert.ToInt32(addVoterTurnOut.eventid),
                                                             VotesPolled = Convert.ToInt32(addVoterTurnOut.voterValue),
                                                             VotesPolledRecivedTime = BharatDateTime(),
-
-
-                                                            PCMasterId = _context.AssemblyMaster.Where(p => p.AssemblyMasterId == boothExists.AssemblyMasterId).Select(p => p.PCMasterId).FirstOrDefault(),
-
+                                                            ElectionTypeMasterId=addVoterTurnOut.ElectionTypeMasterId,
+                                                            //PCMasterId = _context.AssemblyMaster.Where(p => p.AssemblyMasterId == boothExists.AssemblyMasterId).Select(p => p.PCMasterId).FirstOrDefault(),
                                                             UserType = "SO"
                                                             //AddedBy=Soid  // find SO or ARO
                                                         };
@@ -4968,6 +5001,7 @@ namespace EAMS_DAL.Repository
                                                                         model.Male = Convert.ToInt32(addVoterTurnOut.Male);
                                                                         model.Female = Convert.ToInt32(addVoterTurnOut.Female); // Assuming this was intended to be Female
                                                                         model.Transgender = Convert.ToInt32(addVoterTurnOut.Transgender);
+                                                                        model.ElectionTypeMasterId = addVoterTurnOut.ElectionTypeMasterId;
                                                                     }
                                                                     else
                                                                     {
@@ -5003,6 +5037,7 @@ namespace EAMS_DAL.Repository
                                                         _context.PollDetails.Add(model);
                                                         electionInfoRecord.FinalTVote = Convert.ToInt32(addVoterTurnOut.voterValue);
                                                         electionInfoRecord.VotingLastUpdate = BharatDateTime();
+                                                        electionInfoRecord.ElectionTypeMasterId = addVoterTurnOut.ElectionTypeMasterId;
                                                         _context.ElectionInfoMaster.Update(electionInfoRecord);
                                                         await _context.SaveChangesAsync();
                                                         return new Response { Status = RequestStatusEnum.OK, Message = "Voter Turn Out for " + boothExists.BoothName + " entered successfully!" };
@@ -5029,11 +5064,9 @@ namespace EAMS_DAL.Repository
                                                     EventMasterId = Convert.ToInt32(addVoterTurnOut.eventid),
                                                     VotesPolled = Convert.ToInt32(addVoterTurnOut.voterValue),
                                                     VotesPolledRecivedTime = BharatDateTime(),
-
+                                                    ElectionTypeMasterId=addVoterTurnOut.ElectionTypeMasterId,
                                                     UserType = "SO",
-                                                    PCMasterId = _context.AssemblyMaster.Where(p => p.AssemblyMasterId == boothExists.AssemblyMasterId)
-    .Select(p => p.PCMasterId)
-    .FirstOrDefault(),
+                                                    //PCMasterId = _context.AssemblyMaster.Where(p => p.AssemblyMasterId == boothExists.AssemblyMasterId).Select(p => p.PCMasterId).FirstOrDefault(),
 
                                                     //AddedBy=Soid  // find SO or ARO
                                                 };
@@ -5051,6 +5084,7 @@ namespace EAMS_DAL.Repository
                                                                 model.Male = Convert.ToInt32(addVoterTurnOut.Male);
                                                                 model.Female = Convert.ToInt32(addVoterTurnOut.Female); // Assuming this was intended to be Female
                                                                 model.Transgender = Convert.ToInt32(addVoterTurnOut.Transgender);
+                                                                model.ElectionTypeMasterId = addVoterTurnOut.ElectionTypeMasterId;
                                                             }
                                                             else
                                                             {
@@ -5085,6 +5119,7 @@ namespace EAMS_DAL.Repository
                                                 _context.PollDetails.Add(model);
                                                 electionInfoRecord.FinalTVote = Convert.ToInt32(addVoterTurnOut.voterValue);
                                                 electionInfoRecord.VotingLastUpdate = BharatDateTime();
+                                                electionInfoRecord.ElectionTypeMasterId = addVoterTurnOut.ElectionTypeMasterId;
                                                 _context.ElectionInfoMaster.Update(electionInfoRecord);
                                                 await _context.SaveChangesAsync();
                                                 return new Response { Status = RequestStatusEnum.OK, Message = "Voter Turn Out for " + boothExists.BoothName + " entered successfully!" };
@@ -5340,8 +5375,9 @@ namespace EAMS_DAL.Repository
                                         Female = electionInfoRecord.Female.ToString(),
                                         Transgender = electionInfoRecord.Transgender.ToString(),
                                         edc = electionInfoRecord.EDC.ToString(),
-                                        Message = "Final Value is Available"
-
+                                        Message = "Final Value is Available",
+                                        ElectionTypeMasterId=electionInfoRecord.ElectionTypeMasterId
+                                        
 
                                     };
                                     // Check the condition
@@ -5368,7 +5404,8 @@ namespace EAMS_DAL.Repository
                                         Female = electionInfoRecord.Female.ToString(),
                                         Transgender = electionInfoRecord.Transgender.ToString(),
                                         Message = "Final Value is Available, Last Entered :" + electionInfoRecord.FinalTVote,
-                                        edc = electionInfoRecord.EDC.ToString()
+                                        ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId,
+                                         edc = electionInfoRecord.EDC.ToString()
                                     };
 
                                     // Check the condition
@@ -5398,6 +5435,7 @@ namespace EAMS_DAL.Repository
                                     Transgender = electionInfoRecord.Transgender.ToString(),
                                     VoteEnabled = false,
                                     Message = "Final Value Not Available, Poll Already Ended",
+                                    ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId,
                                     edc = electionInfoRecord.EDC.ToString()
                                 };
                                 // Check the condition
@@ -5417,7 +5455,7 @@ namespace EAMS_DAL.Repository
                                 LastVotesPolled = lastVotespolled,
                                 LastFinalVotesPolled = null,
                                 VotesFinalPolledTime = null,
-
+                                ElectionTypeMasterId = 0,
                                 VoteEnabled = false,
                                 Message = "Final Value Not Available",
                                 edc = electionInfoRecord.EDC.ToString()
@@ -5445,6 +5483,7 @@ namespace EAMS_DAL.Repository
                             Female = null,
                             Transgender = null,
                             VoteEnabled = false,
+                            ElectionTypeMasterId = 0,
                             Message = "Election Info Record Not Found, Pls Check Previous Events.",
                             edc = electionInfoRecord.EDC.ToString()
 

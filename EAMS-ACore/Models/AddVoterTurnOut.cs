@@ -10,7 +10,7 @@
         public string? Female { get; set; }
         public string? Transgender { get; set; }
 
-
+        public int ElectionTypeMasterId {get; set;}
 
     }
 }

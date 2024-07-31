@@ -11,6 +11,6 @@
         public bool? VoteEnabled { get; set; }
         public string? Message { get; set; }
 
-
+        public int ElectionTypeMasterId { get; set; }
     }
 }
