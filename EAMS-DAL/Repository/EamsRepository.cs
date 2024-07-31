@@ -337,8 +337,8 @@ namespace EAMS_DAL.Repository
                     if (isBoothExist != null)
                     {
                         var electionInfoRecord = await _context.ElectionInfoMaster
-      .Where(d => d.StateMasterId == isBoothExist.StateMasterId && d.DistrictMasterId == isBoothExist.DistrictMasterId && d.AssemblyMasterId == isBoothExist.AssemblyMasterId && d.BoothMasterId == isBoothExist.BoothMasterId)
-      .FirstOrDefaultAsync();
+                        .Where(d => d.StateMasterId == isBoothExist.StateMasterId && d.DistrictMasterId == isBoothExist.DistrictMasterId && d.AssemblyMasterId == isBoothExist.AssemblyMasterId && d.BoothMasterId == isBoothExist.BoothMasterId)
+                        .FirstOrDefaultAsync();
                         if (electionInfoRecord == null)
                         {
                             if (isBoothExist.AssignedTo == null || isBoothExist.AssignedTo == "")
