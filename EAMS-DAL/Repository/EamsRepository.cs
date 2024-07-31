@@ -367,7 +367,7 @@ namespace EAMS_DAL.Repository
                                         isBoothExist.BoothStatus = updateMasterStatus.IsStatus;
                                         _context.BoothMaster.Update(isBoothExist);
                                         await _context.SaveChangesAsync();
-                                        return new ServiceResponse { IsSucceed = true, Message = "Booth Activated succcessfully, Kindly Map booth location." };
+                                        return new ServiceResponse { IsSucceed = true, Message = "Booth Activated Successfully." };
 
                                     }
                                 }
