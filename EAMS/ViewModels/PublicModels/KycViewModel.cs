@@ -20,6 +20,12 @@ namespace EAMS.ViewModels.PublicModels
             get;
             set;
         }
+        public int? AssemblyMasterId
+        {
+            get;
+            set;
+        }
+
         public int? PsZoneMasterId
         {
             get;
