@@ -9,6 +9,7 @@ namespace EAMS_ACore.AuthInterfaces
     {
         Task<ServiceResponse> RegisterAsync(UserRegistration userRegistration, List<string> roleIds);
         Task<Token> LoginAsync(Login login);
+        Task<ServiceResponse> DeleteUser(string userId);
         Task<ServiceResponse> AddDynamicRole(Role role);
         Task<List<Role>> GetRoles();
         Task<List<UserRegistration>> GetUsersByRoleId(string roleId);

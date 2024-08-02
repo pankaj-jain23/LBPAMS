@@ -168,6 +168,14 @@ namespace EAMS_BLL.AuthServices
             }
         }
 
+
+        public async Task<ServiceResponse> DeleteUser(string userId)
+        {
+
+            return await _authRepository.DeleteUser(userId);
+
+        }
+
         private List<Claim> GenerateClaims(UserRegistration user, UserState userProfile)
         {
             var authClaims = new List<Claim>

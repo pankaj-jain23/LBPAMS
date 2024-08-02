@@ -9,6 +9,7 @@ namespace EAMS_ACore.IAuthRepository
     {
         Task<ServiceResponse> RegisterAsync(UserRegistration userRegistration);
         Task<ServiceResponse> LoginAsync(Login login);
+        Task<ServiceResponse> DeleteUser(string userId);
 
         Task<ServiceResponse> AddDynamicRole(Role role);
         Task<List<Role>> GetRoles();

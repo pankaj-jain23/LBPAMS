@@ -6,8 +6,10 @@ using EAMS_ACore.AuthInterfaces;
 using EAMS_ACore.AuthModels;
 using EAMS_ACore.HelperModels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
+using System.Security.Claims;
 
 namespace EAMS.Controllers
 {
@@ -388,6 +390,45 @@ namespace EAMS.Controllers
         }
         #endregion
 
-      
+        #region Delete User
+
+        [HttpDelete]
+        [Route("DeletePortalUser")]
+        [Authorize]
+        public async Task<IActionResult> DeleteUser(string userId)
+        {
+            try
+            {
+              
+                //var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId").Value;
+                
+                // Ensure the user ID is valid
+                if (string.IsNullOrEmpty(userId))
+                    return BadRequest("Invalid user ID");
+
+                // Find the user by ID
+             
+                var result = await _authService.DeleteUser(userId);
+                //if (user == null)
+                //    return NotFound("User not found");
+
+                //// Delete the user
+                //var result = await _authService.DeleteUser(user);
+                //if (result.Succeeded)
+                //    return Ok("User deleted successfully");
+
+                // Return errors if deletion fails
+                var errors = string.Join(", ", result.Message.ToString());
+                return BadRequest($"Error deleting user: {errors}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"DeleteUser: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+        #endregion
+
     }
 }

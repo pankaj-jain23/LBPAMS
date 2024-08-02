@@ -5,10 +5,12 @@ using EAMS_ACore.IAuthRepository;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
 using EAMS_DAL.DBContext;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System.Data;
+using System.Linq;
 using System.Security.Claims;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -507,6 +509,156 @@ namespace EAMS_DAL.AuthRepository
 
         }
         #endregion
+        #region  DeleteUser
+        // public async Task<ServiceResponse> DeleteUser(UserRegistration userRegistration)
+        public async Task<ServiceResponse> DeleteUser(string userId)
+        {
+            var executionStrategy = _context.Database.CreateExecutionStrategy();
+
+            return await executionStrategy.ExecuteAsync(async () =>
+            {
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    // Find the user record
+                    var userRecord = await _userManager.FindByIdAsync(userId);
+                    if (userRecord == null)
+                    {
+                        return new ServiceResponse
+                        {
+                            IsSucceed = false,
+                            Message = "User Record Not Found!"
+                        };
+                    }
+
+                  
+
+                    // Retrieve related user states
+                    var userStates = await _context.UserState
+                        .Where(us => us.Id == userId)
+                        .ToListAsync();
+
+                    if (!userStates.Any())
+                    {
+                        return new ServiceResponse
+                        {
+                            IsSucceed = false,
+                            Message = "No related user states found!"
+                        };
+                    }
+
+                    // Extract IDs
+                    var userStateIds = userStates.Select(us => us.UserStateId).FirstOrDefault();
+
+                    // Retrieve related user districts
+                    var userDistricts = await _context.UserDistrict.Where(ud => ud.UserStateId== userStateIds).ToListAsync();
+                   
+
+                    // Use a for loop to filter non-nullable userDistrictIds
+                    var userDistrictIds = new List<int>();
+
+                    foreach (var district in userDistricts)
+                    {
+                        if (district.UserDistrictId > 0)
+                        {
+                            userDistrictIds.Add(district.UserDistrictId);
+                        }
+                    }
+
+                    // Retrieve related user assemblies
+                    var userAssemblies = await _context.UserAssembly
+                        .Where(ua => ua.UserDistrictId.HasValue && userDistrictIds.Contains(ua.UserDistrictId.Value))
+                        .ToListAsync();
+                    // Use a for loop to filter non-nullable userDistrictIds
+                    var userAsemIds = new List<int>();
+
+                    foreach (var asemb in userAssemblies)
+                    {
+                        if (asemb.UserAssemblyId > 0)
+                        {
+                            userDistrictIds.Add(asemb.UserAssemblyId);
+                        }
+                    }
+
+                    // Optional: Retrieve related user PS Zones if needed
+                    var userPSZones = await _context.UserPSZone
+                        .Where(ua => ua.UserAssemblyId.HasValue && userDistrictIds.Contains(ua.UserAssemblyId.Value))
+                        .ToListAsync();
+
+                    //PC
+
+                    // Retrieve related user assemblies
+                    var userPCs = await _context.UserPCConstituency
+                        .Where(ua => ua.UserStateId== userStateIds)
+                        .ToListAsync();
+                    // Use a for loop to filter non-nullable userDistrictIds
+                  
+
+
+
+                    // Delete related data
+                    if (userPSZones.Count > 0)
+                    {
+                        _context.UserPSZone.RemoveRange(userPSZones);
+                    }
+                    if (userAssemblies.Count > 0)
+                    {
+                        _context.UserAssembly.RemoveRange(userAssemblies);
+                    }
+                    if (userDistricts.Count > 0)
+                    {
+
+                        _context.UserDistrict.RemoveRange(userDistricts);
+                    }
+                    if (userStates.Count > 0)
+                    {
+
+                        _context.UserState.RemoveRange(userStates);
+                    }
+                    if (userPCs.Count > 0)
+                    {
+
+                        _context.UserPCConstituency.RemoveRange(userPCs);
+                    }
+
+                    
+
+                    // Delete the user
+                    var result = await _userManager.DeleteAsync(userRecord);
+                    if (!result.Succeeded)
+                    {
+                        var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                        return new ServiceResponse
+                        {
+                            IsSucceed = false,
+                            Message = $"Error Deleting Record: {errors}"
+                        };
+                    }
+
+                    // Commit transaction
+                    await transaction.CommitAsync();
+                    return new ServiceResponse
+                    {
+                        IsSucceed = true,
+                        Message = "User deleted successfully."
+                    };
+                }
+                catch (Exception ex)
+                {
+                    // Rollback transaction on error
+                    await transaction.RollbackAsync();
+                    return new ServiceResponse
+                    {
+                        IsSucceed = false,
+                        Message = $"Error: {ex.Message}"
+                    };
+                }
+            });
+
+
+        }
+
+        #endregion
 
 
 
@@ -868,6 +1020,8 @@ namespace EAMS_DAL.AuthRepository
                 Email = d.Email,
                 PhoneNumber = d.PhoneNumber,
                 LockoutEnabled = d.LockoutEnabled,
+                UserId=d.Id
+                
             }).ToListAsync();
 
             var totalCount = await query.CountAsync();
