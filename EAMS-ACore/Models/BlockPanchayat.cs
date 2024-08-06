@@ -1,18 +1,18 @@
-﻿using EAMS_ACore.Models;
-using EAMS_ACore.Models.ElectionType;
+﻿using EAMS_ACore.Models.ElectionType;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-namespace EAMS_ACore
+
+namespace EAMS_ACore.Models
 {
-    public class AssemblyMaster
+    public class BlockPanchayat
     {
         [Key]
-        public int AssemblyMasterId { get; set; }
-        public string AssemblyName { get; set; }
-        public int AssemblyCode { get; set; }
+        public int BlockPanchayatMasterId { get; set; }
+        public string BlockPanchayatName { get; set; }
+        public int BlockPanchayatCode { get; set; }
 
-        public string? AssemblyType { get; set; }
-        
+        public string? BlockPanchayatType { get; set; }
+
         public int ElectionTypeMasterId
         {
             get;
@@ -48,41 +48,31 @@ namespace EAMS_ACore
             get;
             set;
         }
-        public int? PCMasterId
+
+        public int AssemblyMasterId
         {
             get;
             set;
         }
-        [ForeignKey("PCMasterId")]
-        public virtual ParliamentConstituencyMaster? ParliamentConstituencyMaster
+        [ForeignKey("AssemblyMasterId")]
+        public virtual AssemblyMaster? AssemblyMaster
         {
             get;
             set;
         }
+        public int BlockPanchayatBooths { get; set; }
+        public string? BlockPanchayatCategory { get; set; }
+        public DateTime? BlockPanchayatCreatedAt { get; set; }
 
-        public int TotalBooths { get; set; }
-        public DateTime? AssemblyCreatedAt { get; set; }
+        public DateTime? BlockPanchayatUpdatedAt { get; set; }
 
-        public DateTime? AssemblyUpdatedAt { get; set; }
+        public DateTime? BlockPanchayatDeletedAt { get; set; }
+        public bool BlockPanchayatStatus { get; set; }
 
-        public DateTime? AssemblyDeletedAt { get; set; }
-        public bool AssemblyStatus { get; set; }
-        public string? SecondLanguage { get; set; }
         public virtual List<BoothMaster> BoothMaster
         {
             get;
             set;
         }
-        public virtual List<PSZone> PSZone
-        {
-            get;
-            set;
-        }
-        public virtual List<BlockPanchayat> BlockPanchayat
-        {
-            get;
-            set;
-        }
-        
     }
 }

@@ -67,6 +67,18 @@ namespace EAMS_ACore
             get;
             set;
         }
+        public int? BlockPanchayatMasterId
+        {
+            get;
+            set;
+        }
+        [ForeignKey("BlockPanchayatMasterId")]
+        public virtual BlockPanchayat? BlockPanchayat
+        {
+            get;
+            set;
+        }
+        
         public string BoothCode_No { get; set; }
 
         public string? Category { get; set; }
