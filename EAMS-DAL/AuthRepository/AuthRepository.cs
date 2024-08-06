@@ -557,7 +557,7 @@ namespace EAMS_DAL.AuthRepository
                      _context.UserDistrict.RemoveRange(userDistricts);
                      _context.UserPCConstituency.RemoveRange(userPc);
                     //_context.UserPSZone.Remove(userDistrictAseemblyZone.user);
-
+                    // find any mapping of this user with Booths, electioninfo activity performed
                     // Delete the user
                     var result = await _userManager.DeleteAsync(userRecord);
                     if (!result.Succeeded)
