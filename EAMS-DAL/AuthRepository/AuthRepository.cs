@@ -514,7 +514,8 @@ namespace EAMS_DAL.AuthRepository
         public async Task<ServiceResponse> DeleteUser(string userId)
         {
             var executionStrategy = _context.Database.CreateExecutionStrategy();
-
+            // Find the user record
+            var userRecord = await _userManager.FindByIdAsync(userId);
             return await executionStrategy.ExecuteAsync(async () =>
             {
                 using var transaction = await _context.Database.BeginTransactionAsync();
@@ -535,8 +536,7 @@ namespace EAMS_DAL.AuthRepository
 
                     // Retrieve related user states
                     var userStates = await _context.UserState
-                        .Where(us => us.Id == userId)
-                        .ToListAsync();
+                        .Where(us => us.Id == userId).ToListAsync();
 
                     if (!userStates.Any())
                     {
@@ -551,77 +551,12 @@ namespace EAMS_DAL.AuthRepository
                     var userStateIds = userStates.Select(us => us.UserStateId).FirstOrDefault();
 
                     // Retrieve related user districts
-                    var userDistricts = await _context.UserDistrict.Where(ud => ud.UserStateId== userStateIds).ToListAsync();
-                   
-
-                    // Use a for loop to filter non-nullable userDistrictIds
-                    var userDistrictIds = new List<int>();
-
-                    foreach (var district in userDistricts)
-                    {
-                        if (district.UserDistrictId > 0)
-                        {
-                            userDistrictIds.Add(district.UserDistrictId);
-                        }
-                    }
-
-                    // Retrieve related user assemblies
-                    var userAssemblies = await _context.UserAssembly
-                        .Where(ua => ua.UserDistrictId.HasValue && userDistrictIds.Contains(ua.UserDistrictId.Value))
-                        .ToListAsync();
-                    // Use a for loop to filter non-nullable userDistrictIds
-                    var userAsemIds = new List<int>();
-
-                    foreach (var asemb in userAssemblies)
-                    {
-                        if (asemb.UserAssemblyId > 0)
-                        {
-                            userDistrictIds.Add(asemb.UserAssemblyId);
-                        }
-                    }
-
-                    // Optional: Retrieve related user PS Zones if needed
-                    var userPSZones = await _context.UserPSZone
-                        .Where(ua => ua.UserAssemblyId.HasValue && userDistrictIds.Contains(ua.UserAssemblyId.Value))
-                        .ToListAsync();
-
-                    //PC
-
-                    // Retrieve related user assemblies
-                    var userPCs = await _context.UserPCConstituency
-                        .Where(ua => ua.UserStateId== userStateIds)
-                        .ToListAsync();
-                    // Use a for loop to filter non-nullable userDistrictIds
-                  
-
-
-
-                    // Delete related data
-                    if (userPSZones.Count > 0)
-                    {
-                        _context.UserPSZone.RemoveRange(userPSZones);
-                    }
-                    if (userAssemblies.Count > 0)
-                    {
-                        _context.UserAssembly.RemoveRange(userAssemblies);
-                    }
-                    if (userDistricts.Count > 0)
-                    {
-
-                        _context.UserDistrict.RemoveRange(userDistricts);
-                    }
-                    if (userStates.Count > 0)
-                    {
-
-                        _context.UserState.RemoveRange(userStates);
-                    }
-                    if (userPCs.Count > 0)
-                    {
-
-                        _context.UserPCConstituency.RemoveRange(userPCs);
-                    }
-
-                    
+                    var userDistricts = await _context.UserDistrict.Where(ud => ud.UserStateId== userStateIds).Include(d=>d.UserAssembly).ThenInclude(d=>d.UserPSZone).ToListAsync();
+                    var userPc = await _context.UserPCConstituency.Where(ud => ud.UserStateId== userStateIds).Include(d=>d.UserAssembly).ThenInclude(d=>d.UserPSZone).ToListAsync();
+                    var userDistrictAseemblyZone=userDistricts.SelectMany(d=>d.UserAssembly.Where(ud=>ud.UserPSZone !=null)).FirstOrDefault();
+                     _context.UserDistrict.RemoveRange(userDistricts);
+                     _context.UserPCConstituency.RemoveRange(userPc);
+                    //_context.UserPSZone.Remove(userDistrictAseemblyZone.user);
 
                     // Delete the user
                     var result = await _userManager.DeleteAsync(userRecord);
