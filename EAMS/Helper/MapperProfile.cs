@@ -709,6 +709,42 @@ namespace EAMS.Helper
                 .ReverseMap();
             #endregion
 
+            #region BlockPanchayatViewModel BlockPanchayat
+            CreateMap<AddBlockPanchayatViewModel, BlockPanchayat>()
+                .ForMember(dest => dest.BlockPanchayatName, opt => opt.MapFrom(src => src.BlockPanchayatName))
+                .ForMember(dest => dest.BlockPanchayatCode, opt => opt.MapFrom(src => src.BlockPanchayatCode))
+                .ForMember(dest => dest.BlockPanchayatType, opt => opt.MapFrom(src => src.BlockPanchayatType))
+                .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+                .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+                .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+                .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+                .ForMember(dest => dest.BlockPanchayatBooths, opt => opt.MapFrom(src => src.BlockPanchayatBooths))
+                .ForMember(dest => dest.BlockPanchayatCategory, opt => opt.MapFrom(src => src.BlockPanchayatCategory))
+                .ForMember(dest => dest.BlockPanchayatCreatedAt, opt => opt.MapFrom(src => src.BlockPanchayatCreatedAt))
+                .ForMember(dest => dest.BlockPanchayatUpdatedAt, opt => opt.MapFrom(src => src.BlockPanchayatUpdatedAt))
+                .ForMember(dest => dest.BlockPanchayatDeletedAt, opt => opt.MapFrom(src => src.BlockPanchayatDeletedAt))
+                .ForMember(dest => dest.BlockPanchayatStatus, opt => opt.MapFrom(src => src.IsStatus))
+
+                .ReverseMap();
+            CreateMap<UpdateBlockPanchayatViewModel, BlockPanchayat>()
+                .ForMember(dest => dest.BlockPanchayatMasterId, opt => opt.MapFrom(src => src.BlockPanchayatMasterId))
+               .ForMember(dest => dest.BlockPanchayatName, opt => opt.MapFrom(src => src.BlockPanchayatName))
+                .ForMember(dest => dest.BlockPanchayatCode, opt => opt.MapFrom(src => src.BlockPanchayatCode))
+                .ForMember(dest => dest.BlockPanchayatType, opt => opt.MapFrom(src => src.BlockPanchayatType))
+                .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+                .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+                .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+                .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+                .ForMember(dest => dest.BlockPanchayatBooths, opt => opt.MapFrom(src => src.BlockPanchayatBooths))
+                .ForMember(dest => dest.BlockPanchayatCategory, opt => opt.MapFrom(src => src.BlockPanchayatCategory))
+                .ForMember(dest => dest.BlockPanchayatCreatedAt, opt => opt.MapFrom(src => src.BlockPanchayatCreatedAt))
+                .ForMember(dest => dest.BlockPanchayatUpdatedAt, opt => opt.MapFrom(src => src.BlockPanchayatUpdatedAt))
+                .ForMember(dest => dest.BlockPanchayatDeletedAt, opt => opt.MapFrom(src => src.BlockPanchayatDeletedAt))
+                .ForMember(dest => dest.BlockPanchayatStatus, opt => opt.MapFrom(src => src.IsStatus))
+
+                .ReverseMap();
+            #endregion
+
             #region AddSarpanchWardsViewModel
             CreateMap<AddSarpanchWardsViewModel, SarpanchWards>()
                      .ForMember(dest => dest.SarpanchWardsName, opt => opt.MapFrom(src => src.SarpanchWardsName))

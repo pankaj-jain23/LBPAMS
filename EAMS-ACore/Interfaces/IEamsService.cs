@@ -279,6 +279,14 @@ namespace EAMS_ACore.Interfaces
         Task<Response> DeletePSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId);
         #endregion
 
+        #region  BlockPanchayat
+        Task<Response> AddBlockPanchayat(BlockPanchayat blockPanchayat);
+        Task<List<BlockPanchayat>> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
+        //Task<PSZone> GetPSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId);
+        //Task<Response> UpdatePSZone(PSZone pSZone);
+        //Task<Response> DeletePSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId);
+        #endregion
+
         #region SarpanchWards
         Task<Response> AddSarpanchWards(SarpanchWards sarpanchWards);
         Task<List<SarpanchWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId);

@@ -296,5 +296,13 @@ namespace EAMS_ACore.IRepository
 
         Task<Response> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId);
         #endregion
+
+        #region  BlockPanchayat
+        Task<Response> AddBlockPanchayat(BlockPanchayat blockPanchayat);
+        Task<List<BlockPanchayat>> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
+        //Task<PSZone> GetPSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId);
+        //Task<Response> UpdatePSZone(PSZone pSZone);
+        //Task<Response> DeletePSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId);
+        #endregion
     }
 }

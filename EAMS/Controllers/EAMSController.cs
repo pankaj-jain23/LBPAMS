@@ -1709,6 +1709,156 @@ namespace EAMS.Controllers
 
         #endregion
 
+        #region BlockPanchayat
+        [HttpPost]
+        [Route("AddBlockPanchayat")]
+        [Authorize]
+        public async Task<IActionResult> AddBlockPanchayat(AddBlockPanchayatViewModel addBlockPanchayatViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                var mappedData = _mapper.Map<AddBlockPanchayatViewModel, BlockPanchayat>(addBlockPanchayatViewModel);
+
+
+                var result = await _EAMSService.AddBlockPanchayat(mappedData);
+                switch (result.Status)
+                {
+                    case RequestStatusEnum.OK:
+                        return Ok(result.Message);
+                    case RequestStatusEnum.BadRequest:
+                        return BadRequest(result.Message);
+                    case RequestStatusEnum.NotFound:
+                        return NotFound(result.Message);
+
+                    default:
+                        return StatusCode(500, "Internal Server Error");
+                }
+
+            }
+            else
+            {
+                return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
+            }
+        }
+
+        [HttpGet("GetBlockPanchayatListById")]
+        [Authorize]
+        public async Task<IActionResult> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        {
+            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null)
+            {
+                var getBlockPanchayatList = await _EAMSService.GetBlockPanchayatListById(stateMasterId, districtMasterId, assemblyMasterId);  // Corrected to await the asynchronous method
+                if (getBlockPanchayatList != null)
+                {
+                    var data = new
+                    {
+                        count = getBlockPanchayatList.Count,
+                        data = getBlockPanchayatList.ToList(),
+                     
+
+                    };
+                    return Ok(data);
+
+                }
+                else
+                {
+                    return NotFound("Booth Not Found");
+
+                }
+            }
+            else
+            {
+
+                return BadRequest("State, District and Assembly Master Id's cannot be null");
+            }
+
+        }
+
+        //[HttpPut]
+        //[Route("UpdatePSZone")]
+        //[Authorize]
+        //public async Task<IActionResult> UpdatePSZone(UpdatePSZoneViewModel updatePSZoneViewModel)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        var mappedData = _mapper.Map<UpdatePSZoneViewModel, PSZone>(updatePSZoneViewModel);
+        //        var result = await _EAMSService.UpdatePSZone(mappedData);
+        //        switch (result.Status)
+        //        {
+        //            case RequestStatusEnum.OK:
+        //                return Ok(result.Message);
+        //            case RequestStatusEnum.BadRequest:
+        //                return BadRequest(result.Message);
+        //            case RequestStatusEnum.NotFound:
+        //                return NotFound(result.Message);
+
+        //            default:
+        //                return StatusCode(500, "Internal Server Error");
+        //        }
+
+        //    }
+        //    else
+        //    {
+        //        return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
+        //    }
+        //}
+
+        //[HttpGet("GetPSZoneById")]
+        //[Authorize]
+        //public async Task<IActionResult> GetPSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId)
+        //{
+        //    if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && pSZoneMasterId != null)
+        //    {
+        //        var psZoneList = await _EAMSService.GetPSZoneById(stateMasterId, districtMasterId, assemblyMasterId, pSZoneMasterId);  // Corrected to await the asynchronous method
+        //        if (psZoneList != null)
+        //        {
+
+        //            return Ok(psZoneList);
+
+        //        }
+        //        else
+        //        {
+        //            return NotFound("Booth Not Found");
+
+        //        }
+        //    }
+        //    else
+        //    {
+
+        //        return BadRequest("Master Id's cannot be null");
+        //    }
+
+        //}
+
+        //[HttpDelete("DeletePSZoneById")]
+        //[Authorize]
+        //public async Task<IActionResult> DeletePSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId)
+        //{
+        //    if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && pSZoneMasterId != null)
+        //    {
+        //        var psZoneList = await _EAMSService.DeletePSZoneById(stateMasterId, districtMasterId, assemblyMasterId, pSZoneMasterId);  // Corrected to await the asynchronous method
+        //        if (psZoneList != null)
+        //        {
+
+        //            return Ok(psZoneList);
+
+        //        }
+        //        else
+        //        {
+        //            return NotFound("Zone Not Found");
+
+        //        }
+        //    }
+        //    else
+        //    {
+
+        //        return BadRequest(" Master Id's cannot be null");
+        //    }
+
+        //}
+
+        #endregion
+
         #region SarpanchWards
         [HttpPost]
         [Route("AddSarpanchWards")]

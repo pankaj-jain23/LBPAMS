@@ -3351,6 +3351,29 @@ namespace EAMS_BLL.Services
         }
         #endregion
 
+        #region BlockPanchayat
+        public async Task<Response> AddBlockPanchayat(BlockPanchayat blockPanchayat)
+        {
+
+            return await _eamsRepository.AddBlockPanchayat(blockPanchayat);
+        }
+        public async Task<List<BlockPanchayat>> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        {
+            return await _eamsRepository.GetBlockPanchayatListById(stateMasterId, districtMasterId, assemblyMasterId);
+        }
+        //public async Task<PSZone> GetPSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId)
+        //{
+        //    return await _eamsRepository.GetPSZoneById(stateMasterId, districtMasterId, assemblyMasterId, pSZoneMasterId);
+        //}
+        //public async Task<Response> UpdatePSZone(PSZone pSZone)
+        //{
+        //    return await _eamsRepository.UpdatePSZone(pSZone);
+        //}
+        //public async Task<Response> DeletePSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId)
+        //{
+        //    return await _eamsRepository.DeletePSZoneById(stateMasterId, districtMasterId, assemblyMasterId, pSZoneMasterId);
+        //}
+        #endregion
         #region SarpanchWards
         public async Task<Response> AddSarpanchWards(SarpanchWards sarpanchWards)
         {

@@ -16090,6 +16090,53 @@ namespace EAMS_DAL.Repository
 
         #endregion
 
+        #region  BlockPanchayat
+        public async Task<Response> AddBlockPanchayat(BlockPanchayat blockPanchayat)
+        {
+            try
+            {
+                var ispsZoneExist = await _context.BlockPanchayat.Where(p => p.BlockPanchayatCode == blockPanchayat.BlockPanchayatCode && p.StateMasterId == blockPanchayat.StateMasterId && p.DistrictMasterId == blockPanchayat.DistrictMasterId && p.AssemblyMasterId == blockPanchayat.AssemblyMasterId && p.ElectionTypeMasterId == blockPanchayat.ElectionTypeMasterId).FirstOrDefaultAsync();
+
+                if (ispsZoneExist == null)
+                {
+
+                    blockPanchayat.BlockPanchayatCreatedAt = BharatDateTime();
+                    _context.BlockPanchayat.Add(blockPanchayat);
+                    _context.SaveChanges();
+
+                    return new Response { Status = RequestStatusEnum.OK, Message = blockPanchayat.BlockPanchayatName + "Added Successfully" };
+
+
+
+                }
+                else
+                {
+                    return new Response { Status = RequestStatusEnum.BadRequest, Message = ispsZoneExist.BlockPanchayatName + "Same Panchayat  Code Already Exists in the selected Election Type" };
+
+                }
+
+            }
+
+            catch (Exception ex)
+            {
+                return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
+            }
+        }
+
+        public async Task<List<BlockPanchayat>> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        {
+            var getBlockPanchayat = await _context.BlockPanchayat.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId).ToListAsync();
+            if (getBlockPanchayat != null)
+            {
+                return getBlockPanchayat;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        #endregion
+
         #region SarpanchWards
         public async Task<Response> AddSarpanchWards(SarpanchWards sarpanchWards)
         {
