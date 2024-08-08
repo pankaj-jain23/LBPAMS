@@ -65,13 +65,13 @@ namespace EAMS_ACore.Models
             get;
             set;
         }
-        public int BoothMasterId
+        public int? BlockPanchayatMasterId
         {
             get;
             set;
         }
-        [ForeignKey("BoothMasterId")]
-        public virtual BoothMaster? BoothMaster
+        [ForeignKey("BlockPanchayatMasterId")]
+        public virtual BlockPanchayat? BlockPanchayat
         {
             get;
             set;

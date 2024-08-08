@@ -754,7 +754,7 @@ namespace EAMS.Helper
                      .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
                      .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
                      .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
-                     .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
+                  
                      .ForMember(dest => dest.SarpanchWardsCategory, opt => opt.MapFrom(src => src.SarpanchWardsCategory))
                      .ForMember(dest => dest.SarpanchWardsCreatedAt, opt => opt.MapFrom(src => src.SarpanchWardsCreatedAt))
                      .ForMember(dest => dest.SarpanchWardsUpdatedAt, opt => opt.MapFrom(src => src.SarpanchWardsUpdatedAt))
@@ -771,7 +771,7 @@ namespace EAMS.Helper
                      .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
                      .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
                      .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
-                     .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
+                   
                      .ForMember(dest => dest.SarpanchWardsCategory, opt => opt.MapFrom(src => src.SarpanchWardsCategory))
                      .ForMember(dest => dest.SarpanchWardsCreatedAt, opt => opt.MapFrom(src => src.SarpanchWardsCreatedAt))
                      .ForMember(dest => dest.SarpanchWardsUpdatedAt, opt => opt.MapFrom(src => src.SarpanchWardsUpdatedAt))

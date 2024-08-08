@@ -580,34 +580,34 @@ namespace EAMS_DAL.Repository
                     string message = psZone.PSZoneStatus ? "Zone Activated Successfully" : "Zone Deactivated Successfully";
                     return new ServiceResponse { IsSucceed = psZone.PSZoneStatus, Message = message };
            
-                case "SPWards":
-                    var spWards = await _context.SarpanchWards
-                        .Where(d => d.SarpanchWardsMasterId == Convert.ToInt32(updateMasterStatus.Id))
-                        .FirstOrDefaultAsync();
+                //case "SPWards":
+                //    var spWards = await _context.SarpanchWards
+                //        .Where(d => d.SarpanchWardsMasterId == Convert.ToInt32(updateMasterStatus.Id))
+                //        .FirstOrDefaultAsync();
 
-                    if (spWards == null)
-                    {
-                        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
-                    }
+                //    if (spWards == null)
+                //    {
+                //        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
+                //    }
 
-                    if (updateMasterStatus.IsStatus==false)
-                    {
-                        var boothMaster = await _context.BoothMaster
-                            .Where(d => d.BoothMasterId == spWards.BoothMasterId)
-                            .FirstOrDefaultAsync();
+                //    if (updateMasterStatus.IsStatus==false)
+                //    {
+                //        var boothMaster = await _context.BoothMaster
+                //            .Where(d => d.BoothMasterId == spWards.BoothMasterId)
+                //            .FirstOrDefaultAsync();
 
-                        if (boothMaster?.BoothStatus == true)
-                        {
-                            return new ServiceResponse { IsSucceed = false, Message = "Booth is already active. Please deactivate it first." };
-                        }
-                    }
+                //        if (boothMaster?.BoothStatus == true)
+                //        {
+                //            return new ServiceResponse { IsSucceed = false, Message = "Booth is already active. Please deactivate it first." };
+                //        }
+                //    }
 
-                    spWards.SarpanchWardsStatus = updateMasterStatus.IsStatus;
-                    _context.SarpanchWards.Update(spWards);
-                    await _context.SaveChangesAsync();
+                //    spWards.SarpanchWardsStatus = updateMasterStatus.IsStatus;
+                //    _context.SarpanchWards.Update(spWards);
+                //    await _context.SaveChangesAsync();
 
-                    string messageSp = spWards.SarpanchWardsStatus ? "Ward Activated Successfully" : "Ward Deactivated Successfully";
-                    return new ServiceResponse { IsSucceed = spWards.SarpanchWardsStatus, Message = messageSp };
+                //    string messageSp = spWards.SarpanchWardsStatus ? "Ward Activated Successfully" : "Ward Deactivated Successfully";
+                //    return new ServiceResponse { IsSucceed = spWards.SarpanchWardsStatus, Message = messageSp };
 
                 default:
                     return new ServiceResponse
@@ -16169,9 +16169,9 @@ namespace EAMS_DAL.Repository
                 return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
             }
         }
-        public async Task<List<SarpanchWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId)
+        public async Task<List<SarpanchWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            var getPsZone = await _context.SarpanchWards.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.BoothMasterId == boothMasterId).ToListAsync();
+            var getPsZone = await _context.SarpanchWards.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId  ).ToListAsync();
             if (getPsZone != null)
             {
                 return getPsZone;
@@ -16205,7 +16205,7 @@ namespace EAMS_DAL.Repository
             existingSarpanchWards.StateMasterId = sarpanchWards.StateMasterId;
             existingSarpanchWards.DistrictMasterId = sarpanchWards.DistrictMasterId;
             existingSarpanchWards.AssemblyMasterId = sarpanchWards.AssemblyMasterId;
-            existingSarpanchWards.BoothMasterId = sarpanchWards.BoothMasterId;
+            
             existingSarpanchWards.SarpanchWardsCategory = sarpanchWards.SarpanchWardsCategory;
             existingSarpanchWards.SarpanchWardsUpdatedAt = DateTime.UtcNow;
             existingSarpanchWards.SarpanchWardsDeletedAt = sarpanchWards.SarpanchWardsDeletedAt;
@@ -16232,13 +16232,13 @@ namespace EAMS_DAL.Repository
                 };
             }
         }
-        public async Task<SarpanchWards> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId)
+        public async Task<SarpanchWards> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int wardsMasterId)
         {
             var sarpanchWards = await _context.SarpanchWards
                 .Where(w => w.StateMasterId == stateMasterId &&
                             w.DistrictMasterId == districtMasterId &&
                             w.AssemblyMasterId == assemblyMasterId &&
-                            w.BoothMasterId == boothMasterId &&
+                            
                             w.SarpanchWardsMasterId == wardsMasterId)
                 .FirstOrDefaultAsync();
 
@@ -16251,13 +16251,13 @@ namespace EAMS_DAL.Repository
         }
 
 
-        public async Task<Response> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId)
+        public async Task<Response> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int wardsMasterId)
         {
             var sarpanchWards = await _context.SarpanchWards
                 .Where(w => w.StateMasterId == stateMasterId &&
                             w.DistrictMasterId == districtMasterId &&
                             w.AssemblyMasterId == assemblyMasterId &&
-                            w.BoothMasterId == boothMasterId &&
+                          
                             w.SarpanchWardsMasterId == wardsMasterId)
                 .FirstOrDefaultAsync();
 

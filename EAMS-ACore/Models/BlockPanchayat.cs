@@ -74,5 +74,10 @@ namespace EAMS_ACore.Models
             get;
             set;
         }
+        public virtual List<SarpanchWards> SarpanchWards
+        {
+            get;
+            set;
+        }
     }
 }

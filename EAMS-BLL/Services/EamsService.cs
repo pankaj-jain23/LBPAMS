@@ -3380,23 +3380,23 @@ namespace EAMS_BLL.Services
 
             return await _eamsRepository.AddSarpanchWards(sarpanchWards);
         }
-        public async Task<List<SarpanchWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId)
+        public async Task<List<SarpanchWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            return await _eamsRepository.GetSarpanchWardsListById(stateMasterId, districtMasterId, assemblyMasterId, boothMasterId);
+            return await _eamsRepository.GetSarpanchWardsListById(stateMasterId, districtMasterId, assemblyMasterId);
         }
         public async Task<Response> UpdateSarpanchWards(SarpanchWards sarpanchWards)
         {
             return await _eamsRepository.UpdateSarpanchWards(sarpanchWards);
         }
 
-        public async Task<SarpanchWards> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId)
+        public async Task<SarpanchWards> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int wardsMasterId)
         {
-            return await _eamsRepository.GetSarpanchWardsById(stateMasterId,districtMasterId,assemblyMasterId,boothMasterId,wardsMasterId);
+            return await _eamsRepository.GetSarpanchWardsById(stateMasterId,districtMasterId,assemblyMasterId,wardsMasterId);
         }
 
-        public async Task<Response> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId)
+        public async Task<Response> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId,  int wardsMasterId)
         {
-            return await _eamsRepository.DeleteSarpanchWardsById(stateMasterId, districtMasterId, assemblyMasterId, boothMasterId, wardsMasterId);
+            return await _eamsRepository.DeleteSarpanchWardsById(stateMasterId, districtMasterId, assemblyMasterId, wardsMasterId);
         }
 
         #endregion

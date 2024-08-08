@@ -38,11 +38,7 @@ namespace LBPAMS.ViewModels
             set;
         }
       
-        public int BoothMasterId
-        {
-            get;
-            set;
-        }
+     
         
         public string? SarpanchWardsCategory { get; set; }
         public DateTime? SarpanchWardsCreatedAt { get; set; }
@@ -89,11 +85,7 @@ namespace LBPAMS.ViewModels
             set;
         }
 
-        public int BoothMasterId
-        {
-            get;
-            set;
-        }
+      
 
         public string? SarpanchWardsCategory { get; set; }
         public DateTime? SarpanchWardsCreatedAt { get; set; }

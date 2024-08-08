@@ -1893,11 +1893,11 @@ namespace EAMS.Controllers
 
         [HttpGet("GetSarpanchWardsListById")]
         [Authorize]
-        public async Task<IActionResult> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId,int boothMasterId)
+        public async Task<IActionResult> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null)
             {
-                var psZoneList = await _EAMSService.GetSarpanchWardsListById(stateMasterId, districtMasterId, assemblyMasterId, boothMasterId);  // Corrected to await the asynchronous method
+                var psZoneList = await _EAMSService.GetSarpanchWardsListById(stateMasterId, districtMasterId, assemblyMasterId);  // Corrected to await the asynchronous method
                 if (psZoneList != null)
                 {
                     var data = new
@@ -1955,11 +1955,11 @@ namespace EAMS.Controllers
 
         [HttpGet("GetSarpanchWardsById")]
         [Authorize]
-        public async Task<IActionResult> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId)
+        public async Task<IActionResult> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int wardsMasterId)
         {
-            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && boothMasterId != null && wardsMasterId != null)
+            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null  && wardsMasterId != null)
             {
-                var wardsList = await _EAMSService.GetSarpanchWardsById(stateMasterId, districtMasterId, assemblyMasterId, boothMasterId, wardsMasterId);  // Corrected to await the asynchronous method
+                var wardsList = await _EAMSService.GetSarpanchWardsById(stateMasterId, districtMasterId, assemblyMasterId, wardsMasterId);  // Corrected to await the asynchronous method
                 if (wardsList != null)
                 {
 
@@ -1984,9 +1984,9 @@ namespace EAMS.Controllers
         [Authorize]
         public async Task<IActionResult> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId)
         {
-            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && boothMasterId != null && wardsMasterId != null)
+            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && wardsMasterId != null)
             {
-                var isDelete =await _EAMSService.DeleteSarpanchWardsById(stateMasterId, districtMasterId, assemblyMasterId, boothMasterId, wardsMasterId);  // Corrected to await the asynchronous method
+                var isDelete =await _EAMSService.DeleteSarpanchWardsById(stateMasterId, districtMasterId, assemblyMasterId, wardsMasterId);  // Corrected to await the asynchronous method
                 if (isDelete != null)
                 {
 

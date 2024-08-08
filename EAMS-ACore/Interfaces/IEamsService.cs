@@ -289,11 +289,11 @@ namespace EAMS_ACore.Interfaces
 
         #region SarpanchWards
         Task<Response> AddSarpanchWards(SarpanchWards sarpanchWards);
-        Task<List<SarpanchWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId);
+        Task<List<SarpanchWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
         Task<Response> UpdateSarpanchWards(SarpanchWards sarpanchWards);
-        Task<SarpanchWards> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId);
+        Task<SarpanchWards> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int wardsMasterId);
 
-         Task<Response> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId);
+         Task<Response> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int wardsMasterId);
         #endregion
     }
 }

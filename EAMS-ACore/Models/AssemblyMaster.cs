@@ -83,6 +83,6 @@ namespace EAMS_ACore
             get;
             set;
         }
-        
+       
     }
 }

@@ -110,11 +110,7 @@ namespace EAMS_ACore
         public bool IsAssigned { get; set; }
         public int? LocationMasterId { get; set; }
         public bool IsPSOFormDone { get; set; }
-        public virtual List<SarpanchWards> SarpanchWards
-        {
-            get;
-            set;
-        }
+       
 
 
     }
