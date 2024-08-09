@@ -53,7 +53,7 @@ namespace EAMS_ACore.Models
             get;
             set;
         }
-        
+
         public int AssemblyMasterId
         {
             get;
@@ -65,13 +65,32 @@ namespace EAMS_ACore.Models
             get;
             set;
         }
-        public int? BlockPanchayatMasterId
+
+
+
+        public int FourthLevelHMasterId
+
         {
             get;
             set;
         }
-        [ForeignKey("BlockPanchayatMasterId")]
-        public virtual BlockPanchayat? BlockPanchayat
+
+
+        [ForeignKey("FourthLevelHMasterId")]
+        public virtual FourthLevelH? FourthLevelH
+        {
+            get;
+            set;
+        }
+
+        public int BlockZonePanchayatMasterId
+        {
+            get;
+            set;
+        }
+        [ForeignKey("BlockZonePanchayatMasterId")]
+        public virtual BlockZonePanchayat? BlockZonePanchayat
+
         {
             get;
             set;
@@ -83,7 +102,7 @@ namespace EAMS_ACore.Models
 
         public DateTime? SarpanchWardsDeletedAt { get; set; }
         public bool SarpanchWardsStatus { get; set; }
-     
-        
+
+
     }
 }

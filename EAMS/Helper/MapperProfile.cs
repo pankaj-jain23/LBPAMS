@@ -57,8 +57,8 @@ namespace EAMS.Helper
                 .ForMember(dest => dest.UserAssembly, opt => opt.MapFrom(src => src.Assemblies));
 
             CreateMap<AssemblyViewModel, UserAssembly>()
-                .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))  
-                .ForMember(dest => dest.UserPSZone, opt => opt.MapFrom(src => src.PSZone));  
+                .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+                .ForMember(dest => dest.UserPSZone, opt => opt.MapFrom(src => src.PSZone));
             CreateMap<PSZoneViewModel, UserPSZone>()
                 .ForMember(dest => dest.PSZoneMasterId, opt => opt.MapFrom(src => src.PSZoneMasterId));
 
@@ -671,76 +671,70 @@ namespace EAMS.Helper
             .ReverseMap();
             #endregion
 
-            #region AddPSZoneViewModel PSZone
-            CreateMap<AddPSZoneViewModel, PSZone>()
-                .ForMember(dest => dest.PSZoneName, opt => opt.MapFrom(src => src.PSZoneName))
-                .ForMember(dest => dest.PSZoneCode, opt => opt.MapFrom(src => src.PSZoneCode))
-                .ForMember(dest => dest.PSZoneType, opt => opt.MapFrom(src => src.PSZoneType))
-                .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
-                .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
-                .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+            #region AddFourthLevelHViewModel  FourthLevelH 
+            CreateMap<AddFourthLevelHViewModel, FourthLevelH>()
+                 .ForMember(dest => dest.HierarchyName, opt => opt.MapFrom(src => src.HierarchyName))
+                 .ForMember(dest => dest.HierarchyCode, opt => opt.MapFrom(src => src.HierarchyCode))
+                 .ForMember(dest => dest.HierarchyType, opt => opt.MapFrom(src => src.HierarchyType))
+                 .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+                 .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+                 .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+                 .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+                 .ForMember(dest => dest.HierarchyCreatedAt, opt => opt.MapFrom(src => src.HierarchyCreatedAt))
+                 .ForMember(dest => dest.HierarchyUpdatedAt, opt => opt.MapFrom(src => src.HierarchyUpdatedAt))
+                 .ForMember(dest => dest.HierarchyDeletedAt, opt => opt.MapFrom(src => src.HierarchyDeletedAt))
+                 .ForMember(dest => dest.HierarchyStatus, opt => opt.MapFrom(src => src.IsStatus))
+                 .ReverseMap();
 
-                .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
-                .ForMember(dest => dest.PSZoneBooths, opt => opt.MapFrom(src => src.PSZoneBooths))
-                .ForMember(dest => dest.PSZoneCategory, opt => opt.MapFrom(src => src.PSZoneCategory))
-                .ForMember(dest => dest.PSZoneCreatedAt, opt => opt.MapFrom(src => src.PSZoneCreatedAt))
-                .ForMember(dest => dest.PSZoneUpdatedAt, opt => opt.MapFrom(src => src.PSZoneUpdatedAt))
-                .ForMember(dest => dest.PSZoneDeletedAt, opt => opt.MapFrom(src => src.PSZoneDeletedAt))
-                .ForMember(dest => dest.PSZoneStatus, opt => opt.MapFrom(src => src.IsStatus))
-              
-                .ReverseMap();
-            CreateMap<UpdatePSZoneViewModel, PSZone>()
-                .ForMember(dest => dest.PSZoneMasterId, opt => opt.MapFrom(src => src.PSZoneMasterId))
-                .ForMember(dest => dest.PSZoneName, opt => opt.MapFrom(src => src.PSZoneName))
-                .ForMember(dest => dest.PSZoneCode, opt => opt.MapFrom(src => src.PSZoneCode))
-                .ForMember(dest => dest.PSZoneType, opt => opt.MapFrom(src => src.PSZoneType))
-                .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
-                .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
-                .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+            CreateMap<UpdateFourthLevelHViewModel, FourthLevelH>()
+                .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
+               .ForMember(dest => dest.HierarchyName, opt => opt.MapFrom(src => src.HierarchyName))
+                 .ForMember(dest => dest.HierarchyCode, opt => opt.MapFrom(src => src.HierarchyCode))
+                 .ForMember(dest => dest.HierarchyType, opt => opt.MapFrom(src => src.HierarchyType))
+                 .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+                 .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+                 .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+                 .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+                 .ForMember(dest => dest.HierarchyCreatedAt, opt => opt.MapFrom(src => src.HierarchyCreatedAt))
+                 .ForMember(dest => dest.HierarchyUpdatedAt, opt => opt.MapFrom(src => src.HierarchyUpdatedAt))
+                 .ForMember(dest => dest.HierarchyDeletedAt, opt => opt.MapFrom(src => src.HierarchyDeletedAt))
+                 .ForMember(dest => dest.HierarchyStatus, opt => opt.MapFrom(src => src.IsStatus))
 
-                .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
-                .ForMember(dest => dest.PSZoneBooths, opt => opt.MapFrom(src => src.PSZoneBooths))
-                .ForMember(dest => dest.PSZoneCategory, opt => opt.MapFrom(src => src.PSZoneCategory))
-                .ForMember(dest => dest.PSZoneCreatedAt, opt => opt.MapFrom(src => src.PSZoneCreatedAt))
-                .ForMember(dest => dest.PSZoneUpdatedAt, opt => opt.MapFrom(src => src.PSZoneUpdatedAt))
-                .ForMember(dest => dest.PSZoneDeletedAt, opt => opt.MapFrom(src => src.PSZoneDeletedAt))
-                .ForMember(dest => dest.PSZoneStatus, opt => opt.MapFrom(src => src.IsStatus))
-               
                 .ReverseMap();
             #endregion
 
             #region BlockPanchayatViewModel BlockPanchayat
-            CreateMap<AddBlockPanchayatViewModel, BlockPanchayat>()
-                .ForMember(dest => dest.BlockPanchayatName, opt => opt.MapFrom(src => src.BlockPanchayatName))
-                .ForMember(dest => dest.BlockPanchayatCode, opt => opt.MapFrom(src => src.BlockPanchayatCode))
-                .ForMember(dest => dest.BlockPanchayatType, opt => opt.MapFrom(src => src.BlockPanchayatType))
-                .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
-                .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
-                .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
-                .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
-                .ForMember(dest => dest.BlockPanchayatBooths, opt => opt.MapFrom(src => src.BlockPanchayatBooths))
-                .ForMember(dest => dest.BlockPanchayatCategory, opt => opt.MapFrom(src => src.BlockPanchayatCategory))
-                .ForMember(dest => dest.BlockPanchayatCreatedAt, opt => opt.MapFrom(src => src.BlockPanchayatCreatedAt))
-                .ForMember(dest => dest.BlockPanchayatUpdatedAt, opt => opt.MapFrom(src => src.BlockPanchayatUpdatedAt))
-                .ForMember(dest => dest.BlockPanchayatDeletedAt, opt => opt.MapFrom(src => src.BlockPanchayatDeletedAt))
-                .ForMember(dest => dest.BlockPanchayatStatus, opt => opt.MapFrom(src => src.IsStatus))
+            CreateMap<AddBlockPanchayatViewModel, BlockZonePanchayat>()
+                     .ForMember(dest => dest.BlockZonePanchayatName, opt => opt.MapFrom(src => src.BlockZonePanchayatName))
+                     .ForMember(dest => dest.BlockZonePanchayatCode, opt => opt.MapFrom(src => src.BlockZonePanchayatCode))
+                     .ForMember(dest => dest.BlockZonePanchayatType, opt => opt.MapFrom(src => src.BlockZonePanchayatType))
+                     .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+                     .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+                     .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+                     .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+                     .ForMember(dest => dest.BlockZonePanchayatBooths, opt => opt.MapFrom(src => src.BlockZonePanchayatBooths))
+                     .ForMember(dest => dest.BlockZonePanchayatCategory, opt => opt.MapFrom(src => src.BlockZonePanchayatCategory))
+                     .ForMember(dest => dest.BlockZonePanchayatCreatedAt, opt => opt.MapFrom(src => src.BlockZonePanchayatCreatedAt))
+                     .ForMember(dest => dest.BlockZonePanchayatUpdatedAt, opt => opt.MapFrom(src => src.BlockZonePanchayatUpdatedAt))
+                     .ForMember(dest => dest.BlockZonePanchayatDeletedAt, opt => opt.MapFrom(src => src.BlockZonePanchayatDeletedAt))
+                     .ForMember(dest => dest.BlockZonePanchayatStatus, opt => opt.MapFrom(src => src.IsStatus))
+     .ReverseMap();
 
-                .ReverseMap();
-            CreateMap<UpdateBlockPanchayatViewModel, BlockPanchayat>()
-                .ForMember(dest => dest.BlockPanchayatMasterId, opt => opt.MapFrom(src => src.BlockPanchayatMasterId))
-               .ForMember(dest => dest.BlockPanchayatName, opt => opt.MapFrom(src => src.BlockPanchayatName))
-                .ForMember(dest => dest.BlockPanchayatCode, opt => opt.MapFrom(src => src.BlockPanchayatCode))
-                .ForMember(dest => dest.BlockPanchayatType, opt => opt.MapFrom(src => src.BlockPanchayatType))
-                .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
-                .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
-                .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
-                .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
-                .ForMember(dest => dest.BlockPanchayatBooths, opt => opt.MapFrom(src => src.BlockPanchayatBooths))
-                .ForMember(dest => dest.BlockPanchayatCategory, opt => opt.MapFrom(src => src.BlockPanchayatCategory))
-                .ForMember(dest => dest.BlockPanchayatCreatedAt, opt => opt.MapFrom(src => src.BlockPanchayatCreatedAt))
-                .ForMember(dest => dest.BlockPanchayatUpdatedAt, opt => opt.MapFrom(src => src.BlockPanchayatUpdatedAt))
-                .ForMember(dest => dest.BlockPanchayatDeletedAt, opt => opt.MapFrom(src => src.BlockPanchayatDeletedAt))
-                .ForMember(dest => dest.BlockPanchayatStatus, opt => opt.MapFrom(src => src.IsStatus))
+            CreateMap<UpdateBlockPanchayatViewModel, BlockZonePanchayat>()
+                     .ForMember(dest => dest.BlockZonePanchayatMasterId, opt => opt.MapFrom(src => src.BlockZonePanchayatMasterId))
+                     .ForMember(dest => dest.BlockZonePanchayatName, opt => opt.MapFrom(src => src.BlockZonePanchayatName))
+                     .ForMember(dest => dest.BlockZonePanchayatCode, opt => opt.MapFrom(src => src.BlockZonePanchayatCode))
+                     .ForMember(dest => dest.BlockZonePanchayatType, opt => opt.MapFrom(src => src.BlockZonePanchayatType))
+                     .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+                     .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+                     .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+                     .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+                     .ForMember(dest => dest.BlockZonePanchayatBooths, opt => opt.MapFrom(src => src.BlockZonePanchayatBooths))
+                     .ForMember(dest => dest.BlockZonePanchayatCategory, opt => opt.MapFrom(src => src.BlockZonePanchayatCategory))
+                     .ForMember(dest => dest.BlockZonePanchayatCreatedAt, opt => opt.MapFrom(src => src.BlockZonePanchayatCreatedAt))
+                     .ForMember(dest => dest.BlockZonePanchayatUpdatedAt, opt => opt.MapFrom(src => src.BlockZonePanchayatUpdatedAt))
+                     .ForMember(dest => dest.BlockZonePanchayatDeletedAt, opt => opt.MapFrom(src => src.BlockZonePanchayatDeletedAt))
+                     .ForMember(dest => dest.BlockZonePanchayatStatus, opt => opt.MapFrom(src => src.IsStatus))
 
                 .ReverseMap();
             #endregion
@@ -754,13 +748,13 @@ namespace EAMS.Helper
                      .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
                      .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
                      .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
-                  
+ 
                      .ForMember(dest => dest.SarpanchWardsCategory, opt => opt.MapFrom(src => src.SarpanchWardsCategory))
                      .ForMember(dest => dest.SarpanchWardsCreatedAt, opt => opt.MapFrom(src => src.SarpanchWardsCreatedAt))
                      .ForMember(dest => dest.SarpanchWardsUpdatedAt, opt => opt.MapFrom(src => src.SarpanchWardsUpdatedAt))
                      .ForMember(dest => dest.SarpanchWardsDeletedAt, opt => opt.MapFrom(src => src.SarpanchWardsDeletedAt))
                      .ForMember(dest => dest.SarpanchWardsStatus, opt => opt.MapFrom(src => src.IsStatus))
-                    
+
             .ReverseMap();
             CreateMap<UpdateSarpanchWardsViewModel, SarpanchWards>()
                      .ForMember(dest => dest.SarpanchWardsMasterId, opt => opt.MapFrom(src => src.SarpanchWardsMasterId))
@@ -771,13 +765,13 @@ namespace EAMS.Helper
                      .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
                      .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
                      .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
-                   
+ 
                      .ForMember(dest => dest.SarpanchWardsCategory, opt => opt.MapFrom(src => src.SarpanchWardsCategory))
                      .ForMember(dest => dest.SarpanchWardsCreatedAt, opt => opt.MapFrom(src => src.SarpanchWardsCreatedAt))
                      .ForMember(dest => dest.SarpanchWardsUpdatedAt, opt => opt.MapFrom(src => src.SarpanchWardsUpdatedAt))
                      .ForMember(dest => dest.SarpanchWardsDeletedAt, opt => opt.MapFrom(src => src.SarpanchWardsDeletedAt))
                      .ForMember(dest => dest.SarpanchWardsStatus, opt => opt.MapFrom(src => src.IsStatus))
-                   
+
             .ReverseMap();
             #endregion
 

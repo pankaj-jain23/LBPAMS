@@ -4,14 +4,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EAMS_ACore.Models
 {
-    public class BlockPanchayat
+    public class BlockZonePanchayat
     {
         [Key]
-        public int BlockPanchayatMasterId { get; set; }
-        public string BlockPanchayatName { get; set; }
-        public int BlockPanchayatCode { get; set; }
+        public int BlockZonePanchayatMasterId { get; set; }
+        public string BlockZonePanchayatName { get; set; }
+        public int BlockZonePanchayatCode { get; set; }
 
-        public string? BlockPanchayatType { get; set; }
+        public string? BlockZonePanchayatType { get; set; }
 
         public int ElectionTypeMasterId
         {
@@ -60,20 +60,32 @@ namespace EAMS_ACore.Models
             get;
             set;
         }
-        public int BlockPanchayatBooths { get; set; }
-        public string? BlockPanchayatCategory { get; set; }
-        public DateTime? BlockPanchayatCreatedAt { get; set; }
+        public int FourthLevelHMasterId
+        {
+            get;
+            set;
+        }
+        [ForeignKey("FourthLevelHMasterId")]
+        public virtual FourthLevelH? FourthLevelH
+        {
+            get;
+            set;
+        }
+        
+        public int BlockZonePanchayatBooths { get; set; }
+        public string? BlockZonePanchayatCategory { get; set; }
+        public DateTime? BlockZonePanchayatCreatedAt { get; set; }
 
-        public DateTime? BlockPanchayatUpdatedAt { get; set; }
+        public DateTime? BlockZonePanchayatUpdatedAt { get; set; }
 
-        public DateTime? BlockPanchayatDeletedAt { get; set; }
-        public bool BlockPanchayatStatus { get; set; }
+        public DateTime? BlockZonePanchayatDeletedAt { get; set; }
+        public bool BlockZonePanchayatStatus { get; set; }
 
         public virtual List<BoothMaster> BoothMaster
         {
             get;
             set;
-        }
+        } 
         public virtual List<SarpanchWards> SarpanchWards
         {
             get;

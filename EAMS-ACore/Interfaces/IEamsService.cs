@@ -66,7 +66,7 @@ namespace EAMS_ACore.Interfaces
 
         #region BoothMaster
         Task<List<CombinedMaster>> GetBoothListById(string stateMasterId, string districtMasterId, string assemblyMasterId);
-        Task<List<CombinedMaster>> GetBoothListByIdwithPsZone(string stateMasterId, string districtMasterId, string assemblyMasterId,string pSZoneMasterId);
+        Task<List<CombinedMaster>> GetBoothListByIdwithPsZone(string stateMasterId, string districtMasterId, string assemblyMasterId,string fourthLevelHMasterId);
         Task<List<CombinedMaster>> GetBoothListByIdforPSO(string stateMasterId, string districtMasterId, string assemblyMasterId);
         Task<List<CombinedMaster>> GetUnassignedBoothListById(string stateMasterId, string districtMasterId, string assemblyMasterId);
 
@@ -271,17 +271,17 @@ namespace EAMS_ACore.Interfaces
         Task<List<ElectionTypeMaster>> GetAllElectionTypes();
         #endregion
 
-        #region PSZone
-        Task<Response> AddPSZone(PSZone pSZone );
-        Task<List<PSZone>> GetPSZoneListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
-        Task<PSZone> GetPSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId,int pSZoneMasterId);
-        Task<Response> UpdatePSZone(PSZone pSZone);
-        Task<Response> DeletePSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId);
+        #region  FourthLevelH
+        Task<Response> AddFourthLevelH(FourthLevelH fourthLevelH);
+        Task<List<FourthLevelH>> GetFourthLevelHListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
+        Task<FourthLevelH> GetFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId,int fourthLevelHMasterId);
+        Task<Response> UpdateFourthLevelH(FourthLevelH fourthLevelH);
+        Task<Response> DeleteFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
         #endregion
 
         #region  BlockPanchayat
-        Task<Response> AddBlockPanchayat(BlockPanchayat blockPanchayat);
-        Task<List<BlockPanchayat>> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
+        Task<Response> AddBlockPanchayat(BlockZonePanchayat blockPanchayat);
+        Task<List<BlockZonePanchayat>> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
         //Task<PSZone> GetPSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId);
         //Task<Response> UpdatePSZone(PSZone pSZone);
         //Task<Response> DeletePSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId);

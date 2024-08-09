@@ -551,34 +551,34 @@ namespace EAMS_DAL.Repository
                     }
 
 
-                case "PSZONE":
-                    var psZone = await _context.PSZone
-                        .Where(d => d.PSZoneMasterId == Convert.ToInt32(updateMasterStatus.Id))
-                        .FirstOrDefaultAsync();
+                //case "PSZONE":
+                //    var psZone = await _context.PSZone
+                //        .Where(d => d.PSZoneMasterId == Convert.ToInt32(updateMasterStatus.Id))
+                //        .FirstOrDefaultAsync();
 
-                    if (psZone == null)
-                    {
-                        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
-                    }
+                //    if (psZone == null)
+                //    {
+                //        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
+                //    }
 
-                    if (updateMasterStatus.IsStatus==false)
-                    {
-                        var assembly = await _context.AssemblyMaster
-                            .Where(d => d.AssemblyMasterId == psZone.AssemblyMasterId)
-                            .FirstOrDefaultAsync();
+                //    if (updateMasterStatus.IsStatus==false)
+                //    {
+                //        var assembly = await _context.AssemblyMaster
+                //            .Where(d => d.AssemblyMasterId == psZone.AssemblyMasterId)
+                //            .FirstOrDefaultAsync();
 
-                        if (assembly?.AssemblyStatus == true)
-                        {
-                            return new ServiceResponse { IsSucceed = false, Message = "Assembly is already active. Please deactivate it first." };
-                        }
-                    }
+                //        if (assembly?.AssemblyStatus == true)
+                //        {
+                //            return new ServiceResponse { IsSucceed = false, Message = "Assembly is already active. Please deactivate it first." };
+                //        }
+                //    }
 
-                    psZone.PSZoneStatus = updateMasterStatus.IsStatus;
-                    _context.PSZone.Update(psZone);
-                    await _context.SaveChangesAsync();
+                //    psZone.PSZoneStatus = updateMasterStatus.IsStatus;
+                //    _context.PSZone.Update(psZone);
+                //    await _context.SaveChangesAsync();
 
-                    string message = psZone.PSZoneStatus ? "Zone Activated Successfully" : "Zone Deactivated Successfully";
-                    return new ServiceResponse { IsSucceed = psZone.PSZoneStatus, Message = message };
+                //    string message = psZone.PSZoneStatus ? "Zone Activated Successfully" : "Zone Deactivated Successfully";
+                //    return new ServiceResponse { IsSucceed = psZone.PSZoneStatus, Message = message };
            
                 //case "SPWards":
                 //    var spWards = await _context.SarpanchWards
@@ -2190,7 +2190,7 @@ namespace EAMS_DAL.Repository
                                     AssemblyName = asem.AssemblyName,
                                     AssemblyCode = asem.AssemblyCode,
                                     BoothMasterId = bt.BoothMasterId,
-                                    PSZoneMasterId = bt.PSZoneMasterId,
+                                   
                                     //BoothName = bt.BoothName + "(" + bt.BoothCode_No + ")",
                                     //BoothName = bt.BoothName + (bt.BoothNoAuxy != "0" ? $"({bt.BoothCode_No}-{bt.BoothNoAuxy})" : $"({bt.BoothCode_No})"),
                                     BoothName = $"{bt.BoothName}{(bt.BoothNoAuxy != "0" ? $"-{bt.BoothNoAuxy}" : "")}({bt.BoothCode_No})",
@@ -2218,7 +2218,7 @@ namespace EAMS_DAL.Repository
                 return null;
             }
         }
-        public async Task<List<CombinedMaster>> GetBoothListByIdwithPsZone(string stateMasterId, string districtMasterId, string assemblyMasterId,string pSZoneMasterId)
+        public async Task<List<CombinedMaster>> GetBoothListByIdwithPsZone(string stateMasterId, string districtMasterId, string assemblyMasterId,string fourthLevelHMasterId)
         {
             var isStateActive = _context.StateMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId)).FirstOrDefault();
             var isDistrictActive = _context.DistrictMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId)).FirstOrDefault();
@@ -2226,9 +2226,9 @@ namespace EAMS_DAL.Repository
             if (isStateActive.StateStatus && isDistrictActive.DistrictStatus && isAssemblyActive.AssemblyStatus)
             {
                 IQueryable<CombinedMaster> boothlist = null;
-                if (Convert.ToInt32(pSZoneMasterId) > 0)
+                if (Convert.ToInt32(fourthLevelHMasterId) > 0)
                 {
-                    boothlist = from bt in _context.BoothMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId) && d.PSZoneMasterId== Convert.ToInt32(pSZoneMasterId)) // outer sequenc)
+                    boothlist = from bt in _context.BoothMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId) && d.FourthLevelHMasterId== Convert.ToInt32(fourthLevelHMasterId)) // outer sequenc)
                                 join asem in _context.AssemblyMaster
                                 on bt.AssemblyMasterId equals asem.AssemblyMasterId
                                 join dist in _context.DistrictMaster
@@ -2245,8 +2245,7 @@ namespace EAMS_DAL.Repository
                                     AssemblyId = asem.AssemblyMasterId,
                                     AssemblyName = asem.AssemblyName,
                                     AssemblyCode = asem.AssemblyCode,
-                                    BoothMasterId = bt.BoothMasterId,
-                                    PSZoneMasterId = bt.PSZoneMasterId,
+                                    BoothMasterId = bt.BoothMasterId,                              
                                     //BoothName = bt.BoothName + "(" + bt.BoothCode_No + ")",
                                     //BoothName = bt.BoothName + (bt.BoothNoAuxy != "0" ? $"({bt.BoothCode_No}-{bt.BoothNoAuxy})" : $"({bt.BoothCode_No})"),
                                     BoothName = $"{bt.BoothName}{(bt.BoothNoAuxy != "0" ? $"-{bt.BoothNoAuxy}" : "")}({bt.BoothCode_No})",
@@ -2283,7 +2282,7 @@ namespace EAMS_DAL.Repository
                                     AssemblyName = asem.AssemblyName,
                                     AssemblyCode = asem.AssemblyCode,
                                     BoothMasterId = bt.BoothMasterId,
-                                    PSZoneMasterId = bt.PSZoneMasterId,
+                                  
                                     //BoothName = bt.BoothName + "(" + bt.BoothCode_No + ")",
                                     //BoothName = bt.BoothName + (bt.BoothNoAuxy != "0" ? $"({bt.BoothCode_No}-{bt.BoothNoAuxy})" : $"({bt.BoothCode_No})"),
                                     BoothName = $"{bt.BoothName}{(bt.BoothNoAuxy != "0" ? $"-{bt.BoothNoAuxy}" : "")}({bt.BoothCode_No})",
@@ -15923,27 +15922,27 @@ namespace EAMS_DAL.Repository
         #endregion
 
         #region PSZone
-        public async Task<Response> AddPSZone(PSZone pSZone)
+        public async Task<Response> AddFourthLevelH(FourthLevelH fourthLevelH)
         {
             try
             {
-                var ispsZoneExist = await _context.PSZone.Where(p => p.PSZoneCode == pSZone.PSZoneCode && p.StateMasterId == pSZone.StateMasterId && p.DistrictMasterId == pSZone.DistrictMasterId && p.AssemblyMasterId == pSZone.AssemblyMasterId && p.ElectionTypeMasterId == pSZone.ElectionTypeMasterId).FirstOrDefaultAsync();
+                var isFourthLevelHExist = await _context.FourthLevelH.Where(p => p.HierarchyCode == fourthLevelH.HierarchyCode && p.StateMasterId == fourthLevelH.StateMasterId && p.DistrictMasterId == fourthLevelH.DistrictMasterId && p.AssemblyMasterId == fourthLevelH.AssemblyMasterId && p.ElectionTypeMasterId == fourthLevelH.ElectionTypeMasterId).FirstOrDefaultAsync();
 
-                if (ispsZoneExist == null)
+                if (isFourthLevelHExist == null)
                 {
 
-                    pSZone.PSZoneCreatedAt = BharatDateTime();
-                    _context.PSZone.Add(pSZone);
+                    isFourthLevelHExist.HierarchyCreatedAt = BharatDateTime();
+                    _context.FourthLevelH.Add(isFourthLevelHExist);
                     _context.SaveChanges();
 
-                    return new Response { Status = RequestStatusEnum.OK, Message = pSZone.PSZoneName + "Added Successfully" };
+                    return new Response { Status = RequestStatusEnum.OK, Message = isFourthLevelHExist.HierarchyName + "Added Successfully" };
 
 
 
                 }
                 else
                 {
-                    return new Response { Status = RequestStatusEnum.BadRequest, Message = ispsZoneExist.PSZoneName + "Same PS Zone Code Already Exists in the selected Election Type" };
+                    return new Response { Status = RequestStatusEnum.BadRequest, Message = isFourthLevelHExist.HierarchyName + "Same Hierarchy  Code Already Exists in the selected Election Type" };
 
                 }
 
@@ -15955,47 +15954,46 @@ namespace EAMS_DAL.Repository
             }
 
         }
-        public async Task<List<PSZone>> GetPSZoneListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        public async Task<List<FourthLevelH>> GetFourthLevelHListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            var getPsZone = await _context.PSZone.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId).ToListAsync();
-            if (getPsZone != null)
+            var getFourthLevelH = await _context.FourthLevelH.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId).ToListAsync();
+            if (getFourthLevelH != null)
             {
-                return getPsZone;
+                return getFourthLevelH;
             }
             else
             {
                 return null;
             }
         }
-        public async Task<Response> UpdatePSZone(PSZone pSZone)
+      
+        public async Task<Response> UpdateFourthLevelH(FourthLevelH fourthLevelH)
         {
             // Check if the PSZone entity exists in the database
-            var existingPsZone = await _context.PSZone
-                .Where(d => d.PSZoneMasterId == pSZone.PSZoneMasterId)
+            var existing  = await _context.FourthLevelH
+                .Where(d => d.FourthLevelHMasterId == fourthLevelH.FourthLevelHMasterId)
                 .FirstOrDefaultAsync();
 
-            if (existingPsZone == null)
+            if (existing == null)
             {
                 return new Response
                 {
                     Status = RequestStatusEnum.BadRequest,
-                    Message = "PSZone not found."
+                    Message = "Hierarchy not found."
                 };
             }
 
             // Update the properties of the existing entity
-            existingPsZone.PSZoneName = pSZone.PSZoneName;
-            existingPsZone.PSZoneCode = pSZone.PSZoneCode;
-            existingPsZone.PSZoneType = pSZone.PSZoneType;
-            existingPsZone.ElectionTypeMasterId = pSZone.ElectionTypeMasterId;
-            existingPsZone.StateMasterId = pSZone.StateMasterId;
-            existingPsZone.DistrictMasterId = pSZone.DistrictMasterId;
-            existingPsZone.AssemblyMasterId = pSZone.AssemblyMasterId;
-            existingPsZone.PSZoneBooths = pSZone.PSZoneBooths;
-            existingPsZone.PSZoneCategory = pSZone.PSZoneCategory;
-            
-            existingPsZone.PSZoneUpdatedAt = DateTime.UtcNow;
-            existingPsZone.PSZoneStatus = pSZone.PSZoneStatus;
+            existing.HierarchyName = fourthLevelH.HierarchyName;
+            existing.HierarchyCode = fourthLevelH.HierarchyCode;
+            existing.HierarchyType = fourthLevelH.HierarchyType;
+            existing.ElectionTypeMasterId = fourthLevelH.ElectionTypeMasterId;
+            existing.StateMasterId = fourthLevelH.StateMasterId;
+            existing.DistrictMasterId = fourthLevelH.DistrictMasterId;
+            existing.AssemblyMasterId = fourthLevelH.AssemblyMasterId;
+            existing.HierarchyCreatedAt = fourthLevelH.HierarchyCreatedAt;
+            existing.HierarchyUpdatedAt = DateTime.UtcNow;
+            existing.HierarchyStatus = fourthLevelH.HierarchyStatus;
 
             // Save changes to the database
             try
@@ -16004,7 +16002,7 @@ namespace EAMS_DAL.Repository
                 return new Response
                 {
                     Status = RequestStatusEnum.OK,
-                    Message = "PSZone updated successfully."
+                    Message = "updated successfully."
                 };
             }
             catch (Exception ex)
@@ -16017,16 +16015,16 @@ namespace EAMS_DAL.Repository
                 };
             }
         }
-        public async Task<PSZone> GetPSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId)
+        public async Task<FourthLevelH> GetFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
 
 
             // Retrieve the PSZone entity from the database
-            var psZone = await _context.PSZone
+            var psZone = await _context.FourthLevelH
                 .Where(d => d.StateMasterId == stateMasterId &&
                             d.DistrictMasterId == districtMasterId &&
                             d.AssemblyMasterId == assemblyMasterId &&
-                            d.PSZoneMasterId == pSZoneMasterId)
+                            d.FourthLevelHMasterId == fourthLevelHMasterId)
                 .FirstOrDefaultAsync();
 
             // Check if the PSZone entity exists
@@ -16039,42 +16037,42 @@ namespace EAMS_DAL.Repository
 
             return psZone;
         }
-        public async Task<Response> DeletePSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId)
+        public async Task<Response>  DeleteFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
             // Validate the input ID
-            if (pSZoneMasterId <= 0)
+            if (fourthLevelHMasterId <= 0)
             {
                 return new Response
                 {
                     Status = RequestStatusEnum.BadRequest,
-                    Message = "Invalid PSZoneMasterId provided."
+                    Message = "Invalid fourthLevelHMasterId provided."
                 };
             }
 
             // Check if the PSZone entity exists in the database
-            var psZone = await _context.PSZone
-                .Where(d => d.PSZoneMasterId == pSZoneMasterId && d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId)
+            var fourthLevelH = await _context.FourthLevelH
+                .Where(d => d.FourthLevelHMasterId == fourthLevelHMasterId && d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId)
                 .FirstOrDefaultAsync();
 
-            if (psZone == null)
+            if (fourthLevelH == null)
             {
                 return new Response
                 {
                     Status = RequestStatusEnum.BadRequest,
-                    Message = "PSZone not found."
+                    Message = "Hierarchy not found."
                 };
             }
 
             // Perform the deletion
             try
             {
-                _context.PSZone.Remove(psZone);
+                _context.FourthLevelH.Remove(fourthLevelH);
                 await _context.SaveChangesAsync();
 
                 return new Response
                 {
                     Status = RequestStatusEnum.OK,
-                    Message = "PSZone deleted successfully."
+                    Message = "Hierarchy deleted successfully."
                 };
             }
             catch (Exception ex)
@@ -16091,27 +16089,27 @@ namespace EAMS_DAL.Repository
         #endregion
 
         #region  BlockPanchayat
-        public async Task<Response> AddBlockPanchayat(BlockPanchayat blockPanchayat)
+        public async Task<Response> AddBlockPanchayat(BlockZonePanchayat blockPanchayat)
         {
             try
             {
-                var ispsZoneExist = await _context.BlockPanchayat.Where(p => p.BlockPanchayatCode == blockPanchayat.BlockPanchayatCode && p.StateMasterId == blockPanchayat.StateMasterId && p.DistrictMasterId == blockPanchayat.DistrictMasterId && p.AssemblyMasterId == blockPanchayat.AssemblyMasterId && p.ElectionTypeMasterId == blockPanchayat.ElectionTypeMasterId).FirstOrDefaultAsync();
+                var ispsZoneExist = await _context.BlockZonePanchayat.Where(p => p.BlockZonePanchayatCode == blockPanchayat.BlockZonePanchayatCode && p.StateMasterId == blockPanchayat.StateMasterId && p.DistrictMasterId == blockPanchayat.DistrictMasterId && p.AssemblyMasterId == blockPanchayat.AssemblyMasterId && p.ElectionTypeMasterId == blockPanchayat.ElectionTypeMasterId).FirstOrDefaultAsync();
 
                 if (ispsZoneExist == null)
                 {
 
-                    blockPanchayat.BlockPanchayatCreatedAt = BharatDateTime();
-                    _context.BlockPanchayat.Add(blockPanchayat);
+                    blockPanchayat.BlockZonePanchayatCreatedAt = BharatDateTime();
+                    _context.BlockZonePanchayat.Add(blockPanchayat);
                     _context.SaveChanges();
 
-                    return new Response { Status = RequestStatusEnum.OK, Message = blockPanchayat.BlockPanchayatName + "Added Successfully" };
+                    return new Response { Status = RequestStatusEnum.OK, Message = blockPanchayat.BlockZonePanchayatName + "Added Successfully" };
 
 
 
                 }
                 else
                 {
-                    return new Response { Status = RequestStatusEnum.BadRequest, Message = ispsZoneExist.BlockPanchayatName + "Same Panchayat  Code Already Exists in the selected Election Type" };
+                    return new Response { Status = RequestStatusEnum.BadRequest, Message = ispsZoneExist.BlockZonePanchayatName + "Same Panchayat  Code Already Exists in the selected Election Type" };
 
                 }
 
@@ -16123,9 +16121,9 @@ namespace EAMS_DAL.Repository
             }
         }
 
-        public async Task<List<BlockPanchayat>> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        public async Task<List<BlockZonePanchayat>> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            var getBlockPanchayat = await _context.BlockPanchayat.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId).ToListAsync();
+            var getBlockPanchayat = await _context.BlockZonePanchayat.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId).ToListAsync();
             if (getBlockPanchayat != null)
             {
                 return getBlockPanchayat;
@@ -16238,7 +16236,7 @@ namespace EAMS_DAL.Repository
                 .Where(w => w.StateMasterId == stateMasterId &&
                             w.DistrictMasterId == districtMasterId &&
                             w.AssemblyMasterId == assemblyMasterId &&
-                            
+ 
                             w.SarpanchWardsMasterId == wardsMasterId)
                 .FirstOrDefaultAsync();
 
@@ -16257,7 +16255,7 @@ namespace EAMS_DAL.Repository
                 .Where(w => w.StateMasterId == stateMasterId &&
                             w.DistrictMasterId == districtMasterId &&
                             w.AssemblyMasterId == assemblyMasterId &&
-                          
+ 
                             w.SarpanchWardsMasterId == wardsMasterId)
                 .FirstOrDefaultAsync();
 

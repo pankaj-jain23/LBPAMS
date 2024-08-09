@@ -1,22 +1,22 @@
 ﻿using EAMS_ACore.Models.ElectionType;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace EAMS_ACore.Models
 {
-    public class PSZone
+    public class FourthLevelH
     {
         [Key]
-        public int PSZoneMasterId { get; set; }
-        public string PSZoneName { get; set; }
-        public int PSZoneCode { get; set; }
+        public int FourthLevelHMasterId { get; set; }
+        public string? HierarchyName { get; set; }
+        public int HierarchyCode { get; set; }
 
-        public string? PSZoneType { get; set; }
+        public string? HierarchyType { get; set; }
 
         public int ElectionTypeMasterId
         {
@@ -53,7 +53,7 @@ namespace EAMS_ACore.Models
             get;
             set;
         }
-      
+
         public int AssemblyMasterId
         {
             get;
@@ -65,16 +65,22 @@ namespace EAMS_ACore.Models
             get;
             set;
         }
-        public int PSZoneBooths { get; set; }
-        public string? PSZoneCategory { get; set; }
-        public DateTime? PSZoneCreatedAt { get; set; }
 
-        public DateTime? PSZoneUpdatedAt { get; set; }
+        public DateTime? HierarchyCreatedAt { get; set; }
 
-        public DateTime? PSZoneDeletedAt { get; set; }
-        public bool PSZoneStatus { get; set; }
-    
+        public DateTime? HierarchyUpdatedAt { get; set; }
+
+        public DateTime? HierarchyDeletedAt { get; set; }
+        public bool HierarchyStatus { get; set; }
+        public string? SecondLanguage { get; set; }
         public virtual List<BoothMaster> BoothMaster
+        {
+            get;
+            set;
+        }
+  
+        public virtual List<BlockZonePanchayat> BlockZonePanchayat
+ 
         {
             get;
             set;

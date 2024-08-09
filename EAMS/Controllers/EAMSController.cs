@@ -764,12 +764,12 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetBoothListById")]
         //[Authorize]
-        public async Task<IActionResult> BoothListById(string stateMasterId, string districtMasterId, string assemblyMasterId, string pSZoneMasterId)
+        public async Task<IActionResult> BoothListById(string stateMasterId, string districtMasterId, string assemblyMasterId, string fourthLevelHMasterId)
         {
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null)
             {
               //  var boothList = await _EAMSService.GetBoothListById(stateMasterId, districtMasterId, assemblyMasterId, pSZoneMasterId);  // Corrected to await the asynchronous method
-                var boothList = await _EAMSService.GetBoothListByIdwithPsZone(stateMasterId, districtMasterId, assemblyMasterId, pSZoneMasterId);  // Corrected to await the asynchronous method
+                var boothList = await _EAMSService.GetBoothListByIdwithPsZone(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);  // Corrected to await the asynchronous method
                 if (boothList != null)
                 {
                     var data = new
@@ -1120,8 +1120,7 @@ namespace EAMS.Controllers
                     DistrictMasterId = boothRecord.DistrictMaster.DistrictMasterId,
                     DistrictName = boothRecord.DistrictMaster.DistrictName,
                     DistrictCode = boothRecord.DistrictMaster.DistrictCode,
-                    AssemblyMasterId = boothRecord.AssemblyMasterId,
-                    PSZoneMasterId=boothRecord.PSZoneMasterId,
+                    AssemblyMasterId = boothRecord.AssemblyMasterId, 
                     AssemblyName = boothRecord.AssemblyMaster.AssemblyName,
                     AssemblyCode = boothRecord.AssemblyMaster.AssemblyCode,
                     AssemblyType = boothRecord.AssemblyMaster.AssemblyType,
@@ -1559,18 +1558,18 @@ namespace EAMS.Controllers
         }
         #endregion
 
-        #region PSZone
+        #region FourthLevelH
         [HttpPost]
-        [Route("AddPSZone")]
+        [Route("AddFourthLevelH")]
         [Authorize]
-        public async Task<IActionResult> AddPSZone(AddPSZoneViewModel addPSZoneViewModel)
+        public async Task<IActionResult> AddFourthLevelH(AddFourthLevelHViewModel addFourthLevelHViewModel)
         {
             if (ModelState.IsValid)
             {
-                var mappedData = _mapper.Map<AddPSZoneViewModel, PSZone>(addPSZoneViewModel);
+                var mappedData = _mapper.Map<AddFourthLevelHViewModel, FourthLevelH>(addFourthLevelHViewModel);
 
 
-                var result = await _EAMSService.AddPSZone(mappedData);
+                var result = await _EAMSService.AddFourthLevelH(mappedData);
                 switch (result.Status)
                 {
                     case RequestStatusEnum.OK:
@@ -1591,19 +1590,19 @@ namespace EAMS.Controllers
             }
         }
 
-        [HttpGet("GetPSZoneListById")]
+        [HttpGet("GetFourthLevelHListById")]
         [Authorize]
-        public async Task<IActionResult> GetPSZoneListById(int stateMasterId, int districtMasterId, int assemblyMasterId )
+        public async Task<IActionResult> GetFourthLevelHListById(int stateMasterId, int districtMasterId, int assemblyMasterId )
         {
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null)
             {
-                var psZoneList = await _EAMSService.GetPSZoneListById(stateMasterId, districtMasterId, assemblyMasterId);  // Corrected to await the asynchronous method
-                if (psZoneList != null)
+                var getList = await _EAMSService.GetFourthLevelHListById(stateMasterId, districtMasterId, assemblyMasterId);  // Corrected to await the asynchronous method
+                if (getList != null)
                 {
                     var data = new
                     {
-                        count = psZoneList.Count,
-                        data = psZoneList.ToList(),
+                        count = getList.Count,
+                        data = getList.ToList(),
                         //data = boothList.OrderBy(p => Int32.Parse(p.BoothCode_No)).ToList(),
 
                     };
@@ -1625,14 +1624,14 @@ namespace EAMS.Controllers
         }
 
         [HttpPut]
-        [Route("UpdatePSZone")]
+        [Route("UpdateFourthLevelH")]
         [Authorize]
-        public async Task<IActionResult> UpdatePSZone(UpdatePSZoneViewModel updatePSZoneViewModel)
+        public async Task<IActionResult> UpdateFourthLevelH(UpdateFourthLevelHViewModel updateFourthLevelHViewModel)
         {
             if (ModelState.IsValid)
             {
-                var mappedData = _mapper.Map<UpdatePSZoneViewModel, PSZone>(updatePSZoneViewModel);
-                var result = await _EAMSService.UpdatePSZone(mappedData);
+                var mappedData = _mapper.Map<UpdateFourthLevelHViewModel, FourthLevelH>(updateFourthLevelHViewModel);
+                var result = await _EAMSService.UpdateFourthLevelH(mappedData);
                 switch (result.Status)
                 {
                     case RequestStatusEnum.OK:
@@ -1653,17 +1652,17 @@ namespace EAMS.Controllers
             }
         }
 
-        [HttpGet("GetPSZoneById")]
+        [HttpGet("GetFourthLevelHById")]
         [Authorize]
-        public async Task<IActionResult> GetPSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId,int pSZoneMasterId)
+        public async Task<IActionResult> GetFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId,int fourthLevelHMasterId)
         {
-            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && pSZoneMasterId != null)
+            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && fourthLevelHMasterId != null)
             {
-                var psZoneList = await _EAMSService.GetPSZoneById(stateMasterId, districtMasterId, assemblyMasterId, pSZoneMasterId);  // Corrected to await the asynchronous method
-                if (psZoneList != null)
+                var  List = await _EAMSService.GetFourthLevelHById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);  // Corrected to await the asynchronous method
+                if (List != null)
                 {
                     
-                    return Ok(psZoneList);
+                    return Ok(List);
 
                 }
                 else
@@ -1680,13 +1679,13 @@ namespace EAMS.Controllers
 
         }
      
-        [HttpDelete("DeletePSZoneById")]
+        [HttpDelete("DeleteFourthLevelHById")]
         [Authorize]
-        public async Task<IActionResult> DeletePSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId)
+        public async Task<IActionResult> DeleteFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
-            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && pSZoneMasterId != null)
+            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && fourthLevelHMasterId != null)
             {
-                var psZoneList = await _EAMSService.DeletePSZoneById(stateMasterId, districtMasterId, assemblyMasterId, pSZoneMasterId);  // Corrected to await the asynchronous method
+                var psZoneList = await _EAMSService.DeleteFourthLevelHById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);  // Corrected to await the asynchronous method
                 if (psZoneList != null)
                 {
                     
@@ -1695,7 +1694,7 @@ namespace EAMS.Controllers
                 }
                 else
                 {
-                    return NotFound("Zone Not Found");
+                    return NotFound("Not Found");
 
                 }
             }
@@ -1717,7 +1716,7 @@ namespace EAMS.Controllers
         {
             if (ModelState.IsValid)
             {
-                var mappedData = _mapper.Map<AddBlockPanchayatViewModel, BlockPanchayat>(addBlockPanchayatViewModel);
+                var mappedData = _mapper.Map<AddBlockPanchayatViewModel, BlockZonePanchayat>(addBlockPanchayatViewModel);
 
 
                 var result = await _EAMSService.AddBlockPanchayat(mappedData);
@@ -3599,139 +3598,7 @@ namespace EAMS.Controllers
 
         #endregion
 
-        /*[HttpPost]
-        [Route("GetLocationMasterforALL")]
-        //[Authorize]
-        public async Task<IActionResult> GetLocationMasterforALL(BoothReportViewModel boothReportViewModel)
-        {
-            if (ModelState.IsValid)
-            {
-                var mappedData = _mapper.Map<BoothReportModel>(boothReportViewModel);
-                var locRecords = await _EAMSService.GetLocationMasterforALL(mappedData);
-
-                return Ok(locRecords);
-
-
-
-
-            }
-            else
-            {
-
-            }
-
-            return Ok();
-        }
-
-        [HttpGet]
-        [Route("GetLocationMasterById")]
-        //[Authorize(Roles = "ARO")]
-        public async Task<IActionResult> GetLocationMasterById(string locationMasterId)
-        {
-            
-
-            var locRecords = await _EAMSService.GetLocationMasterById(locationMasterId);
-            if (locRecords != null)
-            {
-
-                return Ok(locRecords);
-
-            }
-            else
-            {
-                return NotFound("Data Not Found");
-
-            }
-           
-        }
-
-        [HttpPost]
-        [Route("AddLocation")]
-        //[Authorize(Roles = "ARO")]
-        public async Task<IActionResult> AddLocation(LocationViewModel locationViewModel)
-        {
-            try
-            {
-                if (ModelState.IsValid)
-                {// check state,district,assembly active?
-                     var asemRecor = await _EAMSService.GetAssemblyById(locationViewModel.AssemblyMasterId.ToString());
-                    //var boothsEntered = await _EAMSService.GetBoothListById(BoothMasterViewModel.StateMasterId.ToString(), BoothMasterViewModel.DistrictMasterId.ToString(), BoothMasterViewModel.AssemblyMasterId.ToString());
-                    if (asemRecor != null)
-                    {
-                       // locationViewModel.PCMasterId = asemRecor.PCMasterId;
-                        var mappedData = _mapper.Map<LocationViewModel, LocationModel>(locationViewModel);
-                        var result = await _EAMSService.AddLocation(mappedData);
-                        switch (result.Status)
-                        {
-                            case RequestStatusEnum.OK:
-                                return Ok(result.Message);
-                            case RequestStatusEnum.BadRequest:
-                                return BadRequest(result.Message);
-                            case RequestStatusEnum.NotFound:
-                                return NotFound(result.Message);
-
-                            default:
-                                return StatusCode(500, "Internal Server Error");
-                        }
-                    }
-                    else
-                    {
-                        return BadRequest("Assembly Record Not Found");
-
-                    }
-                }
-                else
-                {
-
-                    return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
-                }
-
-            }
-
-            catch (Exception ex)
-            {
-                _logger.LogError($"AddBooth: {ex.Message}");
-                return StatusCode(500, "Internal Server Error");
-            }
-        }
-
-        [HttpPut]
-        [Route("UpdateLocation")]
-        //[Authorize(Roles = "ARO")]
-        public async Task<IActionResult> UpdateLocation(LocationViewModel locationViewModel)
-        {
-            if (ModelState.IsValid)
-            {
-                if (locationViewModel.BoothMasterId.Count > 0)
-                {
-                    var mappedData = _mapper.Map<LocationViewModel, LocationModel>(locationViewModel);
-                    var result = await _EAMSService.UpdateLocation(mappedData);
-                    switch (result.Status)
-                    {
-                        case RequestStatusEnum.OK:
-                            return Ok(result.Message);
-                        case RequestStatusEnum.BadRequest:
-                            return BadRequest(result.Message);
-                        case RequestStatusEnum.NotFound:
-                            return NotFound(result.Message);
-
-                        default:
-                            return StatusCode(500, "Internal Server Error");
-                    }
-                }
-                else
-                {
-                    return StatusCode(500, "Select Booths !");
-                }
-
-            }
-            else
-            {
-                return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
-            }
-        }*/
-
-
+      
         #region HelpDesk 
         [HttpPost]
         [Route("AddHelpDeskInfo")]

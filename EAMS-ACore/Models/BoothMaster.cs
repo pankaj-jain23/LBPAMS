@@ -56,13 +56,13 @@ namespace EAMS_ACore
             get;
             set;
         }
-        public int? PSZoneMasterId
+        public int? FourthLevelHMasterId
         {
             get;
             set;
         }
-        [ForeignKey("PSZoneMasterId")]
-        public virtual PSZone? PSZone
+        [ForeignKey("FourthLevelHMasterId")]
+        public virtual FourthLevelH? FourthLevelH
         {
             get;
             set;
@@ -73,7 +73,7 @@ namespace EAMS_ACore
             set;
         }
         [ForeignKey("BlockPanchayatMasterId")]
-        public virtual BlockPanchayat? BlockPanchayat
+        public virtual BlockZonePanchayat? BlockPanchayat
         {
             get;
             set;
@@ -110,7 +110,7 @@ namespace EAMS_ACore
         public bool IsAssigned { get; set; }
         public int? LocationMasterId { get; set; }
         public bool IsPSOFormDone { get; set; }
-       
+ 
 
 
     }

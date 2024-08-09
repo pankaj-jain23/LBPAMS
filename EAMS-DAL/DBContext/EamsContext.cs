@@ -31,17 +31,19 @@ public partial class EamsContext : IdentityDbContext<UserRegistration>
     public virtual DbSet<UserDistrict> UserDistrict { get; set; }
     public virtual DbSet<UserPSZone> UserPSZone { get; set; }
     public virtual DbSet<UserPCConstituency> UserPCConstituency { get; set; }
-    public virtual DbSet<UserAssembly> UserAssembly { get; set; }
-
-    public virtual DbSet<AssemblyMaster> AssemblyMaster { get; set; }
-    public virtual DbSet<BoothMaster> BoothMaster { get; set; }
-    public virtual DbSet<PSZone> PSZone { get; set; }
-    public virtual DbSet<BlockPanchayat> BlockPanchayat { get; set; }
+    public virtual DbSet<UserAssembly> UserAssembly { get; set; }  
+    //public virtual DbSet<PSZone> PSZone { get; set; }
+  
     public virtual DbSet<SarpanchWards> SarpanchWards { get; set; }
     public virtual DbSet<EventMaster> EventMaster { get; set; }
-    public virtual DbSet<DistrictMaster> DistrictMaster { get; set; }
-    public virtual DbSet<ParliamentConstituencyMaster> ParliamentConstituencyMaster { get; set; }
     public virtual DbSet<StateMaster> StateMaster { get; set; }
+    public virtual DbSet<DistrictMaster> DistrictMaster { get; set; }
+    public virtual DbSet<AssemblyMaster> AssemblyMaster { get; set; }
+    public virtual DbSet<FourthLevelH> FourthLevelH { get; set; }
+    public virtual DbSet<BlockZonePanchayat> BlockZonePanchayat { get; set; }
+    public virtual DbSet<BoothMaster> BoothMaster { get; set; }
+    public virtual DbSet<ParliamentConstituencyMaster> ParliamentConstituencyMaster { get; set; }
+
     public virtual DbSet<SectorOfficerMaster> SectorOfficerMaster { get; set; }
     public virtual DbSet<ElectionInfoMaster> ElectionInfoMaster { get; set; }
     public virtual DbSet<SlotManagementMaster> SlotManagementMaster { get; set; }

@@ -12,7 +12,7 @@ namespace EAMS_ACore
         public int AssemblyCode { get; set; }
 
         public string? AssemblyType { get; set; }
-        
+
         public int ElectionTypeMasterId
         {
             get;
@@ -73,16 +73,17 @@ namespace EAMS_ACore
             get;
             set;
         }
-        public virtual List<PSZone> PSZone
+        public virtual List<FourthLevelH> FourthLevelH
         {
             get;
             set;
         }
-        public virtual List<BlockPanchayat> BlockPanchayat
+
+        public virtual List<BlockZonePanchayat> BlockPanchayat
         {
             get;
             set;
         }
-       
+ 
     }
 }
