@@ -11,18 +11,19 @@ namespace EAMS.ViewModels
         public int DistrictMasterId { get; set; }
         [Required(ErrorMessage = "Assembly Master Id is required")]
         public int AssemblyMasterId { get; set; }
-        public int? PSZoneMasterId
+        public int? FourthLevelHMasterId
         {
             get;
             set;
         }
+        public int? BlockZonePanchayatMasterId { get; set; }
         public int ElectionTypeMasterId
         {
             get;
             set;
         }
       
-        public int BoothMasterId { get; set; }
+ 
         [Required(ErrorMessage = "Booth Code No. is required")]
         public string BoothCode_No { get; set; }
         [Required(ErrorMessage = "Total Voters field is required")]

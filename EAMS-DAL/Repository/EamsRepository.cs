@@ -14209,8 +14209,6 @@ namespace EAMS_DAL.Repository
 
         #endregion
 
-
-
         #region Slot Based Voter Turn Out Report
         public async Task<List<VoterTurnOutSlotWise>> GetVoterTurnOutSlotBasedReport(string stateMasterId)
         {
@@ -15555,8 +15553,6 @@ namespace EAMS_DAL.Repository
 
         #endregion
 
-
-
         #region GetBoothByLocation
 
         public async Task<List<CombinedMaster>> GetBoothByLocation(string latitude, string longitude)
@@ -15600,8 +15596,6 @@ namespace EAMS_DAL.Repository
 
 
         #endregion
-
-
 
         #region BLOCount
         public async Task<List<BLOBoothAssignedQueueCount>> GetBLOQueueCount(BoothReportModel boothReportModel)

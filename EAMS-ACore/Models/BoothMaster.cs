@@ -67,13 +67,13 @@ namespace EAMS_ACore
             get;
             set;
         }
-        public int? BlockPanchayatMasterId
+        public int? BlockZonePanchayatMasterId
         {
             get;
             set;
         }
-        [ForeignKey("BlockPanchayatMasterId")]
-        public virtual BlockZonePanchayat? BlockPanchayat
+        [ForeignKey("BlockZonePanchayatMasterId")]
+        public virtual BlockZonePanchayat? BlockZonePanchayat
         {
             get;
             set;
