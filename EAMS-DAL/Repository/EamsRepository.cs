@@ -15921,7 +15921,7 @@ namespace EAMS_DAL.Repository
         }
         #endregion
 
-        #region PSZone
+        #region Fourth Level
         public async Task<Response> AddFourthLevelH(FourthLevelH fourthLevelH)
         {
             try
@@ -15931,18 +15931,18 @@ namespace EAMS_DAL.Repository
                 if (isFourthLevelHExist == null)
                 {
 
-                    isFourthLevelHExist.HierarchyCreatedAt = BharatDateTime();
-                    _context.FourthLevelH.Add(isFourthLevelHExist);
+                    fourthLevelH.HierarchyCreatedAt = BharatDateTime();
+                    _context.FourthLevelH.Add(fourthLevelH);
                     _context.SaveChanges();
 
-                    return new Response { Status = RequestStatusEnum.OK, Message = isFourthLevelHExist.HierarchyName + "Added Successfully" };
+                    return new Response { Status = RequestStatusEnum.OK, Message = fourthLevelH.HierarchyName + " Added Successfully" };
 
 
 
                 }
                 else
                 {
-                    return new Response { Status = RequestStatusEnum.BadRequest, Message = isFourthLevelHExist.HierarchyName + "Same Hierarchy  Code Already Exists in the selected Election Type" };
+                    return new Response { Status = RequestStatusEnum.BadRequest, Message = isFourthLevelHExist.HierarchyName + " Same Hierarchy  Code Already Exists in the selected Election Type" };
 
                 }
 
