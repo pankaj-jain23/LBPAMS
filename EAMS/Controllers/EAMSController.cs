@@ -186,7 +186,7 @@ namespace EAMS.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    var electionType = User.Claims.FirstOrDefault(c => c.Type == "ElectionType").Value;
+                    //var electionType = User.Claims.FirstOrDefault(c => c.Type == "ElectionType").Value;
 
                     StateMaster stateMaster = new StateMaster()
                     {
