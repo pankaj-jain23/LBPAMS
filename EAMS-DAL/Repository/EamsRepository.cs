@@ -579,7 +579,7 @@ namespace EAMS_DAL.Repository
 
                 //    string message = psZone.PSZoneStatus ? "Zone Activated Successfully" : "Zone Deactivated Successfully";
                 //    return new ServiceResponse { IsSucceed = psZone.PSZoneStatus, Message = message };
-           
+
                 //case "SPWards":
                 //    var spWards = await _context.SarpanchWards
                 //        .Where(d => d.SarpanchWardsMasterId == Convert.ToInt32(updateMasterStatus.Id))
@@ -1106,7 +1106,7 @@ namespace EAMS_DAL.Repository
                 else
                 {
 
-                    return new Response { Status = RequestStatusEnum.BadRequest, Message = $"State Name Already Exists {stateMaster.StateName}" };
+                    return new Response { Status = RequestStatusEnum.BadRequest, Message = $"State Already Exists  {stateMaster.StateName} {stateMaster.StateCode}" };
                 }
             }
             catch (Exception ex)
@@ -2171,8 +2171,8 @@ namespace EAMS_DAL.Repository
             var isAssemblyActive = _context.AssemblyMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId)).FirstOrDefault();
             if (isStateActive.StateStatus && isDistrictActive.DistrictStatus && isAssemblyActive.AssemblyStatus)
             {
-              
-                  var  boothlist = from bt in _context.BoothMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId)) // outer sequenc)
+
+                var boothlist = from bt in _context.BoothMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId)) // outer sequenc)
                                 join asem in _context.AssemblyMaster
                                 on bt.AssemblyMasterId equals asem.AssemblyMasterId
                                 join dist in _context.DistrictMaster
@@ -2190,7 +2190,7 @@ namespace EAMS_DAL.Repository
                                     AssemblyName = asem.AssemblyName,
                                     AssemblyCode = asem.AssemblyCode,
                                     BoothMasterId = bt.BoothMasterId,
-                                   
+
                                     //BoothName = bt.BoothName + "(" + bt.BoothCode_No + ")",
                                     //BoothName = bt.BoothName + (bt.BoothNoAuxy != "0" ? $"({bt.BoothCode_No}-{bt.BoothNoAuxy})" : $"({bt.BoothCode_No})"),
                                     BoothName = $"{bt.BoothName}{(bt.BoothNoAuxy != "0" ? $"-{bt.BoothNoAuxy}" : "")}({bt.BoothCode_No})",
@@ -2205,7 +2205,7 @@ namespace EAMS_DAL.Repository
 
 
                                 };
-               
+
                 var sortedBoothList = await boothlist.ToListAsync();
 
                 // Convert string BoothCode_No to integers for sorting
@@ -2218,7 +2218,7 @@ namespace EAMS_DAL.Repository
                 return null;
             }
         }
-        public async Task<List<CombinedMaster>> GetBoothListByIdwithPsZone(string stateMasterId, string districtMasterId, string assemblyMasterId,string fourthLevelHMasterId)
+        public async Task<List<CombinedMaster>> GetBoothListByIdwithPsZone(string stateMasterId, string districtMasterId, string assemblyMasterId, string fourthLevelHMasterId)
         {
             var isStateActive = _context.StateMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId)).FirstOrDefault();
             var isDistrictActive = _context.DistrictMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId)).FirstOrDefault();
@@ -2228,7 +2228,7 @@ namespace EAMS_DAL.Repository
                 IQueryable<CombinedMaster> boothlist = null;
                 if (Convert.ToInt32(fourthLevelHMasterId) > 0)
                 {
-                    boothlist = from bt in _context.BoothMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId) && d.FourthLevelHMasterId== Convert.ToInt32(fourthLevelHMasterId)) // outer sequenc)
+                    boothlist = from bt in _context.BoothMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId) && d.FourthLevelHMasterId == Convert.ToInt32(fourthLevelHMasterId)) // outer sequenc)
                                 join asem in _context.AssemblyMaster
                                 on bt.AssemblyMasterId equals asem.AssemblyMasterId
                                 join dist in _context.DistrictMaster
@@ -2245,7 +2245,7 @@ namespace EAMS_DAL.Repository
                                     AssemblyId = asem.AssemblyMasterId,
                                     AssemblyName = asem.AssemblyName,
                                     AssemblyCode = asem.AssemblyCode,
-                                    BoothMasterId = bt.BoothMasterId,                              
+                                    BoothMasterId = bt.BoothMasterId,
                                     //BoothName = bt.BoothName + "(" + bt.BoothCode_No + ")",
                                     //BoothName = bt.BoothName + (bt.BoothNoAuxy != "0" ? $"({bt.BoothCode_No}-{bt.BoothNoAuxy})" : $"({bt.BoothCode_No})"),
                                     BoothName = $"{bt.BoothName}{(bt.BoothNoAuxy != "0" ? $"-{bt.BoothNoAuxy}" : "")}({bt.BoothCode_No})",
@@ -2263,8 +2263,8 @@ namespace EAMS_DAL.Repository
 
                 }
                 else
-                { 
-                 boothlist = from bt in _context.BoothMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId)) // outer sequenc)
+                {
+                    boothlist = from bt in _context.BoothMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId)) // outer sequenc)
                                 join asem in _context.AssemblyMaster
                                 on bt.AssemblyMasterId equals asem.AssemblyMasterId
                                 join dist in _context.DistrictMaster
@@ -2282,7 +2282,7 @@ namespace EAMS_DAL.Repository
                                     AssemblyName = asem.AssemblyName,
                                     AssemblyCode = asem.AssemblyCode,
                                     BoothMasterId = bt.BoothMasterId,
-                                  
+
                                     //BoothName = bt.BoothName + "(" + bt.BoothCode_No + ")",
                                     //BoothName = bt.BoothName + (bt.BoothNoAuxy != "0" ? $"({bt.BoothCode_No}-{bt.BoothNoAuxy})" : $"({bt.BoothCode_No})"),
                                     BoothName = $"{bt.BoothName}{(bt.BoothNoAuxy != "0" ? $"-{bt.BoothNoAuxy}" : "")}({bt.BoothCode_No})",
@@ -2297,7 +2297,7 @@ namespace EAMS_DAL.Repository
 
 
                                 };
-            }
+                }
                 var sortedBoothList = await boothlist.ToListAsync();
 
                 // Convert string BoothCode_No to integers for sorting
@@ -4144,7 +4144,7 @@ namespace EAMS_DAL.Repository
                                                     VoteEnabled = true,
                                                     IsLastSlot = SlotRecord.IsLastSlot,
                                                     Message = "Slot is Available",
-                                                    ElectionTypeMasterId=electionInfoRecord.ElectionTypeMasterId
+                                                    ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId
 
                                                 };
                                                 if (isGenderCptureRequired == true)
@@ -4535,10 +4535,10 @@ namespace EAMS_DAL.Repository
                             }
                         }
                     }
-                    
-                    
-                    
-                    
+
+
+
+
                     else
                     {
                         model = new VoterTurnOutPolledDetailViewModel()
@@ -4739,8 +4739,8 @@ namespace EAMS_DAL.Repository
                                             RemainingVotes = boothExists.TotalVoters - polldetail.VotesPolled,
                                             VoteEnabled = true,
                                             Message = "Queue is Available",
-                                            ElectionTypeMasterId=electionInfoRecord.ElectionTypeMasterId
-                                           
+                                            ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId
+
 
                                         };
                                     }
@@ -4808,7 +4808,7 @@ namespace EAMS_DAL.Repository
                                 VotesPolledTime = electionInfoRecord.VoterInQueueLastUpdate,
                                 VoteEnabled = false,
                                 ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId,
-                                 Message = "Queue Already Done."
+                                Message = "Queue Already Done."
 
                             };
                         }
@@ -4981,7 +4981,7 @@ namespace EAMS_DAL.Repository
                                                             EventMasterId = Convert.ToInt32(addVoterTurnOut.eventid),
                                                             VotesPolled = Convert.ToInt32(addVoterTurnOut.voterValue),
                                                             VotesPolledRecivedTime = BharatDateTime(),
-                                                            ElectionTypeMasterId=addVoterTurnOut.ElectionTypeMasterId,
+                                                            ElectionTypeMasterId = addVoterTurnOut.ElectionTypeMasterId,
                                                             //PCMasterId = _context.AssemblyMaster.Where(p => p.AssemblyMasterId == boothExists.AssemblyMasterId).Select(p => p.PCMasterId).FirstOrDefault(),
                                                             UserType = "SO"
                                                             //AddedBy=Soid  // find SO or ARO
@@ -5063,7 +5063,7 @@ namespace EAMS_DAL.Repository
                                                     EventMasterId = Convert.ToInt32(addVoterTurnOut.eventid),
                                                     VotesPolled = Convert.ToInt32(addVoterTurnOut.voterValue),
                                                     VotesPolledRecivedTime = BharatDateTime(),
-                                                    ElectionTypeMasterId=addVoterTurnOut.ElectionTypeMasterId,
+                                                    ElectionTypeMasterId = addVoterTurnOut.ElectionTypeMasterId,
                                                     UserType = "SO",
                                                     //PCMasterId = _context.AssemblyMaster.Where(p => p.AssemblyMasterId == boothExists.AssemblyMasterId).Select(p => p.PCMasterId).FirstOrDefault(),
 
@@ -5375,8 +5375,8 @@ namespace EAMS_DAL.Repository
                                         Transgender = electionInfoRecord.Transgender.ToString(),
                                         edc = electionInfoRecord.EDC.ToString(),
                                         Message = "Final Value is Available",
-                                        ElectionTypeMasterId=electionInfoRecord.ElectionTypeMasterId
-                                        
+                                        ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId
+
 
                                     };
                                     // Check the condition
@@ -5404,7 +5404,7 @@ namespace EAMS_DAL.Repository
                                         Transgender = electionInfoRecord.Transgender.ToString(),
                                         Message = "Final Value is Available, Last Entered :" + electionInfoRecord.FinalTVote,
                                         ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId,
-                                         edc = electionInfoRecord.EDC.ToString()
+                                        edc = electionInfoRecord.EDC.ToString()
                                     };
 
                                     // Check the condition
@@ -15960,11 +15960,11 @@ namespace EAMS_DAL.Repository
                 return null;
             }
         }
-      
+
         public async Task<Response> UpdateFourthLevelH(FourthLevelH fourthLevelH)
         {
             // Check if the PSZone entity exists in the database
-            var existing  = await _context.FourthLevelH
+            var existing = await _context.FourthLevelH
                 .Where(d => d.FourthLevelHMasterId == fourthLevelH.FourthLevelHMasterId)
                 .FirstOrDefaultAsync();
 
@@ -16031,7 +16031,7 @@ namespace EAMS_DAL.Repository
 
             return psZone;
         }
-        public async Task<Response>  DeleteFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        public async Task<Response> DeleteFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
             // Validate the input ID
             if (fourthLevelHMasterId <= 0)
@@ -16163,7 +16163,7 @@ namespace EAMS_DAL.Repository
         }
         public async Task<List<SarpanchWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            var getPsZone = await _context.SarpanchWards.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId  ).ToListAsync();
+            var getPsZone = await _context.SarpanchWards.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId).ToListAsync();
             if (getPsZone != null)
             {
                 return getPsZone;
@@ -16197,12 +16197,12 @@ namespace EAMS_DAL.Repository
             existingSarpanchWards.StateMasterId = sarpanchWards.StateMasterId;
             existingSarpanchWards.DistrictMasterId = sarpanchWards.DistrictMasterId;
             existingSarpanchWards.AssemblyMasterId = sarpanchWards.AssemblyMasterId;
-            
+
             existingSarpanchWards.SarpanchWardsCategory = sarpanchWards.SarpanchWardsCategory;
             existingSarpanchWards.SarpanchWardsUpdatedAt = DateTime.UtcNow;
             existingSarpanchWards.SarpanchWardsDeletedAt = sarpanchWards.SarpanchWardsDeletedAt;
             existingSarpanchWards.SarpanchWardsStatus = sarpanchWards.SarpanchWardsStatus;
-            
+
 
             // Save changes to the database
             try
@@ -16230,7 +16230,7 @@ namespace EAMS_DAL.Repository
                 .Where(w => w.StateMasterId == stateMasterId &&
                             w.DistrictMasterId == districtMasterId &&
                             w.AssemblyMasterId == assemblyMasterId &&
- 
+
                             w.SarpanchWardsMasterId == wardsMasterId)
                 .FirstOrDefaultAsync();
 
@@ -16249,7 +16249,7 @@ namespace EAMS_DAL.Repository
                 .Where(w => w.StateMasterId == stateMasterId &&
                             w.DistrictMasterId == districtMasterId &&
                             w.AssemblyMasterId == assemblyMasterId &&
- 
+
                             w.SarpanchWardsMasterId == wardsMasterId)
                 .FirstOrDefaultAsync();
 

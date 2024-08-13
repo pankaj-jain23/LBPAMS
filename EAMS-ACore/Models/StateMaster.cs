@@ -20,7 +20,7 @@ namespace EAMS_ACore
         public DateTime? StateDeletedAt { get; set; }
         public string? SecondLanguage { get; set; }
 
-        public bool StateStatus { get; set; } = true;
+        public bool StateStatus { get; set; } 
         public bool IsGenderCapturedinVoterTurnOut { get; set; }
 
         [JsonIgnore]

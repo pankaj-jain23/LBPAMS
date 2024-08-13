@@ -12,7 +12,7 @@ namespace EAMS.ViewModels
                 
         
 
-        [Required(ErrorMessage = "Sttaus is required")]
+        [Required(ErrorMessage = "Status is required")]
         public bool IsStatus { get; set; }
 
         public bool IsGenderCapturedinVoterTurnOut { get; set; }
