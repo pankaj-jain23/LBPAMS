@@ -60,7 +60,7 @@ namespace EAMS_ACore
             set;
         }
 
-        public int TotalBooths { get; set; }
+        public int? TotalBooths { get; set; }
         public DateTime? AssemblyCreatedAt { get; set; }
 
         public DateTime? AssemblyUpdatedAt { get; set; }
