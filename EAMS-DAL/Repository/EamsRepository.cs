@@ -665,7 +665,7 @@ namespace EAMS_DAL.Repository
                         var assembliesRecord = await _context.AssemblyMaster.Where(s => s.DistrictMasterId == districtRecord.DistrictMasterId).ToListAsync();
                         if (assembliesRecord.Count > 0)
                         {
-                            return new ServiceResponse { IsSucceed = false, Message = "Assemblies Exist aganist this District, can't delete" };
+                            return new ServiceResponse { IsSucceed = false, Message = "Can’t delete , as Local Bodies exist against this District" };
 
                         }
                         else
@@ -1432,7 +1432,7 @@ namespace EAMS_DAL.Repository
                                 assembliesMasterRecord.AssemblyUpdatedAt = BharatDateTime();
                                 assembliesMasterRecord.DistrictMasterId = assemblyMaster.DistrictMasterId;
                                 assembliesMasterRecord.StateMasterId = assemblyMaster.StateMasterId;
-                                assembliesMasterRecord.PCMasterId = assemblyMaster.PCMasterId;
+                                assembliesMasterRecord.PCMasterId = null;
                                 assembliesMasterRecord.TotalBooths = assemblyMaster.TotalBooths;
                                 assembliesMasterRecord.ElectionTypeMasterId = assemblyMaster.ElectionTypeMasterId;
                                 _context.AssemblyMaster.Update(assembliesMasterRecord);
