@@ -290,7 +290,7 @@ namespace EAMS_ACore.Interfaces
 
         #region ResultDec Public Details
         Task<ServiceResponse> AddRsltDetails(Rsult rsult);
-        Task<List<Rsult>> GetRsltDetails();
+        Task<List<Rsult>> GetResultDecelaration(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId);
         Task<Response> UpdateRsltDetails(Rsult rsult);
         #endregion
     }

@@ -3324,9 +3324,9 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.AddRsltDetails(Rsult);
         }
-        public async Task<List<Rsult>> GetRsltDetails()
+        public async Task<List<Rsult>> GetResultDecelaration(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId)
         {
-            return await _eamsRepository.GetRsltDetails();
+            return await _eamsRepository.GetRsltDetails(stateMasterId, districtMasterId, assemblyMasterId, boothMasterId, wardsMasterId);
 
         }
         public Task<Response> UpdateRsltDetails(Rsult rsult)
@@ -3390,7 +3390,6 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.DeleteSarpanchWardsById(stateMasterId, districtMasterId, assemblyMasterId, boothMasterId, wardsMasterId);
         }
-
         #endregion
     }
 }

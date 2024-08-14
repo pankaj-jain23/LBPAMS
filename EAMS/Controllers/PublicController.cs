@@ -10,6 +10,8 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using LBPAMS.ViewModels.PublicModels;
+using EAMS_BLL.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EAMS.Controllers
 {
@@ -110,6 +112,7 @@ namespace EAMS.Controllers
 
         #region ResultDecelration
         [HttpPost("AddResultDec")]
+       // [Route("AddResultDecelaration")]
         public async Task<IActionResult> AddResult([FromForm] ResultViewModel resultViewModel)
         {
             var rslt = _mapper.Map<Rsult>(resultViewModel);
@@ -127,6 +130,38 @@ namespace EAMS.Controllers
             {
                 return BadRequest("Failed to add Result data.");
             }
+        }
+       
+        [HttpGet("GetResultDecelaration")]
+        
+        public async Task<IActionResult> GetResultDecelaration(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId)
+        {
+            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null)
+            {
+                var resltList = await _eamsService.GetResultDecelaration(stateMasterId, districtMasterId, assemblyMasterId, boothMasterId, wardsMasterId);  // Corrected to await the asynchronous method
+                if (resltList != null)
+                {
+                    var data = new
+                    {
+                        count = resltList.Count,
+                        data = resltList.ToList(),
+                        
+                    };
+                    return Ok(data);
+
+                }
+                else
+                {
+                    return NotFound("Result Not Decelared");
+
+                }
+            }
+            else
+            {
+
+                return BadRequest("State, District and Assembly Master Id's cannot be null");
+            }
+
         }
         #endregion
     }

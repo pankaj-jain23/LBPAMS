@@ -16257,10 +16257,22 @@ namespace EAMS_DAL.Repository
             //throw new NotImplementedException();
         }
 
-        public async Task<List<Rsult>> GetRsltDetails()
+        public async Task<List<Rsult>> GetRsltDetails(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId)
         {
             //return await _context.Rsult.ToListAsync();
-            throw new NotImplementedException();
+            var resultdec = await _context.Result
+                .Where(rd => rd.StateMasterId == stateMasterId &&
+                             rd.DistrictMasterId == districtMasterId &&
+                             rd.AssemblyMasterId == assemblyMasterId &&
+                             rd.BoothMasterId == boothMasterId &&
+                             rd.SarpanchWardsMasterId == wardsMasterId)
+                .FirstOrDefaultAsync();
+            if (resultdec == null)
+            {
+                return null;
+            }
+
+            return new List<Rsult> { resultdec };
         }
 
         public Task<Response> UpdateRsltDetails(Rsult rslt)
