@@ -3319,6 +3319,17 @@ namespace EAMS_BLL.Services
         }
         #endregion
 
+        #region UnOpposed Public Details
+        public async Task<ServiceResponse> AddUnOpposedDetails(UnOpposed unOpposed)
+        {
+            return await _eamsRepository.AddUnOpposedDetails(unOpposed);
+        }
+        public async Task<List<UnOpposed>> GetUnOpposedDetails()
+        {
+            return await _eamsRepository.GetUnOpposedDetails();
+
+        }
+        #endregion
 
         #region Election Type Master
         public async Task<List<ElectionTypeMaster>> GetAllElectionTypes()
@@ -3381,23 +3392,23 @@ namespace EAMS_BLL.Services
 
             return await _eamsRepository.AddSarpanchWards(sarpanchWards);
         }
-        public async Task<List<SarpanchWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        public async Task<List<SarpanchWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId)
         {
-            return await _eamsRepository.GetSarpanchWardsListById(stateMasterId, districtMasterId, assemblyMasterId);
+            return await _eamsRepository.GetSarpanchWardsListById(stateMasterId, districtMasterId, assemblyMasterId,FourthLevelHMasterId,BlockZonePanchayatMasterId);
         }
         public async Task<Response> UpdateSarpanchWards(SarpanchWards sarpanchWards)
         {
             return await _eamsRepository.UpdateSarpanchWards(sarpanchWards);
         }
 
-        public async Task<SarpanchWards> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int wardsMasterId)
+        public async Task<SarpanchWards> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId,  int FourthLevelHMasterId, int BlockZonePanchayatMasterId, int SarpanchWardsMasterId)
         {
-            return await _eamsRepository.GetSarpanchWardsById(stateMasterId,districtMasterId,assemblyMasterId,wardsMasterId);
+            return await _eamsRepository.GetSarpanchWardsById(stateMasterId,districtMasterId,assemblyMasterId,FourthLevelHMasterId,BlockZonePanchayatMasterId,SarpanchWardsMasterId);
         }
 
-        public async Task<Response> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId,  int wardsMasterId)
+        public async Task<Response> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId, int SarpanchWardsMasterId)
         {
-            return await _eamsRepository.DeleteSarpanchWardsById(stateMasterId, districtMasterId, assemblyMasterId, wardsMasterId);
+            return await _eamsRepository.DeleteSarpanchWardsById(stateMasterId, districtMasterId, assemblyMasterId, FourthLevelHMasterId, BlockZonePanchayatMasterId, SarpanchWardsMasterId);
         }
 
         #endregion

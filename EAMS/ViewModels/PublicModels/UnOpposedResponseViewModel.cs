@@ -1,16 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace EAMS_ACore.Models.PublicModels
+﻿namespace LBPAMS.ViewModels.PublicModels
 {
-    public class Kyc
+    public class UnOpposedResponseViewModel
     {
-        [Key]
-        public int KycMasterId
+
+        public int? UnOpposedMasterId
         {
             get;
             set;
         }
-        public int StateMasterId
+        public int? StateMasterId
         {
             get;
             set;
@@ -30,21 +28,37 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
-        public int FourthLevelHMasterId
+        public int? FourthLevelHMasterId
 
         {
             get;
             set;
         }
 
-        public int BlockZonePanchayatMasterId
+        public int? BlockZonePanchayatMasterId
         {
             get;
             set;
         }
-        public int SarpanchWardsMasterId 
+        public int? SarpanchWardsMasterId
         {
-            get; 
+            get;
+            set;
+        }
+
+        public string? Option1
+        {
+
+            get; set;
+        }
+        public string? Option2
+        {
+
+            get; set;
+        }
+        public string? NominationPdfPath
+        {
+            get;
             set;
         }
         public string CandidateName
@@ -57,21 +71,5 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
-        public string NominationPdfPath
-        {
-            get;
-            set;
-        }
-        public string? Option1
-        {
-
-            get; set;
-        }
-        public string? Option2
-        {
-
-            get; set;
-        }
-
     }
 }

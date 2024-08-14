@@ -1,11 +1,8 @@
-﻿using System.Text.Json.Serialization;
-
-namespace EAMS.ViewModels.PublicModels
+﻿namespace LBPAMS.ViewModels.PublicModels
 {
-    public class KycViewModel
+    public class UnOpposedViewModel
     {
-                 
-        public int StateMasterId
+        public int? StateMasterId
         {
             get;
             set;
@@ -42,7 +39,7 @@ namespace EAMS.ViewModels.PublicModels
             get;
             set;
         }
-      
+
         public string? Option1
         {
 
@@ -68,6 +65,5 @@ namespace EAMS.ViewModels.PublicModels
             get;
             set;
         }
-
     }
 }

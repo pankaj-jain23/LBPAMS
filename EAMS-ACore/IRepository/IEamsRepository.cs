@@ -22,7 +22,7 @@ namespace EAMS_ACore.IRepository
         Task<ServiceResponse> UpdateMasterStatus(UpdateMasterStatus updateMasterStatus);
         Task<ServiceResponse> DeleteMasterStatus(DeleteMasterStatus updateMasterStatus);
         #endregion
-        
+
         Task<Response> ResetAccounts(string stateMasterId);
         #region State Master
         Task<List<StateMaster>> GetState();
@@ -41,7 +41,7 @@ namespace EAMS_ACore.IRepository
 
         #region Assembly Master
         Task<List<CombinedMaster>> GetAssemblies(string stateId, string districtId, string electionTypeId);
-        Task<List<CombinedMaster>> GetAssembliesByElectionType(string stateId, string districtId,string electionTypeId);
+        Task<List<CombinedMaster>> GetAssembliesByElectionType(string stateId, string districtId, string electionTypeId);
         Task<Response> UpdateAssembliesById(AssemblyMaster assemblyMaster);
         Task<Response> UpdatePC(ParliamentConstituencyMaster pcMaster);
         Task<Response> AddAssemblies(AssemblyMaster assemblyMaster);
@@ -49,15 +49,15 @@ namespace EAMS_ACore.IRepository
         Task<AssemblyMaster> GetAssemblyById(string assemblyId);
 
         Task<ElectionInfoMaster> GetElectionInfoRecord(int boothMasterId);
-        Task<AssemblyMaster> GetAssemblyByCode(string assemblyCode,string stateMasterId);
+        Task<AssemblyMaster> GetAssemblyByCode(string assemblyCode, string stateMasterId);
         Task<AssemblyMaster> GetAssemblyByCodeandState(string assemblyCode, string stateMasterId);
-        
+
         #endregion
 
         #region SO Master
         Task<List<CombinedMaster>> GetSectorOfficersListById(string stateMasterId, string districtMasterId, string assemblyMasterId);
-        
-        
+
+
         Task<SectorOfficerProfile> GetSectorOfficerProfile(string soId);
         Task<SectorOfficerProfile> GetBLOOfficerProfile(string soId);
         Task<Response> AddSectorOfficer(SectorOfficerMaster sectorOfficerMaster);
@@ -192,8 +192,8 @@ namespace EAMS_ACore.IRepository
 
         Task<List<VTReportModel>> GetVoterTurnOutConsolidatedReports(BoothReportModel boothReportModel);
         Task<List<VTReportModel>> GetSlotBasedVoterTurnOutReport(SlotVTReportModel boothReportModel);
-        
-        
+
+
         #region
         Task<List<ChartConsolidatedReport>> GetChartConsolidatedReport(ChartReportModel boothReportModel);
         #endregion
@@ -206,24 +206,24 @@ namespace EAMS_ACore.IRepository
         #endregion
 
         #region District , Assembly wise SOCount and Event Count
-        
+
         Task<List<SectorOfficerPendency>> GetDistrictWiseSOCountEventWiseCount(string sid);
         Task<List<SectorOfficerPendencyAssembly>> GetAssemblyWiseSOCountEventWiseCount(string sid, string district);
         //Task<List<SectorOfficerPendencyBooth>> GetBoothWiseSOEventWiseCount(string stateMasterId, string districtMasterId, string assemblyMasterid);
         Task<List<SectorOfficerPendencyBooth>> GetBoothWiseSOEventWiseCount(string soMasterId);
         Task<List<SectorOfficerPendencybySoNames>> GetSONamesEventWiseCount(string stateMasterId, string districtMasterId, string assemblyMasterid);
-         
+
         #endregion
         Task<List<CombinedMaster>> AppNotDownload(string stateMasterId);
         Task<List<VoterTurnOutSlotWise>> GetVoterTurnOutSlotBasedReport(string stateMasterId);
-        Task<List<AssemblyVoterTurnOutSlotWise>> GetSlotVTReporttAssemblyWise(string stateMasterId,string districtMasterId);
+        Task<List<AssemblyVoterTurnOutSlotWise>> GetSlotVTReporttAssemblyWise(string stateMasterId, string districtMasterId);
         Task<List<BoothWiseVoterTurnOutSlotWise>> GetSlotVTReportBoothWise(string stateId, string districtId, string assemblyId);
 
-        Task<int?>GetPCMasterIdByAssemblyIdCode(string assemblyMasterId);
+        Task<int?> GetPCMasterIdByAssemblyIdCode(string assemblyMasterId);
 
         #region QueueManagement
         Task<ServiceResponse> AddQueue(QIS addQIS);
-        Task<QIS> GetQISList(int stateMasterId, int districtMasterId, int assemblyMasterId,int boothMaserid);
+        Task<QIS> GetQISList(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMaserid);
         #endregion
 
         #region BLOBoothMaster
@@ -254,14 +254,14 @@ namespace EAMS_ACore.IRepository
         #region GetBoothByLocation
         Task<List<CombinedMaster>> GetBoothByLocation(string latitude, string longitude);
         #endregion
-        
+
         #region BLO
 
         Task<List<BLOBoothAssignedQueueCount>> GetBLOQueueCount(BoothReportModel boothReportModel);
         Task<List<BLOBoothAssignedQueueCount>> GetUnassignedBLOs(BoothReportModel boothReportModel);
         Task<List<BLOBoothAssignedQueueCount>> GetAssignedBLOs(BoothReportModel boothReportModel);
         Task<List<BLOBoothAssignedQueueCount>> GetBLOQueueCountOpen(string statemasterdi, string districtmasterid);
-#endregion
+        #endregion
 
         #region Mobile Version
         Task<MobileVersion> GetMobileVersionById(string StateMasterId);
@@ -272,6 +272,11 @@ namespace EAMS_ACore.IRepository
         #region KYC Public Details
         Task<ServiceResponse> AddKYCDetails(Kyc kyc);
         Task<List<Kyc>> GetKYCDetails();
+        #endregion
+
+        #region UnOpposed Public Details
+        Task<ServiceResponse> AddUnOpposedDetails(UnOpposed unOpposed);
+        Task<List<UnOpposed>> GetUnOpposedDetails();
         #endregion
 
         #region ElectionType Master
@@ -290,11 +295,12 @@ namespace EAMS_ACore.IRepository
 
         #region SarpanchWards
         Task<Response> AddSarpanchWards(SarpanchWards sarpanchWards);
-        Task<List<SarpanchWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
+        Task<List<SarpanchWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId);
         Task<Response> UpdateSarpanchWards(SarpanchWards sarpanchWards);
-        Task<SarpanchWards> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int wardsMasterId);
+        Task<SarpanchWards> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId,int FourthLevelHMasterId, int BlockZonePanchayatMasterId, int SarpanchWardsMasterId);
 
-        Task<Response> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int wardsMasterId);
+        Task<Response> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId,  int FourthLevelHMasterId, int BlockZonePanchayatMasterId, int SarpanchWardsMasterId);
+
         #endregion
 
         #region  BlockPanchayat

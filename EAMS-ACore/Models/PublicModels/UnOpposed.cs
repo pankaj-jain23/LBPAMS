@@ -2,15 +2,15 @@
 
 namespace EAMS_ACore.Models.PublicModels
 {
-    public class Kyc
+    public class UnOpposed
     {
         [Key]
-        public int KycMasterId
+        public int? UnOpposedMasterId
         {
             get;
             set;
         }
-        public int StateMasterId
+        public int? StateMasterId
         {
             get;
             set;
@@ -30,21 +30,21 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
-        public int FourthLevelHMasterId
+        public int? FourthLevelHMasterId
 
         {
             get;
             set;
         }
 
-        public int BlockZonePanchayatMasterId
+        public int? BlockZonePanchayatMasterId
         {
             get;
             set;
         }
-        public int SarpanchWardsMasterId 
+        public int? SarpanchWardsMasterId
         {
-            get; 
+            get;
             set;
         }
         public string CandidateName
@@ -57,7 +57,7 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
-        public string NominationPdfPath
+        public string? NominationPdfPath
         {
             get;
             set;
@@ -72,6 +72,5 @@ namespace EAMS_ACore.Models.PublicModels
 
             get; set;
         }
-
     }
 }

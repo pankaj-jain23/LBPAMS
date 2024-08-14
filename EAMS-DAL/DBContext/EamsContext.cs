@@ -72,6 +72,7 @@ public partial class EamsContext : IdentityDbContext<UserRegistration>
     public virtual DbSet<BLOMaster> BLOMaster { get; set; } 
     public virtual DbSet<MobileVersion> MobileVersion { get; set; } 
     public virtual DbSet<Kyc> Kyc { get; set; } 
+    public virtual DbSet<UnOpposed> UnOpposed { get; set; } 
   //  public virtual DbSet<BLOBoothMaster> BLOBoothMaster { get; set; } 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

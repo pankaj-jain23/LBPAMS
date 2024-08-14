@@ -2,7 +2,13 @@
 {
     public class KycResponseViewModel
     {
-        public int KycMasterId { get; set; }
+         
+      
+        public int KycMasterId
+        {
+            get;
+            set;
+        }
         public int StateMasterId
         {
             get;
@@ -18,23 +24,40 @@
             get;
             set;
         }
-        public int? PsZoneMasterId
+        public int? AssemblyMasterId
         {
             get;
             set;
         }
-        public int? BoothMasterId
+        public int FourthLevelHMasterId
+
         {
             get;
             set;
         }
 
-        public int? SarpanchWardsMasterId
+        public int BlockZonePanchayatMasterId
         {
             get;
             set;
         }
-        public string NominationPdfPath
+        public int SarpanchWardsMasterId
+        {
+            get;
+            set;
+        }
+
+        public string? Option1
+        {
+
+            get; set;
+        }
+        public string? Option2
+        {
+
+            get; set;
+        }
+        public string? NominationPdfPath
         {
             get;
             set;

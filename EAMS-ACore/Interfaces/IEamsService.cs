@@ -267,6 +267,11 @@ namespace EAMS_ACore.Interfaces
         Task<List<Kyc>> GetKYCDetails();
         #endregion
 
+        #region UnOpposed Public Details
+        Task<ServiceResponse> AddUnOpposedDetails(UnOpposed unOpposed);
+        Task<List<UnOpposed>> GetUnOpposedDetails();
+        #endregion
+
         #region Election Type Master
         Task<List<ElectionTypeMaster>> GetAllElectionTypes();
         #endregion
@@ -289,11 +294,12 @@ namespace EAMS_ACore.Interfaces
 
         #region SarpanchWards
         Task<Response> AddSarpanchWards(SarpanchWards sarpanchWards);
-        Task<List<SarpanchWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
+        Task<List<SarpanchWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId);
         Task<Response> UpdateSarpanchWards(SarpanchWards sarpanchWards);
-        Task<SarpanchWards> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int wardsMasterId);
+        Task<SarpanchWards> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId,int SarpanchWardsMasterId);
 
-         Task<Response> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int wardsMasterId);
+         Task<Response> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId, int SarpanchWardsMasterId);
+       
         #endregion
     }
 }

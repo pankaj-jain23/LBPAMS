@@ -97,7 +97,6 @@ namespace EAMS_DAL.Repository
 
                     }
 
-
                 case "DistrictMaster":
                     var districtId = Convert.ToInt32(updateMasterStatus.Id);
                     var districtRecord = await _context.DistrictMaster.FirstOrDefaultAsync(d => d.DistrictMasterId == districtId);
@@ -154,7 +153,6 @@ namespace EAMS_DAL.Repository
                     {
                         return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
                     }
-
 
                 case "PCMaster":
                     var pcId = Convert.ToInt32(updateMasterStatus.Id);
@@ -550,64 +548,80 @@ namespace EAMS_DAL.Repository
                         return new ServiceResponse { IsSucceed = false, Message = "Sector Officer Record Not Found." };
                     }
 
+                case "Level4H":
+                    var level4 = await _context.FourthLevelH
+                        .Where(d => d.FourthLevelHMasterId == Convert.ToInt32(updateMasterStatus.Id))
+                        .FirstOrDefaultAsync();
 
-                //case "PSZONE":
-                //    var psZone = await _context.PSZone
-                //        .Where(d => d.PSZoneMasterId == Convert.ToInt32(updateMasterStatus.Id))
-                //        .FirstOrDefaultAsync();
+                    if (level4 == null)
+                    {
+                        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
+                    }
 
-                //    if (psZone == null)
-                //    {
-                //        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
-                //    }
+                    if (updateMasterStatus.IsStatus == false)
+                    {
+                        var blockZonePanchayatCount = await _context.BlockZonePanchayat
+                          .Where(d => d.FourthLevelHMasterId == level4.FourthLevelHMasterId).CountAsync();
 
-                //    if (updateMasterStatus.IsStatus==false)
-                //    {
-                //        var assembly = await _context.AssemblyMaster
-                //            .Where(d => d.AssemblyMasterId == psZone.AssemblyMasterId)
-                //            .FirstOrDefaultAsync();
+                        if (blockZonePanchayatCount!=0)
+                        {
+                            return new ServiceResponse { IsSucceed = false, Message = $"Panchayats {blockZonePanchayatCount} are active under this {level4.HierarchyName}. Make sure they are Inactive first" };
+                        }
+                    }
 
-                //        if (assembly?.AssemblyStatus == true)
-                //        {
-                //            return new ServiceResponse { IsSucceed = false, Message = "Assembly is already active. Please deactivate it first." };
-                //        }
-                //    }
+                    level4.HierarchyStatus = updateMasterStatus.IsStatus;
+                    _context.FourthLevelH.Update(level4);
+                    await _context.SaveChangesAsync();
 
-                //    psZone.PSZoneStatus = updateMasterStatus.IsStatus;
-                //    _context.PSZone.Update(psZone);
-                //    await _context.SaveChangesAsync();
+                    string message = level4.HierarchyStatus ? "Activated Successfully" : "Deactivated Successfully";
+                    return new ServiceResponse { IsSucceed = level4.HierarchyStatus, Message = message };
 
-                //    string message = psZone.PSZoneStatus ? "Zone Activated Successfully" : "Zone Deactivated Successfully";
-                //    return new ServiceResponse { IsSucceed = psZone.PSZoneStatus, Message = message };
+                case "BlockZonePanchayat":
+                    var blockZonePanchayat = await _context.BlockZonePanchayat
+                        .Where(d => d.BlockZonePanchayatMasterId == Convert.ToInt32(updateMasterStatus.Id)).Include(d=>d.ElectionTypeMaster)
+                        .FirstOrDefaultAsync();
 
-                //case "SPWards":
-                //    var spWards = await _context.SarpanchWards
-                //        .Where(d => d.SarpanchWardsMasterId == Convert.ToInt32(updateMasterStatus.Id))
-                //        .FirstOrDefaultAsync();
+                    if (blockZonePanchayat == null)
+                    {
+                        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
+                    }
 
-                //    if (spWards == null)
-                //    {
-                //        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
-                //    }
+                    if (updateMasterStatus.IsStatus == false)
+                    {
+                        var spWardCount = await _context.SarpanchWards
+                            .Where(d => d.BlockZonePanchayatMasterId == blockZonePanchayat.BlockZonePanchayatMasterId && d.SarpanchWardsStatus==true).CountAsync();
 
-                //    if (updateMasterStatus.IsStatus==false)
-                //    {
-                //        var boothMaster = await _context.BoothMaster
-                //            .Where(d => d.BoothMasterId == spWards.BoothMasterId)
-                //            .FirstOrDefaultAsync();
+                        var boothCount = await _context.BoothMaster
+                          .Where(d => d.BlockZonePanchayatMasterId == blockZonePanchayat.BlockZonePanchayatMasterId && d.BoothStatus == true).CountAsync();
+                        if (spWardCount != 0&& boothCount!=0)
+                        {
+                            return new ServiceResponse { IsSucceed = false, Message = $"Panchayats {spWardCount} and Booths {boothCount} are active under this {blockZonePanchayat.BlockZonePanchayatName}. Make sure they are Inactive first" };
+                        }
+                    }
 
-                //        if (boothMaster?.BoothStatus == true)
-                //        {
-                //            return new ServiceResponse { IsSucceed = false, Message = "Booth is already active. Please deactivate it first." };
-                //        }
-                //    }
+                    blockZonePanchayat.BlockZonePanchayatStatus = updateMasterStatus.IsStatus;
+                    _context.BlockZonePanchayat.Update(blockZonePanchayat);
+                    await _context.SaveChangesAsync();
 
-                //    spWards.SarpanchWardsStatus = updateMasterStatus.IsStatus;
-                //    _context.SarpanchWards.Update(spWards);
-                //    await _context.SaveChangesAsync();
+                    string messageSp = blockZonePanchayat.BlockZonePanchayatStatus ? "Activated Successfully" : "Ward Deactivated Successfully";
+                    return new ServiceResponse { IsSucceed = blockZonePanchayat.BlockZonePanchayatStatus, Message = messageSp };
 
-                //    string messageSp = spWards.SarpanchWardsStatus ? "Ward Activated Successfully" : "Ward Deactivated Successfully";
-                //    return new ServiceResponse { IsSucceed = spWards.SarpanchWardsStatus, Message = messageSp };
+                case "SPWards":
+                    var spWards = await _context.SarpanchWards
+                        .Where(d => d.SarpanchWardsMasterId == Convert.ToInt32(updateMasterStatus.Id))
+                        .FirstOrDefaultAsync();
+
+                    if (spWards == null)
+                    {
+                        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
+                    }
+                     
+                    spWards.SarpanchWardsStatus = updateMasterStatus.IsStatus;
+                    _context.SarpanchWards.Update(spWards);
+                    await _context.SaveChangesAsync();
+
+                    string messageSpWard = spWards.SarpanchWardsStatus ? "Ward Activated Successfully" : "Ward Deactivated Successfully";
+                    return new ServiceResponse { IsSucceed = spWards.SarpanchWardsStatus, Message = messageSpWard };
 
                 default:
                     return new ServiceResponse
@@ -15889,6 +15903,22 @@ namespace EAMS_DAL.Repository
         }
         #endregion
 
+        #region UnOpposed Public Details
+        public async Task<ServiceResponse> AddUnOpposedDetails(UnOpposed unOpposed)
+        {
+            _context.UnOpposed.Add(unOpposed);
+            _context.SaveChanges();
+
+
+            return new ServiceResponse { IsSucceed = true, Message = "Successfully added" };
+        }
+        public async Task<List<UnOpposed>> GetUnOpposedDetails()
+        {
+            return await _context.UnOpposed.ToListAsync();
+
+        }
+        #endregion
+
         #region Election Type Master
         public async Task<List<ElectionTypeMaster>> GetAllElectionTypes()
         {
@@ -15950,7 +15980,7 @@ namespace EAMS_DAL.Repository
         }
         public async Task<List<FourthLevelH>> GetFourthLevelHListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            var getFourthLevelH = await _context.FourthLevelH.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId).ToListAsync();
+            var getFourthLevelH = await _context.FourthLevelH.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.ElectionTypeMaster).ToListAsync();
             if (getFourthLevelH != null)
             {
                 return getFourthLevelH;
@@ -16009,6 +16039,7 @@ namespace EAMS_DAL.Repository
                 };
             }
         }
+      
         public async Task<FourthLevelH> GetFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
 
@@ -16018,7 +16049,7 @@ namespace EAMS_DAL.Repository
                 .Where(d => d.StateMasterId == stateMasterId &&
                             d.DistrictMasterId == districtMasterId &&
                             d.AssemblyMasterId == assemblyMasterId &&
-                            d.FourthLevelHMasterId == fourthLevelHMasterId)
+                            d.FourthLevelHMasterId == fourthLevelHMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster) .Include(d => d.ElectionTypeMaster)
                 .FirstOrDefaultAsync();
 
             // Check if the PSZone entity exists
@@ -16117,7 +16148,7 @@ namespace EAMS_DAL.Repository
 
         public async Task<List<BlockZonePanchayat>> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            var getBlockPanchayat = await _context.BlockZonePanchayat.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId).ToListAsync();
+            var getBlockPanchayat = await _context.BlockZonePanchayat.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).ToListAsync();
             if (getBlockPanchayat != null)
             {
                 return getBlockPanchayat;
@@ -16161,9 +16192,9 @@ namespace EAMS_DAL.Repository
                 return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
             }
         }
-        public async Task<List<SarpanchWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        public async Task<List<SarpanchWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId)
         {
-            var getPsZone = await _context.SarpanchWards.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId).ToListAsync();
+            var getPsZone = await _context.SarpanchWards.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId&&d.FourthLevelHMasterId==FourthLevelHMasterId&&d.BlockZonePanchayatMasterId==BlockZonePanchayatMasterId).Include(d => d.StateMaster).Include(d=>d.DistrictMaster).Include(d=>d.AssemblyMaster).Include(d=>d.FourthLevelH).Include(d=>d.ElectionTypeMaster).ToListAsync();
             if (getPsZone != null)
             {
                 return getPsZone;
@@ -16197,7 +16228,6 @@ namespace EAMS_DAL.Repository
             existingSarpanchWards.StateMasterId = sarpanchWards.StateMasterId;
             existingSarpanchWards.DistrictMasterId = sarpanchWards.DistrictMasterId;
             existingSarpanchWards.AssemblyMasterId = sarpanchWards.AssemblyMasterId;
-
             existingSarpanchWards.SarpanchWardsCategory = sarpanchWards.SarpanchWardsCategory;
             existingSarpanchWards.SarpanchWardsUpdatedAt = DateTime.UtcNow;
             existingSarpanchWards.SarpanchWardsDeletedAt = sarpanchWards.SarpanchWardsDeletedAt;
@@ -16224,14 +16254,15 @@ namespace EAMS_DAL.Repository
                 };
             }
         }
-        public async Task<SarpanchWards> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int wardsMasterId)
+        public async Task<SarpanchWards> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId, int SarpanchWardsMasterId)
         {
             var sarpanchWards = await _context.SarpanchWards
                 .Where(w => w.StateMasterId == stateMasterId &&
                             w.DistrictMasterId == districtMasterId &&
                             w.AssemblyMasterId == assemblyMasterId &&
-
-                            w.SarpanchWardsMasterId == wardsMasterId)
+                            w.FourthLevelHMasterId==FourthLevelHMasterId&&
+                            w.BlockZonePanchayatMasterId==BlockZonePanchayatMasterId&&
+                            w.SarpanchWardsMasterId == SarpanchWardsMasterId)
                 .FirstOrDefaultAsync();
 
             if (sarpanchWards == null)
@@ -16243,14 +16274,15 @@ namespace EAMS_DAL.Repository
         }
 
 
-        public async Task<Response> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int wardsMasterId)
+        public async Task<Response> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId, int SarpanchWardsMasterId)
         {
             var sarpanchWards = await _context.SarpanchWards
                 .Where(w => w.StateMasterId == stateMasterId &&
                             w.DistrictMasterId == districtMasterId &&
                             w.AssemblyMasterId == assemblyMasterId &&
-
-                            w.SarpanchWardsMasterId == wardsMasterId)
+                            w.FourthLevelHMasterId == FourthLevelHMasterId &&
+                            w.BlockZonePanchayatMasterId == BlockZonePanchayatMasterId &&
+                            w.SarpanchWardsMasterId == SarpanchWardsMasterId)
                 .FirstOrDefaultAsync();
 
             if (sarpanchWards == null)
