@@ -21,6 +21,7 @@ using EAMS_ACore.Models.QueueModel;
 using EAMS_ACore.NotificationModels;
 using EAMS_ACore.ReportModels;
 using LBPAMS.ViewModels;
+using LBPAMS.ViewModels.PublicModels;
 
 namespace EAMS.Helper
 {
@@ -745,6 +746,16 @@ namespace EAMS.Helper
             .ReverseMap();
             #endregion
 
+            #region ResultViewModel RSLVM
+            CreateMap<ResultViewModel, Rsult>()
+             .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+             .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+             .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
+             .ForMember(dest => dest.BoothCode, opt => opt.MapFrom(src => src.BoothCode))
+            //.ForMember(dest => dest.NominationPdfPath, opt => opt.Ignore())
+
+            .ReverseMap();
+            #endregion
 
         }
         #region Convert DateTime UTC

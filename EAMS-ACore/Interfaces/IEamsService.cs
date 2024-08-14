@@ -287,5 +287,11 @@ namespace EAMS_ACore.Interfaces
 
          Task<Response> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId);
         #endregion
+
+        #region ResultDec Public Details
+        Task<ServiceResponse> AddRsltDetails(Rsult rsult);
+        Task<List<Rsult>> GetRsltDetails();
+        Task<Response> UpdateRsltDetails(Rsult rsult);
+        #endregion
     }
 }

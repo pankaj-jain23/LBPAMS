@@ -3319,7 +3319,22 @@ namespace EAMS_BLL.Services
         }
         #endregion
 
+        #region Result Public Details
+        public async Task<ServiceResponse> AddRsltDetails(Rsult Rsult)
+        {
+            return await _eamsRepository.AddRsltDetails(Rsult);
+        }
+        public async Task<List<Rsult>> GetRsltDetails()
+        {
+            return await _eamsRepository.GetRsltDetails();
 
+        }
+        public Task<Response> UpdateRsltDetails(Rsult rsult)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
         #region Election Type Master
         public async Task<List<ElectionTypeMaster>> GetAllElectionTypes()
         {

@@ -9,6 +9,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using LBPAMS.ViewModels.PublicModels;
 
 namespace EAMS.Controllers
 {
@@ -107,7 +108,26 @@ namespace EAMS.Controllers
         }
         #endregion
 
-
-
+        #region ResultDecelration
+        [HttpPost("AddResultDec")]
+        public async Task<IActionResult> AddResult([FromForm] ResultViewModel resultViewModel)
+        {
+            var rslt = _mapper.Map<Rsult>(resultViewModel);
+            if (rslt == null)
+            {
+                return BadRequest("All fields are mandatory");
+            }
+            // call your service method to add result details
+            var addresult = await _eamsService.AddRsltDetails(rslt);
+            if (addresult.IsSucceed == true)
+            {
+                return Ok(new { Message = "Result data added successfully" });
+            }
+            else
+            {
+                return BadRequest("Failed to add Result data.");
+            }
+        }
+        #endregion
     }
 }

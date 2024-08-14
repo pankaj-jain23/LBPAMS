@@ -296,5 +296,11 @@ namespace EAMS_ACore.IRepository
 
         Task<Response> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId);
         #endregion
+
+        #region Result Public Details
+        Task<ServiceResponse> AddRsltDetails(Rsult rslt);
+        Task<List<Rsult>> GetRsltDetails();
+        Task<Response> UpdateRsltDetails(Rsult rslt);
+        #endregion
     }
 }

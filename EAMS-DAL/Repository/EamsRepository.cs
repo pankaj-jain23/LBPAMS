@@ -16245,5 +16245,28 @@ namespace EAMS_DAL.Repository
         }
 
         #endregion
+
+        #region ResultDecleration
+
+        public async Task<ServiceResponse> AddRsltDetails(Rsult rslt)
+        {
+            //_context.Rsult.Add(rslt);
+            _context.SaveChanges();
+
+            return new ServiceResponse { IsSucceed = true, Message = "Successfully added" };
+            //throw new NotImplementedException();
+        }
+
+        public async Task<List<Rsult>> GetRsltDetails()
+        {
+            //return await _context.Rsult.ToListAsync();
+            throw new NotImplementedException();
+        }
+
+        public Task<Response> UpdateRsltDetails(Rsult rslt)
+        {
+            throw new NotImplementedException();
+        }
+        #endregion
     }
 }
