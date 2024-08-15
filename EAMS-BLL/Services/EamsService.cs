@@ -3312,11 +3312,21 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.AddKYCDetails(kyc);
         }
+        public async Task<ServiceResponse> UpdateKycDetails(Kyc kyc)
+        {
+            return await _eamsRepository.UpdateKycDetails(kyc);
+        }
+     
         public async Task<List<Kyc>> GetKYCDetails()
         {
             return await _eamsRepository.GetKYCDetails();
 
         }
+        public async Task<List<Kyc>> GetKYCDetailByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId)
+        {
+            return await _eamsRepository.GetKYCDetailByFourthLevelId(stateMasterId, districtMasterId,assemblyMasterId,fourthLevelhMasterId);
+        }
+
         #endregion
 
         #region UnOpposed Public Details
@@ -3372,18 +3382,18 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetBlockPanchayatListById(stateMasterId, districtMasterId, assemblyMasterId);
         }
-        //public async Task<PSZone> GetPSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId)
-        //{
-        //    return await _eamsRepository.GetPSZoneById(stateMasterId, districtMasterId, assemblyMasterId, pSZoneMasterId);
-        //}
-        //public async Task<Response> UpdatePSZone(PSZone pSZone)
-        //{
-        //    return await _eamsRepository.UpdatePSZone(pSZone);
-        //}
-        //public async Task<Response> DeletePSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId)
-        //{
-        //    return await _eamsRepository.DeletePSZoneById(stateMasterId, districtMasterId, assemblyMasterId, pSZoneMasterId);
-        //}
+        public async Task<BlockZonePanchayat> GetBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int blockZonePanchayatMasterId)
+        {
+            return await _eamsRepository.GetBlockZonePanchayatById(stateMasterId, districtMasterId, assemblyMasterId, blockZonePanchayatMasterId);
+        }
+        public async Task<Response> UpdateBlockZonePanchayat(BlockZonePanchayat blockZonePanchayat)
+        {
+            return await _eamsRepository.UpdateBlockZonePanchayat(blockZonePanchayat);
+        }
+        public async Task<Response> DeleteBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int blockZonePanchayatMasterId)
+        {
+            return await _eamsRepository.DeleteBlockZonePanchayatById(stateMasterId, districtMasterId, assemblyMasterId, blockZonePanchayatMasterId);
+        }
         #endregion
 
         #region SarpanchWards

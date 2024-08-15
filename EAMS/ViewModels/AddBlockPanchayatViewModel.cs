@@ -102,12 +102,7 @@ namespace LBPAMS.ViewModels
 
 
         public int BlockZonePanchayatBooths { get; set; }
-        public string? BlockZonePanchayatCategory { get; set; }
-        public DateTime? BlockZonePanchayatCreatedAt { get; set; }
-
-        public DateTime? BlockZonePanchayatUpdatedAt { get; set; }
-
-        public DateTime? BlockZonePanchayatDeletedAt { get; set; }
+        public string? BlockZonePanchayatCategory { get; set; }        
 
         public bool IsStatus { get; set; }
 

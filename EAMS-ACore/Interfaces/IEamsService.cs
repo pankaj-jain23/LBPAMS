@@ -264,7 +264,10 @@ namespace EAMS_ACore.Interfaces
 
         #region KYC Public Details
         Task<ServiceResponse> AddKYCDetails(Kyc kyc);
+        Task<ServiceResponse> UpdateKycDetails(Kyc kyc);
         Task<List<Kyc>> GetKYCDetails();
+        Task<List<Kyc>> GetKYCDetailByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId);
+
         #endregion
 
         #region UnOpposed Public Details
@@ -287,9 +290,9 @@ namespace EAMS_ACore.Interfaces
         #region  BlockPanchayat
         Task<Response> AddBlockPanchayat(BlockZonePanchayat blockPanchayat);
         Task<List<BlockZonePanchayat>> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
-        //Task<PSZone> GetPSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId);
-        //Task<Response> UpdatePSZone(PSZone pSZone);
-        //Task<Response> DeletePSZoneById(int stateMasterId, int districtMasterId, int assemblyMasterId, int pSZoneMasterId);
+        Task<BlockZonePanchayat> GetBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int blockZonePanchayatMasterId);
+        Task<Response> UpdateBlockZonePanchayat(BlockZonePanchayat blockZonePanchayat);
+        Task<Response> DeleteBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int blockZonePanchayatMasterId);
         #endregion
 
         #region SarpanchWards

@@ -671,6 +671,12 @@ namespace EAMS.Helper
              .ForMember(dest => dest.NominationPdfPath, opt => opt.Ignore())
 
             .ReverseMap();
+
+
+            CreateMap<UpdateKycViewModel, Kyc>()
+                 .ForMember(dest => dest.NominationPdfPath, opt => opt.Ignore())
+
+                .ReverseMap();
             #endregion
 
             #region UnOpposedViewModel UnOpposed
@@ -756,9 +762,6 @@ namespace EAMS.Helper
                      .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
                      .ForMember(dest => dest.BlockZonePanchayatBooths, opt => opt.MapFrom(src => src.BlockZonePanchayatBooths))
                      .ForMember(dest => dest.BlockZonePanchayatCategory, opt => opt.MapFrom(src => src.BlockZonePanchayatCategory))
-                     .ForMember(dest => dest.BlockZonePanchayatCreatedAt, opt => opt.MapFrom(src => src.BlockZonePanchayatCreatedAt))
-                     .ForMember(dest => dest.BlockZonePanchayatUpdatedAt, opt => opt.MapFrom(src => src.BlockZonePanchayatUpdatedAt))
-                     .ForMember(dest => dest.BlockZonePanchayatDeletedAt, opt => opt.MapFrom(src => src.BlockZonePanchayatDeletedAt))
                      .ForMember(dest => dest.BlockZonePanchayatStatus, opt => opt.MapFrom(src => src.IsStatus))
 
                 .ReverseMap();
@@ -775,7 +778,7 @@ namespace EAMS.Helper
                    .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
                    .ForMember(dest => dest.DistrictName, opt => opt.MapFrom(src => src.DistrictMaster.DistrictName))
                    .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
-                   .ForMember(dest => dest.AssemblyName, opt => opt.MapFrom(src => src.AssemblyMaster.AssemblyName)) 
+                   .ForMember(dest => dest.AssemblyName, opt => opt.MapFrom(src => src.AssemblyMaster.AssemblyName))
                    .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
                    .ForMember(dest => dest.FourthLevelHName, opt => opt.MapFrom(src => src.FourthLevelH.HierarchyName))
                     .ForMember(dest => dest.BlockZonePanchayatBooths, opt => opt.MapFrom(src => src.BlockZonePanchayatBooths))

@@ -97,7 +97,7 @@ namespace EAMS.Controllers
                 ElectionTypeMasterId = kyc.ElectionTypeMasterId,
                 AssemblyMasterId = kyc.AssemblyMasterId,
                 FourthLevelHMasterId = kyc.FourthLevelHMasterId,
-                SarpanchWardsMasterId = kyc.SarpanchWardsMasterId,                
+                SarpanchWardsMasterId = kyc.SarpanchWardsMasterId,
                 CandidateName = kyc.CandidateName,
                 FatherName = kyc.FatherName,
                 NominationPdfPath = !string.IsNullOrEmpty(kyc.NominationPdfPath)
@@ -109,8 +109,81 @@ namespace EAMS.Controllers
             return Ok(kycResponses);
         }
 
+        [HttpPut("UpdateKycDetails")]
+        public async Task<IActionResult> UpdateKyc([FromForm] UpdateKycViewModel updateKycViewModel)
+        {
 
+            // Update properties of the existing KYC object (except NominationPdfPath)
+            var mappedData = _mapper.Map<Kyc>(updateKycViewModel);
 
+            // Handle file upload (if applicable):
+            if (mappedData.NominationPdfPath != null && mappedData.NominationPdfPath.Length > 0)
+            {
+                // Generate a unique file name for the PDF file
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(updateKycViewModel.NominationPdf.FileName);
+                var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "pdfs");
+                var filePath = Path.Combine(folderPath, fileName);
+
+                // Ensure the directory exists
+                if (!Directory.Exists(folderPath))
+                {
+                    Directory.CreateDirectory(folderPath);
+                }
+
+                // Save the new file to the server
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await updateKycViewModel.NominationPdf.CopyToAsync(stream);
+                }
+
+                // Update NominationPdfPath with the new file name
+                mappedData.NominationPdfPath = Path.Combine("pdfs", fileName);
+
+                // Optionally, delete the old file if needed
+                if (!string.IsNullOrEmpty(mappedData.NominationPdfPath))
+                {
+                    var oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", mappedData.NominationPdfPath);
+                    if (System.IO.File.Exists(oldFilePath))
+                    {
+                        System.IO.File.Delete(oldFilePath);
+                    }
+                }
+            }
+
+            // Call your service method to update KYC details
+            var result = await _eamsService.UpdateKycDetails(mappedData);
+
+            if (result.IsSucceed == true)
+            {
+                return Ok(new { Message = "KYC data updated successfully" });
+            }
+            else
+            {
+                return BadRequest("Failed to update KYC data.");
+            }
+        }
+
+        [HttpGet("GetKYCDetailByFourthLevelHId")]
+        public async Task<IActionResult> GetKYCDetailByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId)
+        {
+            var result = await _eamsService.GetKYCDetailByFourthLevelId(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelhMasterId);
+
+            if (result.Count != 0 || result != null)
+            {
+                var data = new
+                {
+                    count = result.Count,
+                    Sarpacnh = result.Where(k => k.SarpanchWardsMasterId == null).ToList(),
+                    Panch = result.Where(k => k.SarpanchWardsMasterId != null).ToList()
+
+                };
+                return Ok(result);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
         #endregion
 
         #region UnOpposed 
