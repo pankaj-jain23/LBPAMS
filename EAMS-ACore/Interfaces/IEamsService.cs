@@ -289,10 +289,10 @@ namespace EAMS_ACore.Interfaces
 
         #region  BlockPanchayat
         Task<Response> AddBlockPanchayat(BlockZonePanchayat blockPanchayat);
-        Task<List<BlockZonePanchayat>> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
-        Task<BlockZonePanchayat> GetBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int blockZonePanchayatMasterId);
+        Task<List<BlockZonePanchayat>> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
+        Task<BlockZonePanchayat> GetBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId,int fourthLevelHMasterId, int blockZonePanchayatMasterId);
         Task<Response> UpdateBlockZonePanchayat(BlockZonePanchayat blockZonePanchayat);
-        Task<Response> DeleteBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int blockZonePanchayatMasterId);
+        Task<Response> DeleteBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int blockZonePanchayatMasterId);
         #endregion
 
         #region SarpanchWards

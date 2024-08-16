@@ -3378,21 +3378,21 @@ namespace EAMS_BLL.Services
 
             return await _eamsRepository.AddBlockPanchayat(blockPanchayat);
         }
-        public async Task<List<BlockZonePanchayat>> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        public async Task<List<BlockZonePanchayat>> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
-            return await _eamsRepository.GetBlockPanchayatListById(stateMasterId, districtMasterId, assemblyMasterId);
+            return await _eamsRepository.GetBlockPanchayatListById(stateMasterId, districtMasterId, assemblyMasterId,fourthLevelHMasterId);
         }
-        public async Task<BlockZonePanchayat> GetBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int blockZonePanchayatMasterId)
+        public async Task<BlockZonePanchayat> GetBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int blockZonePanchayatMasterId)
         {
-            return await _eamsRepository.GetBlockZonePanchayatById(stateMasterId, districtMasterId, assemblyMasterId, blockZonePanchayatMasterId);
+            return await _eamsRepository.GetBlockZonePanchayatById(stateMasterId, districtMasterId, assemblyMasterId,fourthLevelHMasterId, blockZonePanchayatMasterId);
         }
         public async Task<Response> UpdateBlockZonePanchayat(BlockZonePanchayat blockZonePanchayat)
         {
             return await _eamsRepository.UpdateBlockZonePanchayat(blockZonePanchayat);
         }
-        public async Task<Response> DeleteBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int blockZonePanchayatMasterId)
+        public async Task<Response> DeleteBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int blockZonePanchayatMasterId)
         {
-            return await _eamsRepository.DeleteBlockZonePanchayatById(stateMasterId, districtMasterId, assemblyMasterId, blockZonePanchayatMasterId);
+            return await _eamsRepository.DeleteBlockZonePanchayatById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId,blockZonePanchayatMasterId);
         }
         #endregion
 

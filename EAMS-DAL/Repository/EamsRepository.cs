@@ -574,7 +574,7 @@ namespace EAMS_DAL.Repository
                     await _context.SaveChangesAsync();
 
                     string message = level4.HierarchyStatus ? "Activated Successfully" : "Deactivated Successfully";
-                    return new ServiceResponse { IsSucceed = level4.HierarchyStatus, Message = message };
+                    return new ServiceResponse { IsSucceed = true, Message = message };
 
                 case "BlockZonePanchayat":
                     var blockZonePanchayat = await _context.BlockZonePanchayat
@@ -603,8 +603,8 @@ namespace EAMS_DAL.Repository
                     _context.BlockZonePanchayat.Update(blockZonePanchayat);
                     await _context.SaveChangesAsync();
 
-                    string messageSp = blockZonePanchayat.BlockZonePanchayatStatus ? "Activated Successfully" : "Ward Deactivated Successfully";
-                    return new ServiceResponse { IsSucceed = blockZonePanchayat.BlockZonePanchayatStatus, Message = messageSp };
+                    string messageSp = blockZonePanchayat.BlockZonePanchayatStatus ? "Panchayat Activated Successfully" : "Panchayat Deactivated Successfully";
+                    return new ServiceResponse { IsSucceed = true, Message = messageSp };
 
                 case "SPWards":
                     var spWards = await _context.SarpanchWards
@@ -621,7 +621,7 @@ namespace EAMS_DAL.Repository
                     await _context.SaveChangesAsync();
 
                     string messageSpWard = spWards.SarpanchWardsStatus ? "Ward Activated Successfully" : "Ward Deactivated Successfully";
-                    return new ServiceResponse { IsSucceed = spWards.SarpanchWardsStatus, Message = messageSpWard };
+                    return new ServiceResponse { IsSucceed = true, Message = messageSpWard };
 
                 default:
                     return new ServiceResponse
@@ -16183,9 +16183,9 @@ namespace EAMS_DAL.Repository
             }
         }
 
-        public async Task<List<BlockZonePanchayat>> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        public async Task<List<BlockZonePanchayat>> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
-            var getBlockPanchayat = await _context.BlockZonePanchayat.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).ToListAsync();
+            var getBlockPanchayat = await _context.BlockZonePanchayat.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.FourthLevelHMasterId == fourthLevelHMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).ToListAsync();
             if (getBlockPanchayat != null)
             {
                 return getBlockPanchayat;
@@ -16229,15 +16229,13 @@ namespace EAMS_DAL.Repository
                 return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
             }
         }
-        public async Task<BlockZonePanchayat> GetBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int blockZonePanchayatMasterId)
+        public async Task<BlockZonePanchayat> GetBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int blockZonePanchayatMasterId)
         {
-            var blockPanchayat = await _context.BlockZonePanchayat.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.BlockZonePanchayatMasterId == blockZonePanchayatMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).FirstOrDefaultAsync();
-
-
-
+            var blockPanchayat = await _context.BlockZonePanchayat.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId&&d.FourthLevelHMasterId== fourthLevelHMasterId && d.BlockZonePanchayatMasterId == blockZonePanchayatMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).FirstOrDefaultAsync();
+             
             return blockPanchayat ?? new BlockZonePanchayat(); // Return a default instance if null
         }
-        public async Task<Response> DeleteBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int blockZonePanchayatMasterId)
+        public async Task<Response> DeleteBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int blockZonePanchayatMasterId)
         {
             try
             {
@@ -16246,6 +16244,7 @@ namespace EAMS_DAL.Repository
                         p.StateMasterId == stateMasterId &&
                         p.DistrictMasterId == districtMasterId &&
                         p.AssemblyMasterId == assemblyMasterId &&
+                        p.FourthLevelHMasterId == fourthLevelHMasterId &&
                         p.BlockZonePanchayatMasterId == blockZonePanchayatMasterId);
 
                 if (blockPanchayat == null)

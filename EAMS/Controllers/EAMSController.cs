@@ -1744,11 +1744,11 @@ namespace EAMS.Controllers
 
         [HttpGet("GetBlockPanchayatListById")]
         [Authorize]
-        public async Task<IActionResult> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        public async Task<IActionResult> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
-            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null)
+            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null&& fourthLevelHMasterId !=null)
             {
-                var getBlockPanchayatList = await _EAMSService.GetBlockPanchayatListById(stateMasterId, districtMasterId, assemblyMasterId);
+                var getBlockPanchayatList = await _EAMSService.GetBlockPanchayatListById(stateMasterId, districtMasterId, assemblyMasterId,fourthLevelHMasterId);
                 var mappeddata = _mapper.Map<List<BlockZonePanchayat>, List<ListBlockPanchayatViewModel>>(getBlockPanchayatList);
                 if (mappeddata != null)
                 {
@@ -1807,11 +1807,11 @@ namespace EAMS.Controllers
 
         [HttpGet("GetBlockZonePanchayatById")]
         [Authorize]
-        public async Task<IActionResult> GetBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int blockZonePanchayatMasterId)
+        public async Task<IActionResult> GetBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int blockZonePanchayatMasterId)
         {
-            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && blockZonePanchayatMasterId != null)
+            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && fourthLevelHMasterId != null && blockZonePanchayatMasterId != null)
             {
-                var getBlockPanchayat = await _EAMSService.GetBlockZonePanchayatById(stateMasterId, districtMasterId, assemblyMasterId, blockZonePanchayatMasterId);  // Corrected to await the asynchronous method
+                var getBlockPanchayat = await _EAMSService.GetBlockZonePanchayatById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, blockZonePanchayatMasterId);  // Corrected to await the asynchronous method
                 var mappeddata = _mapper.Map<BlockZonePanchayat, ListBlockPanchayatViewModel>(getBlockPanchayat);
 
                 if (mappeddata != null)
@@ -1822,7 +1822,7 @@ namespace EAMS.Controllers
                 }
                 else
                 {
-                    return NotFound("Booth Not Found");
+                    return NotFound("Not Found");
 
                 }
             }
@@ -1836,11 +1836,11 @@ namespace EAMS.Controllers
 
         [HttpDelete("DeleteBlockZonePanchayatById")]
         [Authorize]
-        public async Task<IActionResult> DeleteBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int blockZonePanchayatMasterId)
+        public async Task<IActionResult> DeleteBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int blockZonePanchayatMasterId)
         {
-            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && blockZonePanchayatMasterId != null)
+            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && fourthLevelHMasterId != null && blockZonePanchayatMasterId != null)
             {
-                var psZoneList = await _EAMSService.DeleteBlockZonePanchayatById(stateMasterId, districtMasterId, assemblyMasterId, blockZonePanchayatMasterId);  // Corrected to await the asynchronous method
+                var psZoneList = await _EAMSService.DeleteBlockZonePanchayatById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, blockZonePanchayatMasterId);  // Corrected to await the asynchronous method
                 if (psZoneList != null)
                 {
 
