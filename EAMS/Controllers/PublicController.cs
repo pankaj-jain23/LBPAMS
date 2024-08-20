@@ -1,16 +1,9 @@
 ﻿using AutoMapper;
-using EAMS_ACore.Interfaces;
 using EAMS.ViewModels.PublicModels;
+using EAMS_ACore.Interfaces;
 using EAMS_ACore.Models.PublicModels;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using System;
-using System.IO;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using LBPAMS.ViewModels.PublicModels;
-using EAMS.ViewModels;
+using Microsoft.AspNetCore.Mvc;
 
 namespace EAMS.Controllers
 {

@@ -137,6 +137,11 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
+        public int BlockZonePanchayatCode
+        {
+            get;
+            set;
+        }
         public string BlockZonePanchayatName
         {
             get;
