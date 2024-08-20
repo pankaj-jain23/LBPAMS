@@ -57,23 +57,16 @@ namespace EAMS.Controllers
 
             // Map the ViewModel to the Model
             var kyc = _mapper.Map<Kyc>(kycViewModel);
-            kyc.NominationPdfPath = Path.Combine("pdfs", fileName); // Store relative path
-
+            var fullpathName = Path.Combine("pdfs", fileName); // Store relative path
+            kyc.NominationPdfPath = $"{fullpathName.Replace("\\", "/")}";
             // Call your service method to add KYC details
             var result = await _eamsService.AddKYCDetails(kyc);
 
             // Check if adding KYC details was successful
             if (result.IsSucceed == true)
             {
-                // Construct the base URL for PDF paths
-                var request = HttpContext.Request;
-                var baseUrl = $"{request.Scheme}://{request.Host}/pdfs";
 
-                // Construct the full URL for NominationPdfPath
-                var fullPdfPath = $"{baseUrl}/{fileName}";
-
-                // Return success response with the full PDF path
-                return Ok(new { Message = "KYC data added successfully", NominationPdfPath = fullPdfPath });
+                return Ok(new { Message = "KYC data added successfully" });
             }
             else
             {
@@ -173,8 +166,8 @@ namespace EAMS.Controllers
                 var data = new
                 {
                     count = result.Count,
-                    Sarpacnh = result.Where(k => k.SarpanchWardsMasterId != 0).ToList(),
-                    Panch = result.Where(k => k.SarpanchWardsMasterId == 0).ToList()
+                    Sarpacnh = result.Where(k => k.SarpanchWardsMasterId == 0).ToList(),
+                    Panch = result.Where(k => k.SarpanchWardsMasterId != 0).ToList()
 
                 };
                 return Ok(data);
@@ -194,7 +187,9 @@ namespace EAMS.Controllers
             }
             else
             {
-                var resutlt=await _eamsService.DeleteKycById(KycMasterId);
+
+             
+                var resutlt = await _eamsService.DeleteKycById(KycMasterId);
                 if (resutlt.IsSucceed == true)
                 {
                     return Ok(resutlt);

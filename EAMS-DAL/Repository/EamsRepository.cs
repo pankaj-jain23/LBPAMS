@@ -15932,7 +15932,7 @@ namespace EAMS_DAL.Repository
         public async Task<List<KycList>> GetKYCDetailByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId)
         {
 
-            var baseUrl = "https://lbpams.punjab.gov.in/pdfs";
+            var baseUrl = "https://lbpams.punjab.gov.in/";
             var kycList = await _context.Kyc
                 .Where(k => k.StateMasterId == stateMasterId &&
                             k.DistrictMasterId == districtMasterId &&
@@ -15951,6 +15951,7 @@ namespace EAMS_DAL.Repository
                     FourthLevelHMasterId=joined.Kyc.FourthLevelHMasterId,
                     BlockZonePanchayatMasterId=joined.Kyc.BlockZonePanchayatMasterId,
                     SarpanchWardsMasterId=joined.Kyc.SarpanchWardsMasterId,
+                    CandidateType=joined.Kyc.SarpanchWardsMasterId==0?"Sarpanch":"Panch",
                     SarpanchWardsName = joined.Kyc.SarpanchWardsMasterId != 0 && joined.Panchayat.SarpanchWards.Any()
                                         ? string.Join(", ", joined.Panchayat.SarpanchWards
                                             .Where(s => s.SarpanchWardsMasterId == joined.Kyc.SarpanchWardsMasterId)
@@ -15960,7 +15961,7 @@ namespace EAMS_DAL.Repository
                     FatherName=joined.Kyc.FatherName,
                     NominationPdfPath=$"{baseUrl}{joined.Kyc.NominationPdfPath}",
                     BlockZonePanchayatName = joined.Panchayat.BlockZonePanchayatName
-                })
+                }).OrderByDescending(d=>d.SarpanchWardsMasterId)
                 .ToListAsync();
 
             return kycList;
