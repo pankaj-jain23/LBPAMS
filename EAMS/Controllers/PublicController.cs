@@ -173,15 +173,36 @@ namespace EAMS.Controllers
                 var data = new
                 {
                     count = result.Count,
-                    Sarpacnh = result.Where(k => k.SarpanchWardsMasterId == null).ToList(),
-                    Panch = result.Where(k => k.SarpanchWardsMasterId != null).ToList()
+                    Sarpacnh = result.Where(k => k.SarpanchWardsMasterId != 0).ToList(),
+                    Panch = result.Where(k => k.SarpanchWardsMasterId == 0).ToList()
 
                 };
-                return Ok(result);
+                return Ok(data);
             }
             else
             {
                 return NotFound();
+            }
+        }
+
+        [HttpDelete("DeleteKycById")]
+        public async Task<IActionResult> DeleteKycById(int KycMasterId)
+        {
+            if (KycMasterId == null)
+            {
+                return BadRequest("Master Id is null");
+            }
+            else
+            {
+                var resutlt=await _eamsService.DeleteKycById(KycMasterId);
+                if (resutlt.IsSucceed == true)
+                {
+                    return Ok(resutlt);
+                }
+                else
+                {
+                    return BadRequest(resutlt);
+                }
             }
         }
         #endregion

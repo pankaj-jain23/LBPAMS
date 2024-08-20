@@ -261,12 +261,12 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetBoothListById(stateMasterId, districtMasterId, assemblyMasterId);
         }
-        
-       public async Task<List<CombinedMaster>> GetBoothListByIdwithPsZone(string stateMasterId, string districtMasterId, string assemblyMasterId, string fourthLevelHMasterId)
+
+        public async Task<List<CombinedMaster>> GetBoothListByIdwithPsZone(string stateMasterId, string districtMasterId, string assemblyMasterId, string fourthLevelHMasterId)
         {
             return await _eamsRepository.GetBoothListByIdwithPsZone(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);
         }
-        
+
         public async Task<List<CombinedMaster>> GetBoothListByIdforPSO(string stateMasterId, string districtMasterId, string assemblyMasterId)
         {
             return await _eamsRepository.GetBoothListByIdforPSO(stateMasterId, districtMasterId, assemblyMasterId);
@@ -2993,7 +2993,7 @@ namespace EAMS_BLL.Services
             }
         }
         #endregion
-       
+
 
         #region PSOFORM
         public async Task<Response> AddPSOForm(PollingStationMaster pollingStationMaster, ClaimsIdentity claimsIdentity)
@@ -3316,17 +3316,20 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.UpdateKycDetails(kyc);
         }
-     
+
         public async Task<List<Kyc>> GetKYCDetails()
         {
             return await _eamsRepository.GetKYCDetails();
 
         }
-        public async Task<List<Kyc>> GetKYCDetailByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId)
+        public async Task<List<KycList>> GetKYCDetailByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId)
         {
-            return await _eamsRepository.GetKYCDetailByFourthLevelId(stateMasterId, districtMasterId,assemblyMasterId,fourthLevelhMasterId);
+            return await _eamsRepository.GetKYCDetailByFourthLevelId(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelhMasterId);
         }
-
+        public async Task<ServiceResponse> DeleteKycById(int kycMasterId)
+        {
+            return await _eamsRepository.DeleteKycById(kycMasterId);
+        }
         #endregion
 
         #region UnOpposed Public Details
@@ -3380,11 +3383,11 @@ namespace EAMS_BLL.Services
         }
         public async Task<List<BlockZonePanchayat>> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
-            return await _eamsRepository.GetBlockPanchayatListById(stateMasterId, districtMasterId, assemblyMasterId,fourthLevelHMasterId);
+            return await _eamsRepository.GetBlockPanchayatListById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);
         }
         public async Task<BlockZonePanchayat> GetBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int blockZonePanchayatMasterId)
         {
-            return await _eamsRepository.GetBlockZonePanchayatById(stateMasterId, districtMasterId, assemblyMasterId,fourthLevelHMasterId, blockZonePanchayatMasterId);
+            return await _eamsRepository.GetBlockZonePanchayatById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, blockZonePanchayatMasterId);
         }
         public async Task<Response> UpdateBlockZonePanchayat(BlockZonePanchayat blockZonePanchayat)
         {
@@ -3392,7 +3395,7 @@ namespace EAMS_BLL.Services
         }
         public async Task<Response> DeleteBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int blockZonePanchayatMasterId)
         {
-            return await _eamsRepository.DeleteBlockZonePanchayatById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId,blockZonePanchayatMasterId);
+            return await _eamsRepository.DeleteBlockZonePanchayatById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, blockZonePanchayatMasterId);
         }
         #endregion
 
@@ -3404,16 +3407,16 @@ namespace EAMS_BLL.Services
         }
         public async Task<List<SarpanchWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId)
         {
-            return await _eamsRepository.GetSarpanchWardsListById(stateMasterId, districtMasterId, assemblyMasterId,FourthLevelHMasterId,BlockZonePanchayatMasterId);
+            return await _eamsRepository.GetSarpanchWardsListById(stateMasterId, districtMasterId, assemblyMasterId, FourthLevelHMasterId, BlockZonePanchayatMasterId);
         }
         public async Task<Response> UpdateSarpanchWards(SarpanchWards sarpanchWards)
         {
             return await _eamsRepository.UpdateSarpanchWards(sarpanchWards);
         }
 
-        public async Task<SarpanchWards> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId,  int FourthLevelHMasterId, int BlockZonePanchayatMasterId, int SarpanchWardsMasterId)
+        public async Task<SarpanchWards> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId, int SarpanchWardsMasterId)
         {
-            return await _eamsRepository.GetSarpanchWardsById(stateMasterId,districtMasterId,assemblyMasterId,FourthLevelHMasterId,BlockZonePanchayatMasterId,SarpanchWardsMasterId);
+            return await _eamsRepository.GetSarpanchWardsById(stateMasterId, districtMasterId, assemblyMasterId, FourthLevelHMasterId, BlockZonePanchayatMasterId, SarpanchWardsMasterId);
         }
 
         public async Task<Response> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId, int SarpanchWardsMasterId)

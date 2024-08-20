@@ -273,8 +273,8 @@ namespace EAMS_ACore.IRepository
         Task<ServiceResponse> AddKYCDetails(Kyc kyc);
         Task<ServiceResponse> UpdateKycDetails(Kyc kyc);
         Task<List<Kyc>> GetKYCDetails();
-        Task<List<Kyc>> GetKYCDetailByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId);
-
+        Task<List<KycList>> GetKYCDetailByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId);
+        Task<ServiceResponse> DeleteKycById(int kycMasterId);
         #endregion
 
         #region UnOpposed Public Details

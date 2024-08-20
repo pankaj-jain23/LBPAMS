@@ -15,6 +15,7 @@ using EAMS_ACore.Models.QueueModel;
 using EAMS_ACore.ReportModels;
 using EAMS_ACore.SignalRModels;
 using EAMS_DAL.DBContext;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -15928,15 +15929,56 @@ namespace EAMS_DAL.Repository
         {
             return await _context.Kyc.ToListAsync();
         }
-        public async Task<List<Kyc>> GetKYCDetailByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId)
+        public async Task<List<KycList>> GetKYCDetailByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId)
         {
+
+            var baseUrl = "https://lbpams.punjab.gov.in/pdfs";
             var kycList = await _context.Kyc
-                                .Where(k => k.StateMasterId == stateMasterId &&
-                                           k.DistrictMasterId == districtMasterId &&
-                                           k.AssemblyMasterId == assemblyMasterId &&
-                                           k.FourthLevelHMasterId == fourthLevelhMasterId)
-                                .ToListAsync();
+                .Where(k => k.StateMasterId == stateMasterId &&
+                            k.DistrictMasterId == districtMasterId &&
+                            k.AssemblyMasterId == assemblyMasterId &&
+                            k.FourthLevelHMasterId == fourthLevelhMasterId)
+                .Join(_context.BlockZonePanchayat.Include(d => d.SarpanchWards),
+                    kyc => kyc.BlockZonePanchayatMasterId,
+                    panchayat => panchayat.BlockZonePanchayatMasterId,
+                    (kyc, panchayat) => new { Kyc = kyc, Panchayat = panchayat })
+                .Select(joined => new KycList
+                {
+                    KycMasterId = joined.Kyc.KycMasterId,
+                    StateMasterId=joined.Kyc.StateMasterId,
+                    DistrictMasterId=joined.Kyc.DistrictMasterId,
+                    AssemblyMasterId=joined.Kyc.AssemblyMasterId,
+                    FourthLevelHMasterId=joined.Kyc.FourthLevelHMasterId,
+                    BlockZonePanchayatMasterId=joined.Kyc.BlockZonePanchayatMasterId,
+                    SarpanchWardsMasterId=joined.Kyc.SarpanchWardsMasterId,
+                    SarpanchWardsName = joined.Kyc.SarpanchWardsMasterId != 0 && joined.Panchayat.SarpanchWards.Any()
+                                        ? string.Join(", ", joined.Panchayat.SarpanchWards
+                                            .Where(s => s.SarpanchWardsMasterId == joined.Kyc.SarpanchWardsMasterId)
+                                            .Select(s => s.SarpanchWardsName))
+                                        : null,
+                    CandidateName = joined.Kyc.CandidateName,
+                    FatherName=joined.Kyc.FatherName,
+                    NominationPdfPath=$"{baseUrl}{joined.Kyc.NominationPdfPath}",
+                    BlockZonePanchayatName = joined.Panchayat.BlockZonePanchayatName
+                })
+                .ToListAsync();
+
             return kycList;
+        }
+
+        public async Task<ServiceResponse> DeleteKycById(int kycMasterId)
+        {
+            var isExist = await _context.Kyc.Where(d => d.KycMasterId == kycMasterId).FirstOrDefaultAsync();
+            if(isExist == null)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "Record not Found" };
+            }
+            else
+            {
+                _context.Kyc.Remove(isExist);
+                _context.SaveChanges();
+                return new ServiceResponse { IsSucceed = true, Message = "Record Deleted successfully" };
+            }
         }
         #endregion
 
@@ -16239,6 +16281,11 @@ namespace EAMS_DAL.Repository
         {
             try
             {
+                var isBoothExist = await _context.BoothMaster.Where(d => d.BlockZonePanchayatMasterId == blockZonePanchayatMasterId).CountAsync();
+                if (isBoothExist != 0)
+                {
+                    return new Response { Status = RequestStatusEnum.BadRequest, Message = $"Booths exist under this Panchayat, kindly delete them first." };
+                }
                 var blockPanchayat = await _context.BlockZonePanchayat
                     .FirstOrDefaultAsync(p =>
                         p.StateMasterId == stateMasterId &&
@@ -16246,7 +16293,6 @@ namespace EAMS_DAL.Repository
                         p.AssemblyMasterId == assemblyMasterId &&
                         p.FourthLevelHMasterId == fourthLevelHMasterId &&
                         p.BlockZonePanchayatMasterId == blockZonePanchayatMasterId);
-
                 if (blockPanchayat == null)
                 {
                     return new Response { Status = RequestStatusEnum.NotFound, Message = "Block Panchayat not found" };
