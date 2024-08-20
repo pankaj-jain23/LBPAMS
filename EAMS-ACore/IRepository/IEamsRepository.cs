@@ -298,7 +298,7 @@ namespace EAMS_ACore.IRepository
         #endregion
 
         #region Result Public Details
-        Task<ServiceResponse> AddRsltDetails(Rsult rslt);
+        Task<ServiceResponse> AddRsltDetails(Rsult rsult);
         Task<List<Rsult>> GetRsltDetails(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId);
         Task<Response> UpdateRsltDetails(Rsult rslt);
         

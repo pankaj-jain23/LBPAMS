@@ -16250,7 +16250,8 @@ namespace EAMS_DAL.Repository
 
         public async Task<ServiceResponse> AddRsltDetails(Rsult rslt)
         {
-            //_context.Rsult.Add(rslt);
+            rslt.ResultDecCreatedAt = BharatDateTime();
+            _context.Result.Add(rslt);
             _context.SaveChanges();
 
             return new ServiceResponse { IsSucceed = true, Message = "Successfully added" };
@@ -16272,7 +16273,7 @@ namespace EAMS_DAL.Repository
                 return null;
             }
 
-            return new List<Rsult> { resultdec };
+            return [resultdec];
         }
 
         public Task<Response> UpdateRsltDetails(Rsult rslt)

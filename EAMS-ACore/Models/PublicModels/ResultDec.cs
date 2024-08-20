@@ -69,5 +69,10 @@ namespace EAMS_ACore.Models.PublicModels
             get; set;
         }
 
+        public DateTime? ResultDecCreatedAt { get; set; }
+        public DateTime? ResultDecUpdatedAt { get; set; }
+
+        public bool ResultDecStatus { get; set; }
+
     }
 }

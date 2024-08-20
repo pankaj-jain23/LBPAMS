@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace LBPAMS.ViewModels.PublicModels
 {
@@ -10,22 +11,27 @@ namespace LBPAMS.ViewModels.PublicModels
                 get;
                 set;
             }
+            [ForeignKey("StateMasterId")]
+
             public int? DistrictMasterId
             {
                 get;
                 set;
             }
+            [ForeignKey("DistrictMasterId")]
+            
             public int? ElectionTypeMasterId
             {
                 get;
                 set;
             }
+            [ForeignKey("ElectionTypeMasterId")]
             public int? AssemblyMasterId
             {
                 get;
                 set;
             }
-
+            [ForeignKey("AssemblyMasterId")]
             public int? PsZoneMasterId
             {
                 get;
@@ -57,6 +63,11 @@ namespace LBPAMS.ViewModels.PublicModels
                 get;
                 set;
             }
+            
+            public DateTime? ResultDecCreatedAt { get; set; }
+            public DateTime? ResultDecUpdatedAt { get; set; }
+
+            public bool ResultDecStatus {  get; set; }
 
     }
     

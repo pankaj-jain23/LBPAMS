@@ -3320,9 +3320,9 @@ namespace EAMS_BLL.Services
         #endregion
 
         #region Result Public Details
-        public async Task<ServiceResponse> AddRsltDetails(Rsult Rsult)
+        public async Task<ServiceResponse> AddRsltDetails(Rsult rsult)
         {
-            return await _eamsRepository.AddRsltDetails(Rsult);
+            return await _eamsRepository.AddRsltDetails(rsult);
         }
         public async Task<List<Rsult>> GetResultDecelaration(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId)
         {
@@ -3335,6 +3335,7 @@ namespace EAMS_BLL.Services
         }
 
         #endregion
+
         #region Election Type Master
         public async Task<List<ElectionTypeMaster>> GetAllElectionTypes()
         {
