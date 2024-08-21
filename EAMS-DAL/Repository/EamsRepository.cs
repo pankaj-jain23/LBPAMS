@@ -2491,12 +2491,10 @@ namespace EAMS_DAL.Repository
                     else
                         
                         boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
-                    _context.BoothMaster.Add(boothMaster);
-                    await _context.SaveChangesAsync();
-                    return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
-
-
-                }
+                         _context.BoothMaster.Add(boothMaster);
+                            await _context.SaveChangesAsync();
+                            return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
+                                    }
                 else
                 {
                     //check as per grmappanchyat electiontype isprimary booth....update old if they are isprimary
@@ -2607,6 +2605,7 @@ namespace EAMS_DAL.Repository
         //public async Task<Response> UpdateBooth(BoothMaster boothMaster)
         //{
         //    if (boothMaster.BoothName != string.Empty)
+
         //    {
         //        var existingbooth = await _context.BoothMaster.FirstOrDefaultAsync(so => so.BoothMasterId == boothMaster.BoothMasterId);
 
@@ -2772,27 +2771,15 @@ namespace EAMS_DAL.Repository
                 {
                     if (boothMaster.Male + boothMaster.Female + boothMaster.Transgender == boothMaster.TotalVoters)
                     {
-
-                        //var isExist = await _context.BoothMaster.Where(p => p.BoothCode_No == boothMaster.BoothCode_No && p.StateMasterId == boothMaster.StateMasterId 
-                        //&& p.BoothMasterId != boothMaster.BoothMasterId && p.AssemblyMasterId == boothMaster.AssemblyMasterId).ToListAsync();
-
-                        //if (isExist.Count == 0)
-                        //{
-
                         if (existingbooth != null)
                         {
                             if (boothMaster.ElectionTypeMasterId != null)
-                            {
-                                //get assembly electiontype id
-                                // Assuming _context is your DbContext instance and assemblyMaster is defined
-                                // DistrictMasterId is the identifier you have and want to filter with
-
+                            {                               
                                 var electionAssemblyTypeId = _context.AssemblyMaster
                                     .Where(s => s.AssemblyMasterId == boothMaster.AssemblyMasterId)
                                     .Select(s => s.ElectionTypeMasterId)
                                     .FirstOrDefault(); // Assuming you expect only one result or want the first one
-
-                                // electionTypeId will contain the ElectionPointTypeId if found, otherwise default value (null for reference types)
+                                                               
 
                                 if (boothMaster.ElectionTypeMasterId == electionAssemblyTypeId)
                                 {
@@ -2805,10 +2792,11 @@ namespace EAMS_DAL.Repository
                                     {
                                         if (boothMaster.BoothStatus == false)
                                         {
+                                            //check if Isprimary=true,update others false
+
                                             existingbooth.LocationMasterId = null;
                                             existingbooth.BoothName = boothMaster.BoothName;
                                             existingbooth.BoothCode_No = boothMaster.BoothCode_No;
-                                            // existingbooth.BoothNoAuxy = boothMaster.BoothNoAuxy;
                                             existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
                                             existingbooth.Longitude = boothMaster.Longitude;
                                             existingbooth.Latitude = boothMaster.Latitude;
@@ -2821,7 +2809,7 @@ namespace EAMS_DAL.Repository
 
                                             _context.BoothMaster.Update(existingbooth);
                                             await _context.SaveChangesAsync();
-                                            return new Response { Status = RequestStatusEnum.OK, Message = "Booth Record Updaed Sucessfully, and Booth is Unmapped from Location." };
+                                            return new Response { Status = RequestStatusEnum.OK, Message = "Booth Record Updated Sucessfully, and Booth is Unmapped from Location." };
 
                                         }
 
@@ -2837,10 +2825,9 @@ namespace EAMS_DAL.Repository
                                             }
                                             else
                                             {
-
+                                                //check if Isprimary=true,update others false
                                                 existingbooth.BoothName = boothMaster.BoothName;
                                                 existingbooth.BoothCode_No = boothMaster.BoothCode_No;
-                                                // existingbooth.BoothNoAuxy = boothMaster.BoothNoAuxy;
                                                 existingbooth.Longitude = boothMaster.Longitude;
                                                 existingbooth.Latitude = boothMaster.Latitude;
                                                 existingbooth.BoothUpdatedAt = BharatDateTime();
@@ -2879,7 +2866,6 @@ namespace EAMS_DAL.Repository
                                             if (boothMaster.BoothStatus == false)
                                             {
                                                 existingbooth.LocationMasterId = null;
-                                                //existingbooth.BoothStatus = boothMaster.BoothStatus;
                                                 existingbooth.BoothUpdatedAt = BharatDateTime();
                                                 existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
                                                 existingbooth.TotalVoters = boothMaster.TotalVoters;
@@ -2908,7 +2894,6 @@ namespace EAMS_DAL.Repository
                                                     existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
                                                     existingbooth.BoothUpdatedAt = BharatDateTime();
                                                     existingbooth.TotalVoters = boothMaster.TotalVoters;
-                                                    //existingbooth.BoothStatus = boothMaster.BoothStatus;
                                                     existingbooth.Male = boothMaster.Male;
                                                     existingbooth.Female = boothMaster.Female;
                                                     existingbooth.Transgender = boothMaster.Transgender;

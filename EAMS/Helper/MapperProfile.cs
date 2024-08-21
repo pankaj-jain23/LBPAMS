@@ -256,6 +256,7 @@ namespace EAMS.Helper
                   .ForMember(dest => dest.Female, opt => opt.MapFrom(src => src.Female))
                   .ForMember(dest => dest.Transgender, opt => opt.MapFrom(src => src.Transgender))
                   .ForMember(dest => dest.LocationMasterId, opt => opt.MapFrom(src => src.LocationMasterId))
+                  .ForMember(dest => dest.IsPrimaryBooth, opt => opt.MapFrom(src => src.IsPrimaryBooth))
 
              .ReverseMap();
 
