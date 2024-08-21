@@ -16288,15 +16288,15 @@ namespace EAMS_DAL.Repository
             return [resultdec];
         }
 
-        async Task<List<Rsult>> GetResultByDistrict(int stateMasterId, int districtMasterId)
+        public async Task<List<Rsult>> GetResultByDistrict(int stateMasterId, int districtMasterId)
         {
             var disresultdec = await _context.Result
-                .Where(rd => rd.StateMasterId = stateMasterId &&
+                .Where(rd => rd.StateMasterId == stateMasterId &&
                              rd.DistrictMasterId == districtMasterId)
                 .FirstOrDefaultAsync();
             if (disresultdec == null)
             {
-                return null
+                return null;
             }
 
             return [disresultdec];

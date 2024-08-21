@@ -168,7 +168,7 @@ namespace EAMS.Controllers
         {
             if (stateMasterId != null && districtMasterId != null)
             {
-                var distrslList = await _eamsService.GetResultByDistrict(int stateMasterId, int districtMasterId);
+                var distrslList = await _eamsService.GetResultByDistrict(stateMasterId, districtMasterId);
                 if (distrslList != null)
                 {
                     var data = new
