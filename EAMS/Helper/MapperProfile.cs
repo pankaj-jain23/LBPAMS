@@ -685,6 +685,10 @@ namespace EAMS.Helper
              .ForMember(dest => dest.NominationPdfPath, opt => opt.Ignore())
 
             .ReverseMap();
+            CreateMap<UpdateUnOpposedViewModel, UnOpposed>()
+                .ForMember(dest => dest.NominationPdfPath, opt => opt.Ignore())
+
+               .ReverseMap();
             #endregion
 
             #region AddFourthLevelHViewModel  FourthLevelH 

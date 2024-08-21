@@ -931,12 +931,7 @@ namespace EAMS_DAL.Repository
         }
         #endregion
 
-        //public async Task<Response> ResetAccounts()
-        //{
-        //    return new Response { Status = RequestStatusEnum.OK, Message = "Reset Updated Successfully" };
-
-        //}
-
+     
         #region State Master
 
         public async Task<List<StateMaster>> GetState()
@@ -2465,7 +2460,9 @@ namespace EAMS_DAL.Repository
             {
                 if (boothMaster == null)
                     return new Response { Status = RequestStatusEnum.BadRequest, Message = "Booth master data is null" };
-                if (boothMaster.BoothNoAuxy == "0")
+ 
+                if (boothMaster.BoothNoAuxy == "0" + "")
+ 
                 {
                     var checkBoothName = await _context.BoothMaster.AnyAsync(d =>
                                           d.StateMasterId == boothMaster.StateMasterId &&
@@ -14051,100 +14048,14 @@ namespace EAMS_DAL.Repository
 
 
 
-        /* public async Task<List<SoCountEventWiseReportModel>> GetDistrictWiseSOCountEventWiseCount(string stateId)
-        {
-            var eventActivityList = new List<SoCountEventWiseReportModel>();
-
-            // Establish a connection to the PostgreSQL database
-            await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("Postgres"));
-            await connection.OpenAsync();
-
-            var command = new NpgsqlCommand("select * from getdistrictwiseeventlistbyid(@state_master_id)", connection);
-            command.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateId));
-
-            // Execute the command and read the results
-            await using var reader = await command.ExecuteReaderAsync();
-
-            while (await reader.ReadAsync())
-            {
-                // Create a new EventActivityCount object and populate its properties from the reader
-                var eventActivityCount = new EventActivityCount
-                {
-                    Key = GenerateRandomAlphanumericString(6),
-                    MasterId = reader.GetInt32(0),
-                    Name = reader.GetString(1),
-                    Type = "District",
-                    PartyDispatch = reader.IsDBNull(4) ? null : reader.GetString(4),
-                    PartyArrived = reader.IsDBNull(5) ? null : reader.GetString(5),
-                    SetupPollingStation = reader.IsDBNull(6) ? null : reader.GetString(6),
-                    MockPollDone = reader.IsDBNull(7) ? null : reader.GetString(7),
-                    PollStarted = reader.IsDBNull(8) ? null : reader.GetString(8),
-                    PollEnded = reader.IsDBNull(9) ? null : reader.GetString(9),
-                    MCEVMOff = reader.IsDBNull(10) ? null : reader.GetString(10),
-                    PartyDeparted = reader.IsDBNull(11) ? null : reader.GetString(11),
-                    EVMDeposited = reader.IsDBNull(12) ? null : reader.GetString(12),
-                    PartyReachedAtCollection = reader.IsDBNull(13) ? null : reader.GetString(13),
-                    QueueValue = reader.IsDBNull(14) ? null : reader.GetString(14),
-                    FinalVotesValue = reader.IsDBNull(15) ? null : reader.GetString(15),
-                    VoterTurnOutValue = reader.IsDBNull(16) ? null : reader.GetString(16),
-                    TotalSo = reader.IsDBNull(3) ? null : reader.GetInt32(3),
-                    Children = new List<object>()
-                };
-
-
-                // Add the object to the list
-                eventActivityList.Add(eventActivityCount);
-            }
-
-            return eventActivityList;
-        }*/
-
+    
 
         public async Task<List<CombinedMaster>> AppNotDownload(string StateMasterId)
         {
 
-
-
             IQueryable<CombinedMaster> solist = Enumerable.Empty<CombinedMaster>().AsQueryable();
 
-
-
-            /*solist = from so in _context.SectorOfficerMaster.Where(d => d.StateMasterId == Convert.ToInt32(StateMasterId) && d.OTP == null && d.SoStatus == true) // outer sequence
-                     join asem in _context.AssemblyMaster
-                     on so.SoAssemblyCode equals asem.AssemblyCode
-                     join pc in _context.ParliamentConstituencyMaster
-                     on asem.PCMasterId equals pc.PCMasterId
-                     where asem.StateMasterId == Convert.ToInt32(StateMasterId)
-                     join state in _context.StateMaster
-                      on pc.StateMasterId equals state.StateMasterId
-
-                     select new CombinedMaster
-                     { // result selector 
-                         StateName = state.StateName,
-                         //DistrictId = dist.DistrictMasterId,
-
-                         PCMasterId = pc.PCMasterId,
-                         PCName = pc.PcName,
-                         AssemblyId = asem.AssemblyMasterId,
-                         AssemblyName = asem.AssemblyName,
-                         AssemblyCode = asem.AssemblyCode,
-                         soName = so.SoName,
-                         soMobile = so.SoMobile,
-                         soDesignation = so.SoDesignation,
-                         soMasterId = so.SOMasterId,
-
-                         IsStatus = so.SoStatus
-
-
-                     };*/
-
-
-
-
             return await solist.ToListAsync();
-
-
-
 
         }
 
@@ -15943,7 +15854,58 @@ namespace EAMS_DAL.Repository
 
             return kycList;
         }
+        public async Task<KycList> GetKycById(int kycMasterId)
+        {
+            var kyc = await _context.Kyc.FirstOrDefaultAsync(d => d.KycMasterId == kycMasterId);
+            if (kyc == null)
+            {
+                return null; // or throw an exception, or handle the case appropriately
+            }
 
+            var panchayat = await _context.BlockZonePanchayat
+                .Where(d => d.BlockZonePanchayatMasterId == kyc.BlockZonePanchayatMasterId)
+                .Include(d => d.StateMaster)
+                .Include(d => d.DistrictMaster)
+                .Include(d => d.AssemblyMaster)
+                .Include(d => d.FourthLevelH)
+                .Include(d => d.SarpanchWards)
+                .FirstOrDefaultAsync();
+
+            if (panchayat == null)
+            {
+                return null; // or handle the case appropriately
+            }
+
+            var result = new KycList
+            {
+                KycMasterId = kyc.KycMasterId,
+                ElectionTypeMasterId=kyc.ElectionTypeMasterId,
+                StateMasterId = panchayat.StateMasterId,
+                StateName = panchayat.StateMaster.StateName,
+                DistrictMasterId = panchayat.DistrictMasterId,
+                DistrictName = panchayat.DistrictMaster.DistrictName,
+                AssemblyMasterId = panchayat.AssemblyMasterId,
+                AssemblyName = panchayat.AssemblyMaster.AssemblyName,
+                FourthLevelHMasterId = panchayat.FourthLevelHMasterId,
+                FourthLevelName = panchayat.FourthLevelH.HierarchyName,
+                BlockZonePanchayatMasterId = panchayat.BlockZonePanchayatMasterId,
+                BlockZonePanchayatName = panchayat.BlockZonePanchayatName,
+                SarpanchWardsMasterId = panchayat.SarpanchWards
+                    .Where(d => d.SarpanchWardsMasterId == kyc.SarpanchWardsMasterId)
+                    .Select(d => d.SarpanchWardsMasterId)
+                    .FirstOrDefault(), // Change this to get a single value
+                SarpanchWardsName = panchayat.SarpanchWards
+                    .Where(d => d.SarpanchWardsMasterId == kyc.SarpanchWardsMasterId)
+                    .Select(d => d.SarpanchWardsName)
+                    .FirstOrDefault(), // Change this to get a single value
+                CandidateName = kyc.CandidateName,
+                FatherName = kyc.FatherName,
+            };
+
+            return result;
+
+
+        }
         public async Task<ServiceResponse> DeleteKycById(int kycMasterId)
         {
             var isExist = await _context.Kyc.Where(d => d.KycMasterId == kycMasterId).FirstOrDefaultAsync();
@@ -15958,11 +15920,14 @@ namespace EAMS_DAL.Repository
                 return new ServiceResponse { IsSucceed = true, Message = "Record Deleted successfully" };
             }
         }
+      
         #endregion
+
 
         #region UnOpposed Public Details
         public async Task<ServiceResponse> AddUnOpposedDetails(UnOpposed unOpposed)
         {
+             
             _context.UnOpposed.Add(unOpposed);
             _context.SaveChanges();
 
@@ -15974,6 +15939,137 @@ namespace EAMS_DAL.Repository
             return await _context.UnOpposed.ToListAsync();
 
         }
+        public async Task<List<UnOpposedList>> GetUnOpposedDetailsByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId)
+        {
+
+            var baseUrl = "https://lbpams.punjab.gov.in/lbpams/";
+            var unOpposedList = await _context.UnOpposed
+                .Where(k => k.StateMasterId == stateMasterId &&
+                            k.DistrictMasterId == districtMasterId &&
+                            k.AssemblyMasterId == assemblyMasterId &&
+                            k.FourthLevelHMasterId == fourthLevelhMasterId)
+                .Join(_context.BlockZonePanchayat.Include(d => d.SarpanchWards),
+                    kyc => kyc.BlockZonePanchayatMasterId,
+                    panchayat => panchayat.BlockZonePanchayatMasterId,
+                    (kyc, panchayat) => new { Kyc = kyc, Panchayat = panchayat })
+                .Select(joined => new UnOpposedList
+                {
+                    UnOpposedMasterId = joined.Kyc.UnOpposedMasterId,
+                    StateMasterId = joined.Kyc.StateMasterId,
+                    DistrictMasterId = joined.Kyc.DistrictMasterId,
+                    AssemblyMasterId = joined.Kyc.AssemblyMasterId,
+                    FourthLevelHMasterId = joined.Kyc.FourthLevelHMasterId,
+                    BlockZonePanchayatCode = joined.Panchayat.BlockZonePanchayatCode,
+                    BlockZonePanchayatMasterId = joined.Kyc.BlockZonePanchayatMasterId,
+                    SarpanchWardsMasterId = joined.Kyc.SarpanchWardsMasterId,
+                    CandidateType = joined.Kyc.SarpanchWardsMasterId == 0 ? "Sarpanch" : "Panch",
+                    SarpanchWardsName = joined.Kyc.SarpanchWardsMasterId != 0 && joined.Panchayat.SarpanchWards.Any()
+                                        ? string.Join(", ", joined.Panchayat.SarpanchWards
+                                            .Where(s => s.SarpanchWardsMasterId == joined.Kyc.SarpanchWardsMasterId)
+                                            .Select(s => s.SarpanchWardsName))
+                                        : null,
+                    CandidateName = joined.Kyc.CandidateName,
+                    FatherName = joined.Kyc.FatherName,
+                    NominationPdfPath = $"{baseUrl}{joined.Kyc.NominationPdfPath}",
+                    BlockZonePanchayatName = joined.Panchayat.BlockZonePanchayatName
+                }).OrderByDescending(d => d.BlockZonePanchayatCode)
+                .ToListAsync();
+
+            return unOpposedList;
+        }
+        public async Task<ServiceResponse> UpdateUnOpposedDetails(UnOpposed unOpposed)
+        {
+            var existing  = await _context.UnOpposed.FirstOrDefaultAsync(k => k.UnOpposedMasterId == unOpposed.UnOpposedMasterId);
+
+            if (existing == null)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "KYC not found" };
+            }
+
+            // Update properties of the existing Kyc entity
+            existing.StateMasterId = unOpposed.StateMasterId;
+            existing.DistrictMasterId = unOpposed.DistrictMasterId;
+            existing.ElectionTypeMasterId = unOpposed.ElectionTypeMasterId;
+            existing.AssemblyMasterId = unOpposed.AssemblyMasterId;
+            existing.FourthLevelHMasterId = unOpposed.FourthLevelHMasterId;
+            existing.BlockZonePanchayatMasterId = unOpposed.BlockZonePanchayatMasterId;
+            existing.SarpanchWardsMasterId = unOpposed.SarpanchWardsMasterId;
+            existing.CandidateName = unOpposed.CandidateName;
+            existing.FatherName = unOpposed.FatherName;
+            existing.NominationPdfPath = unOpposed.NominationPdfPath;
+            existing.Option1 = unOpposed.Option1;
+            existing.Option2 = unOpposed.Option2;
+
+            await _context.SaveChangesAsync();
+
+            return new ServiceResponse { IsSucceed = true, Message = "KYC updated successfully" };
+        }
+
+        public async Task<UnOpposedList> GetUnOpposedById(int unOpposedMasterId)
+        {
+            var unOpposed = await _context.UnOpposed.FirstOrDefaultAsync(d => d.UnOpposedMasterId == unOpposedMasterId);
+            if (unOpposed == null)
+            {
+                return null; // or throw an exception, or handle the case appropriately
+            }
+
+            var panchayat = await _context.BlockZonePanchayat
+                .Where(d => d.BlockZonePanchayatMasterId == unOpposed.BlockZonePanchayatMasterId)
+                .Include(d => d.StateMaster)
+                .Include(d => d.DistrictMaster)
+                .Include(d => d.AssemblyMaster)
+                .Include(d => d.FourthLevelH)
+                .Include(d => d.SarpanchWards)
+                .FirstOrDefaultAsync();
+
+            if (panchayat == null)
+            {
+                return null; // or handle the case appropriately
+            }
+
+            var result = new UnOpposedList
+            {
+                UnOpposedMasterId = unOpposed.UnOpposedMasterId,
+                ElectionTypeMasterId = unOpposed.ElectionTypeMasterId,
+                StateMasterId = panchayat.StateMasterId,
+                StateName = panchayat.StateMaster.StateName,
+                DistrictMasterId = panchayat.DistrictMasterId,
+                DistrictName = panchayat.DistrictMaster.DistrictName,
+                AssemblyMasterId = panchayat.AssemblyMasterId,
+                AssemblyName = panchayat.AssemblyMaster.AssemblyName,
+                FourthLevelHMasterId = panchayat.FourthLevelHMasterId,
+                FourthLevelName = panchayat.FourthLevelH.HierarchyName,
+                BlockZonePanchayatMasterId = panchayat.BlockZonePanchayatMasterId,
+                BlockZonePanchayatName = panchayat.BlockZonePanchayatName,
+                SarpanchWardsMasterId = panchayat.SarpanchWards
+                    .Where(d => d.SarpanchWardsMasterId == unOpposed.SarpanchWardsMasterId)
+                    .Select(d => d.SarpanchWardsMasterId)
+                    .FirstOrDefault(), // Change this to get a single value
+                SarpanchWardsName = panchayat.SarpanchWards
+                    .Where(d => d.SarpanchWardsMasterId == unOpposed.SarpanchWardsMasterId)
+                    .Select(d => d.SarpanchWardsName)
+                    .FirstOrDefault(), // Change this to get a single value
+                CandidateName = unOpposed.CandidateName,
+                FatherName = unOpposed.FatherName,
+            };
+
+            return result;
+        }
+        public async Task<ServiceResponse> DeleteUnOpposedById(int unOpposedMasterId)
+        {
+            var isExist = await _context.UnOpposed.Where(d => d.UnOpposedMasterId == unOpposedMasterId).FirstOrDefaultAsync();
+            if (isExist == null)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "Record not Found" };
+            }
+            else
+            {
+                _context.UnOpposed.Remove(isExist);
+                _context.SaveChanges();
+                return new ServiceResponse { IsSucceed = true, Message = "Record Deleted successfully" };
+            }
+        }
+
         #endregion
 
         #region Election Type Master

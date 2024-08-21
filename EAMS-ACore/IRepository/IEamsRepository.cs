@@ -272,6 +272,7 @@ namespace EAMS_ACore.IRepository
         Task<ServiceResponse> AddKYCDetails(Kyc kyc);
         Task<ServiceResponse> UpdateKycDetails(Kyc kyc);
         Task<List<Kyc>> GetKYCDetails();
+        Task<KycList> GetKycById(int kycMasterId);
         Task<List<KycList>> GetKYCDetailByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId);
         Task<ServiceResponse> DeleteKycById(int kycMasterId);
         #endregion
@@ -279,6 +280,11 @@ namespace EAMS_ACore.IRepository
         #region UnOpposed Public Details
         Task<ServiceResponse> AddUnOpposedDetails(UnOpposed unOpposed);
         Task<List<UnOpposed>> GetUnOpposedDetails();
+        Task<List<UnOpposedList>> GetUnOpposedDetailsByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId);
+        Task<ServiceResponse> UpdateUnOpposedDetails(UnOpposed unOpposed);
+        Task<UnOpposedList> GetUnOpposedById(int unOpposedMasterId);
+        Task<ServiceResponse> DeleteUnOpposedById(int unOpposedMasterId);
+
         #endregion
 
         #region ElectionType Master

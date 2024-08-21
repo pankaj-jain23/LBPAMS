@@ -70,6 +70,12 @@
     }
     public class UpdateKycViewModel
     {
+        public int KycMasterId
+        {
+            get;
+            set;
+        }
+         
 
         public int StateMasterId
         {

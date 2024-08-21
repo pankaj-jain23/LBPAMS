@@ -3320,6 +3320,11 @@ namespace EAMS_BLL.Services
             return await _eamsRepository.GetKYCDetails();
 
         }
+        public async Task<KycList> GetKycById(int kycMasterId)
+        {
+            return await _eamsRepository.GetKycById(kycMasterId);
+
+        }
         public async Task<List<KycList>> GetKYCDetailByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId)
         {
             return await _eamsRepository.GetKYCDetailByFourthLevelId(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelhMasterId);
@@ -3339,6 +3344,23 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetUnOpposedDetails();
 
+        }
+        public async Task<List<UnOpposedList>> GetUnOpposedDetailsByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId)
+        {
+            return await _eamsRepository.GetUnOpposedDetailsByFourthLevelId(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelhMasterId);
+        }
+        public async Task<ServiceResponse> UpdateUnOpposedDetails(UnOpposed unOpposed)
+        {
+            return await _eamsRepository.UpdateUnOpposedDetails(unOpposed);
+        }
+
+        public async Task<UnOpposedList> GetUnOpposedById(int unOpposedMasterId)
+        {
+            return await _eamsRepository.GetUnOpposedById(unOpposedMasterId);
+        }
+        public async Task<ServiceResponse> DeleteUnOpposedById(int unOpposedMasterId)
+        {
+            return await _eamsRepository.DeleteUnOpposedById(unOpposedMasterId);
         }
         #endregion
 
