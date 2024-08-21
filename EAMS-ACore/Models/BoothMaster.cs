@@ -110,7 +110,7 @@ namespace EAMS_ACore
         public bool IsAssigned { get; set; }
         public int? LocationMasterId { get; set; }
         public bool IsPSOFormDone { get; set; } 
-        public bool IsPrimaryBooth { get; set; }
+        public bool? IsPrimaryBooth { get; set; }
         
 
 

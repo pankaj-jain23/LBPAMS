@@ -51,6 +51,6 @@ namespace EAMS.ViewModels
         public int? LocationMasterId { get; set; }
 
         [Required(ErrorMessage = "IsPrimaryBooth is required")]
-        public bool IsPrimaryBooth { get; set; }
+        public bool? IsPrimaryBooth { get; set; }
     }
 }

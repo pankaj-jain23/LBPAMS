@@ -2532,7 +2532,7 @@ namespace EAMS_DAL.Repository
                             {
                                 
                                 // Update existing booths if new booth is set true primary
-                                if (existingBooths.Count > 0 && boothMaster.IsPrimaryBooth)
+                                if (existingBooths.Count > 0 && boothMaster.IsPrimaryBooth==true)
                                 {
                                     foreach (var existingBooth in existingBooths)
                                     {
