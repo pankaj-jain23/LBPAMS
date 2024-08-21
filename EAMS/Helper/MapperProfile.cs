@@ -759,6 +759,19 @@ namespace EAMS.Helper
             .ReverseMap();
             #endregion
 
+            #region SarpanchResultViewModel RSLVM
+            CreateMap<SarpanchResultViewModel, Rsult>()
+             .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+             .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+             .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
+             .ForMember(dest => dest.BoothCode, opt => opt.MapFrom(src => src.BoothCode))
+             .ForMember(dest => dest.ResultDecCreatedAt, src => src.MapFrom(src => src.ResultDecCreatedAt))
+             //.ForMember(dest => dest.ResultDecUpdatedAt, src => src.MapFrom(src => src.ResultDecUpdatedAt))
+             .ForMember(dest => dest.ResultDecStatus, src => src.MapFrom(src => src.ResultDecStatus))
+
+            .ReverseMap();
+            #endregion
+
         }
         #region Convert DateTime UTC
         private DateTime? ParseAndConvertToUtc(string dateTimeString)

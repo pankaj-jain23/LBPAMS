@@ -16308,5 +16308,108 @@ namespace EAMS_DAL.Repository
             throw new NotImplementedException();
         }
         #endregion
+
+        #region SarpanchResultDecleration
+        public async Task<ServiceResponse> AddSarpanchRsltDetails(Rsult rslt)
+        {
+
+            var resultdecexist = await _context.Result.Where(p => p.BoothCode == rslt.BoothCode && p.StateMasterId == rslt.StateMasterId && p.DistrictMasterId == rslt.DistrictMasterId && p.AssemblyMasterId == rslt.AssemblyMasterId && p.ElectionTypeMasterId == rslt.ElectionTypeMasterId && p.BoothMasterId == rslt.BoothMasterId).FirstOrDefaultAsync();
+
+            if (resultdecexist == null)
+            {
+                rslt.ResultDecCreatedAt = BharatDateTime();
+                _context.Result.Add(rslt);
+                _context.SaveChanges();
+
+                return new ServiceResponse { IsSucceed = true, Message = "Successfully added" };
+            }
+            else
+            {
+                return new ServiceResponse { IsSucceed = false, Message = resultdecexist.BoothCode + "Result Already Decelared" };
+            }
+
+            //throw new NotImplementedException();
+
+        }
+
+        //public async Task<List<Rsult>> GetResultsByPanchayat(int stateMasterId, int districtMasterId, int blockId, int panchayatId)
+        //{
+        //    return await _context.Result
+        //        .Where(r => r.StateMasterId == stateMasterId &&
+        //                    r.DistrictMasterId == districtMasterId &&
+        //                    r.BlockId == blockId &&
+        //                    r.PanchayatId == panchayatId)
+        //        .Select(r => new Rsult
+        //        {
+        //            StateMasterId = r.StateMasterId,
+        //            DistrictMasterId = r.DistrictMasterId,
+        //            ElectionTypeMasterId = r.ElectionTypeMasterId,
+        //            AssemblyMasterId = r.AssemblyMasterId,
+        //            PsZoneMasterId = r.PsZoneMasterId,
+        //            BoothMasterId = r.BoothMasterId,
+        //            BoothCode = r.BoothCode,
+        //            SarpanchWardsMasterId = r.SarpanchWardsMasterId,
+        //            CandidateName = r.CandidateName,
+        //            FatherName = r.FatherName,
+        //            VoteMargin = r.VoteMargin,
+        //            IsSarpanch = r.IsSarpanch,
+        //            ResultDecCreatedAt = r.ResultDecCreatedAt,
+        //            ResultDecStatus = r.ResultDecStatus
+        //        })
+        //        .ToListAsync();
+        //}
+
+
+        //public async Task<List<Rsult>> GetResultsByBlock(int stateMasterId, int districtMasterId, int blockId)
+        //{
+        //    return await _context.Results
+        //        .Where(r => r.StateMasterId == stateMasterId &&
+        //                    r.DistrictMasterId == districtMasterId &&
+        //                    r.BlockId == blockId)
+        //        .Select(r => new Rsult
+        //        {
+        //            StateMasterId = r.StateMasterId,
+        //            DistrictMasterId = r.DistrictMasterId,
+        //            ElectionTypeMasterId = r.ElectionTypeMasterId,
+        //            AssemblyMasterId = r.AssemblyMasterId,
+        //            PsZoneMasterId = r.PsZoneMasterId,
+        //            BoothMasterId = r.BoothMasterId,
+        //            BoothCode = r.BoothCode,
+        //            SarpanchWardsMasterId = r.SarpanchWardsMasterId,
+        //            CandidateName = r.CandidateName,
+        //            FatherName = r.FatherName,
+        //            VoteMargin = r.VoteMargin,
+        //            IsSarpanch = r.IsSarpanch,
+        //            ResultDecCreatedAt = r.ResultDecCreatedAt,
+        //            ResultDecStatus = r.ResultDecStatus
+        //        })
+        //        .ToListAsync();
+        //}
+
+        //public async Task<List<Rsult>> GetResultsByDistrict(int stateMasterId, int districtMasterId)
+        //{
+        //    return await _context.Results
+        //        .Where(r => r.StateMasterId == stateMasterId &&
+        //                    r.DistrictMasterId == districtMasterId)
+        //        .Select(r => new Rsult
+        //        {
+        //            StateMasterId = r.StateMasterId,
+        //            DistrictMasterId = r.DistrictMasterId,
+        //            ElectionTypeMasterId = r.ElectionTypeMasterId,
+        //            AssemblyMasterId = r.AssemblyMasterId,
+        //            PsZoneMasterId = r.PsZoneMasterId,
+        //            BoothMasterId = r.BoothMasterId,
+        //            BoothCode = r.BoothCode,
+        //            SarpanchWardsMasterId = r.SarpanchWardsMasterId,
+        //            CandidateName = r.CandidateName,
+        //            FatherName = r.FatherName,
+        //            VoteMargin = r.VoteMargin,
+        //            IsSarpanch = r.IsSarpanch,
+        //            ResultDecCreatedAt = r.ResultDecCreatedAt,
+        //            ResultDecStatus = r.ResultDecStatus
+        //        })
+        //        .ToListAsync();
+        //}
+        #endregion
     }
 }

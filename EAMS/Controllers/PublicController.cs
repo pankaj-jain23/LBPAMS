@@ -111,6 +111,7 @@ namespace EAMS.Controllers
         #endregion
 
         #region ResultDecelration
+        // Api for Punch
         [HttpPost("AddResultDec")]
         // [Route("AddResultDecelaration")]
         public async Task<IActionResult> AddResult([FromForm] ResultViewModel resultViewModel)
@@ -191,6 +192,32 @@ namespace EAMS.Controllers
 
 
         }
+        #endregion
+        #region Sarpanch Result Decelration
+        // Api for SarPunch
+
+        [HttpPost("AddSarpanchResultDec")]
+        // [Route("AddResultDecelaration")]
+        public async Task<IActionResult> AddSarpanchResult([FromForm] SarpanchResultViewModel resultSarpanchViewModel)
+        {
+            var rslt = _mapper.Map<Rsult>(resultSarpanchViewModel);
+            if (rslt == null)
+            {
+                return BadRequest("All fields are mandatory");
+            }
+            // call your service method to add result details
+            var addresult = await _eamsService.AddSarpanchRsltDetails(rslt);
+            if (addresult.IsSucceed == true)
+            {
+                return Ok(new { Message = "Result data added successfully" });
+            }
+            else
+            {
+                return BadRequest("Failed to add Result data.");
+            }
+        }
+
+        
         #endregion
     }
 }

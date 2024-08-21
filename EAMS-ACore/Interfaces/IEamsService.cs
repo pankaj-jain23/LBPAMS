@@ -288,6 +288,12 @@ namespace EAMS_ACore.Interfaces
          Task<Response> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId);
         #endregion
 
+        #region SarpanchResultDec Public Details
+        Task<ServiceResponse> AddSarpanchRsltDetails(Rsult rsult);
+        //Task<Rsult> GetResultsPanchayatWise(int panchayatId);
+        //Task<Rsult> GetResultsBlockWise(int blockId);
+        //Task<Rsult> GetResultsDistrictWise(int districtId);
+        #endregion
         #region ResultDec Public Details
         Task<ServiceResponse> AddRsltDetails(Rsult rsult);
         Task<List<Rsult>> GetResultDecelaration(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId);

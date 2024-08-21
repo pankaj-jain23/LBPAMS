@@ -302,7 +302,13 @@ namespace EAMS_ACore.IRepository
         Task<List<Rsult>> GetRsltDetails(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId);
         Task<List<Rsult>> GetResultByDistrict(int stateMasterId, int districtMasterId);
         Task<Response> UpdateRsltDetails(Rsult rslt);
-        
+
+        #endregion
+        #region Result Public Details
+        Task<ServiceResponse> AddSarpanchRsltDetails(Rsult rsult);
+        //Task<List<Rsult>> GetResultByPanchayat(int stateMasterId, int districtMasterId, int blockId, int panchayatId);
+        //Task<List<Rsult>> GetResultByBlock(int stateMasterId, int districtMasterId, int blockId);
+        //Task<List<Rsult>> GetResultByDistrict(int stateMasterId, int districtMasterId);
         #endregion
     }
 }

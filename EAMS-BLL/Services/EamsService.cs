@@ -3318,6 +3318,28 @@ namespace EAMS_BLL.Services
 
         }
         #endregion
+        #region Sarpanch Result Decelration
+
+        public async Task<ServiceResponse> AddSarpanchRsltDetails(Rsult rsult)
+        {
+            return await _eamsRepository.AddSarpanchRsltDetails(rsult);
+        }
+
+        //public async Task<Rsult> GetResultsPanchayatWise(int panchayatId)
+        //{
+        //    return await _eamsRepository.GetResultsPanchayatWise(panchayatId);
+        //}
+
+        //public async Task<Rsult> GetResultsBlockWise(int blockId)
+        //{
+        //    return await _eamsRepository.GetResultsBlockWise(blockId);
+        //}
+
+        //public async Task<Rsult> GetResultsDistrictWise(int districtId)
+        //{
+        //    return await _eamsRepository.GetResultsDistrictWise(districtId);
+        //}
+        #endregion
 
         #region Result Public Details
         public async Task<ServiceResponse> AddRsltDetails(Rsult rsult)

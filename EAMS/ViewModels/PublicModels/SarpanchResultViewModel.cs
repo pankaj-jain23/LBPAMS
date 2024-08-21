@@ -1,37 +1,35 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace EAMS_ACore.Models.PublicModels
+namespace LBPAMS.ViewModels.PublicModels
 {
-    public class Rsult
+    public class SarpanchResultViewModel
     {
-        
-
-        [Key]
-        public int RsultMasterId
-        {
-            get;
-            set;
-        }
         public int StateMasterId
         {
             get;
             set;
         }
+        [ForeignKey("StateMasterId")]
+
         public int? DistrictMasterId
         {
             get;
             set;
         }
+        [ForeignKey("DistrictMasterId")]
+
         public int? ElectionTypeMasterId
         {
             get;
             set;
         }
+        [ForeignKey("ElectionTypeMasterId")]
         public int? AssemblyMasterId
         {
             get;
             set;
         }
+        [ForeignKey("AssemblyMasterId")]
         public int? PsZoneMasterId
         {
             get;
@@ -53,7 +51,7 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
-        public required string CandidateName
+        public string CandidateName
         {
             get;
             set;
@@ -65,19 +63,13 @@ namespace EAMS_ACore.Models.PublicModels
         }
         public string? VoteMargin
         {
-
-            get; set;
+            get;
+            set;
         }
-        public string? IsSarpanch
-        {
-
-            get; set;
-        }
-       // public int ResultDecCode { get; set; }
+        public bool IsSarpanch { get; set; }
         public DateTime? ResultDecCreatedAt { get; set; }
-       // public DateTime? ResultDecUpdatedAt { get; set; }
+        //public DateTime? ResultDecUpdatedAt { get; set; }
 
         public bool ResultDecStatus { get; set; }
-
     }
 }
