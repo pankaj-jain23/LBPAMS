@@ -1,8 +1,6 @@
 ﻿using EAMS_ACore.IRealTime;
 using EAMS_ACore.IRepository;
 using EAMS_ACore.SignalRModels;
-using EAMS_DAL.DBContext;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace EAMS_BLL.RealTimeServices
@@ -11,7 +9,7 @@ namespace EAMS_BLL.RealTimeServices
     {
         private static List<UserConnection> userConnections = new List<UserConnection>();
         private readonly IUserConnectionServiceRepository _userConnectionServiceRepository;
-        public   UserConnectionService(IUserConnectionServiceRepository userConnectionServiceRepository)
+        public UserConnectionService(IUserConnectionServiceRepository userConnectionServiceRepository)
         {
             _userConnectionServiceRepository = userConnectionServiceRepository;
         }
@@ -27,10 +25,10 @@ namespace EAMS_BLL.RealTimeServices
             _userConnectionServiceRepository.AddUser(connectionId, claimsIdentity);
         }
 
-       
-        public async  Task<string> RemoveUser(string connectionId)
+
+        public async Task<string> RemoveUser(string connectionId)
         {
-           return await _userConnectionServiceRepository?.RemoveUser(connectionId);
+            return await _userConnectionServiceRepository?.RemoveUser(connectionId);
         }
 
         public List<UserConnection> GetConnections()
@@ -39,11 +37,11 @@ namespace EAMS_BLL.RealTimeServices
         }
         public async Task<int?> GetDashboardConnectedUserCountByStateId(int stateMasterId)
         {
-             return await _userConnectionServiceRepository.GetDashboardConnectedUserCountByStateId(stateMasterId);
-        }  
+            return await _userConnectionServiceRepository.GetDashboardConnectedUserCountByStateId(stateMasterId);
+        }
         public async Task<int?> GetMobileConnectedUserCountByStateId(int stateMasterId)
         {
-             return await _userConnectionServiceRepository.GetMobileConnectedUserCountByStateId(stateMasterId);
+            return await _userConnectionServiceRepository.GetMobileConnectedUserCountByStateId(stateMasterId);
         }
         public Task<DashboardConnectedUser> GetConnectionIdByUserId(string userId)
         {

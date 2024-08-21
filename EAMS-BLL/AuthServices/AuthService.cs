@@ -7,21 +7,15 @@ using EAMS_ACore.Interfaces;
 using EAMS_ACore.IRepository;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
-using EAMS_ACore.ReportModels;
-using Microsoft.AspNetCore.Components.Routing;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
-using System.Reflection;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using static System.Net.WebRequestMethods;
 
 namespace EAMS_BLL.AuthServices
 {

@@ -73,7 +73,7 @@ namespace EAMS.Controllers
             var kycList = await _eamsService.GetKYCDetails();
 
             var request = HttpContext.Request;
-            var baseUrl = $"{request.Scheme}://{request.Host}/pdfs";
+            var baseUrl = $"{request.Scheme}://{request.Host}/lbpams/pdfs";
 
             var kycResponses = kycList.Select(kyc => new KycResponseViewModel
             {
@@ -181,7 +181,7 @@ namespace EAMS.Controllers
             else
             {
 
-             
+
                 var resutlt = await _eamsService.DeleteKycById(KycMasterId);
                 if (resutlt.IsSucceed == true)
                 {
@@ -193,6 +193,7 @@ namespace EAMS.Controllers
                 }
             }
         }
+       
         #endregion
 
         #region UnOpposed 
@@ -254,7 +255,7 @@ namespace EAMS.Controllers
             var list = await _eamsService.GetUnOpposedDetails();
 
             var request = HttpContext.Request;
-            var baseUrl = $"{request.Scheme}://{request.Host}/pdfs";
+            var baseUrl = $"{request.Scheme}://{request.Host}/lbpams/pdfs";
 
             var kycResponses = list.Select(unOpposed => new UnOpposedResponseViewModel
             {

@@ -1,8 +1,4 @@
-﻿using EAMS_ACore.Models.ElectionType;
-using EAMS_ACore;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace LBPAMS.ViewModels
+﻿namespace LBPAMS.ViewModels
 {
     public class AddFourthLevelHViewModel
     {
@@ -126,11 +122,11 @@ namespace LBPAMS.ViewModels
             set;
         }
         public string AssemblyName { get; set; }
-        
+
 
 
         public string? HierarchyCategory { get; set; }
-       
+
         public bool IsStatus { get; set; }
     }
 }

@@ -1,15 +1,9 @@
 ﻿using AutoMapper;
-using EAMS.ViewModels;
 using EAMS.ViewModels.Polling_Personal_Randomization_ViewModel;
-using EAMS_ACore;
-using EAMS_ACore.AuthInterfaces;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.Models.Polling_Personal_Randomisation_Models;
 using EAMS_ACore.Models.Polling_Personal_Randomization_Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Mono.TextTemplating;
-using Npgsql.PostgresTypes;
 
 namespace EAMS.Controllers
 {
@@ -38,7 +32,7 @@ namespace EAMS.Controllers
 
             var isRandomizationAdded = await _eamsService.GetCurrentRoundByRandomizationById(pprViewModel.StateMasterId, pprViewModel.DistrictMasterId, pprViewModel.RandomizationTaskDetailMasterId);
 
-            
+
             var roundCount = await _eamsService.GetRoundCountByRandomizationTaskId(pprViewModel.RandomizationTaskDetailMasterId, pprViewModel.StateMasterId);
 
             if (pprViewModel.CurrentRound > roundCount)

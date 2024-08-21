@@ -1,6 +1,4 @@
-﻿using EAMS_ACore.Models.CountingDayModels;
-using EAMS_ACore.Models.ElectionType;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 

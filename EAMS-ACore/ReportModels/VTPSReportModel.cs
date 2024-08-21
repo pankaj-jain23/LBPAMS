@@ -1,6 +1,4 @@
-﻿using EAMS.ViewModels.PSFormViewModel;
-
-namespace EAMS_ACore.ReportModels
+﻿namespace EAMS_ACore.ReportModels
 {
     public class VTPSReportReportModel
     {
@@ -19,7 +17,7 @@ namespace EAMS_ACore.ReportModels
         public string PCCode { get; set; }
         public string BoothName { get; set; }
         public string BoothCode { get; set; }
-        
+
         public int? TotalEVMS { get; set; }
         public int Male { get; set; }
         public int Female { get; set; }
@@ -37,7 +35,7 @@ namespace EAMS_ACore.ReportModels
     }
     //public class VTPSReportModel
     //{
-      
+
     //    public int Male { get; set; }
     //    public int Female { get; set; }
     //    public int ThirdGender { get; set; }

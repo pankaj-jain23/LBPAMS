@@ -15,9 +15,7 @@ using EAMS_ACore.Models.PublicModels;
 using EAMS_ACore.Models.QueueModel;
 using EAMS_ACore.ReportModels;
 using EAMS_ACore.SignalRModels;
-using EAMS_DAL.Repository;
 using System.Globalization;
-using System.Reflection;
 using System.Security.Claims;
 
 namespace EAMS_BLL.Services

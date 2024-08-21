@@ -1,10 +1,5 @@
 ﻿using AutoMapper;
- 
-using EAMS.ViewModels;
-using EAMS_ACore.HelperModels;
-using EAMS_ACore; 
 using EAMS_ACore.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EAMS.Controllers

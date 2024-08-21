@@ -19,7 +19,7 @@ namespace EAMS_ACore
             get;
             set;
         }
-      
+
 
         public string DistrictName { get; set; }
 

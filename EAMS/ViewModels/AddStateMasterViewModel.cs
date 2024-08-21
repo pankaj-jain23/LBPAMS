@@ -8,9 +8,9 @@ namespace EAMS.ViewModels
         public string StateName { get; set; }
 
         [Required(ErrorMessage = "State Code is required")]
-        public string StateCode { get; set; }         
-                
-        
+        public string StateCode { get; set; }
+
+
 
         [Required(ErrorMessage = "Status is required")]
         public bool IsStatus { get; set; }

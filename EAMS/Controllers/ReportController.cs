@@ -1,13 +1,10 @@
 ﻿using AutoMapper;
 using EAMS.ViewModels.ChartViewModel;
 using EAMS.ViewModels.ReportViewModel;
-using EAMS_ACore;
 using EAMS_ACore.Interfaces;
-using EAMS_ACore.Models;
 using EAMS_ACore.ReportModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Drawing;
 
 namespace EAMS.Controllers
 {
@@ -200,65 +197,65 @@ namespace EAMS.Controllers
 
         #region Voter Turn Out Consolidated
 
-       /* [HttpPost]
-        [Route("GetSlotBasedVTReport")]
-     
-        public async Task<IActionResult> GetSlotBasedVoterTurnOutReport(SlotVTReportViewModel slotVTReportViewModel)
-        {
-            if (ModelState.IsValid)
-            {
-                if (Convert.ToInt32(slotVTReportViewModel.SlotMasterId) > 0)
-                {
-                    var mappedData = _mapper.Map<SlotVTReportModel>(slotVTReportViewModel);
-                    //State
-                    if (mappedData.StateMasterId is not 0 && mappedData.DistrictMasterId is 0 && mappedData.PCMasterId is 0 && mappedData.AssemblyMasterId is 0)
-                    {
-                        var records = await _EAMSService.GetSlotBasedVoterTurnOutReport(mappedData);
-                        return Ok(records);
-                    }
-                    //District
-                    else if (mappedData.StateMasterId is not 0 && mappedData.DistrictMasterId is not 0 && mappedData.PCMasterId is 0 && mappedData.AssemblyMasterId is 0)
-                    {
-                        var records = await _EAMSService.GetSlotBasedVoterTurnOutReport(mappedData);
-                        return Ok(records);
-                    }
-                    //PC
-                    else if (mappedData.StateMasterId is not 0 && mappedData.DistrictMasterId is 0 && mappedData.PCMasterId is not 0 && mappedData.AssemblyMasterId is 0)
-                    {
-                        var records = await _EAMSService.GetSlotBasedVoterTurnOutReport(mappedData);
-                        return Ok(records);
+        /* [HttpPost]
+         [Route("GetSlotBasedVTReport")]
 
-                    }
-                    //Assembly
-                    else if (mappedData.AssemblyMasterId is not 0)
-                    {
-                        var records = await _EAMSService.GetSlotBasedVoterTurnOutReport(mappedData);
+         public async Task<IActionResult> GetSlotBasedVoterTurnOutReport(SlotVTReportViewModel slotVTReportViewModel)
+         {
+             if (ModelState.IsValid)
+             {
+                 if (Convert.ToInt32(slotVTReportViewModel.SlotMasterId) > 0)
+                 {
+                     var mappedData = _mapper.Map<SlotVTReportModel>(slotVTReportViewModel);
+                     //State
+                     if (mappedData.StateMasterId is not 0 && mappedData.DistrictMasterId is 0 && mappedData.PCMasterId is 0 && mappedData.AssemblyMasterId is 0)
+                     {
+                         var records = await _EAMSService.GetSlotBasedVoterTurnOutReport(mappedData);
+                         return Ok(records);
+                     }
+                     //District
+                     else if (mappedData.StateMasterId is not 0 && mappedData.DistrictMasterId is not 0 && mappedData.PCMasterId is 0 && mappedData.AssemblyMasterId is 0)
+                     {
+                         var records = await _EAMSService.GetSlotBasedVoterTurnOutReport(mappedData);
+                         return Ok(records);
+                     }
+                     //PC
+                     else if (mappedData.StateMasterId is not 0 && mappedData.DistrictMasterId is 0 && mappedData.PCMasterId is not 0 && mappedData.AssemblyMasterId is 0)
+                     {
+                         var records = await _EAMSService.GetSlotBasedVoterTurnOutReport(mappedData);
+                         return Ok(records);
 
-                        return Ok(records);
+                     }
+                     //Assembly
+                     else if (mappedData.AssemblyMasterId is not 0)
+                     {
+                         var records = await _EAMSService.GetSlotBasedVoterTurnOutReport(mappedData);
 
-                    }
-                }
-                else
-                {
-                    return BadRequest("Slot Management Id is not Valid");
+                         return Ok(records);
 
-                }
+                     }
+                 }
+                 else
+                 {
+                     return BadRequest("Slot Management Id is not Valid");
 
-
-
-            }
-            else
-            {
-                return BadRequest("Input Model Is not Valid");
-
-            }
-
-            return Ok();
-        }*/
+                 }
 
 
 
-      
+             }
+             else
+             {
+                 return BadRequest("Input Model Is not Valid");
+
+             }
+
+             return Ok();
+         }*/
+
+
+
+
         #endregion
 
         #region Charts
@@ -299,7 +296,7 @@ namespace EAMS.Controllers
 
                 }
                 //Assembly for PC
-                else if (mappedData.StateMasterId is not 0 && mappedData.DistrictMasterId is  0 && mappedData.PCMasterId is not 0 && mappedData.AssemblyMasterId is not 0)
+                else if (mappedData.StateMasterId is not 0 && mappedData.DistrictMasterId is 0 && mappedData.PCMasterId is not 0 && mappedData.AssemblyMasterId is not 0)
                 {
                     var records = await _EAMSService.GetChartConsolidatedReport(mappedData);
 
@@ -392,7 +389,7 @@ namespace EAMS.Controllers
 
         #endregion
 
-       
+
 
         [HttpGet]
         [Route("LastLog")]
@@ -427,7 +424,7 @@ namespace EAMS.Controllers
         [Route("UploadAPK")]
         public async Task<IActionResult> UploadAPK(IFormFile apkFile)
         {
-           
+
             if (apkFile == null || apkFile.Length == 0)
             {
                 return BadRequest("APK file is not provided.");
@@ -516,7 +513,7 @@ namespace EAMS.Controllers
         //[Authorize]
         public async Task<IActionResult> GetSectorOfficersListNotDownloadedApps(string stateMasterId)
         {
-            
+
 
             var soList = await _EAMSService.AppNotDownload(stateMasterId);  // Corrected to await the asynchronous method
             if (soList != null)
@@ -535,7 +532,7 @@ namespace EAMS.Controllers
 
         }
 
-    
+
 
         #region Voter Turn Out Screens Disrict,AAssembly,BoothWise
         [HttpGet]
@@ -566,7 +563,7 @@ namespace EAMS.Controllers
         [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,ARO")]
         public async Task<IActionResult> GetSlotVTReporttAssemblyWise(string? stateId, string? districtId)
         {
-           var eventAssemblyList = await _EAMSService.GetSlotVTReporttAssemblyWise(stateId, districtId);
+            var eventAssemblyList = await _EAMSService.GetSlotVTReporttAssemblyWise(stateId, districtId);
             if (eventAssemblyList is not null)
                 return Ok(eventAssemblyList);
             else
@@ -590,7 +587,7 @@ namespace EAMS.Controllers
         #region SOCount and EVENtWise Count Pendency
 
         [HttpGet]
-         [Route("GetDistrictWiseSOEvenCountReport")]
+        [Route("GetDistrictWiseSOEvenCountReport")]
         [Authorize(Roles = "ECI,SuperAdmin,StateAdmin")]
         public async Task<IActionResult> EventListDistrictWiseById(string? stateId)
         {
@@ -617,7 +614,7 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetAssemblyWiseSOEvenCountReport")]
         [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin")]
-        public async Task<IActionResult> GetAssemblyWiseSOCountPendency(string stateId,string districtId)
+        public async Task<IActionResult> GetAssemblyWiseSOCountPendency(string stateId, string districtId)
         {
             var eventAssemblyList = await _EAMSService.GetAssemblyWiseSOCountEventWiseCount(stateId, districtId);
             if (eventAssemblyList is not null)
@@ -655,16 +652,16 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetSONamesEventWiseCount")]
         [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,ARO")]
-        public async Task<IActionResult> GetSONamesEventWiseCounts(string stateMasterId, string districtMasterId,string assemblymasterId)
+        public async Task<IActionResult> GetSONamesEventWiseCounts(string stateMasterId, string districtMasterId, string assemblymasterId)
         {
-            var eventAssemblyList = await _EAMSService.GetSONamesEventWiseCount(stateMasterId,districtMasterId,assemblymasterId);
+            var eventAssemblyList = await _EAMSService.GetSONamesEventWiseCount(stateMasterId, districtMasterId, assemblymasterId);
             if (eventAssemblyList is not null)
                 return Ok(eventAssemblyList);
             else
                 return NotFound();
         }
 
-        
+
 
 
         #endregion
@@ -714,7 +711,7 @@ namespace EAMS.Controllers
         [Authorize]
         public async Task<IActionResult> GetUnassignedBLO([FromBody] BoothReportViewModel boothReportViewModel)
         {
-            
+
             if (ModelState.IsValid)
             {
 
@@ -795,7 +792,7 @@ namespace EAMS.Controllers
 
         [HttpGet]
         [Route("GetBLOQueueCountReportBoothWiseOpen")]
-        
+
         public async Task<IActionResult> GetBLOQueueCountReportBoothWiseOpen(string stateMasterId, string districtMasterId)
         {
             List<BLOBoothAssignedQueueCount> test = new List<BLOBoothAssignedQueueCount>();
@@ -805,9 +802,9 @@ namespace EAMS.Controllers
 
 
                 //State DistrictACWise
-                if (stateMasterId !="" && districtMasterId !="")
+                if (stateMasterId != "" && districtMasterId != "")
                 {
-                    var records = await _EAMSService.GetBLOQueueCountOpen(stateMasterId,districtMasterId);
+                    var records = await _EAMSService.GetBLOQueueCountOpen(stateMasterId, districtMasterId);
                     if (records != null)
                     {
                         return Ok(records);

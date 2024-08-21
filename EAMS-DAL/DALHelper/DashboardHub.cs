@@ -1,6 +1,5 @@
 ﻿using EAMS_ACore.Interfaces;
 using EAMS_ACore.IRealTime;
-using EAMS_ACore.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
@@ -61,14 +60,14 @@ namespace EAMS.Hubs
                 var role = Context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
                 _userConnectionService.AddUser(Context.ConnectionId, newClaimsIdentity);
                 var dashboardUserCount = await GetDashboardConnectedUserStateWise();
-              //  var mobileUserCount = await GetMobileConnectedUserStateWise();
+                //  var mobileUserCount = await GetMobileConnectedUserStateWise();
 
-                    _logger.LogInformation("Dashboard Client connected to DashBoardHub. ConnectionId: {ConnectionId}", Context.ConnectionId);
-                    await GetDashboardCount();
-                    await GetPollIntreuption();
-                    await Clients.All.SendAsync("ActiveUser", dashboardUserCount);
-              
-               
+                _logger.LogInformation("Dashboard Client connected to DashBoardHub. ConnectionId: {ConnectionId}", Context.ConnectionId);
+                await GetDashboardCount();
+                await GetPollIntreuption();
+                await Clients.All.SendAsync("ActiveUser", dashboardUserCount);
+
+
 
                 await Ping();
             }
@@ -116,7 +115,7 @@ namespace EAMS.Hubs
                 {
                     _logger.LogInformation("SO/BLO Client Disconnected from DashBoardHub. ConnectionId: {ConnectionId}", Context.ConnectionId);
                     await Clients.All.SendAsync("GetMobileActiveUser", mobileUserCount);
-                    
+
                 }
 
                 var isRemoved = await _userConnectionService.RemoveUser(Context.ConnectionId);

@@ -3,14 +3,11 @@ using EAMS_ACore.Interfaces;
 using EAMS_ACore.IRepository;
 using EAMS_ACore.NotificationModels;
 using EAMS_ACore.ReportModels;
-using EAMS_BLL.AuthServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Data;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 namespace EAMS_BLL.Services
 {
     public class NotificationService : INotificationService
@@ -45,7 +42,7 @@ namespace EAMS_BLL.Services
         }
         public async Task<ServiceResponse> IsNotificationSeen(string notificationId, bool isStatus)
         {
-            var notificationMasterId=Convert.ToInt32(notificationId);
+            var notificationMasterId = Convert.ToInt32(notificationId);
             return await _notificationRepository.IsNotificationSeen(notificationMasterId, isStatus);
         }
         public async Task<ServiceResponse> AddSMSTemplate(SMSTemplate SMSModel)
@@ -97,7 +94,7 @@ namespace EAMS_BLL.Services
             var soRecord = await _notificationRepository.GetSectorOfficerstoSendSMS(sendSMSModel);
             if (sendSMSModel.EventId > 0)
             {
-                
+
                 string FinalsmsTemplateMsg = "";
                 var smsTemplateRecord = await _notificationRepository.GetSMSTemplateById(sendSMSModel.TemplateMasterId.ToString());
                 if (soRecord.Count > 0)
@@ -163,9 +160,9 @@ namespace EAMS_BLL.Services
             {
                 string FinalsmsTemplateMsg = "";
                 if (soRecord.Count > 0)
-                { 
+                {
                     var smsTemplateRecord = await _notificationRepository.GetSMSTemplateById(sendSMSModel.TemplateMasterId.ToString());
-                
+
                     if (smsTemplateRecord is not null)
                     {
                         string userNameSMS = SMSEnum.UserName.GetStringValue();
@@ -298,8 +295,8 @@ namespace EAMS_BLL.Services
             return new HttpClient(handler);
         }
 
-   
-    
+
+
 
 
         #endregion

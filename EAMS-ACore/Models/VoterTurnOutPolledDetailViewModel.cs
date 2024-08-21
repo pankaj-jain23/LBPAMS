@@ -22,7 +22,7 @@ namespace EAMS_ACore.Models
         public bool? IsSucceed { get; set; }
         public bool? VoteEnabled { get; set; }
         public string? Message { get; set; }
-        public bool? IsGenderCapturedReqinVT { get;set; }
+        public bool? IsGenderCapturedReqinVT { get; set; }
         public string? Male { get; set; }
         public string? Female { get; set; }
         public string? Transgender { get; set; }

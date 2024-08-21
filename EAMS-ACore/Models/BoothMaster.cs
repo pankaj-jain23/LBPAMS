@@ -14,7 +14,7 @@ namespace EAMS_ACore
             get;
             set;
         }
-      
+
 
         [ForeignKey("StateMasterId")]
         public virtual StateMaster? StateMaster
@@ -78,7 +78,7 @@ namespace EAMS_ACore
             get;
             set;
         }
-        
+
         public string BoothCode_No { get; set; }
 
         public string? Category { get; set; }
@@ -109,7 +109,7 @@ namespace EAMS_ACore
         public DateTime? AssignedOnTime { get; set; }
         public bool IsAssigned { get; set; }
         public int? LocationMasterId { get; set; }
-        public bool IsPSOFormDone { get; set; }
+        public bool IsPSOFormDone { get; set; } 
         public bool IsPrimaryBooth { get; set; }
  
 

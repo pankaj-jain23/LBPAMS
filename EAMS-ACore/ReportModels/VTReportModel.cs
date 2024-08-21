@@ -1,13 +1,11 @@
-﻿using EAMS.ViewModels.PSFormViewModel;
-
-namespace EAMS_ACore.ReportModels
+﻿namespace EAMS_ACore.ReportModels
 {
     public class VTReportModel
     {
         public string Header { get; set; }
         public string Title { get; set; }
         public string Type { get; set; }
-        
+
         public string DistrictName { get; set; }
         public string DistrictCode { get; set; }
         public string AssemblyName { get; set; }
@@ -17,19 +15,19 @@ namespace EAMS_ACore.ReportModels
         public string BoothName { get; set; }
         public string BoothCode { get; set; }
 
-        
+
         public int? MaleElectoral { get; set; }
         public int? FemaleElectoral { get; set; }
         public int? ThirdGenderElectoral { get; set; }
         public int? TotalElectoral { get; set; }
 
-        
+
         public int? MaleVoters { get; set; }
         public int? FemaleVoters { get; set; }
         public int? ThirdGenderVoters { get; set; }
         public int? TotalVoters { get; set; }
 
-       
+
         public int? EPIC { get; set; }
         public int? VotePolledOtherDocument { get; set; }
 

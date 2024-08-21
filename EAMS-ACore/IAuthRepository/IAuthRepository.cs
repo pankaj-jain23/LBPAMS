@@ -22,13 +22,13 @@ namespace EAMS_ACore.IAuthRepository
         Task<ServiceResponse> FindUserByName(UserRegistration userRegistration);
         Task<List<UserRegistration>> FindUserListByName(string userName);
         Task<UserRegistration> CheckUserLogin(Login login);
-        Task<UserRegistration>GetUserById(string userId);
+        Task<UserRegistration> GetUserById(string userId);
         Task<ServiceResponse> CreateUser(UserRegistration userRegistration, List<string> roleIds);
         Task<ServiceResponse> UpdateUser(UserRegistration userRegistration);
         Task<List<Role>> GetRoleByUser(UserRegistration user);
         Task<ServiceResponse> CreateSOPin(CreateSOPin createSOPin, string soId);
         Task<SectorOfficerMaster> GetSOById(int soId);
-        Task<DashBoardProfile> GetDashboardProfile(string userId,int? stateMasterId);
+        Task<DashBoardProfile> GetDashboardProfile(string userId, int? stateMasterId);
         Task<List<UserState>> GetUserMaster(string userId);
         Task<ServiceResponse> UpdateDashboardProfile(string userId, UpdateDashboardProfile updateDashboardProfile);
         Task<List<AssemblyMaster>> GetAssemblyByDistrictId(string stateMasterid, string districtMasterId);

@@ -95,11 +95,11 @@ namespace EAMS.Controllers
         [Authorize]
         public async Task<IActionResult> IsNotificationSeen(string notificationId, bool isStatus)
         {
-            var result=_notificationService.IsNotificationSeen(notificationId, isStatus);
+            var result = _notificationService.IsNotificationSeen(notificationId, isStatus);
             return Ok(result);
 
         }
-        
+
         [Route("GetNotification")]
         [HttpGet]
         [Authorize]
@@ -130,7 +130,7 @@ namespace EAMS.Controllers
 
             return Ok(result);
         }
-        
+
         [Route("GetSMSTemplateById")]
         [HttpGet]
         [Authorize]
@@ -147,7 +147,7 @@ namespace EAMS.Controllers
                 return Ok(result);
             }
         }
-        
+
         //[Route("SendOtp")]
         //[HttpPost]
         private async Task<IActionResult> SendOtp(string mobile, string otp)

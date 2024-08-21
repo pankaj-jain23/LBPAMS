@@ -12,5 +12,5 @@
         public string? LSToken { get; set; }
         public string? VSToken { get; set; }
     }
-   
+
 }

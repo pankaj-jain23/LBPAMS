@@ -75,7 +75,7 @@ public class DatabaseListenerService : BackgroundService
                         var aroRecords = await scopedService.DashboardConnectedUser(dahboardMastersIds, aroType);
                         var districtPCWiseRecords = await scopedService.DashboardConnectedUser(dahboardMastersIds, districtPCType);
                         var stateRecords = await scopedService.DashboardConnectedUser(dahboardMastersIds, stateAdminType);
-                     
+
                         foreach (var aro in aroRecords)
                         {
 
@@ -106,10 +106,10 @@ public class DatabaseListenerService : BackgroundService
                                 {
 
                                     var dataRecord = await scopedService.GetPollInterruptionDashboardCount(newClaimsIdentity);
-                                     
-                                        await NotifyClientsIfChangedPollInterruption(dataRecord, aro.ConnectionId);
-                                        pollTrigger = "";
-                                    
+
+                                    await NotifyClientsIfChangedPollInterruption(dataRecord, aro.ConnectionId);
+                                    pollTrigger = "";
+
 
                                 }
 
@@ -146,10 +146,10 @@ public class DatabaseListenerService : BackgroundService
                                 {
 
                                     var dataRecord = await scopedService.GetPollInterruptionDashboardCount(newClaimsIdentity);
-                                   
-                                        await NotifyClientsIfChangedPollInterruption(dataRecord, district.ConnectionId);
-                                        pollTrigger = "";
-                                     
+
+                                    await NotifyClientsIfChangedPollInterruption(dataRecord, district.ConnectionId);
+                                    pollTrigger = "";
+
 
                                 }
 
@@ -186,10 +186,10 @@ public class DatabaseListenerService : BackgroundService
                                 {
 
                                     var dataRecord = await scopedService.GetPollInterruptionDashboardCount(newClaimsIdentity);
-                                    
-                                        await NotifyClientsIfChangedPollInterruption(dataRecord, state.ConnectionId);
-                                        pollTrigger = "";
-                                     
+
+                                    await NotifyClientsIfChangedPollInterruption(dataRecord, state.ConnectionId);
+                                    pollTrigger = "";
+
 
                                 }
 

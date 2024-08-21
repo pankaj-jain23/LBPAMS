@@ -1,18 +1,12 @@
-﻿using EAMS_ACore.IRealTime;
-using EAMS_ACore.IRepository;
+﻿using EAMS_ACore.IRepository;
 using EAMS_ACore.SignalRModels;
 using EAMS_DAL.DBContext;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EAMS_DAL.Repository
 {
-    public class UserConnectionServiceRepository: IUserConnectionServiceRepository
+    public class UserConnectionServiceRepository : IUserConnectionServiceRepository
     {
         private readonly EamsContext _context;
         public UserConnectionServiceRepository(EamsContext context)
@@ -30,7 +24,7 @@ namespace EAMS_DAL.Repository
                 PCMasterId = GetClaimValue<int>(claimsIdentity, "PCMasterId"),
                 AssemblyMasterId = GetClaimValue<int>(claimsIdentity, "AssemblyMasterId"),
                 BoothMasterId = GetClaimValue<int>(claimsIdentity, "BoothMasterId"),
-                UserConnectedTime=DateTime.UtcNow
+                UserConnectedTime = DateTime.UtcNow
 
             };
 
@@ -45,7 +39,7 @@ namespace EAMS_DAL.Repository
             var connectedUserConnect = await _context.DashboardConnectedUser
                 .Where(d => d.StateMasterId == stateMasterId &&
                             d.UserConnectedTime.HasValue &&
-                            d.UserConnectedTime.Value.Date == today&& d.Role!="SO" && d.Role != "BLO")
+                            d.UserConnectedTime.Value.Date == today && d.Role != "SO" && d.Role != "BLO")
                 .CountAsync();
 
             return connectedUserConnect;
@@ -82,9 +76,9 @@ namespace EAMS_DAL.Repository
             return default(T);
         }
 
-        public async Task <DashboardConnectedUser> GetConnectedUser(string connectionId)
+        public async Task<DashboardConnectedUser> GetConnectedUser(string connectionId)
         {
-            var getConnectedUser=_context.DashboardConnectedUser.Where(d=>d.ConnectionId== connectionId).FirstOrDefault();
+            var getConnectedUser = _context.DashboardConnectedUser.Where(d => d.ConnectionId == connectionId).FirstOrDefault();
             if (getConnectedUser == null)
             {
                 return null;

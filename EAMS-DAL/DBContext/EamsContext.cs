@@ -31,9 +31,9 @@ public partial class EamsContext : IdentityDbContext<UserRegistration>
     public virtual DbSet<UserDistrict> UserDistrict { get; set; }
     public virtual DbSet<UserPSZone> UserPSZone { get; set; }
     public virtual DbSet<UserPCConstituency> UserPCConstituency { get; set; }
-    public virtual DbSet<UserAssembly> UserAssembly { get; set; }  
+    public virtual DbSet<UserAssembly> UserAssembly { get; set; }
     //public virtual DbSet<PSZone> PSZone { get; set; }
-  
+
     public virtual DbSet<SarpanchWards> SarpanchWards { get; set; }
     public virtual DbSet<EventMaster> EventMaster { get; set; }
     public virtual DbSet<StateMaster> StateMaster { get; set; }
@@ -66,14 +66,14 @@ public partial class EamsContext : IdentityDbContext<UserRegistration>
     public virtual DbSet<PollingLocationMaster> PollingLocationMaster { get; set; }
     public virtual DbSet<DashboardConnectedUser> DashboardConnectedUser { get; set; }
     public virtual DbSet<HelpDeskDetail> HelpDeskDetail { get; set; }
-    public virtual DbSet<QIS>QIS { get; set; }
-    public virtual DbSet<PPR>PPR { get; set; }
+    public virtual DbSet<QIS> QIS { get; set; }
+    public virtual DbSet<PPR> PPR { get; set; }
     public virtual DbSet<RandomizationTaskDetail> RandomizationTaskDetail { get; set; }
-    public virtual DbSet<BLOMaster> BLOMaster { get; set; } 
-    public virtual DbSet<MobileVersion> MobileVersion { get; set; } 
-    public virtual DbSet<Kyc> Kyc { get; set; } 
-    public virtual DbSet<UnOpposed> UnOpposed { get; set; } 
-  //  public virtual DbSet<BLOBoothMaster> BLOBoothMaster { get; set; } 
+    public virtual DbSet<BLOMaster> BLOMaster { get; set; }
+    public virtual DbSet<MobileVersion> MobileVersion { get; set; }
+    public virtual DbSet<Kyc> Kyc { get; set; }
+    public virtual DbSet<UnOpposed> UnOpposed { get; set; }
+    //  public virtual DbSet<BLOBoothMaster> BLOBoothMaster { get; set; } 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

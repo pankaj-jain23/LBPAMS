@@ -22,8 +22,8 @@ namespace EAMS.ViewModels
             get;
             set;
         }
-      
- 
+
+
         [Required(ErrorMessage = "Booth Code No. is required")]
         public string BoothCode_No { get; set; }
         [Required(ErrorMessage = "Total Voters field is required")]

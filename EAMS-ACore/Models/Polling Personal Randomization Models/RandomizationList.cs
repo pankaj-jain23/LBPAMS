@@ -1,11 +1,4 @@
-﻿using EAMS_ACore.Models.Polling_Personal_Randomisation_Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace EAMS_ACore.Models.Polling_Personal_Randomization_Models
+﻿namespace EAMS_ACore.Models.Polling_Personal_Randomization_Models
 {
 
     public class RandomizationTaskRounds

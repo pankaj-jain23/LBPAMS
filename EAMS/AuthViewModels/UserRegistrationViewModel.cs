@@ -45,7 +45,7 @@ namespace EAMS.AuthViewModels
     public class AssemblyViewModel
     {
         public int AssemblyMasterId { get; set; }
-        public List<PSZoneViewModel> PSZone{ get; set; }
+        public List<PSZoneViewModel> PSZone { get; set; }
     }
 
     public class PSZoneViewModel

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace EAMS_ACore.Models.BLOModels
 {
@@ -11,12 +6,12 @@ namespace EAMS_ACore.Models.BLOModels
     {
         [Key]
         public int BLOMasterId { get; set; }
-        public int StateMasterId { get; set; }       
-        public int DistrictMasterId { get; set; } 
-        public int? PCMasterId { get; set; } 
+        public int StateMasterId { get; set; }
+        public int DistrictMasterId { get; set; }
+        public int? PCMasterId { get; set; }
         public int AssemblyMasterId { get; set; }
-        public string BLOMobile { get; set;}
-        public string BLOName { get; set; }        
+        public string BLOMobile { get; set; }
+        public string BLOName { get; set; }
         public bool BLOStatus { get; set; }
         public DateTime? BLOCreatedAt { get; set; }
 
@@ -29,6 +24,6 @@ namespace EAMS_ACore.Models.BLOModels
         public DateTime RefreshTokenExpiryTime { get; set; }
         public int AppPin { get; set; }
         public bool IsLocked { get; set; }
-       
+
     }
 }

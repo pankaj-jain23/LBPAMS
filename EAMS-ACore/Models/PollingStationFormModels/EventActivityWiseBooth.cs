@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace EAMS_ACore.Models.PollingStationFormModels
+﻿namespace EAMS_ACore.Models.PollingStationFormModels
 {
     public class EventActivityWiseBooth
     {
@@ -19,5 +13,5 @@ namespace EAMS_ACore.Models.PollingStationFormModels
         public bool? UpdateStatus { get; set; }
 
     }
-     
+
 }

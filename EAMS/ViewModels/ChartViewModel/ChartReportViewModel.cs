@@ -6,6 +6,6 @@
         public string? DistrictMasterId { get; set; }
         public string? PCMasterId { get; set; }
         public string? AssemblyMasterId { get; set; }
-        public int  EventMasterId { get; set; }
+        public int EventMasterId { get; set; }
     }
 }

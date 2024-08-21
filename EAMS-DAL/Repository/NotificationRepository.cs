@@ -58,7 +58,7 @@ namespace EAMS_DAL.Repository
 
                 _context.Notification.Update(isExist);
                 _context.SaveChanges();
-                return new ServiceResponse { IsSucceed = true ,Message="Message Seen SuccessFully"};
+                return new ServiceResponse { IsSucceed = true, Message = "Message Seen SuccessFully" };
             }
             else
             {

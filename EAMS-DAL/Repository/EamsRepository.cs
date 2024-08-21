@@ -15,19 +15,13 @@ using EAMS_ACore.Models.QueueModel;
 using EAMS_ACore.ReportModels;
 using EAMS_ACore.SignalRModels;
 using EAMS_DAL.DBContext;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Npgsql;
-using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics;
 using System.Globalization;
-using System.Reflection;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 
 namespace EAMS_DAL.Repository
@@ -15949,7 +15943,7 @@ namespace EAMS_DAL.Repository
         public async Task<List<KycList>> GetKYCDetailByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId)
         {
 
-            var baseUrl = "https://lbpams.punjab.gov.in/lbpams";
+            var baseUrl = "https://lbpams.punjab.gov.in/lbpams/";
             var kycList = await _context.Kyc
                 .Where(k => k.StateMasterId == stateMasterId &&
                             k.DistrictMasterId == districtMasterId &&
@@ -15962,24 +15956,24 @@ namespace EAMS_DAL.Repository
                 .Select(joined => new KycList
                 {
                     KycMasterId = joined.Kyc.KycMasterId,
-                    StateMasterId=joined.Kyc.StateMasterId,
-                    DistrictMasterId=joined.Kyc.DistrictMasterId,
-                    AssemblyMasterId=joined.Kyc.AssemblyMasterId,
-                    FourthLevelHMasterId=joined.Kyc.FourthLevelHMasterId,
-                    BlockZonePanchayatCode=joined.Panchayat.BlockZonePanchayatCode,
-                    BlockZonePanchayatMasterId =joined.Kyc.BlockZonePanchayatMasterId,
-                    SarpanchWardsMasterId=joined.Kyc.SarpanchWardsMasterId,
-                    CandidateType=joined.Kyc.SarpanchWardsMasterId==0?"Sarpanch":"Panch",
+                    StateMasterId = joined.Kyc.StateMasterId,
+                    DistrictMasterId = joined.Kyc.DistrictMasterId,
+                    AssemblyMasterId = joined.Kyc.AssemblyMasterId,
+                    FourthLevelHMasterId = joined.Kyc.FourthLevelHMasterId,
+                    BlockZonePanchayatCode = joined.Panchayat.BlockZonePanchayatCode,
+                    BlockZonePanchayatMasterId = joined.Kyc.BlockZonePanchayatMasterId,
+                    SarpanchWardsMasterId = joined.Kyc.SarpanchWardsMasterId,
+                    CandidateType = joined.Kyc.SarpanchWardsMasterId == 0 ? "Sarpanch" : "Panch",
                     SarpanchWardsName = joined.Kyc.SarpanchWardsMasterId != 0 && joined.Panchayat.SarpanchWards.Any()
                                         ? string.Join(", ", joined.Panchayat.SarpanchWards
                                             .Where(s => s.SarpanchWardsMasterId == joined.Kyc.SarpanchWardsMasterId)
                                             .Select(s => s.SarpanchWardsName))
                                         : null,
                     CandidateName = joined.Kyc.CandidateName,
-                    FatherName=joined.Kyc.FatherName,
-                    NominationPdfPath=$"{baseUrl}{joined.Kyc.NominationPdfPath}",
+                    FatherName = joined.Kyc.FatherName,
+                    NominationPdfPath = $"{baseUrl}{joined.Kyc.NominationPdfPath}",
                     BlockZonePanchayatName = joined.Panchayat.BlockZonePanchayatName
-                }).OrderByDescending(d=>d.BlockZonePanchayatCode)
+                }).OrderByDescending(d => d.BlockZonePanchayatCode)
                 .ToListAsync();
 
             return kycList;
@@ -15988,7 +15982,7 @@ namespace EAMS_DAL.Repository
         public async Task<ServiceResponse> DeleteKycById(int kycMasterId)
         {
             var isExist = await _context.Kyc.Where(d => d.KycMasterId == kycMasterId).FirstOrDefaultAsync();
-            if(isExist == null)
+            if (isExist == null)
             {
                 return new ServiceResponse { IsSucceed = false, Message = "Record not Found" };
             }
@@ -16216,7 +16210,8 @@ namespace EAMS_DAL.Repository
         {
             try
             {
-                BlockZonePanchayat ispsZoneExist = null;
+ 
+                BlockZonePanchayat? ispsZoneExist = null;
                 if (blockPanchayat.ElectionTypeMasterId==1)// for gram panchyat only check fourth level
                 {
                     ispsZoneExist = await _context.BlockZonePanchayat.Where(p => p.BlockZonePanchayatCode == blockPanchayat.BlockZonePanchayatCode && p.StateMasterId == blockPanchayat.StateMasterId && p.DistrictMasterId == blockPanchayat.DistrictMasterId && p.AssemblyMasterId == blockPanchayat.AssemblyMasterId && p.ElectionTypeMasterId == blockPanchayat.ElectionTypeMasterId && p.FourthLevelHMasterId == blockPanchayat.FourthLevelHMasterId).FirstOrDefaultAsync();
@@ -16227,6 +16222,8 @@ namespace EAMS_DAL.Repository
                     ispsZoneExist = await _context.BlockZonePanchayat.Where(p => p.BlockZonePanchayatCode == blockPanchayat.BlockZonePanchayatCode && p.StateMasterId == blockPanchayat.StateMasterId && p.DistrictMasterId == blockPanchayat.DistrictMasterId && p.AssemblyMasterId == blockPanchayat.AssemblyMasterId && p.ElectionTypeMasterId == blockPanchayat.ElectionTypeMasterId).FirstOrDefaultAsync();
 
                 }
+ 
+                 
 
                 if (ispsZoneExist == null)
                 {
@@ -16302,8 +16299,8 @@ namespace EAMS_DAL.Repository
         }
         public async Task<BlockZonePanchayat> GetBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int blockZonePanchayatMasterId)
         {
-            var blockPanchayat = await _context.BlockZonePanchayat.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId&&d.FourthLevelHMasterId== fourthLevelHMasterId && d.BlockZonePanchayatMasterId == blockZonePanchayatMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).FirstOrDefaultAsync();
-             
+            var blockPanchayat = await _context.BlockZonePanchayat.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.FourthLevelHMasterId == fourthLevelHMasterId && d.BlockZonePanchayatMasterId == blockZonePanchayatMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).FirstOrDefaultAsync();
+
             return blockPanchayat ?? new BlockZonePanchayat(); // Return a default instance if null
         }
         public async Task<Response> DeleteBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int blockZonePanchayatMasterId)

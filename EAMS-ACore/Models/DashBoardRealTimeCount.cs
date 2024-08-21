@@ -22,8 +22,8 @@
     }
 
     public class DahboardMastersId
-    { 
-        public string? ElectionMasterId{ get; set; }
+    {
+        public string? ElectionMasterId { get; set; }
         public string? StateMasterId { get; set; }
         public string? DistrictMasterId { get; set; }
         public string? PCMasterId { get; set; }

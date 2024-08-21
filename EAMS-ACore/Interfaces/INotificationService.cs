@@ -7,7 +7,7 @@ namespace EAMS_ACore.Interfaces
     public interface INotificationService
     {
         Task<ServiceResponse> SendNotification(Notification notificationModel);
-        Task<ServiceResponse> IsNotificationSeen(string notificationId,bool isStatus);
+        Task<ServiceResponse> IsNotificationSeen(string notificationId, bool isStatus);
         Task<ServiceResponse> AddSMSTemplate(SMSTemplate SMSModel);
         Task<ServiceResponse> UpdateSMSTemplateById(SMSTemplate sMSTemplate);
         Task<SMSTemplate> GetSMSTemplateById(string smsTemplateMasterId);

@@ -14,15 +14,12 @@ using EAMS_DAL.AuthRepository;
 using EAMS_DAL.DBContext;
 using EAMS_DAL.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Text;
-using WebSocketOptions = Microsoft.AspNetCore.Builder.WebSocketOptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -170,7 +167,7 @@ builder.Services.AddSignalRCore();
 var logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
-    .WriteTo.Console()    
+    .WriteTo.Console()
     .CreateLogger();
 
 

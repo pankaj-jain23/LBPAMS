@@ -2,8 +2,8 @@
 {
     public class KycResponseViewModel
     {
-         
-      
+
+
         public int KycMasterId
         {
             get;

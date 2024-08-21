@@ -5,14 +5,11 @@ using EAMS_ACore.IAuthRepository;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
 using EAMS_DAL.DBContext;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System.Data;
-using System.Linq;
 using System.Security.Claims;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EAMS_DAL.AuthRepository
 {
@@ -383,17 +380,17 @@ namespace EAMS_DAL.AuthRepository
 
                             foreach (var district in userState.UserDistrict)
                             {
-                               foreach(var assembly in district.UserAssembly)
+                                foreach (var assembly in district.UserAssembly)
                                 {
                                     if (assembly.AssemblyMasterId != 0)
                                     {
-                                        
+
                                         userState.UserPCConstituency = null;
                                     }
                                 }
 
                             }
-                            
+
 
                         }
 
@@ -532,7 +529,7 @@ namespace EAMS_DAL.AuthRepository
                         };
                     }
 
-                  
+
 
                     // Retrieve related user states
                     var userStates = await _context.UserState
@@ -551,11 +548,11 @@ namespace EAMS_DAL.AuthRepository
                     var userStateIds = userStates.Select(us => us.UserStateId).FirstOrDefault();
 
                     // Retrieve related user districts
-                    var userDistricts = await _context.UserDistrict.Where(ud => ud.UserStateId== userStateIds).Include(d=>d.UserAssembly).ThenInclude(d=>d.UserPSZone).ToListAsync();
-                    var userPc = await _context.UserPCConstituency.Where(ud => ud.UserStateId== userStateIds).Include(d=>d.UserAssembly).ThenInclude(d=>d.UserPSZone).ToListAsync();
-                    var userDistrictAseemblyZone=userDistricts.SelectMany(d=>d.UserAssembly.Where(ud=>ud.UserPSZone !=null)).FirstOrDefault();
-                     _context.UserDistrict.RemoveRange(userDistricts);
-                     _context.UserPCConstituency.RemoveRange(userPc);
+                    var userDistricts = await _context.UserDistrict.Where(ud => ud.UserStateId == userStateIds).Include(d => d.UserAssembly).ThenInclude(d => d.UserPSZone).ToListAsync();
+                    var userPc = await _context.UserPCConstituency.Where(ud => ud.UserStateId == userStateIds).Include(d => d.UserAssembly).ThenInclude(d => d.UserPSZone).ToListAsync();
+                    var userDistrictAseemblyZone = userDistricts.SelectMany(d => d.UserAssembly.Where(ud => ud.UserPSZone != null)).FirstOrDefault();
+                    _context.UserDistrict.RemoveRange(userDistricts);
+                    _context.UserPCConstituency.RemoveRange(userPc);
                     //_context.UserPSZone.Remove(userDistrictAseemblyZone.user);
                     // find any mapping of this user with Booths, electioninfo activity performed
                     // Delete the user
@@ -603,7 +600,7 @@ namespace EAMS_DAL.AuthRepository
             var soRecord = await _context.SectorOfficerMaster.Where(d => d.SoMobile == validateMobile.MobileNumber && d.SoStatus == true).OrderBy(d => d.ElectionTypeMasterId).ToListAsync();
             return soRecord;
         }
-     
+
         public async Task<ServiceResponse> SectorOfficerMasterRecord(SectorOfficerMaster sectorOfficerMaster)
         {
             var soRecord = await _context.SectorOfficerMaster
@@ -725,9 +722,9 @@ namespace EAMS_DAL.AuthRepository
             {
                 var userSubDetails = await _context.UserState.Where(u => u.Id == userId)
                     .Include(u => u.UserDistrict)
-                        .ThenInclude(d => d.UserAssembly).ThenInclude(d=>d.UserPSZone)
+                        .ThenInclude(d => d.UserAssembly).ThenInclude(d => d.UserPSZone)
                     .Include(u => u.UserPCConstituency)
-                        .ThenInclude(pc => pc.UserAssembly) 
+                        .ThenInclude(pc => pc.UserAssembly)
                     .ToListAsync();
 
 
@@ -955,8 +952,8 @@ namespace EAMS_DAL.AuthRepository
                 Email = d.Email,
                 PhoneNumber = d.PhoneNumber,
                 LockoutEnabled = d.LockoutEnabled,
-                UserId=d.Id
-                
+                UserId = d.Id
+
             }).ToListAsync();
 
             var totalCount = await query.CountAsync();

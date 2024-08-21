@@ -1,9 +1,4 @@
-﻿using EAMS_ACore.Models.ElectionType;
-using EAMS_ACore;
-using System.ComponentModel.DataAnnotations.Schema;
-using EAMS_ACore.Models;
-
-namespace LBPAMS.ViewModels
+﻿namespace LBPAMS.ViewModels
 {
     public class AddBlockPanchayatViewModel
     {
@@ -102,7 +97,7 @@ namespace LBPAMS.ViewModels
 
 
         public int BlockZonePanchayatBooths { get; set; }
-        public string? BlockZonePanchayatCategory { get; set; }        
+        public string? BlockZonePanchayatCategory { get; set; }
 
         public bool IsStatus { get; set; }
 
@@ -153,7 +148,7 @@ namespace LBPAMS.ViewModels
 
         public int BlockZonePanchayatBooths { get; set; }
         public string? BlockZonePanchayatCategory { get; set; }
-        
+
         public bool IsStatus { get; set; }
     }
 }

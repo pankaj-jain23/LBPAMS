@@ -11,7 +11,7 @@
         public string? SetupPollingStation { get; set; }
         public string? MockPollDone { get; set; }
         public string? PollStarted { get; set; }
-       // public int? VoterTurnedOut { get; set; }
+        // public int? VoterTurnedOut { get; set; }
         public string? VoterTurnOutValue { get; set; }
         public string? FinalVotesValue { get; set; }
         public string? QueueValue { get; set; }
@@ -38,7 +38,7 @@
         public string? SetupPollingStation { get; set; }
         public string? MockPollDone { get; set; }
         public string? PollStarted { get; set; }
-      //  public int? VoterTurnedOut { get; set; }
+        //  public int? VoterTurnedOut { get; set; }
         public string? VoterTurnOutValue { get; set; }
         public string? FinalVotesValue { get; set; }
         public string? QueueValue { get; set; }

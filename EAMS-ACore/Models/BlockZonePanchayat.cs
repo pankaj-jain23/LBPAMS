@@ -71,7 +71,7 @@ namespace EAMS_ACore.Models
             get;
             set;
         }
-        
+
         public int BlockZonePanchayatBooths { get; set; }
         public string? BlockZonePanchayatCategory { get; set; }
         public DateTime? BlockZonePanchayatCreatedAt { get; set; }
@@ -85,7 +85,7 @@ namespace EAMS_ACore.Models
         {
             get;
             set;
-        } 
+        }
         public virtual List<SarpanchWards> SarpanchWards
         {
             get;

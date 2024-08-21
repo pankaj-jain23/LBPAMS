@@ -8,7 +8,7 @@
         public string SoMobile { get; set; }
         public int PendingBooths { get; set; }
         public int TotalBooths { get; set; }
-        
+
     }
-    
+
 }

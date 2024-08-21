@@ -1,8 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Globalization;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace EAMS.ViewModels.QueueViewModel
 {
@@ -29,10 +25,10 @@ namespace EAMS.ViewModels.QueueViewModel
         public string QueueEnterTime { get; set; } = DateTime.Now.ToString("HH:mm");
 
         [JsonIgnore]
-        public DateTime? QueueEnterDateTime { get;   set; }=DateTime.UtcNow;
+        public DateTime? QueueEnterDateTime { get; set; } = DateTime.UtcNow;
 
         public int QueueCount { get; set; }
 
-        
+
     }
 }

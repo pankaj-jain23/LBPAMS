@@ -1,11 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace EAMS_ACore.AuthModels
+﻿namespace EAMS_ACore.AuthModels
 {
     public class GetRefreshToken
-    { 
+    {
         public GetAccessToken AccessToken { get; set; }
-       
+
         public string RefreshToken { get; set; }
     }
     public class GetAccessToken

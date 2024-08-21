@@ -6,7 +6,7 @@ namespace EAMS_ACore.IRealTime
     public interface IUserConnectionService
     {
         ClaimsIdentity GetUserClaimsIdentity(string connectionId);
-         void AddUser(string connectionId, ClaimsIdentity claimsIdentity);
+        void AddUser(string connectionId, ClaimsIdentity claimsIdentity);
         Task<string> RemoveUser(string connectionId);
         Task<DashboardConnectedUser> GetConnectionIdByUserId(string userId);
         Task<int?> GetDashboardConnectedUserCountByStateId(int stateMasterId);

@@ -1,5 +1,4 @@
-﻿using System.Security.Cryptography;
-using System.Text;
+﻿using System.Text;
 
 namespace EAMS.Middleware
 {
@@ -22,7 +21,7 @@ namespace EAMS.Middleware
             // Check if the user is authenticated
             if (context.User.Identity.IsAuthenticated)
             {
-                
+
                 // Check for the existence of the "exp" claim
                 var expirationClaim = context.User.FindFirst("exp");
 

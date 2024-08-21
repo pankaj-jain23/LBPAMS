@@ -21,7 +21,7 @@
         public string? PartyReachedAtCollection { get; set; }
         public string? EVMDeposited { get; set; }
         public string? SOBoothAllocated_NotAllocated { get; set; }
-        public string? TotalSO { get;set; }
+        public string? TotalSO { get; set; }
         public List<object> Children { get; set; }
     }
 
@@ -80,7 +80,7 @@
 
         public string? AssignedSOName { get; set; }
         public string? AssignedSOMobile { get; set; }
-       
+
 
     }
 
@@ -90,16 +90,16 @@
         public string Key { get; set; }
         public int? MasterId { get; set; }
         public int? AssemblyMasterId { get; set; }
-        
+
         public string Name { get; set; }
         public string Type { get; set; }
-       
+
         public string? PartyDispatch { get; set; }
         public string? PartyArrived { get; set; }
         public string? SetupPollingStation { get; set; }
         public string? MockPollDone { get; set; }
         public string? PollStarted { get; set; }
-      
+
         public string? PollEnded { get; set; }
         public string? MCEVMOff { get; set; }
         public string? PartyDeparted { get; set; }
@@ -107,7 +107,7 @@
         public string? EVMDeposited { get; set; }
         public string? FinalVotesValue { get; set; }
         public string? SOBoothAllocated_NotAllocated { get; set; }
-        
+
         public string? AssignedSOName { get; set; }
         public string? AssignedSOMobile { get; set; }
         public List<object> Children { get; set; }

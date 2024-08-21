@@ -1,15 +1,11 @@
 ﻿using AutoMapper;
 using EAMS.AuthViewModels;
 using EAMS.ViewModels;
-using EAMS_ACore;
 using EAMS_ACore.AuthInterfaces;
 using EAMS_ACore.AuthModels;
 using EAMS_ACore.HelperModels;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
-using System.Security.Claims;
 
 namespace EAMS.Controllers
 {
@@ -193,7 +189,7 @@ namespace EAMS.Controllers
 
         #region Refresh Token
         [HttpPost]
-        [Route("refresh-token")]        
+        [Route("refresh-token")]
         public async Task<IActionResult> RefreshToken(GetRefreshTokenViewModel refreshTokenViewModel)
         {
             try
@@ -274,7 +270,7 @@ namespace EAMS.Controllers
         public async Task<IActionResult> GetDashboardProfile()
         {
             var soId = User.Claims.FirstOrDefault(c => c.Type == "UserId").Value;
-            var soMasterId = Convert.ToInt32( User.Claims.FirstOrDefault(c => c.Type == "StateMasterId").Value); 
+            var soMasterId = Convert.ToInt32(User.Claims.FirstOrDefault(c => c.Type == "StateMasterId").Value);
             var userRecord = await _authService.GetDashboardProfile(soId, soMasterId);
 
             if (userRecord is not null)
@@ -371,7 +367,7 @@ namespace EAMS.Controllers
         {
             if (ModelState.IsValid)
             {
-                var mappedData=_mapper.Map<GetUser>(getUserViewModel);
+                var mappedData = _mapper.Map<GetUser>(getUserViewModel);
                 var result = await _authService.GetUserList(mappedData);
                 if (result is not null)
                 {
@@ -399,15 +395,15 @@ namespace EAMS.Controllers
         {
             try
             {
-              
+
                 //var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId").Value;
-                
+
                 // Ensure the user ID is valid
                 if (string.IsNullOrEmpty(userId))
                     return BadRequest("Invalid user ID");
 
                 // Find the user by ID
-             
+
                 var result = await _authService.DeleteUser(userId);
                 //if (user == null)
                 //    return NotFound("User not found");

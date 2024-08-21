@@ -1,10 +1,8 @@
-﻿using System.Text.Json.Serialization;
-
-namespace EAMS.ViewModels.PublicModels
+﻿namespace EAMS.ViewModels.PublicModels
 {
     public class KycViewModel
     {
-                 
+
         public int StateMasterId
         {
             get;
@@ -42,7 +40,7 @@ namespace EAMS.ViewModels.PublicModels
             get;
             set;
         }
-      
+
         public string? Option1
         {
 

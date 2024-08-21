@@ -110,9 +110,9 @@ namespace EAMS.Controllers
         [HttpDelete]
         [Route("DeleteMasterStatus")]
         [Authorize]
-        public async Task<IActionResult> DeleteMaster(string Id,string type)
+        public async Task<IActionResult> DeleteMaster(string Id, string type)
         {
-            DeleteMasterStatusViewModel deleteMasterStatusViewModel =new DeleteMasterStatusViewModel()
+            DeleteMasterStatusViewModel deleteMasterStatusViewModel = new DeleteMasterStatusViewModel()
             {
                 Id = Id,
                 Type = type,
@@ -768,7 +768,7 @@ namespace EAMS.Controllers
         {
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null)
             {
-              //  var boothList = await _EAMSService.GetBoothListById(stateMasterId, districtMasterId, assemblyMasterId, pSZoneMasterId);  // Corrected to await the asynchronous method
+                //  var boothList = await _EAMSService.GetBoothListById(stateMasterId, districtMasterId, assemblyMasterId, pSZoneMasterId);  // Corrected to await the asynchronous method
                 var boothList = await _EAMSService.GetBoothListByIdwithPsZone(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);  // Corrected to await the asynchronous method
                 if (boothList != null)
                 {
@@ -1020,7 +1020,7 @@ namespace EAMS.Controllers
                                 BoothMasterId = boothMasterId,
                                 StateMasterId = boothMappingViewModel.StateMasterId,
                                 DistrictMasterId = boothMappingViewModel.DistrictMasterId,
-                                AssemblyMasterId = boothMappingViewModel.AssemblyMasterId,                             
+                                AssemblyMasterId = boothMappingViewModel.AssemblyMasterId,
                                 AssignedBy = boothMappingViewModel.AssignedBy,
                                 AssignedTo = boothMappingViewModel.AssignedTo,
                                 IsAssigned = boothMappingViewModel.IsAssigned,
@@ -1120,7 +1120,7 @@ namespace EAMS.Controllers
                     DistrictMasterId = boothRecord.DistrictMaster.DistrictMasterId,
                     DistrictName = boothRecord.DistrictMaster.DistrictName,
                     DistrictCode = boothRecord.DistrictMaster.DistrictCode,
-                    AssemblyMasterId = boothRecord.AssemblyMasterId, 
+                    AssemblyMasterId = boothRecord.AssemblyMasterId,
                     AssemblyName = boothRecord.AssemblyMaster.AssemblyName,
                     AssemblyCode = boothRecord.AssemblyMaster.AssemblyCode,
                     AssemblyType = boothRecord.AssemblyMaster.AssemblyType,
@@ -1592,7 +1592,7 @@ namespace EAMS.Controllers
 
         [HttpGet("GetFourthLevelHListById")]
         [Authorize]
-        public async Task<IActionResult> GetFourthLevelHListById(int stateMasterId, int districtMasterId, int assemblyMasterId )
+        public async Task<IActionResult> GetFourthLevelHListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null)
             {
@@ -1655,7 +1655,7 @@ namespace EAMS.Controllers
 
         [HttpGet("GetFourthLevelHById")]
         [Authorize]
-        public async Task<IActionResult> GetFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId,int fourthLevelHMasterId)
+        public async Task<IActionResult> GetFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && fourthLevelHMasterId != null)
             {
@@ -1663,7 +1663,7 @@ namespace EAMS.Controllers
                 var mappedData = _mapper.Map<FourthLevelH, ListFourthLevelHViewModel>(getList);
                 if (mappedData != null)
                 {
-                    
+
                     return Ok(mappedData);
 
                 }
@@ -1680,7 +1680,7 @@ namespace EAMS.Controllers
             }
 
         }
-     
+
         [HttpDelete("DeleteFourthLevelHById")]
         [Authorize]
         public async Task<IActionResult> DeleteFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
@@ -1690,7 +1690,7 @@ namespace EAMS.Controllers
                 var psZoneList = await _EAMSService.DeleteFourthLevelHById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);  // Corrected to await the asynchronous method
                 if (psZoneList != null)
                 {
-                    
+
                     return Ok(psZoneList);
 
                 }
@@ -1746,9 +1746,9 @@ namespace EAMS.Controllers
         [Authorize]
         public async Task<IActionResult> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
-            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null&& fourthLevelHMasterId !=null)
+            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && fourthLevelHMasterId != null)
             {
-                var getBlockPanchayatList = await _EAMSService.GetBlockPanchayatListById(stateMasterId, districtMasterId, assemblyMasterId,fourthLevelHMasterId);
+                var getBlockPanchayatList = await _EAMSService.GetBlockPanchayatListById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);
                 var mappeddata = _mapper.Map<List<BlockZonePanchayat>, List<ListBlockPanchayatViewModel>>(getBlockPanchayatList);
                 if (mappeddata != null)
                 {
@@ -1756,7 +1756,7 @@ namespace EAMS.Controllers
                     {
                         count = mappeddata.Count,
                         data = mappeddata.ToList(),
-                     
+
 
                     };
                     return Ok(data);
@@ -1901,8 +1901,8 @@ namespace EAMS.Controllers
         {
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && FourthLevelHMasterId != null && BlockZonePanchayatMasterId != null)
             {
-                var  list = await _EAMSService.GetSarpanchWardsListById(stateMasterId, districtMasterId, assemblyMasterId,FourthLevelHMasterId,BlockZonePanchayatMasterId);  // Corrected to await the asynchronous method
-               
+                var list = await _EAMSService.GetSarpanchWardsListById(stateMasterId, districtMasterId, assemblyMasterId, FourthLevelHMasterId, BlockZonePanchayatMasterId);  // Corrected to await the asynchronous method
+
                 var mappedData = _mapper.Map<List<SarpanchWards>, List<ListSarpanchWardsViewModel>>(list);
                 if (list != null)
                 {
@@ -1961,11 +1961,11 @@ namespace EAMS.Controllers
 
         [HttpGet("GetSarpanchWardsById")]
         [Authorize]
-        public async Task<IActionResult> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId , int FourthLevelHMasterId, int BlockZonePanchayatMasterId, int SarpanchWardsMasterId)
+        public async Task<IActionResult> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId, int SarpanchWardsMasterId)
         {
-            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null  && FourthLevelHMasterId != null && BlockZonePanchayatMasterId != null && SarpanchWardsMasterId != null)
+            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && FourthLevelHMasterId != null && BlockZonePanchayatMasterId != null && SarpanchWardsMasterId != null)
             {
-                var wardsList = await _EAMSService.GetSarpanchWardsById(stateMasterId,districtMasterId,assemblyMasterId,FourthLevelHMasterId,BlockZonePanchayatMasterId,SarpanchWardsMasterId);
+                var wardsList = await _EAMSService.GetSarpanchWardsById(stateMasterId, districtMasterId, assemblyMasterId, FourthLevelHMasterId, BlockZonePanchayatMasterId, SarpanchWardsMasterId);
                 if (wardsList != null)
                 {
 
@@ -1993,7 +1993,7 @@ namespace EAMS.Controllers
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && FourthLevelHMasterId != null && BlockZonePanchayatMasterId != null && SarpanchWardsMasterId != null)
             {
 
-                var isDelete =await _EAMSService.DeleteSarpanchWardsById(stateMasterId, districtMasterId, assemblyMasterId, FourthLevelHMasterId, BlockZonePanchayatMasterId, SarpanchWardsMasterId);
+                var isDelete = await _EAMSService.DeleteSarpanchWardsById(stateMasterId, districtMasterId, assemblyMasterId, FourthLevelHMasterId, BlockZonePanchayatMasterId, SarpanchWardsMasterId);
                 if (isDelete != null)
                 {
 
@@ -3605,7 +3605,7 @@ namespace EAMS.Controllers
         }
 
         #endregion
-         
+
         #region HelpDesk 
         [HttpPost]
         [Route("AddHelpDeskInfo")]

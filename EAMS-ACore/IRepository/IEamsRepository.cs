@@ -11,7 +11,6 @@ using EAMS_ACore.Models.PublicModels;
 using EAMS_ACore.Models.QueueModel;
 using EAMS_ACore.ReportModels;
 using EAMS_ACore.SignalRModels;
-using System.Globalization;
 using System.Security.Claims;
 
 namespace EAMS_ACore.IRepository
@@ -312,7 +311,7 @@ namespace EAMS_ACore.IRepository
         Task<BlockZonePanchayat> GetBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int blockZonePanchayatMasterId);
         Task<Response> UpdateBlockZonePanchayat(BlockZonePanchayat blockZonePanchayat);
         Task<Response> DeleteBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int blockZonePanchayatMasterId);
-       
+
         #endregion
     }
 }

@@ -1,8 +1,4 @@
-﻿using EAMS_ACore.Models.ElectionType;
-using EAMS_ACore;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace LBPAMS.ViewModels
+﻿namespace LBPAMS.ViewModels
 {
     public class AddSarpanchWardsViewModel
     {
@@ -16,22 +12,22 @@ namespace LBPAMS.ViewModels
             get;
             set;
         }
-        
+
 
         public int StateMasterId
         {
             get;
             set;
         }
-       
+
 
         public int DistrictMasterId
         {
             get;
             set;
         }
-        
-         
+
+
         public int AssemblyMasterId
         {
             get;
@@ -42,21 +38,21 @@ namespace LBPAMS.ViewModels
             get;
             set;
         }
-        public int? BlockZonePanchayatMasterId 
-        { 
+        public int? BlockZonePanchayatMasterId
+        {
             get;
-            set; 
+            set;
         }
 
         public string? SarpanchWardsCategory { get; set; }
-       
+
         public bool IsStatus { get; set; }
-      
+
     }
     public class UpdateSarpanchWardsViewModel
     {
         public int SarpanchWardsMasterId { get; set; }
-     
+
         public string SarpanchWardsName { get; set; }
         public int SarpanchWardsCode { get; set; }
 
@@ -101,12 +97,13 @@ namespace LBPAMS.ViewModels
             set;
         }
         public string? SarpanchWardsCategory { get; set; }
-       
+
         public bool IsStatus { get; set; }
-       
+
     }
 
-    public class ListSarpanchWardsViewModel {
+    public class ListSarpanchWardsViewModel
+    {
         public int SarpanchWardsMasterId { get; set; }
         public string SarpanchWardsName { get; set; }
         public int SarpanchWardsCode { get; set; }
