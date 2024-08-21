@@ -16250,12 +16250,24 @@ namespace EAMS_DAL.Repository
 
         public async Task<ServiceResponse> AddRsltDetails(Rsult rslt)
         {
-            rslt.ResultDecCreatedAt = BharatDateTime();
-            _context.Result.Add(rslt);
-            _context.SaveChanges();
+            
+                var resultdecexist = await _context.Result.Where(p => p.BoothCode == rslt.BoothCode && p.StateMasterId == rslt.StateMasterId && p.DistrictMasterId == rslt.DistrictMasterId && p.AssemblyMasterId == rslt.AssemblyMasterId && p.ElectionTypeMasterId == rslt.ElectionTypeMasterId && p.BoothMasterId == rslt.BoothMasterId).FirstOrDefaultAsync();
+                
+                if (resultdecexist == null)
+                {
+                    rslt.ResultDecCreatedAt = BharatDateTime();
+                    _context.Result.Add(rslt);
+                    _context.SaveChanges();
 
-            return new ServiceResponse { IsSucceed = true, Message = "Successfully added" };
-            //throw new NotImplementedException();
+                    return new ServiceResponse { IsSucceed = true, Message = "Successfully added" };
+                }
+                else
+                {
+                    return new ServiceResponse { IsSucceed = false, Message = resultdecexist.BoothCode + "Result Already Decelared" };
+                }        
+
+                //throw new NotImplementedException();
+            
         }
 
         public async Task<List<Rsult>> GetRsltDetails(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId)
@@ -16274,6 +16286,21 @@ namespace EAMS_DAL.Repository
             }
 
             return [resultdec];
+        }
+
+        async Task<List<Rsult>> GetResultByDistrict(int stateMasterId, int districtMasterId)
+        {
+            var disresultdec = await _context.Result
+                .Where(rd => rd.StateMasterId = stateMasterId &&
+                             rd.DistrictMasterId == districtMasterId)
+                .FirstOrDefaultAsync();
+            if (disresultdec == null)
+            {
+                return null
+            }
+
+            return [disresultdec];
+            
         }
 
         public Task<Response> UpdateRsltDetails(Rsult rslt)

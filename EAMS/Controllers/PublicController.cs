@@ -112,7 +112,7 @@ namespace EAMS.Controllers
 
         #region ResultDecelration
         [HttpPost("AddResultDec")]
-       // [Route("AddResultDecelaration")]
+        // [Route("AddResultDecelaration")]
         public async Task<IActionResult> AddResult([FromForm] ResultViewModel resultViewModel)
         {
             var rslt = _mapper.Map<Rsult>(resultViewModel);
@@ -131,9 +131,9 @@ namespace EAMS.Controllers
                 return BadRequest("Failed to add Result data.");
             }
         }
-       
+
         [HttpGet("GetResultDecelaration")]
-        
+
         public async Task<IActionResult> GetResultDecelaration(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId)
         {
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null)
@@ -145,7 +145,7 @@ namespace EAMS.Controllers
                     {
                         count = resltList.Count,
                         data = resltList.ToList(),
-                        
+
                     };
                     return Ok(data);
 
@@ -163,6 +163,35 @@ namespace EAMS.Controllers
             }
 
         }
+        [HttpGet("GetResultByDistrict")]
+        public async Task<IActionResult> GetResultByDistrict(int stateMasterId, int districtMasterId)
+        {
+            if (stateMasterId != null && districtMasterId != null)
+            {
+                var distrslList = await _eamsService.GetResultByDistrict(int stateMasterId, int districtMasterId);
+                if (distrslList != null)
+                {
+                    var data = new
+                    {
+                        count = distrslList.Count,
+                        data = distrslList.ToList(),
+                    };
+                    return Ok(data);
+                }
+                else
+                {
+                    return NotFound("Result not Decelared");
+                }
+            }
+            else
+            {
+
+                return BadRequest("State, District and Assembly Master Id's cannot be null");
+            }
+
+
+        }
         #endregion
     }
 }
+

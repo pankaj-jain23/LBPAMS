@@ -292,6 +292,8 @@ namespace EAMS_ACore.Interfaces
         Task<ServiceResponse> AddRsltDetails(Rsult rsult);
         Task<List<Rsult>> GetResultDecelaration(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId);
         Task<Response> UpdateRsltDetails(Rsult rsult);
+      //  Task GetResultByDistrict(int stateMasterId, int districtMasterId);
+        Task<List<Rsult>> GetResultByDistrict(int stateMasterId, int districtMasterId);
         #endregion
     }
 }

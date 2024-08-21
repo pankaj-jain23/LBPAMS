@@ -5,7 +5,7 @@ namespace LBPAMS.ViewModels.PublicModels
 {
     public class ResultViewModel
     {
-            public object? BoothCode;
+            
             public int StateMasterId
             {
                 get;
@@ -43,7 +43,12 @@ namespace LBPAMS.ViewModels.PublicModels
                 get;
                 set;
             }
-            public int? SarpanchWardsMasterId
+            public string? BoothCode
+            {
+                get;
+                set;
+            }
+             public int? SarpanchWardsMasterId
             {
                 get;
                 set;
@@ -65,7 +70,7 @@ namespace LBPAMS.ViewModels.PublicModels
             }
             
             public DateTime? ResultDecCreatedAt { get; set; }
-            public DateTime? ResultDecUpdatedAt { get; set; }
+            //public DateTime? ResultDecUpdatedAt { get; set; }
 
             public bool ResultDecStatus {  get; set; }
 

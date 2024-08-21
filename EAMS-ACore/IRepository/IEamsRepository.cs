@@ -300,6 +300,7 @@ namespace EAMS_ACore.IRepository
         #region Result Public Details
         Task<ServiceResponse> AddRsltDetails(Rsult rsult);
         Task<List<Rsult>> GetRsltDetails(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId);
+        Task<List<Rsult>> GetResultByDistrict(int stateMasterId, int districtMasterId);
         Task<Response> UpdateRsltDetails(Rsult rslt);
         
         #endregion

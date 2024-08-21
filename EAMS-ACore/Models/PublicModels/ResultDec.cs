@@ -4,7 +4,7 @@ namespace EAMS_ACore.Models.PublicModels
 {
     public class Rsult
     {
-        public string? BoothCode;
+        
 
         [Key]
         public int RsultMasterId
@@ -43,6 +43,11 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
+        public string? BoothCode
+        {
+            get;
+            set;
+        }
         public int? SarpanchWardsMasterId
         {
             get;
@@ -68,9 +73,9 @@ namespace EAMS_ACore.Models.PublicModels
 
             get; set;
         }
-
+       // public int ResultDecCode { get; set; }
         public DateTime? ResultDecCreatedAt { get; set; }
-        public DateTime? ResultDecUpdatedAt { get; set; }
+       // public DateTime? ResultDecUpdatedAt { get; set; }
 
         public bool ResultDecStatus { get; set; }
 

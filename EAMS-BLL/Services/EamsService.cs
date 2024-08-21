@@ -3327,8 +3327,14 @@ namespace EAMS_BLL.Services
         public async Task<List<Rsult>> GetResultDecelaration(int stateMasterId, int districtMasterId, int assemblyMasterId, int boothMasterId, int wardsMasterId)
         {
             return await _eamsRepository.GetRsltDetails(stateMasterId, districtMasterId, assemblyMasterId, boothMasterId, wardsMasterId);
+        }
+        public async Task<List<Rsult>> GetResultByDistrict(int stateMasterId, int districtMasterId)
+        {
+            return await _eamsRepository.GetResultByDistrict(stateMasterId, districtMasterId);
 
         }
+        
+
         public Task<Response> UpdateRsltDetails(Rsult rsult)
         {
             throw new NotImplementedException();

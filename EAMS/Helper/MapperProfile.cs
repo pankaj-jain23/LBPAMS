@@ -752,9 +752,8 @@ namespace EAMS.Helper
              .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
              .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
              .ForMember(dest => dest.BoothCode, opt => opt.MapFrom(src => src.BoothCode))
-            //.ForMember(dest => dest.NominationPdfPath, opt => opt.Ignore())
              .ForMember(dest => dest.ResultDecCreatedAt, src => src.MapFrom(src => src.ResultDecCreatedAt))
-             .ForMember(dest => dest.ResultDecUpdatedAt, src => src.MapFrom(src => src.ResultDecUpdatedAt))
+             //.ForMember(dest => dest.ResultDecUpdatedAt, src => src.MapFrom(src => src.ResultDecUpdatedAt))
              .ForMember(dest => dest.ResultDecStatus, src => src.MapFrom(src => src.ResultDecStatus))
 
             .ReverseMap();
