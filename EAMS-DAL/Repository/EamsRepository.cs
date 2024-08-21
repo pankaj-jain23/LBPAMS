@@ -2468,12 +2468,14 @@ namespace EAMS_DAL.Repository
             {
                 if (boothMaster == null)
                     return new Response { Status = RequestStatusEnum.BadRequest, Message = "Booth master data is null" };
-                if (boothMaster.BoothNoAuxy == "0")
+                if (boothMaster.BoothNoAuxy == "0" +
+                    "")
                 {
                     var checkBoothName = await _context.BoothMaster.AnyAsync(d =>
                                           d.StateMasterId == boothMaster.StateMasterId &&
                                           d.DistrictMasterId == boothMaster.DistrictMasterId &&
                                           d.AssemblyMasterId == boothMaster.AssemblyMasterId &&
+                                          d.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId &&
                                           d.BoothCode_No.Equals(boothMaster.BoothCode_No));
                     if (checkBoothName is true)
                         return new Response { Status = RequestStatusEnum.BadRequest, Message = $"The booth Code {boothMaster.BoothCode_No} already exists. You can proceed with an auxiliary booth instead." };
@@ -2487,13 +2489,25 @@ namespace EAMS_DAL.Repository
                 }
                 else
                 {
+                    //check as per grmappanchyat electiontype isprimary booth....update old if they are isprimary
+                    List<BoothMaster> existingBooths = null;
+                    if (boothMaster.ElectionTypeMasterId == 1)
+                    {
+                        existingBooths = await _context.BoothMaster.Where(p =>
+                                    p.BoothCode_No == boothMaster.BoothCode_No &&
+                                     p.StateMasterId == boothMaster.StateMasterId &&
+                                     p.AssemblyMasterId == boothMaster.AssemblyMasterId &&
+                                     p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMasterId== boothMaster.FourthLevelHMasterId).ToListAsync();
 
-                    var existingBooths = await _context.BoothMaster.Where(p =>
-                                 p.BoothCode_No == boothMaster.BoothCode_No &&
-                                  p.StateMasterId == boothMaster.StateMasterId &&
-                                  p.AssemblyMasterId == boothMaster.AssemblyMasterId &&
-                                  p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId).ToListAsync();
-
+                    }
+                    else
+                    {
+                        existingBooths = await _context.BoothMaster.Where(p =>
+                                    p.BoothCode_No == boothMaster.BoothCode_No &&
+                                     p.StateMasterId == boothMaster.StateMasterId &&
+                                     p.AssemblyMasterId == boothMaster.AssemblyMasterId &&
+                                     p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId).ToListAsync();
+                    }
 
 
                     if (existingBooths.Any())
@@ -2505,6 +2519,9 @@ namespace EAMS_DAL.Repository
                         }
                         else
                         {
+                            //check as per grmappanchyat isprimary booth....update old if they are isprimary
+                            //var check_IsparimaryBoothList=
+
                             boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
                             _context.BoothMaster.Add(boothMaster);
                             await _context.SaveChangesAsync();
@@ -16199,7 +16216,17 @@ namespace EAMS_DAL.Repository
         {
             try
             {
-                var ispsZoneExist = await _context.BlockZonePanchayat.Where(p => p.BlockZonePanchayatCode == blockPanchayat.BlockZonePanchayatCode && p.StateMasterId == blockPanchayat.StateMasterId && p.DistrictMasterId == blockPanchayat.DistrictMasterId && p.AssemblyMasterId == blockPanchayat.AssemblyMasterId && p.ElectionTypeMasterId == blockPanchayat.ElectionTypeMasterId && p.FourthLevelHMasterId== blockPanchayat.FourthLevelHMasterId).FirstOrDefaultAsync();
+                BlockZonePanchayat ispsZoneExist = null;
+                if (blockPanchayat.ElectionTypeMasterId==1)// for gram panchyat only check fourth level
+                {
+                    ispsZoneExist = await _context.BlockZonePanchayat.Where(p => p.BlockZonePanchayatCode == blockPanchayat.BlockZonePanchayatCode && p.StateMasterId == blockPanchayat.StateMasterId && p.DistrictMasterId == blockPanchayat.DistrictMasterId && p.AssemblyMasterId == blockPanchayat.AssemblyMasterId && p.ElectionTypeMasterId == blockPanchayat.ElectionTypeMasterId && p.FourthLevelHMasterId == blockPanchayat.FourthLevelHMasterId).FirstOrDefaultAsync();
+
+                }
+                else
+                {
+                    ispsZoneExist = await _context.BlockZonePanchayat.Where(p => p.BlockZonePanchayatCode == blockPanchayat.BlockZonePanchayatCode && p.StateMasterId == blockPanchayat.StateMasterId && p.DistrictMasterId == blockPanchayat.DistrictMasterId && p.AssemblyMasterId == blockPanchayat.AssemblyMasterId && p.ElectionTypeMasterId == blockPanchayat.ElectionTypeMasterId).FirstOrDefaultAsync();
+
+                }
 
                 if (ispsZoneExist == null)
                 {
