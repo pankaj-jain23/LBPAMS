@@ -682,80 +682,179 @@ namespace EAMS_DAL.Repository
                             IsSucceed = false,
                         };
                     }
-                //case "BlockZonePanchayat":
-                //    var isBoothExistofPanchyat = await _context.BoothMaster.Where(d => d.BlockZonePanchayatMasterId == Convert.ToInt32(updateMasterStatus.Id)).CountAsync();
-                    
+                case "BlockZonePanchayat":
+                    var panchayatRecord = await _context.BlockZonePanchayat.Where(d => d.BlockZonePanchayatMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
 
-                //    if (panchayatRecord != null)
-                //    {
-                //        var panchayatRecord = await _context.BlockZonePanchayat.Where(d => d.BlockZonePanchayatMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
+                    var isBoothExistofPanchyat = await _context.BoothMaster.Where(d => d.BlockZonePanchayatMasterId == Convert.ToInt32(updateMasterStatus.Id)).CountAsync();
+                    var isWardExistofPanchyat = await _context.SarpanchWards.Where(d => d.BlockZonePanchayatMasterId == Convert.ToInt32(updateMasterStatus.Id)).CountAsync();
 
-                //        if (panchayatRecord.ElectionTypeMasterId == 1)
-                //        {
-                //            if (isBoothExistofPanchyat > 0 && isWardExistofPanchyat > 0)
-                //            {
-                //                return new ServiceResponse { IsSucceed = false, Message = "Data Found aganist this Panchayt in Booth and Ward, can't deelete !" };
 
-                //            }
+                    if (panchayatRecord != null)
+                    {
 
-                //            else if (isBoothExistofPanchyat > 0 && isWardExistofPanchyat == 0)
-                //            {
-                //                return new ServiceResponse { IsSucceed = false, Message = "Data Found aganist this Panchayt in Booths, can't deelete !" };
+                       if (panchayatRecord.ElectionTypeMasterId == 1)
+                        {
+                            if (isBoothExistofPanchyat > 0 && isWardExistofPanchyat > 0)
+                            {
+                                return new ServiceResponse { IsSucceed = false, Message = "Data Found aganist this Panchayt in Booth and Ward, can't deelete !" };
 
-                //            }
-                //            else if (isBoothExistofPanchyat == 0 && isWardExistofPanchyat > 0)
-                //            {
-                //                return new ServiceResponse { IsSucceed = false, Message = "Data Found aganist this Panchayt in Ward, can't deelete !" };
+                            }
 
-                //            }
-                //            else
-                //            {
-                //                _context.BlockZonePanchayat.Remove(panchayatRecord);
-                //                await _context.SaveChangesAsync();
-                //                return new ServiceResponse { IsSucceed = true, Message = "Panchayat Deleted Successfully" };
+                            else if (isBoothExistofPanchyat > 0 && isWardExistofPanchyat == 0)
+                            {
+                                return new ServiceResponse { IsSucceed = false, Message = "Data Found aganist this Panchayt in Booths, can't deelete !" };
 
-                //            }
-                //        }
+                            }
+                            else if (isBoothExistofPanchyat == 0 && isWardExistofPanchyat > 0)
+                            {
+                                return new ServiceResponse { IsSucceed = false, Message = "Data Found aganist this Panchayt in Ward, can't deelete !" };
 
-                //        else if (panchayatRecord.ElectionTypeMasterId == 2)///panchyat samiti
-                //        {
-                //            if (isBoothExistofPanchyat > 0 )
-                //            {
-                //                return new ServiceResponse { IsSucceed = false, Message = "Data Found aganist this Panchayt in Booth, can't deelete !" };
+                            }
+                            else
+                            {
+                                _context.BlockZonePanchayat.Remove(panchayatRecord);
+                                await _context.SaveChangesAsync();
+                                return new ServiceResponse { IsSucceed = true, Message = "Panchayat Deleted Successfully" };
 
-                //            }
-                                                    
-                //            else
-                //            {
-                //                _context.BlockZonePanchayat.Remove(panchayatRecord);
-                //                await _context.SaveChangesAsync();
-                //                return new ServiceResponse { IsSucceed = true, Message = "Panchayat Deleted Successfully" };
+                            }
+                        }
+                       else if (panchayatRecord.ElectionTypeMasterId == 2)///panchyat samiti
+                        {
+                            if (isBoothExistofPanchyat > 0)
+                            {
+                                return new ServiceResponse { IsSucceed = false, Message = "Data Found aganist this Panchayt in Booth, can't deelete !" };
 
-                //            }
-                //        }
-                //        else if (panchayatRecord.ElectionTypeMasterId == 3 || panchayatRecord.ElectionTypeMasterId == 4 || panchayatRecord.ElectionTypeMasterId==5 || panchayatRecord.ElectionTypeMasterId==6)
-                //        {
-                //            if (isBoothExistofPanchyat > 0)
-                //            {
-                //                return new ServiceResponse { IsSucceed = false, Message = "Data Found aganist this Panchayt in Booth, can't deelete !" };
+                            }
 
-                //            }
+                            else
+                            {
+                                _context.BlockZonePanchayat.Remove(panchayatRecord);
+                                await _context.SaveChangesAsync();
+                                return new ServiceResponse { IsSucceed = true, Message = "Panchayat Deleted Successfully" };
 
-                //            else
-                //            {
-                //                _context.BlockZonePanchayat.Remove(panchayatRecord);
-                //                await _context.SaveChangesAsync();
-                //                return new ServiceResponse { IsSucceed = true, Message = "Panchayat Deleted Successfully" };
+                            }
+                        }
+                       else
+                        {
+                            return new ServiceResponse { IsSucceed = false, Message = "Panchayat can only be deleted for Gram Panchayat or Panchayat Samiti elections." };
+                        }
+                    }
+                    else
+                    {
+                        return new ServiceResponse { IsSucceed = false, Message = "Panchayat Record Not Found." };
 
-                //            }
-                //        }
-                //    }
-                //    else
-                //    {
-                //        return new ServiceResponse { IsSucceed = false, Message = "Panchayat Record Not Found." };
+                    }
+                case "FourthLevel":
+                    var fourthLevelRecord = await _context.FourthLevelH.Where(d => d.FourthLevelHMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
+                   if (fourthLevelRecord != null)
+                    {
 
-                //    }
+                        if (fourthLevelRecord.ElectionTypeMasterId == 1 || fourthLevelRecord.ElectionTypeMasterId==2)
+                        {
+                            var blockZonePanchyatRecord = await _context.BlockZonePanchayat.Where(d => d.FourthLevelHMasterId == Convert.ToInt32(updateMasterStatus.Id)).CountAsync();
 
+                            if (blockZonePanchyatRecord > 0 )
+                            {
+                                return new ServiceResponse { IsSucceed = false, Message = "Data Found aganist this Sub Local Body Record in Block-Zone Panchayat, can't delete !" };
+
+                            }
+                            else
+                            {
+                                _context.FourthLevelH.Remove(fourthLevelRecord);
+                                await _context.SaveChangesAsync();
+                                return new ServiceResponse { IsSucceed = true, Message = "Sub Local Body Record Deleted Successfully" };
+
+                            }
+                        }
+                        else if (fourthLevelRecord.ElectionTypeMasterId == 3 || fourthLevelRecord.ElectionTypeMasterId == 4 || fourthLevelRecord.ElectionTypeMasterId == 5 || fourthLevelRecord.ElectionTypeMasterId == 6)
+                        {
+                            var isBoothExistofFourthLevel = await _context.BoothMaster.Where(d => d.FourthLevelHMasterId == Convert.ToInt32(updateMasterStatus.Id)).CountAsync();
+
+                            if (isBoothExistofFourthLevel > 0)
+                            {
+                                return new ServiceResponse { IsSucceed = false, Message = "Data Found aganist this SubLocal Body Record in Booth, can't delete !" };
+
+                            }
+
+                            else
+                            {
+                                _context.FourthLevelH.Remove(fourthLevelRecord);
+                                await _context.SaveChangesAsync();
+                                return new ServiceResponse { IsSucceed = true, Message = "Sub Local Body record Deleted Successfully" };
+
+                            }
+                        }
+                        else
+                        {
+                            return new ServiceResponse { IsSucceed = false, Message = "Election Type is not valid to delete this Sub local Body Record." };
+                        }
+                    }
+                    else
+                    {
+                        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
+
+                    }
+                case "AssemblyMaster":
+                    var assemblyMaster = await _context.AssemblyMaster.Where(d => d.AssemblyMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
+
+                    if (assemblyMaster != null)
+                    {
+                        //if (updateMasterStatus.IsStatus == false)
+                        //{
+                        var fourthLevelExistsInAssembly = await _context.FourthLevelH
+                            .Where(d => d.StateMasterId == assemblyMaster.StateMasterId && d.DistrictMasterId == assemblyMaster.DistrictMasterId && d.AssemblyMasterId == assemblyMaster.AssemblyMasterId)
+                            .ToListAsync();
+
+                        if (fourthLevelExistsInAssembly.Count > 0)
+                        {
+                            return new ServiceResponse
+                            {
+                                IsSucceed = false,
+                                Message = "Sub Local Bodies data Present aganist this Record, Can't delete"
+                            };
+                        }
+                        else
+                        {
+                            _context.AssemblyMaster.Remove(assemblyMaster);
+                            await _context.SaveChangesAsync();
+                            return new ServiceResponse { IsSucceed = true, Message = "Record Deleted Succesfully." };
+
+                        }
+                        // }
+
+
+
+                    }
+                    else
+                    {
+                        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
+                    }
+                case "DistrictMaster":
+                    var districtId = Convert.ToInt32(updateMasterStatus.Id);
+                    var districtRecord = await _context.DistrictMaster.FirstOrDefaultAsync(d => d.DistrictMasterId == districtId);
+
+                    if (districtRecord != null)
+                    {
+                        var assembliesRecord = await _context.AssemblyMaster.Where(s => s.DistrictMasterId == districtRecord.DistrictMasterId).ToListAsync();
+                        if (assembliesRecord.Count > 0)
+                        {
+                            return new ServiceResponse { IsSucceed = false, Message = "Can’t delete , as Local Bodies exist against this District" };
+
+                        }
+                        else
+                        {
+
+
+                            _context.DistrictMaster.Remove(districtRecord);
+                            await _context.SaveChangesAsync();
+                            return new ServiceResponse { IsSucceed = true, Message = "District deleted successfully." };
+
+                        }
+                    }
+                    else
+                    {
+                        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
+                    }
                 case "StateMaster":
 
                     var stateRecord = await _context.StateMaster.FirstOrDefaultAsync(d => d.StateMasterId == Convert.ToInt32(updateMasterStatus.Id));
@@ -788,69 +887,7 @@ namespace EAMS_DAL.Repository
                         return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
                     }
 
-                case "DistrictMaster":
-                    var districtId = Convert.ToInt32(updateMasterStatus.Id);
-                    var districtRecord = await _context.DistrictMaster.FirstOrDefaultAsync(d => d.DistrictMasterId == districtId);
 
-                    if (districtRecord != null)
-                    {
-                        var assembliesRecord = await _context.AssemblyMaster.Where(s => s.DistrictMasterId == districtRecord.DistrictMasterId).ToListAsync();
-                        if (assembliesRecord.Count > 0)
-                        {
-                            return new ServiceResponse { IsSucceed = false, Message = "Can’t delete , as Local Bodies exist against this District" };
-
-                        }
-                        else
-                        {
-
-
-                            _context.DistrictMaster.Remove(districtRecord);
-                            await _context.SaveChangesAsync();
-                            return new ServiceResponse { IsSucceed = true, Message = "District deleted successfully." };
-
-                        }
-                    }
-                    else
-                    {
-                        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
-                    }
-                case "AssemblyMaster":
-                    var assemblyMaster = await _context.AssemblyMaster.Where(d => d.AssemblyMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
-
-                    if (assemblyMaster != null)
-                    {
-                        //if (updateMasterStatus.IsStatus == false)
-                        //{
-                        var boothsActiveOfAssembly = await _context.BoothMaster
-                            .Where(d => d.StateMasterId == assemblyMaster.StateMasterId && d.DistrictMasterId == assemblyMaster.DistrictMasterId && d.AssemblyMasterId == assemblyMaster.AssemblyMasterId && d.BoothStatus == true)
-                            .ToListAsync();
-
-                        if (boothsActiveOfAssembly.Count > 0)
-                        {
-                            return new ServiceResponse
-                            {
-                                IsSucceed = false,
-                                Message = "Booths are active under this State Assembly. Make sure they are Inactive first"
-                            };
-                        }
-                        else
-                        {
-                            _context.AssemblyMaster.Remove(assemblyMaster);
-                            await _context.SaveChangesAsync();
-                            return new ServiceResponse { IsSucceed = true, Message = "Assembly Deleted Succesfully." };
-
-                        }
-                        // }
-
-
-
-                    }
-                    else
-                    {
-                        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
-                    }
-
-              
                 case "SOMaster":
                     var isSOExist = await _context.SectorOfficerMaster.Where(d => d.SOMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
                     if (isSOExist != null)
@@ -1456,7 +1493,7 @@ namespace EAMS_DAL.Repository
             if (assembliesMasterRecords != null)
             {
 
-                var isAssemblyCodeExist = await _context.AssemblyMaster.Where(p => p.AssemblyCode == assemblyMaster.AssemblyCode && p.StateMasterId == assemblyMaster.StateMasterId && p.ElectionTypeMasterId == assemblyMaster.ElectionTypeMasterId && p.AssemblyMasterId != assemblyMaster.AssemblyMasterId).ToListAsync();
+                var isAssemblyCodeExist = await _context.AssemblyMaster.Where(p => p.AssemblyCode == assemblyMaster.AssemblyCode && p.StateMasterId == assemblyMaster.StateMasterId && p.ElectionTypeMasterId == assemblyMaster.ElectionTypeMasterId && p.AssemblyMasterId != assemblyMaster.AssemblyMasterId && p.DistrictMasterId == assemblyMaster.DistrictMasterId).ToListAsync();
                 if (isAssemblyCodeExist.Count == 0)
                 {
 
