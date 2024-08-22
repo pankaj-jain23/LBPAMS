@@ -913,38 +913,58 @@ namespace EAMS.Controllers
 
                     if (asemRecord != null)
                     {
-                        if (asemRecord.TotalBooths > 0)
+                        if (asemRecord.ElectionTypeMasterId != 1)
                         {
-
-
-                            if (boothsEntered.Count < asemRecord.TotalBooths)
+                            if (asemRecord.TotalBooths > 0)
                             {
-                                var mappedData = _mapper.Map<BoothMasterViewModel, BoothMaster>(BoothMasterViewModel);
-                                var electionType = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId").Value;
-
-                                var result = await _EAMSService.AddBooth(mappedData);
-                                switch (result.Status)
+                                if (boothsEntered.Count < asemRecord.TotalBooths)
                                 {
-                                    case RequestStatusEnum.OK:
-                                        return Ok(result.Message);
-                                    case RequestStatusEnum.BadRequest:
-                                        return BadRequest(result.Message);
-                                    case RequestStatusEnum.NotFound:
-                                        return NotFound(result.Message);
+                                    var mappedData = _mapper.Map<BoothMasterViewModel, BoothMaster>(BoothMasterViewModel);
+                                    var electionType = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId").Value;
 
-                                    default:
-                                        return StatusCode(500, "Internal Server Error");
+                                    var result = await _EAMSService.AddBooth(mappedData);
+                                    switch (result.Status)
+                                    {
+                                        case RequestStatusEnum.OK:
+                                            return Ok(result.Message);
+                                        case RequestStatusEnum.BadRequest:
+                                            return BadRequest(result.Message);
+                                        case RequestStatusEnum.NotFound:
+                                            return NotFound(result.Message);
+
+                                        default:
+                                            return StatusCode(500, "Internal Server Error");
+                                    }
+                                }
+                                else
+                                {
+                                    return BadRequest("You have already Entered " + asemRecord.TotalBooths + " " + ", cannot exceed from limit");
+
                                 }
                             }
                             else
                             {
-                                return BadRequest("You have already Entered " + asemRecord.TotalBooths + " " + ", cannot exceed from limit");
-
+                                return StatusCode(500, "Please Enter Your Total Booths in Assembly");
                             }
                         }
                         else
                         {
-                            return StatusCode(500, "Please Enter Your Total Booths in Assembly");
+                            var mappedData = _mapper.Map<BoothMasterViewModel, BoothMaster>(BoothMasterViewModel);
+                            var electionType = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId").Value;
+
+                            var result = await _EAMSService.AddBooth(mappedData);
+                            switch (result.Status)
+                            {
+                                case RequestStatusEnum.OK:
+                                    return Ok(result.Message);
+                                case RequestStatusEnum.BadRequest:
+                                    return BadRequest(result.Message);
+                                case RequestStatusEnum.NotFound:
+                                    return NotFound(result.Message);
+
+                                default:
+                                    return StatusCode(500, "Internal Server Error");
+                            }
                         }
                     }
                     else

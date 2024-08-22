@@ -633,6 +633,129 @@ namespace EAMS_DAL.Repository
         {
             switch (updateMasterStatus.Type)
             {
+               
+
+                case "BoothMaster":
+                    var isBoothExist = await _context.BoothMaster.Where(d => d.BoothMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
+                    if (isBoothExist != null)
+                    {
+                        var electionInfoRecord = await _context.ElectionInfoMaster
+      .Where(d => d.StateMasterId == isBoothExist.StateMasterId && d.DistrictMasterId == isBoothExist.DistrictMasterId && d.AssemblyMasterId == isBoothExist.AssemblyMasterId && d.BoothMasterId == isBoothExist.BoothMasterId)
+      .FirstOrDefaultAsync();
+                        if (electionInfoRecord == null)
+                        {
+                            if (isBoothExist.AssignedTo == null || isBoothExist.AssignedTo == "")
+                            {
+                                if (isBoothExist.AssignedToBLO == null || isBoothExist.AssignedToBLO == "")
+                                {
+
+                                    
+                                    _context.BoothMaster.Remove(isBoothExist);
+                                    await _context.SaveChangesAsync();
+                                    return new ServiceResponse { IsSucceed = true, Message = "Booth is deleted successfully." };
+
+                                }
+                                else
+                                {
+                                    return new ServiceResponse { IsSucceed = false, Message = "Booth is allocated to a BLO, Kindly Release Booth First." };
+
+                                }
+
+                            }
+                            else
+                            {
+                                return new ServiceResponse { IsSucceed = false, Message = "Booth is allocated to a Sector Officer, Kindly Release Booth First." };
+                            }
+                        }
+                        else
+                        {
+
+                            return new ServiceResponse { IsSucceed = false, Message = "Election Info Record found aganist this Booth, thus can't deleted" };
+
+                        }
+
+                    }
+                    else
+                    {
+                        return new ServiceResponse
+                        {
+                            IsSucceed = false,
+                        };
+                    }
+                //case "BlockZonePanchayat":
+                //    var isBoothExistofPanchyat = await _context.BoothMaster.Where(d => d.BlockZonePanchayatMasterId == Convert.ToInt32(updateMasterStatus.Id)).CountAsync();
+                    
+
+                //    if (panchayatRecord != null)
+                //    {
+                //        var panchayatRecord = await _context.BlockZonePanchayat.Where(d => d.BlockZonePanchayatMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
+
+                //        if (panchayatRecord.ElectionTypeMasterId == 1)
+                //        {
+                //            if (isBoothExistofPanchyat > 0 && isWardExistofPanchyat > 0)
+                //            {
+                //                return new ServiceResponse { IsSucceed = false, Message = "Data Found aganist this Panchayt in Booth and Ward, can't deelete !" };
+
+                //            }
+
+                //            else if (isBoothExistofPanchyat > 0 && isWardExistofPanchyat == 0)
+                //            {
+                //                return new ServiceResponse { IsSucceed = false, Message = "Data Found aganist this Panchayt in Booths, can't deelete !" };
+
+                //            }
+                //            else if (isBoothExistofPanchyat == 0 && isWardExistofPanchyat > 0)
+                //            {
+                //                return new ServiceResponse { IsSucceed = false, Message = "Data Found aganist this Panchayt in Ward, can't deelete !" };
+
+                //            }
+                //            else
+                //            {
+                //                _context.BlockZonePanchayat.Remove(panchayatRecord);
+                //                await _context.SaveChangesAsync();
+                //                return new ServiceResponse { IsSucceed = true, Message = "Panchayat Deleted Successfully" };
+
+                //            }
+                //        }
+
+                //        else if (panchayatRecord.ElectionTypeMasterId == 2)///panchyat samiti
+                //        {
+                //            if (isBoothExistofPanchyat > 0 )
+                //            {
+                //                return new ServiceResponse { IsSucceed = false, Message = "Data Found aganist this Panchayt in Booth, can't deelete !" };
+
+                //            }
+                                                    
+                //            else
+                //            {
+                //                _context.BlockZonePanchayat.Remove(panchayatRecord);
+                //                await _context.SaveChangesAsync();
+                //                return new ServiceResponse { IsSucceed = true, Message = "Panchayat Deleted Successfully" };
+
+                //            }
+                //        }
+                //        else if (panchayatRecord.ElectionTypeMasterId == 3 || panchayatRecord.ElectionTypeMasterId == 4 || panchayatRecord.ElectionTypeMasterId==5 || panchayatRecord.ElectionTypeMasterId==6)
+                //        {
+                //            if (isBoothExistofPanchyat > 0)
+                //            {
+                //                return new ServiceResponse { IsSucceed = false, Message = "Data Found aganist this Panchayt in Booth, can't deelete !" };
+
+                //            }
+
+                //            else
+                //            {
+                //                _context.BlockZonePanchayat.Remove(panchayatRecord);
+                //                await _context.SaveChangesAsync();
+                //                return new ServiceResponse { IsSucceed = true, Message = "Panchayat Deleted Successfully" };
+
+                //            }
+                //        }
+                //    }
+                //    else
+                //    {
+                //        return new ServiceResponse { IsSucceed = false, Message = "Panchayat Record Not Found." };
+
+                //    }
+
                 case "StateMaster":
 
                     var stateRecord = await _context.StateMaster.FirstOrDefaultAsync(d => d.StateMasterId == Convert.ToInt32(updateMasterStatus.Id));
@@ -727,6 +850,7 @@ namespace EAMS_DAL.Repository
                         return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
                     }
 
+              
                 case "SOMaster":
                     var isSOExist = await _context.SectorOfficerMaster.Where(d => d.SOMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
                     if (isSOExist != null)
@@ -749,52 +873,6 @@ namespace EAMS_DAL.Repository
                     else
                     {
                         return new ServiceResponse { IsSucceed = false, Message = "Sector Officer Record Not Found." };
-                    }
-
-                case "BoothMaster":
-                    var isBoothExist = await _context.BoothMaster.Where(d => d.BoothMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
-                    if (isBoothExist != null)
-                    {
-                        var electionInfoRecord = await _context.ElectionInfoMaster
-      .Where(d => d.StateMasterId == isBoothExist.StateMasterId && d.DistrictMasterId == isBoothExist.DistrictMasterId && d.AssemblyMasterId == isBoothExist.AssemblyMasterId && d.BoothMasterId == isBoothExist.BoothMasterId)
-      .FirstOrDefaultAsync();
-                        if (electionInfoRecord == null)
-                        {
-                            if (isBoothExist.AssignedTo == null || isBoothExist.AssignedTo == "")
-                            {
-                                if (isBoothExist.AssignedToBLO == null || isBoothExist.AssignedToBLO == "")
-                                {
-                                    _context.BoothMaster.Remove(isBoothExist);
-                                    await _context.SaveChangesAsync();
-                                    return new ServiceResponse { IsSucceed = true, Message = "Booth is deleted successfully." };
-
-                                }
-                                else
-                                {
-                                    return new ServiceResponse { IsSucceed = false, Message = "Booth is allocated to a BLO, Kindly Release Booth First." };
-
-                                }
-
-                            }
-                            else
-                            {
-                                return new ServiceResponse { IsSucceed = false, Message = "Booth is allocated to a Sector Officer, Kindly Release Booth First." };
-                            }
-                        }
-                        else
-                        {
-
-                            return new ServiceResponse { IsSucceed = false, Message = "Election Info Record found aganist this Booth, thus can't deleted" };
-
-                        }
-
-                    }
-                    else
-                    {
-                        return new ServiceResponse
-                        {
-                            IsSucceed = false,
-                        };
                     }
 
                 case "LocationMaster":
