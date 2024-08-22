@@ -810,7 +810,7 @@ namespace EAMS_DAL.Repository
                             return new ServiceResponse
                             {
                                 IsSucceed = false,
-                                Message = "Sub Local Bodies data Present aganist this Record, Can't delete"
+                                Message = "Sub Local Bodies data Present aganist this Record, Can't delete!"
                             };
                         }
                         else
@@ -838,14 +838,11 @@ namespace EAMS_DAL.Repository
                         var assembliesRecord = await _context.AssemblyMaster.Where(s => s.DistrictMasterId == districtRecord.DistrictMasterId).ToListAsync();
                         if (assembliesRecord.Count > 0)
                         {
-                            return new ServiceResponse { IsSucceed = false, Message = "Can’t delete , as Local Bodies exist against this District" };
+                            return new ServiceResponse { IsSucceed = false, Message = "Can’t delete as Local Body record exists against this District." };
 
                         }
                         else
-                        {
-
-
-                            _context.DistrictMaster.Remove(districtRecord);
+                        {   _context.DistrictMaster.Remove(districtRecord);
                             await _context.SaveChangesAsync();
                             return new ServiceResponse { IsSucceed = true, Message = "District deleted successfully." };
 
@@ -868,7 +865,7 @@ namespace EAMS_DAL.Repository
 
                         if (districtsActiveOfState.Count > 0)
                         {
-                            return new ServiceResponse { IsSucceed = false, Message = "Districts are active under this State. Make sure they are Inactive first." };
+                            return new ServiceResponse { IsSucceed = false, Message = "District Records are present in aganist this State,can't delete!" };
                         }
                         else
                         {
