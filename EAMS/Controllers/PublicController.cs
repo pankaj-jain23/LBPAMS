@@ -305,8 +305,8 @@ namespace EAMS.Controllers
                 var data = new
                 {
                     count = result.Count,
-                    Sarpacnh = result.Where(k => k.SarpanchWardsMasterId == 0).ToList(),
-                    Panch = result.Where(k => k.SarpanchWardsMasterId != 0).ToList()
+                    Sarpacnh = result.Where(k => k.SarpanchWardsMasterId == 0|| k.SarpanchWardsMasterId == null).ToList(),
+                    Panch = result.Where(k => k.SarpanchWardsMasterId != 0||  k.SarpanchWardsMasterId != null).ToList()
 
                 };
                 return Ok(data);

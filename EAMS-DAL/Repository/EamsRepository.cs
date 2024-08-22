@@ -633,6 +633,228 @@ namespace EAMS_DAL.Repository
         {
             switch (updateMasterStatus.Type)
             {
+               
+
+                case "BoothMaster":
+                    var isBoothExist = await _context.BoothMaster.Where(d => d.BoothMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
+                    if (isBoothExist != null)
+                    {
+                        var electionInfoRecord = await _context.ElectionInfoMaster
+      .Where(d => d.StateMasterId == isBoothExist.StateMasterId && d.DistrictMasterId == isBoothExist.DistrictMasterId && d.AssemblyMasterId == isBoothExist.AssemblyMasterId && d.BoothMasterId == isBoothExist.BoothMasterId)
+      .FirstOrDefaultAsync();
+                        if (electionInfoRecord == null)
+                        {
+                            if (isBoothExist.AssignedTo == null || isBoothExist.AssignedTo == "")
+                            {
+                                if (isBoothExist.AssignedToBLO == null || isBoothExist.AssignedToBLO == "")
+                                {
+
+                                    
+                                    _context.BoothMaster.Remove(isBoothExist);
+                                    await _context.SaveChangesAsync();
+                                    return new ServiceResponse { IsSucceed = true, Message = "Booth is deleted successfully." };
+
+                                }
+                                else
+                                {
+                                    return new ServiceResponse { IsSucceed = false, Message = "Booth is allocated to a BLO, Kindly Release Booth First." };
+
+                                }
+
+                            }
+                            else
+                            {
+                                return new ServiceResponse { IsSucceed = false, Message = "Booth is allocated to a Sector Officer, Kindly Release Booth First." };
+                            }
+                        }
+                        else
+                        {
+
+                            return new ServiceResponse { IsSucceed = false, Message = "Election Info Record found aganist this Booth, thus can't deleted" };
+
+                        }
+
+                    }
+                    else
+                    {
+                        return new ServiceResponse
+                        {
+                            IsSucceed = false,
+                        };
+                    }
+                case "BlockZonePanchayat":
+                    var panchayatRecord = await _context.BlockZonePanchayat.Where(d => d.BlockZonePanchayatMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
+
+                    var isBoothExistofPanchyat = await _context.BoothMaster.Where(d => d.BlockZonePanchayatMasterId == Convert.ToInt32(updateMasterStatus.Id)).CountAsync();
+                    var isWardExistofPanchyat = await _context.SarpanchWards.Where(d => d.BlockZonePanchayatMasterId == Convert.ToInt32(updateMasterStatus.Id)).CountAsync();
+
+
+                    if (panchayatRecord != null)
+                    {
+
+                       if (panchayatRecord.ElectionTypeMasterId == 1)
+                        {
+                            if (isBoothExistofPanchyat > 0 && isWardExistofPanchyat > 0)
+                            {
+                                return new ServiceResponse { IsSucceed = false, Message = "Data Found aganist this Panchayt in Booth and Ward, can't deelete !" };
+
+                            }
+
+                            else if (isBoothExistofPanchyat > 0 && isWardExistofPanchyat == 0)
+                            {
+                                return new ServiceResponse { IsSucceed = false, Message = "Data Found aganist this Panchayt in Booths, can't deelete !" };
+
+                            }
+                            else if (isBoothExistofPanchyat == 0 && isWardExistofPanchyat > 0)
+                            {
+                                return new ServiceResponse { IsSucceed = false, Message = "Data Found aganist this Panchayt in Ward, can't deelete !" };
+
+                            }
+                            else
+                            {
+                                _context.BlockZonePanchayat.Remove(panchayatRecord);
+                                await _context.SaveChangesAsync();
+                                return new ServiceResponse { IsSucceed = true, Message = "Panchayat Deleted Successfully" };
+
+                            }
+                        }
+                       else if (panchayatRecord.ElectionTypeMasterId == 2)///panchyat samiti
+                        {
+                            if (isBoothExistofPanchyat > 0)
+                            {
+                                return new ServiceResponse { IsSucceed = false, Message = "Data Found aganist this Panchayt in Booth, can't deelete !" };
+
+                            }
+
+                            else
+                            {
+                                _context.BlockZonePanchayat.Remove(panchayatRecord);
+                                await _context.SaveChangesAsync();
+                                return new ServiceResponse { IsSucceed = true, Message = "Panchayat Deleted Successfully" };
+
+                            }
+                        }
+                       else
+                        {
+                            return new ServiceResponse { IsSucceed = false, Message = "Panchayat can only be deleted for Gram Panchayat or Panchayat Samiti elections." };
+                        }
+                    }
+                    else
+                    {
+                        return new ServiceResponse { IsSucceed = false, Message = "Panchayat Record Not Found." };
+
+                    }
+                case "FourthLevel":
+                    var fourthLevelRecord = await _context.FourthLevelH.Where(d => d.FourthLevelHMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
+                   if (fourthLevelRecord != null)
+                    {
+
+                        if (fourthLevelRecord.ElectionTypeMasterId == 1 || fourthLevelRecord.ElectionTypeMasterId==2)
+                        {
+                            var blockZonePanchyatRecord = await _context.BlockZonePanchayat.Where(d => d.FourthLevelHMasterId == Convert.ToInt32(updateMasterStatus.Id)).CountAsync();
+
+                            if (blockZonePanchyatRecord > 0 )
+                            {
+                                return new ServiceResponse { IsSucceed = false, Message = "Data Found aganist this Sub Local Body Record in Block-Zone Panchayat, can't delete !" };
+
+                            }
+                            else
+                            {
+                                _context.FourthLevelH.Remove(fourthLevelRecord);
+                                await _context.SaveChangesAsync();
+                                return new ServiceResponse { IsSucceed = true, Message = "Sub Local Body Record Deleted Successfully" };
+
+                            }
+                        }
+                        else if (fourthLevelRecord.ElectionTypeMasterId == 3 || fourthLevelRecord.ElectionTypeMasterId == 4 || fourthLevelRecord.ElectionTypeMasterId == 5 || fourthLevelRecord.ElectionTypeMasterId == 6)
+                        {
+                            var isBoothExistofFourthLevel = await _context.BoothMaster.Where(d => d.FourthLevelHMasterId == Convert.ToInt32(updateMasterStatus.Id)).CountAsync();
+
+                            if (isBoothExistofFourthLevel > 0)
+                            {
+                                return new ServiceResponse { IsSucceed = false, Message = "Data Found aganist this SubLocal Body Record in Booth, can't delete !" };
+
+                            }
+
+                            else
+                            {
+                                _context.FourthLevelH.Remove(fourthLevelRecord);
+                                await _context.SaveChangesAsync();
+                                return new ServiceResponse { IsSucceed = true, Message = "Sub Local Body record Deleted Successfully" };
+
+                            }
+                        }
+                        else
+                        {
+                            return new ServiceResponse { IsSucceed = false, Message = "Election Type is not valid to delete this Sub local Body Record." };
+                        }
+                    }
+                    else
+                    {
+                        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
+
+                    }
+                case "AssemblyMaster":
+                    var assemblyMaster = await _context.AssemblyMaster.Where(d => d.AssemblyMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
+
+                    if (assemblyMaster != null)
+                    {
+                        //if (updateMasterStatus.IsStatus == false)
+                        //{
+                        var fourthLevelExistsInAssembly = await _context.FourthLevelH
+                            .Where(d => d.StateMasterId == assemblyMaster.StateMasterId && d.DistrictMasterId == assemblyMaster.DistrictMasterId && d.AssemblyMasterId == assemblyMaster.AssemblyMasterId)
+                            .ToListAsync();
+
+                        if (fourthLevelExistsInAssembly.Count > 0)
+                        {
+                            return new ServiceResponse
+                            {
+                                IsSucceed = false,
+                                Message = "Sub Local Bodies data Present aganist this Record, Can't delete"
+                            };
+                        }
+                        else
+                        {
+                            _context.AssemblyMaster.Remove(assemblyMaster);
+                            await _context.SaveChangesAsync();
+                            return new ServiceResponse { IsSucceed = true, Message = "Record Deleted Succesfully." };
+
+                        }
+                        // }
+
+
+
+                    }
+                    else
+                    {
+                        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
+                    }
+                case "DistrictMaster":
+                    var districtId = Convert.ToInt32(updateMasterStatus.Id);
+                    var districtRecord = await _context.DistrictMaster.FirstOrDefaultAsync(d => d.DistrictMasterId == districtId);
+
+                    if (districtRecord != null)
+                    {
+                        var assembliesRecord = await _context.AssemblyMaster.Where(s => s.DistrictMasterId == districtRecord.DistrictMasterId).ToListAsync();
+                        if (assembliesRecord.Count > 0)
+                        {
+                            return new ServiceResponse { IsSucceed = false, Message = "Can’t delete , as Local Bodies exist against this District" };
+
+                        }
+                        else
+                        {
+
+
+                            _context.DistrictMaster.Remove(districtRecord);
+                            await _context.SaveChangesAsync();
+                            return new ServiceResponse { IsSucceed = true, Message = "District deleted successfully." };
+
+                        }
+                    }
+                    else
+                    {
+                        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
+                    }
                 case "StateMaster":
 
                     var stateRecord = await _context.StateMaster.FirstOrDefaultAsync(d => d.StateMasterId == Convert.ToInt32(updateMasterStatus.Id));
@@ -665,67 +887,6 @@ namespace EAMS_DAL.Repository
                         return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
                     }
 
-                case "DistrictMaster":
-                    var districtId = Convert.ToInt32(updateMasterStatus.Id);
-                    var districtRecord = await _context.DistrictMaster.FirstOrDefaultAsync(d => d.DistrictMasterId == districtId);
-
-                    if (districtRecord != null)
-                    {
-                        var assembliesRecord = await _context.AssemblyMaster.Where(s => s.DistrictMasterId == districtRecord.DistrictMasterId).ToListAsync();
-                        if (assembliesRecord.Count > 0)
-                        {
-                            return new ServiceResponse { IsSucceed = false, Message = "Can’t delete , as Local Bodies exist against this District" };
-
-                        }
-                        else
-                        {
-
-
-                            _context.DistrictMaster.Remove(districtRecord);
-                            await _context.SaveChangesAsync();
-                            return new ServiceResponse { IsSucceed = true, Message = "District deleted successfully." };
-
-                        }
-                    }
-                    else
-                    {
-                        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
-                    }
-                case "AssemblyMaster":
-                    var assemblyMaster = await _context.AssemblyMaster.Where(d => d.AssemblyMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
-
-                    if (assemblyMaster != null)
-                    {
-                        //if (updateMasterStatus.IsStatus == false)
-                        //{
-                        var boothsActiveOfAssembly = await _context.BoothMaster
-                            .Where(d => d.StateMasterId == assemblyMaster.StateMasterId && d.DistrictMasterId == assemblyMaster.DistrictMasterId && d.AssemblyMasterId == assemblyMaster.AssemblyMasterId && d.BoothStatus == true)
-                            .ToListAsync();
-
-                        if (boothsActiveOfAssembly.Count > 0)
-                        {
-                            return new ServiceResponse
-                            {
-                                IsSucceed = false,
-                                Message = "Booths are active under this State Assembly. Make sure they are Inactive first"
-                            };
-                        }
-                        else
-                        {
-                            _context.AssemblyMaster.Remove(assemblyMaster);
-                            await _context.SaveChangesAsync();
-                            return new ServiceResponse { IsSucceed = true, Message = "Assembly Deleted Succesfully." };
-
-                        }
-                        // }
-
-
-
-                    }
-                    else
-                    {
-                        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
-                    }
 
                 case "SOMaster":
                     var isSOExist = await _context.SectorOfficerMaster.Where(d => d.SOMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
@@ -749,52 +910,6 @@ namespace EAMS_DAL.Repository
                     else
                     {
                         return new ServiceResponse { IsSucceed = false, Message = "Sector Officer Record Not Found." };
-                    }
-
-                case "BoothMaster":
-                    var isBoothExist = await _context.BoothMaster.Where(d => d.BoothMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
-                    if (isBoothExist != null)
-                    {
-                        var electionInfoRecord = await _context.ElectionInfoMaster
-      .Where(d => d.StateMasterId == isBoothExist.StateMasterId && d.DistrictMasterId == isBoothExist.DistrictMasterId && d.AssemblyMasterId == isBoothExist.AssemblyMasterId && d.BoothMasterId == isBoothExist.BoothMasterId)
-      .FirstOrDefaultAsync();
-                        if (electionInfoRecord == null)
-                        {
-                            if (isBoothExist.AssignedTo == null || isBoothExist.AssignedTo == "")
-                            {
-                                if (isBoothExist.AssignedToBLO == null || isBoothExist.AssignedToBLO == "")
-                                {
-                                    _context.BoothMaster.Remove(isBoothExist);
-                                    await _context.SaveChangesAsync();
-                                    return new ServiceResponse { IsSucceed = true, Message = "Booth is deleted successfully." };
-
-                                }
-                                else
-                                {
-                                    return new ServiceResponse { IsSucceed = false, Message = "Booth is allocated to a BLO, Kindly Release Booth First." };
-
-                                }
-
-                            }
-                            else
-                            {
-                                return new ServiceResponse { IsSucceed = false, Message = "Booth is allocated to a Sector Officer, Kindly Release Booth First." };
-                            }
-                        }
-                        else
-                        {
-
-                            return new ServiceResponse { IsSucceed = false, Message = "Election Info Record found aganist this Booth, thus can't deleted" };
-
-                        }
-
-                    }
-                    else
-                    {
-                        return new ServiceResponse
-                        {
-                            IsSucceed = false,
-                        };
                     }
 
                 case "LocationMaster":
@@ -931,7 +1046,7 @@ namespace EAMS_DAL.Repository
         }
         #endregion
 
-     
+
         #region State Master
 
         public async Task<List<StateMaster>> GetState()
@@ -1174,6 +1289,8 @@ namespace EAMS_DAL.Repository
                 {
 
                     var isExistName = await _context.DistrictMaster.Where(p => p.DistrictName == districtMaster.DistrictName && p.StateMasterId == districtMaster.StateMasterId && p.DistrictMasterId != districtMaster.DistrictMasterId).ToListAsync();
+                    var getAssemblyForElectionType = await GetAssemblyByDistrictIdForElectionType(districtMaster.DistrictMasterId);
+
                     if (isExistName.Count == 0)
                     {
                         var districtMasterRecord = _context.DistrictMaster.Where(d => d.DistrictMasterId == districtMaster.DistrictMasterId).FirstOrDefault();
@@ -1198,6 +1315,22 @@ namespace EAMS_DAL.Repository
                                 districtMasterRecord.DistrictUpdatedAt = BharatDateTime();
                                 _context.DistrictMaster.Update(districtMasterRecord);
                                 await _context.SaveChangesAsync();
+                                if (getAssemblyForElectionType.ElectionTypeMasterId == 1)
+                                {
+                                    AssemblyMaster assemblyMaster = new AssemblyMaster()
+                                    {
+                                        AssemblyMasterId = getAssemblyForElectionType.AssemblyMasterId,
+                                        StateMasterId = districtMaster.StateMasterId,
+                                        DistrictMasterId = districtMaster.DistrictMasterId,
+                                        AssemblyName = districtMaster.DistrictName,
+                                        AssemblyCode = Convert.ToInt32(districtMaster.DistrictCode),
+                                        AssemblyStatus = districtMaster.DistrictStatus,
+                                        ElectionTypeMasterId = 1
+
+
+                                    };
+                                    await UpdateAssembliesById(assemblyMaster);
+                                }
                                 return new Response { Status = RequestStatusEnum.OK, Message = "District Updated Successfully" + districtMaster.DistrictName };
                             }
                         }
@@ -1218,6 +1351,22 @@ namespace EAMS_DAL.Repository
                                 districtMasterRecord.DistrictUpdatedAt = BharatDateTime();
                                 _context.DistrictMaster.Update(districtMasterRecord);
                                 await _context.SaveChangesAsync();
+                                if (getAssemblyForElectionType.ElectionTypeMasterId == 1)
+                                {
+                                    AssemblyMaster assemblyMaster = new AssemblyMaster()
+                                    {
+                                        AssemblyMasterId = getAssemblyForElectionType.AssemblyMasterId,
+                                        StateMasterId = districtMaster.StateMasterId,
+                                        DistrictMasterId = districtMaster.DistrictMasterId,
+                                        AssemblyName = districtMaster.DistrictName,
+                                        AssemblyCode = Convert.ToInt32(districtMaster.DistrictCode),
+                                        AssemblyStatus = districtMaster.DistrictStatus,
+                                        ElectionTypeMasterId = 1
+
+
+                                    };
+                                    await UpdateAssembliesById(assemblyMaster);
+                                }
                                 return new Response { Status = RequestStatusEnum.OK, Message = "District Updated Successfully" + districtMaster.DistrictName };
 
                             }
@@ -1259,9 +1408,22 @@ namespace EAMS_DAL.Repository
                         var isExistCode = _context.DistrictMaster.Where(p => p.DistrictCode == districtMaster.DistrictCode && p.StateMasterId == districtMaster.StateMasterId).FirstOrDefault();
                         if (isExistCode == null)
                         {
-                            districtMaster.DistrictCreatedAt = BharatDateTime(); ;
+                            districtMaster.DistrictCreatedAt = BharatDateTime();
                             _context.DistrictMaster.Add(districtMaster);
                             _context.SaveChanges();
+
+                            AssemblyMaster assemblyMaster = new AssemblyMaster()
+                            {
+                                StateMasterId = districtMaster.StateMasterId,
+                                DistrictMasterId = districtMaster.DistrictMasterId,
+                                AssemblyName = districtMaster.DistrictName,
+                                AssemblyCode = Convert.ToInt32(districtMaster.DistrictCode),
+                                AssemblyStatus = districtMaster.DistrictStatus,
+                                ElectionTypeMasterId = 1
+
+
+                            };
+                            await AddAssemblies(assemblyMaster);
                             return new Response { Status = RequestStatusEnum.OK, Message = "District Added Successfully " + districtMaster.DistrictName };
 
                         }
@@ -1378,7 +1540,7 @@ namespace EAMS_DAL.Repository
             if (assembliesMasterRecords != null)
             {
 
-                var isAssemblyCodeExist = await _context.AssemblyMaster.Where(p => p.AssemblyCode == assemblyMaster.AssemblyCode && p.StateMasterId == assemblyMaster.StateMasterId && p.ElectionTypeMasterId == assemblyMaster.ElectionTypeMasterId && p.AssemblyMasterId != assemblyMaster.AssemblyMasterId).ToListAsync();
+                var isAssemblyCodeExist = await _context.AssemblyMaster.Where(p => p.AssemblyCode == assemblyMaster.AssemblyCode && p.StateMasterId == assemblyMaster.StateMasterId && p.ElectionTypeMasterId == assemblyMaster.ElectionTypeMasterId && p.AssemblyMasterId != assemblyMaster.AssemblyMasterId && p.DistrictMasterId == assemblyMaster.DistrictMasterId).ToListAsync();
                 if (isAssemblyCodeExist.Count == 0)
                 {
 
@@ -1584,7 +1746,6 @@ namespace EAMS_DAL.Repository
 
                 if (assemblieExist == null)
                 {
-
                     assemblyMaster.AssemblyCreatedAt = BharatDateTime();
                     _context.AssemblyMaster.Add(assemblyMaster);
                     _context.SaveChanges();
@@ -1642,12 +1803,17 @@ namespace EAMS_DAL.Repository
             var assemblyRecord = await _context.AssemblyMaster.Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.ParliamentConstituencyMaster).Include(d => d.ElectionTypeMaster).Where(d => d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId)).FirstOrDefaultAsync();
             return assemblyRecord;
         }
-
+        public async Task<AssemblyMaster> GetAssemblyByDistrictIdForElectionType(int districtMasterId)
+        {
+            var assemblyRecord = await _context.AssemblyMaster.Where(d => d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.ElectionTypeMasterId == 1).FirstOrDefaultAsync();
+            return assemblyRecord;
+        }
         public async Task<ElectionInfoMaster> GetElectionInfoRecord(int boothMasterId)
         {
             var electionRecord = await _context.ElectionInfoMaster.Where(d => d.BoothMasterId == boothMasterId).FirstOrDefaultAsync();
             return electionRecord;
         }
+       
         //public async Task<booth> GetAssemblyByBoothId(string boothMasterId)
         //{
         //    var assemblyRecord = await _context.BoothMaster.Include(d => Convert.ToInt32(d.BoothMasterId)).FirstOrDefaultAsync();
@@ -2222,15 +2388,15 @@ namespace EAMS_DAL.Repository
                 return null;
             }
         }
-        public async Task<List<CombinedMaster>> GetBoothListByIdwithPsZone(string stateMasterId, string districtMasterId, string assemblyMasterId, string fourthLevelHMasterId,string BlockZonePanchayatMasterId)
+        public async Task<List<CombinedMaster>> GetBoothListByIdwithPsZone(string stateMasterId, string districtMasterId, string assemblyMasterId, string fourthLevelHMasterId, string BlockZonePanchayatMasterId)
         {
             var isStateActive = _context.StateMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId)).FirstOrDefault();
             var isDistrictActive = _context.DistrictMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId)).FirstOrDefault();
             var isAssemblyActive = _context.AssemblyMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId)).FirstOrDefault();
             var isFourthLevelActive = _context.FourthLevelH
                 .Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId) && d.FourthLevelHMasterId == Convert.ToInt32(fourthLevelHMasterId)).FirstOrDefault();
-           
-            if (isStateActive.StateStatus && isDistrictActive.DistrictStatus && isAssemblyActive.AssemblyStatus&& isFourthLevelActive.HierarchyStatus)
+
+            if (isStateActive.StateStatus && isDistrictActive.DistrictStatus && isAssemblyActive.AssemblyStatus && isFourthLevelActive.HierarchyStatus)
             {
                 IQueryable<CombinedMaster> boothlist = null;
                 if (Convert.ToInt32(fourthLevelHMasterId) > 0)
@@ -2460,9 +2626,9 @@ namespace EAMS_DAL.Repository
             {
                 if (boothMaster == null)
                     return new Response { Status = RequestStatusEnum.BadRequest, Message = "Booth master data is null" };
- 
+
                 if (boothMaster.BoothNoAuxy == "0" + "")
- 
+
                 {
                     var checkBoothName = await _context.BoothMaster.AnyAsync(d =>
                                           d.StateMasterId == boothMaster.StateMasterId &&
@@ -2704,12 +2870,12 @@ namespace EAMS_DAL.Repository
                         if (existingbooth != null)
                         {
                             if (boothMaster.ElectionTypeMasterId != null)
-                            {                               
+                            {
                                 var electionAssemblyTypeId = _context.AssemblyMaster
                                     .Where(s => s.AssemblyMasterId == boothMaster.AssemblyMasterId)
                                     .Select(s => s.ElectionTypeMasterId)
                                     .FirstOrDefault(); // Assuming you expect only one result or want the first one
-                                                               
+
 
                                 if (boothMaster.ElectionTypeMasterId == electionAssemblyTypeId)
                                 {
@@ -14048,7 +14214,7 @@ namespace EAMS_DAL.Repository
 
 
 
-    
+
 
         public async Task<List<CombinedMaster>> AppNotDownload(string StateMasterId)
         {
@@ -15879,7 +16045,7 @@ namespace EAMS_DAL.Repository
             var result = new KycList
             {
                 KycMasterId = kyc.KycMasterId,
-                ElectionTypeMasterId=kyc.ElectionTypeMasterId,
+                ElectionTypeMasterId = kyc.ElectionTypeMasterId,
                 StateMasterId = panchayat.StateMasterId,
                 StateName = panchayat.StateMaster.StateName,
                 DistrictMasterId = panchayat.DistrictMasterId,
@@ -15920,14 +16086,14 @@ namespace EAMS_DAL.Repository
                 return new ServiceResponse { IsSucceed = true, Message = "Record Deleted successfully" };
             }
         }
-      
+
         #endregion
 
 
         #region UnOpposed Public Details
         public async Task<ServiceResponse> AddUnOpposedDetails(UnOpposed unOpposed)
         {
-             
+
             _context.UnOpposed.Add(unOpposed);
             _context.SaveChanges();
 
@@ -15962,7 +16128,7 @@ namespace EAMS_DAL.Repository
                     BlockZonePanchayatCode = joined.Panchayat.BlockZonePanchayatCode,
                     BlockZonePanchayatMasterId = joined.Kyc.BlockZonePanchayatMasterId,
                     SarpanchWardsMasterId = joined.Kyc.SarpanchWardsMasterId,
-                    CandidateType = joined.Kyc.SarpanchWardsMasterId == 0 ? "Sarpanch" : "Panch",
+                    CandidateType = joined.Kyc.SarpanchWardsMasterId == 0 || joined.Kyc.SarpanchWardsMasterId == null ? "Sarpanch" : "Panch",
                     SarpanchWardsName = joined.Kyc.SarpanchWardsMasterId != 0 && joined.Panchayat.SarpanchWards.Any()
                                         ? string.Join(", ", joined.Panchayat.SarpanchWards
                                             .Where(s => s.SarpanchWardsMasterId == joined.Kyc.SarpanchWardsMasterId)
@@ -15979,7 +16145,7 @@ namespace EAMS_DAL.Repository
         }
         public async Task<ServiceResponse> UpdateUnOpposedDetails(UnOpposed unOpposed)
         {
-            var existing  = await _context.UnOpposed.FirstOrDefaultAsync(k => k.UnOpposedMasterId == unOpposed.UnOpposedMasterId);
+            var existing = await _context.UnOpposed.FirstOrDefaultAsync(k => k.UnOpposedMasterId == unOpposed.UnOpposedMasterId);
 
             if (existing == null)
             {

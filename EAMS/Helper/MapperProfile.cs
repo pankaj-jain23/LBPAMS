@@ -205,7 +205,8 @@ namespace EAMS.Helper
    .ForMember(dest => dest.PCMasterId, opt => opt.MapFrom(src => src.PCMasterId))
    .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
    .ForMember(dest => dest.AssemblyType, opt => opt.MapFrom(src => src.AssemblyType))
-   .ForMember(dest => dest.AssemblyStatus, opt => opt.MapFrom(src => src.IsStatus));
+   .ForMember(dest => dest.AssemblyStatus, opt => opt.MapFrom(src => src.IsStatus))
+   .ForMember(dest => dest.TotalBooths, opt => opt.MapFrom(src => src.TotalBooths));
 
             #endregion
 

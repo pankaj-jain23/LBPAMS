@@ -46,7 +46,7 @@ namespace EAMS_ACore.IRepository
         Task<Response> AddAssemblies(AssemblyMaster assemblyMaster);
         Task<Response> AddPC(ParliamentConstituencyMaster PcMaster);
         Task<AssemblyMaster> GetAssemblyById(string assemblyId);
-
+        Task<AssemblyMaster> GetAssemblyByDistrictIdForElectionType(int districtMasterId);
         Task<ElectionInfoMaster> GetElectionInfoRecord(int boothMasterId);
         Task<AssemblyMaster> GetAssemblyByCode(string assemblyCode, string stateMasterId);
         Task<AssemblyMaster> GetAssemblyByCodeandState(string assemblyCode, string stateMasterId);

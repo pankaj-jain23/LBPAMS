@@ -29,7 +29,8 @@ namespace EAMS.ViewModels
 
         [Required(ErrorMessage = "Status is required")]
         public bool IsStatus { get; set; }
-        //[Required(ErrorMessage = "Total Booths is required")]
-        //public int TotalBooths { get; set; }
+
+     
+        public int? TotalBooths { get; set; }
     }
 }
