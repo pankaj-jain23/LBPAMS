@@ -100,12 +100,13 @@
             set;
         }
 
-        public int? BlockZonePanchayatMasterId
+        public int? BlockZonePanchayatMasterId //Sarpanch is Panchyat
         {
             get;
             set;
         }
-        public int? SarpanchWardsMasterId
+
+        public int? SarpanchWardsMasterId //Panch Wards
         {
             get;
             set;
