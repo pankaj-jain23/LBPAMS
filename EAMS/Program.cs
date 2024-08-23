@@ -39,7 +39,7 @@ builder.Services.AddDbContextPool<EamsContext>(options =>
         npgsqlOptionsAction: sqlOptions =>
         {
             sqlOptions.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(30), errorCodesToAdd: null);
-            // Adjust maxRetryCount and maxRetryDelay as needed.
+           
         });
 });
 builder.Services
