@@ -2617,7 +2617,7 @@ namespace EAMS_DAL.Repository
             var count = boothlist.Count();
             return await boothlist.ToListAsync();
         }
-        public async Task<Response> AddBooth(BoothMaster boothMaster)
+        public async Task<Response> AddBooth2(BoothMaster boothMaster)
         {
             try
             {
@@ -2702,151 +2702,151 @@ namespace EAMS_DAL.Repository
                 return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
             }
         }
-        //public async Task<Response> AddBooth(BoothMaster boothMaster)
-        //{
-        //    try
-        //    {
-        //        if (boothMaster == null)
-        //            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Booth master data is null" };
-        //        if (boothMaster.BoothNoAuxy == "0" +
-        //            "")
-        //        {
-        //            bool checkBoothName = false;
-        //            if (boothMaster.ElectionTypeMasterId == 1) // for gram panchyat
-        //            {
-        //                checkBoothName = await _context.BoothMaster.AnyAsync(d =>
-        //                                 d.StateMasterId == boothMaster.StateMasterId &&
-        //                                 d.DistrictMasterId == boothMaster.DistrictMasterId &&
-        //                                 d.AssemblyMasterId == boothMaster.AssemblyMasterId &&
-        //                                 d.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId &&
-        //                                 d.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId &&
-        //                                 d.BoothCode_No.Equals(boothMaster.BoothCode_No));
-        //            }
-        //            else
-        //            {
-        //                checkBoothName = await _context.BoothMaster.AnyAsync(d =>
-        //                                 d.StateMasterId == boothMaster.StateMasterId &&
-        //                                 d.DistrictMasterId == boothMaster.DistrictMasterId &&
-        //                                 d.AssemblyMasterId == boothMaster.AssemblyMasterId &&
-        //                                 d.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId &&
-        //                                 d.BoothCode_No.Equals(boothMaster.BoothCode_No));
-        //            }
+        public async Task<Response> AddBooth(BoothMaster boothMaster)
+        {
+            try
+            {
+                if (boothMaster == null)
+                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Booth master data is null" };
+                if (boothMaster.BoothNoAuxy == "0" +
+                    "")
+                {
+                    bool checkBoothName = false;
+                    if (boothMaster.ElectionTypeMasterId == 1) // for gram panchyat
+                    {
+                        checkBoothName = await _context.BoothMaster.AnyAsync(d =>
+                                         d.StateMasterId == boothMaster.StateMasterId &&
+                                         d.DistrictMasterId == boothMaster.DistrictMasterId &&
+                                         d.AssemblyMasterId == boothMaster.AssemblyMasterId &&
+                                         d.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId &&
+                                         d.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId &&
+                                         d.BoothCode_No.Equals(boothMaster.BoothCode_No));
+                    }
+                    else
+                    {
+                        checkBoothName = await _context.BoothMaster.AnyAsync(d =>
+                                         d.StateMasterId == boothMaster.StateMasterId &&
+                                         d.DistrictMasterId == boothMaster.DistrictMasterId &&
+                                         d.AssemblyMasterId == boothMaster.AssemblyMasterId &&
+                                         d.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId &&
+                                         d.BoothCode_No.Equals(boothMaster.BoothCode_No));
+                    }
 
-        //            if (checkBoothName is true)
-        //                return new Response { Status = RequestStatusEnum.BadRequest, Message = $"The booth Code {boothMaster.BoothCode_No} already exists. You can proceed with an auxiliary booth instead." };
-        //            else
+                    if (checkBoothName is true)
+                        return new Response { Status = RequestStatusEnum.BadRequest, Message = $"The booth Code {boothMaster.BoothCode_No} already exists. You can proceed with an auxiliary booth instead." };
+                    else
 
-        //                boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
-        //                 _context.BoothMaster.Add(boothMaster);
-        //                    await _context.SaveChangesAsync();
-        //                    return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
-        //                            }
-        //        else
-        //        {
-        //            //check as per grmappanchyat electiontype isprimary booth....update old if they are isprimary
-        //            List<BoothMaster> existingBooths = null;
-        //            if (boothMaster.ElectionTypeMasterId == 1)
-        //            {
-        //                existingBooths = await _context.BoothMaster.Where(p =>
-        //                            p.BoothCode_No == boothMaster.BoothCode_No &&
-        //                             p.StateMasterId == boothMaster.StateMasterId &&
-        //                             p.AssemblyMasterId == boothMaster.AssemblyMasterId &&
-        //                             p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId).ToListAsync();
+                        boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
+                    _context.BoothMaster.Add(boothMaster);
+                    await _context.SaveChangesAsync();
+                    return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
+                }
+                else
+                {
+                    //check as per grmappanchyat electiontype isprimary booth....update old if they are isprimary
+                    List<BoothMaster> existingBooths = null;
+                    if (boothMaster.ElectionTypeMasterId == 1)
+                    {
+                        existingBooths = await _context.BoothMaster.Where(p =>
+                                    p.BoothCode_No == boothMaster.BoothCode_No &&
+                                     p.StateMasterId == boothMaster.StateMasterId &&
+                                     p.AssemblyMasterId == boothMaster.AssemblyMasterId &&
+                                     p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId).ToListAsync();
 
-        //            }
-        //            else
-        //            {// for other elections
-        //                            existingBooths = await _context.BoothMaster.Where(p =>
-        //                            p.BoothCode_No == boothMaster.BoothCode_No &&
-        //                             p.StateMasterId == boothMaster.StateMasterId &&
-        //                             p.AssemblyMasterId == boothMaster.AssemblyMasterId &&
-        //                             p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId).ToListAsync();
-        //            }
-
-
-        //            if (existingBooths.Any())
-        //            {
-        //                var existingAuxCodes = existingBooths.Select(b => new { b.BoothNoAuxy, b.BoothCode_No });
-        //                if (existingAuxCodes.Any(c => c.BoothNoAuxy.Equals(boothMaster.BoothNoAuxy) && c.BoothCode_No.Equals(boothMaster.BoothCode_No)))
-        //                {
-        //                    return new Response { Status = RequestStatusEnum.BadRequest, Message = $"{boothMaster.BoothName} with AuxilaryCode {boothMaster.BoothNoAuxy} and BoothCode {boothMaster.BoothCode_No} already exists" };
-        //                }
-        //                else
-        //                {
-
-        //                    if (boothMaster.ElectionTypeMasterId == 1)
-        //                    {
-
-        //                        // Update existing booths if new booth is set true primary
-        //                        if (existingBooths.Count > 0 && boothMaster.IsPrimaryBooth==true)
-        //                        {
-        //                            foreach (var existingBooth in existingBooths)
-        //                            {
-        //                                existingBooth.IsPrimaryBooth = false;
-        //                                _context.BoothMaster.Update(existingBooth);
-        //                            }
-        //                            boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
-        //                            _context.BoothMaster.Add(boothMaster);
-        //                            await _context.SaveChangesAsync();
-        //                            return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
-        //                        }
-        //                        else
-        //                        {// as it is save otherwise
-        //                            boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
-        //                            _context.BoothMaster.Add(boothMaster);
-        //                            await _context.SaveChangesAsync();
-        //                            return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
-
-        //                        }
-        //                    }
+                    }
+                    else
+                    {// for other elections
+                        existingBooths = await _context.BoothMaster.Where(p =>
+                        p.BoothCode_No == boothMaster.BoothCode_No &&
+                         p.StateMasterId == boothMaster.StateMasterId &&
+                         p.AssemblyMasterId == boothMaster.AssemblyMasterId &&
+                         p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId).ToListAsync();
+                    }
 
 
-        //                    else
-        //                    {
-        //                        boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
-        //                        _context.BoothMaster.Add(boothMaster);
-        //                        await _context.SaveChangesAsync();
-        //                        return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
+                    if (existingBooths.Any())
+                    {
+                        var existingAuxCodes = existingBooths.Select(b => new { b.BoothNoAuxy, b.BoothCode_No });
+                        if (existingAuxCodes.Any(c => c.BoothNoAuxy.Equals(boothMaster.BoothNoAuxy) && c.BoothCode_No.Equals(boothMaster.BoothCode_No)))
+                        {
+                            return new Response { Status = RequestStatusEnum.BadRequest, Message = $"{boothMaster.BoothName} with AuxilaryCode {boothMaster.BoothNoAuxy} and BoothCode {boothMaster.BoothCode_No} already exists" };
+                        }
+                        else
+                        {
 
-        //                    }
+                            if (boothMaster.ElectionTypeMasterId == 1)
+                            {
+
+                                // Update existing booths if new booth is set true primary
+                                if (existingBooths.Count > 0 && boothMaster.IsPrimaryBooth == true)
+                                {
+                                    foreach (var existingBooth in existingBooths)
+                                    {
+                                        existingBooth.IsPrimaryBooth = false;
+                                        _context.BoothMaster.Update(existingBooth);
+                                    }
+                                    boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
+                                    _context.BoothMaster.Add(boothMaster);
+                                    await _context.SaveChangesAsync();
+                                    return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
+                                }
+                                else
+                                {// as it is save otherwise
+                                    boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
+                                    _context.BoothMaster.Add(boothMaster);
+                                    await _context.SaveChangesAsync();
+                                    return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
+
+                                }
+                            }
 
 
-        //                }
-        //            }
-        //            else
-        //            {
-        //                var assemblyActive = await _context.AssemblyMaster
-        //                    .Where(p => p.AssemblyMasterId == boothMaster.AssemblyMasterId)
-        //                    .Select(p => p.AssemblyStatus)
-        //                    .FirstOrDefaultAsync();
+                            else
+                            {
+                                boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
+                                _context.BoothMaster.Add(boothMaster);
+                                await _context.SaveChangesAsync();
+                                return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
 
-        //                if (assemblyActive)
-        //                {
-        //                    if (boothMaster.Male + boothMaster.Female + boothMaster.Transgender == boothMaster.TotalVoters)
-        //                    {
-        //                        boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
-        //                        _context.BoothMaster.Add(boothMaster);
-        //                        await _context.SaveChangesAsync();
-        //                        return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
-        //                    }
-        //                    else
-        //                    {
-        //                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "The total sum of voters does not match the individual counts of Male, Female, and Transgender categories." };
-        //                    }
-        //                }
-        //                else
-        //                {
-        //                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Assembly is not active for this booth. Kindly activate the Assembly in order to Add Booth." };
-        //                }
-        //            }
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // Log the exception details for troubleshooting
-        //        return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
-        //    }
-        //}
+                            }
+
+
+                        }
+                    }
+                    else
+                    {
+                        //var assemblyActive = await _context.AssemblyMaster
+                        //    .Where(p => p.AssemblyMasterId == boothMaster.AssemblyMasterId)
+                        //    .Select(p => p.AssemblyStatus)
+                        //    .FirstOrDefaultAsync();
+
+                        //if (assemblyActive)
+                        //{
+                            if (boothMaster.Male + boothMaster.Female + boothMaster.Transgender == boothMaster.TotalVoters)
+                            {
+                                boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
+                                _context.BoothMaster.Add(boothMaster);
+                                await _context.SaveChangesAsync();
+                                return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
+                            }
+                            else
+                            {
+                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "The total sum of voters does not match the individual counts of Male, Female, and Transgender categories." };
+                            }
+                        //}
+                        //else
+                        //{
+                        //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Assembly is not active for this booth. Kindly activate the Assembly in order to Add Booth." };
+                        //}
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception details for troubleshooting
+                return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
+            }
+        }
 
 
 
