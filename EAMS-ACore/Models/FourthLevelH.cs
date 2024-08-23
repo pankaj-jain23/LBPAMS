@@ -74,8 +74,13 @@ namespace EAMS_ACore.Models
             set;
         }
 
-        public virtual List<BlockZonePanchayat> BlockZonePanchayat
+        public virtual List<PSZonePanchayat> PSZonePanchayat
 
+        {
+            get;
+            set;
+        }
+        public virtual List<GPPanchayatWards> GPPanchayatWards
         {
             get;
             set;

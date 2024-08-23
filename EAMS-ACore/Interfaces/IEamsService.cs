@@ -293,18 +293,18 @@ namespace EAMS_ACore.Interfaces
         #endregion
 
         #region  BlockPanchayat
-        Task<Response> AddBlockPanchayat(BlockZonePanchayat blockPanchayat);
-        Task<List<BlockZonePanchayat>> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
-        Task<BlockZonePanchayat> GetBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int blockZonePanchayatMasterId);
-        Task<Response> UpdateBlockZonePanchayat(BlockZonePanchayat blockZonePanchayat);
+        Task<Response> AddBlockPanchayat(PSZonePanchayat blockPanchayat);
+        Task<List<PSZonePanchayat>> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
+        Task<PSZonePanchayat> GetBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int blockZonePanchayatMasterId);
+        Task<Response> UpdateBlockZonePanchayat(PSZonePanchayat blockZonePanchayat);
         Task<Response> DeleteBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int blockZonePanchayatMasterId);
         #endregion
 
         #region SarpanchWards
-        Task<Response> AddSarpanchWards(SarpanchWards sarpanchWards);
-        Task<List<SarpanchWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId);
-        Task<Response> UpdateSarpanchWards(SarpanchWards sarpanchWards);
-        Task<SarpanchWards> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId, int SarpanchWardsMasterId);
+        Task<Response> AddSarpanchWards(GPPanchayatWards sarpanchWards);
+        Task<List<GPPanchayatWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId);
+        Task<Response> UpdateSarpanchWards(GPPanchayatWards sarpanchWards);
+        Task<GPPanchayatWards> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId, int SarpanchWardsMasterId);
 
         Task<Response> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId, int SarpanchWardsMasterId);
 

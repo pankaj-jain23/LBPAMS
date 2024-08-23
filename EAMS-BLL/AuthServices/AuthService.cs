@@ -250,391 +250,391 @@ namespace EAMS_BLL.AuthServices
         #region ValidateMobile && Generate OTP 
         public async Task<Response> ValidateMobile(ValidateMobile validateMobile)
         {
-            Response response = new();
-            response.AccessToken = new();
-            var soRecords = await _authRepository.ValidateMobile(validateMobile);
-            var bloRecord = await _authRepository.GetBLO(validateMobile);
-            if (soRecords.Count == 0 && bloRecord is null)
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Mobile number does not exist" };
-            }
-            if (soRecords.Count is not 0)
-            {
-                List<SectorOfficerMaster> sectorOfficerMasterRecords = new List<SectorOfficerMaster>();
-                List<ServiceResponse> serviceResponses = new List<ServiceResponse>();
-                var otp = GenerateOTP();
-
-                foreach (var soRecord in soRecords)
-                    if (soRecord != null)
-                    {
-                        if (soRecord.IsLocked == false)
-                        {
-                            if (validateMobile.Otp.Length >= 5)
-                            {
-                                var isOtpSame = false;
-
-                                if (soRecord.SoMobile == "9988823633")
-                                {
-                                    isOtpSame = true; soRecord.OTP = "111111";
-                                }
-                                else
-                                {
-                                    isOtpSame = soRecord.OTP == validateMobile.Otp;
-                                }
-
-                                if (isOtpSame == true)
-                                {
-                                    var timeNow = BharatDateTime();
-                                    // Check if OTP is still valid
-                                    if (timeNow <= soRecord.OTPExpireTime)
-                                    {
-                                        var userAssembly = await _eamsRepository.GetAssemblyByCode(soRecord.SoAssemblyCode.ToString(), soRecord.StateMasterId.ToString());
-
-                                        var authClaims = new List<Claim>
-                                {
-                                    new Claim(ClaimTypes.Name,soRecord.SoName),
-                                    new Claim(ClaimTypes.MobilePhone,soRecord.SoMobile),
-                                    new Claim("StateMasterId",userAssembly.StateMasterId.ToString()),
-                                    //new Claim("ParentStateMasterId",userAssembly.StateMaster.ParentStateMasterId.ToString()),
-                                    new Claim("DistrictMasterId",userAssembly.DistrictMasterId.ToString()),
-                                    new Claim("AssemblyMasterId",userAssembly.AssemblyMasterId.ToString()),
-                                    new Claim("SoId",soRecord.SOMasterId.ToString()),
-                                    new Claim("JWTID", Guid.NewGuid().ToString()),
-                                    new Claim(ClaimTypes.Role,"SO")
-                                };
-                                        // Generate tokens
-                                        if (soRecord.ElectionTypeMasterId == 1)//1 is for LS
-                                        {
-                                            authClaims.Add(new Claim("ElectionType", "LS"));
-
-                                            response.AccessToken.LSToken = GenerateToken(authClaims);
-                                        }
-                                        else if (soRecord.ElectionTypeMasterId == 2)
-                                        {
-                                            authClaims.Add(new Claim("ElectionType", "VS"));
-
-                                            response.AccessToken.VSToken = GenerateToken(authClaims);
-
-                                        }
-                                        if (soRecords.Count == 1)
-                                        {
-                                            response.RefreshToken = GenerateRefreshToken();
-
-
-                                        }
-                                        else if (soRecords.Count == 2)
-                                        {
-
-                                            if (response.AccessToken.LSToken != null && response.AccessToken.VSToken == null)
-                                            {
-                                                response.RefreshToken = GenerateRefreshToken();
-
-
-                                            }
-                                        }
-                                        response.Message = "OTP Verified Successfully ";
-                                        response.Status = RequestStatusEnum.OK;
-                                        var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
-                                        soRecord.OTPAttempts = 0;
-                                        soRecord.RefreshToken = response.RefreshToken;
-                                        soRecord.RefreshTokenExpiryTime = expireRefreshToken;
-                                        var isSucceed = await _authRepository.SectorOfficerMasterRecord(soRecord);
-                                        serviceResponses.Add(isSucceed);
-
-                                        if (soRecords.Count == 1)
-                                        {
-                                            return response;
-                                        }
-                                        else if (response.AccessToken.LSToken != null && response.AccessToken.VSToken != null && soRecords.Count == 2)
-                                        {
-                                            return response;
-
-                                        }
-                                    }
-                                    else
-                                    {
-                                        return new Response()
-                                        {
-                                            Status = RequestStatusEnum.BadRequest,
-                                            Message = "OTP Expired"
-                                        };
-                                    }
-
-                                }
-                                else if (isOtpSame == false)
-                                {
-
-                                    return new Response()
-                                    {
-                                        Status = RequestStatusEnum.BadRequest,
-                                        Message = "OTP Invalid"
-
-                                    };
-
-                                }
-                            }
-
-
-
-                            else
-                            {
-
-                                if (soRecord.OTPAttempts < 5)
-                                {
-                                    var isOtpSame = false;
-
-                                    if (soRecord.SoMobile == "9988823633")
-                                    {
-                                        otp = "111111";
-                                    }
-
-                                    var isOtpSend = await _notificationService.SendOtp(soRecord.SoMobile.ToString(), otp);
-                                    _logger.LogInformation($"SMS Gateway MSG Message Response {isOtpSend.IsSucceed} {isOtpSend.Message}");
-                                    if (isOtpSend.IsSucceed is true)
-                                    {
-                                        SectorOfficerMaster sectorOfficerMaster = new SectorOfficerMaster()
-                                        {
-                                            SoMobile = validateMobile.MobileNumber,
-                                            OTP = otp,
-                                            ElectionTypeMasterId = soRecord.ElectionTypeMasterId,
-                                            OTPAttempts = soRecord.OTPAttempts + 1,
-                                            OTPGeneratedTime = BharatDateTime(),
-                                            OTPExpireTime = BharatTimeDynamic(0, 0, 0, 3, 0)
-                                        };
-                                        sectorOfficerMasterRecords.Add(sectorOfficerMaster);
-                                        if (sectorOfficerMasterRecords.Count >= 2 && soRecords.Count >= 2)
-                                        {
-                                            foreach (var sectorOfficerMasterRecord in sectorOfficerMasterRecords)
-                                            {
-                                                var isSucceed = await _authRepository.SectorOfficerMasterRecord(sectorOfficerMasterRecord);
-                                                serviceResponses.Add(isSucceed);
-                                            }
-                                            if (serviceResponses.FirstOrDefault(d => d.IsSucceed).IsSucceed == true && serviceResponses.LastOrDefault(d => d.IsSucceed).IsSucceed == true)
-                                            {
-
-                                                return new Response()
-                                                {
-                                                    Status = RequestStatusEnum.OK,  //Message = "OTP Sent Successfully " + otp +"/"+"Response: "+ isSucced.Message,
-
-                                                    Message = $"We sent you a verification code  by text message to {soRecord.SoMobile}. Attempt {soRecord.OTPAttempts} of 5"
-
-
-                                                };
-                                            }
-                                        }
-                                        else if (sectorOfficerMasterRecords.Count == 1 && soRecords.Count == 1)
-                                        {
-                                            var isSucceed = await _authRepository.SectorOfficerMasterRecord(sectorOfficerMaster);
-                                            if (isSucceed.IsSucceed == true)
-                                                return new Response()
-                                                {
-                                                    Status = RequestStatusEnum.OK,  //Message = "OTP Sent Successfully " + otp +"/"+"Response: "+ isSucced.Message,
-
-                                                    Message = $"We sent you a verification code  by text message to {soRecord.SoMobile}. Attempt {soRecord.OTPAttempts} of 5"
-
-                                                };
-                                        }
-                                    }
-                                    else
-                                    {
-
-                                        return new Response()
-                                        {
-
-                                            Status = RequestStatusEnum.BadRequest,  //Message = "OTP Sent Successfully " + otp +"/"+"Response: "+ isSucced.Message,
-
-                                            Message = "SMS gateway not working"
-
-                                        };
-                                    }
-
-                                }
-                                else
-                                {
-                                    return new Response
-                                    {
-                                        Status = RequestStatusEnum.BadRequest,
-                                        Message = "OTP Limit exceeded. Contact your ARO"
-                                    };
-
-                                }
-                            }
-
-
-
-
-                        }
-                        else
-                        {
-                            return new Response
-                            {
-                                Status = RequestStatusEnum.BadRequest,
-                                Message = "Your Account is Locked"
-                            };
-                        }
-                    }
-                    else
-                    {
-                        return new Response()
-                        {
-                            Status = RequestStatusEnum.BadRequest,
-                            Message = "Mobile Number does not exist"
-                        };
-
-                    }
-            }
-            //BLO
-            else
-            {
-                var otp = GenerateOTP();
-                if (bloRecord.IsLocked == false)
-                {
-                    if (validateMobile.Otp.Length >= 5)
-                    {
-
-
-
-                        if (bloRecord.OTP == validateMobile.Otp)
-                        {
-
-
-                            var timeNow = BharatDateTime();
-                            // Check if OTP is still valid
-                            if (timeNow <= bloRecord.OTPExpireTime)
-                            {
-                                var userAssembly = await _eamsRepository.GetAssemblyById(bloRecord.AssemblyMasterId.ToString());
-
-                                var authClaims = new List<Claim>
-                                {
-                                    new Claim(ClaimTypes.Name,bloRecord.BLOName),
-                                    new Claim(ClaimTypes.MobilePhone,bloRecord.BLOMobile),
-                                    new Claim("StateMasterId",userAssembly.StateMasterId.ToString()),
-                                    //new Claim("ParentStateMasterId",userAssembly.StateMaster.ParentStateMasterId.ToString()),
-                                    new Claim("DistrictMasterId",userAssembly.DistrictMasterId.ToString()),
-                                    new Claim("AssemblyMasterId",userAssembly.AssemblyMasterId.ToString()),
-                                    new Claim("BLOMasterId",bloRecord.BLOMasterId.ToString()),
-                                    new Claim("JWTID", Guid.NewGuid().ToString()),
-                                    new Claim(ClaimTypes.Role,"BLO"),
-                                    new Claim("ElectionType", "LS")
-                                };
-
-
-                                response.AccessToken.LSToken = GenerateToken(authClaims);
-                                response.RefreshToken = GenerateRefreshToken();
-
-                                response.Message = "OTP Verified Successfully ";
-                                response.Status = RequestStatusEnum.OK;
-                                var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
-                                bloRecord.OTPAttempts = 0;
-                                bloRecord.RefreshToken = response.RefreshToken;
-                                bloRecord.RefreshTokenExpiryTime = expireRefreshToken;
-                                var isSucceed = await _authRepository.AddUpdateBLOMaster(bloRecord);
-                                if (isSucceed.IsSucceed == true)
-                                {
-                                    return response;
-                                }
-                                else
-                                {
-                                    return null;
-                                }
-
-                            }
-                            else
-                            {
-                                return new Response()
-                                {
-                                    Status = RequestStatusEnum.BadRequest,
-                                    Message = "OTP Expired"
-                                };
-                            }
-
-                        }
-                        else if (bloRecord.OTP != validateMobile.Otp)
-                        {
-
-                            return new Response()
-                            {
-                                Status = RequestStatusEnum.BadRequest,
-                                Message = "OTP Invalid"
-
-                            };
-
-                        }
-                    }
-                    else
-                    {
-
-                        if (bloRecord.OTPAttempts < 5)
-                        {
-                            var isOtpSame = false;
-
-
-                            var isOtpSend = await _notificationService.SendOtp(bloRecord.BLOMobile.ToString(), otp);
-                            _logger.LogInformation($"SMS Gateway MSG Message Response {isOtpSend.IsSucceed} {isOtpSend.Message}");
-                            if (isOtpSend.IsSucceed is true)
-                            {
-
-                                BLOMaster bLOMaster = new BLOMaster()
-                                {
-                                    BLOMobile = validateMobile.MobileNumber,
-                                    OTP = otp,
-                                    OTPAttempts = bloRecord.OTPAttempts + 1,
-                                    OTPGeneratedTime = BharatDateTime(),
-                                    OTPExpireTime = BharatTimeDynamic(0, 0, 0, 3, 0)
-                                };
-
-                                var isSucceed = await _authRepository.AddUpdateBLOMaster(bLOMaster);
-
-
-
-                                return new Response()
-                                {
-                                    Status = RequestStatusEnum.OK,  //Message = "OTP Sent Successfully " + otp +"/"+"Response: "+ isSucced.Message,
-
-                                    Message = $"We sent you a verification code {otp}  by text message to {bLOMaster.BLOMobile}. Attempt {bLOMaster.OTPAttempts} of 5"
-
-
-                                };
-
-
-
-                            }
-                            else
-                            {
-                                return new Response()
-                                {
-                                    Status = RequestStatusEnum.BadRequest,
-
-                                    Message = "SMS gateway not working"
-
-                                };
-                            }
-
-                        }
-                        else
-                        {
-                            return new Response
-                            {
-                                Status = RequestStatusEnum.BadRequest,
-                                Message = "OTP Limit exceeded. Contact your ARO"
-                            };
-
-                        }
-                    }
-
-
-
-
-                }
-                else
-                {
-                    return new Response
-                    {
-                        Status = RequestStatusEnum.BadRequest,
-                        Message = "Your Account is Locked"
-                    };
-                }
-            }
+            //Response response = new();
+            //response.AccessToken = new();
+            //var soRecords = await _authRepository.ValidateMobile(validateMobile);
+            //var bloRecord = await _authRepository.GetBLO(validateMobile);
+            //if (soRecords.Count == 0 && bloRecord is null)
+            //{
+            //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Mobile number does not exist" };
+            //}
+            //if (soRecords.Count is not 0)
+            //{
+            //    List<SectorOfficerMaster> sectorOfficerMasterRecords = new List<SectorOfficerMaster>();
+            //    List<ServiceResponse> serviceResponses = new List<ServiceResponse>();
+            //    var otp = GenerateOTP();
+
+            //    foreach (var soRecord in soRecords)
+            //        if (soRecord != null)
+            //        {
+            //            if (soRecord.IsLocked == false)
+            //            {
+            //                if (validateMobile.Otp.Length >= 5)
+            //                {
+            //                    var isOtpSame = false;
+
+            //                    if (soRecord.SoMobile == "9988823633")
+            //                    {
+            //                        isOtpSame = true; soRecord.OTP = "111111";
+            //                    }
+            //                    else
+            //                    {
+            //                        isOtpSame = soRecord.OTP == validateMobile.Otp;
+            //                    }
+
+            //                    if (isOtpSame == true)
+            //                    {
+            //                        var timeNow = BharatDateTime();
+            //                        // Check if OTP is still valid
+            //                        if (timeNow <= soRecord.OTPExpireTime)
+            //                        {
+            //                            var userAssembly = await _eamsRepository.GetAssemblyByCode(soRecord.SoAssemblyCode.ToString(), soRecord.StateMasterId.ToString());
+
+            //                            var authClaims = new List<Claim>
+            //                    {
+            //                        new Claim(ClaimTypes.Name,soRecord.SoName),
+            //                        new Claim(ClaimTypes.MobilePhone,soRecord.SoMobile),
+            //                        new Claim("StateMasterId",userAssembly.StateMasterId.ToString()),
+            //                        //new Claim("ParentStateMasterId",userAssembly.StateMaster.ParentStateMasterId.ToString()),
+            //                        new Claim("DistrictMasterId",userAssembly.DistrictMasterId.ToString()),
+            //                        new Claim("AssemblyMasterId",userAssembly.AssemblyMasterId.ToString()),
+            //                        new Claim("SoId",soRecord.SOMasterId.ToString()),
+            //                        new Claim("JWTID", Guid.NewGuid().ToString()),
+            //                        new Claim(ClaimTypes.Role,"SO")
+            //                    };
+            //                            // Generate tokens
+            //                            if (soRecord.ElectionTypeMasterId == 1)//1 is for LS
+            //                            {
+            //                                authClaims.Add(new Claim("ElectionType", "LS"));
+
+            //                                response.AccessToken.LSToken = GenerateToken(authClaims);
+            //                            }
+            //                            else if (soRecord.ElectionTypeMasterId == 2)
+            //                            {
+            //                                authClaims.Add(new Claim("ElectionType", "VS"));
+
+            //                                response.AccessToken.VSToken = GenerateToken(authClaims);
+
+            //                            }
+            //                            if (soRecords.Count == 1)
+            //                            {
+            //                                response.RefreshToken = GenerateRefreshToken();
+
+
+            //                            }
+            //                            else if (soRecords.Count == 2)
+            //                            {
+
+            //                                if (response.AccessToken.LSToken != null && response.AccessToken.VSToken == null)
+            //                                {
+            //                                    response.RefreshToken = GenerateRefreshToken();
+
+
+            //                                }
+            //                            }
+            //                            response.Message = "OTP Verified Successfully ";
+            //                            response.Status = RequestStatusEnum.OK;
+            //                            var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
+            //                            soRecord.OTPAttempts = 0;
+            //                            soRecord.RefreshToken = response.RefreshToken;
+            //                            soRecord.RefreshTokenExpiryTime = expireRefreshToken;
+            //                            var isSucceed = await _authRepository.SectorOfficerMasterRecord(soRecord);
+            //                            serviceResponses.Add(isSucceed);
+
+            //                            if (soRecords.Count == 1)
+            //                            {
+            //                                return response;
+            //                            }
+            //                            else if (response.AccessToken.LSToken != null && response.AccessToken.VSToken != null && soRecords.Count == 2)
+            //                            {
+            //                                return response;
+
+            //                            }
+            //                        }
+            //                        else
+            //                        {
+            //                            return new Response()
+            //                            {
+            //                                Status = RequestStatusEnum.BadRequest,
+            //                                Message = "OTP Expired"
+            //                            };
+            //                        }
+
+            //                    }
+            //                    else if (isOtpSame == false)
+            //                    {
+
+            //                        return new Response()
+            //                        {
+            //                            Status = RequestStatusEnum.BadRequest,
+            //                            Message = "OTP Invalid"
+
+            //                        };
+
+            //                    }
+            //                }
+
+
+
+            //                else
+            //                {
+
+            //                    if (soRecord.OTPAttempts < 5)
+            //                    {
+            //                        var isOtpSame = false;
+
+            //                        if (soRecord.SoMobile == "9988823633")
+            //                        {
+            //                            otp = "111111";
+            //                        }
+
+            //                        var isOtpSend = await _notificationService.SendOtp(soRecord.SoMobile.ToString(), otp);
+            //                        _logger.LogInformation($"SMS Gateway MSG Message Response {isOtpSend.IsSucceed} {isOtpSend.Message}");
+            //                        if (isOtpSend.IsSucceed is true)
+            //                        {
+            //                            SectorOfficerMaster sectorOfficerMaster = new SectorOfficerMaster()
+            //                            {
+            //                                SoMobile = validateMobile.MobileNumber,
+            //                                OTP = otp,
+            //                                ElectionTypeMasterId = soRecord.ElectionTypeMasterId,
+            //                                OTPAttempts = soRecord.OTPAttempts + 1,
+            //                                OTPGeneratedTime = BharatDateTime(),
+            //                                OTPExpireTime = BharatTimeDynamic(0, 0, 0, 3, 0)
+            //                            };
+            //                            sectorOfficerMasterRecords.Add(sectorOfficerMaster);
+            //                            if (sectorOfficerMasterRecords.Count >= 2 && soRecords.Count >= 2)
+            //                            {
+            //                                foreach (var sectorOfficerMasterRecord in sectorOfficerMasterRecords)
+            //                                {
+            //                                    var isSucceed = await _authRepository.SectorOfficerMasterRecord(sectorOfficerMasterRecord);
+            //                                    serviceResponses.Add(isSucceed);
+            //                                }
+            //                                if (serviceResponses.FirstOrDefault(d => d.IsSucceed).IsSucceed == true && serviceResponses.LastOrDefault(d => d.IsSucceed).IsSucceed == true)
+            //                                {
+
+            //                                    return new Response()
+            //                                    {
+            //                                        Status = RequestStatusEnum.OK,  //Message = "OTP Sent Successfully " + otp +"/"+"Response: "+ isSucced.Message,
+
+            //                                        Message = $"We sent you a verification code  by text message to {soRecord.SoMobile}. Attempt {soRecord.OTPAttempts} of 5"
+
+
+            //                                    };
+            //                                }
+            //                            }
+            //                            else if (sectorOfficerMasterRecords.Count == 1 && soRecords.Count == 1)
+            //                            {
+            //                                var isSucceed = await _authRepository.SectorOfficerMasterRecord(sectorOfficerMaster);
+            //                                if (isSucceed.IsSucceed == true)
+            //                                    return new Response()
+            //                                    {
+            //                                        Status = RequestStatusEnum.OK,  //Message = "OTP Sent Successfully " + otp +"/"+"Response: "+ isSucced.Message,
+
+            //                                        Message = $"We sent you a verification code  by text message to {soRecord.SoMobile}. Attempt {soRecord.OTPAttempts} of 5"
+
+            //                                    };
+            //                            }
+            //                        }
+            //                        else
+            //                        {
+
+            //                            return new Response()
+            //                            {
+
+            //                                Status = RequestStatusEnum.BadRequest,  //Message = "OTP Sent Successfully " + otp +"/"+"Response: "+ isSucced.Message,
+
+            //                                Message = "SMS gateway not working"
+
+            //                            };
+            //                        }
+
+            //                    }
+            //                    else
+            //                    {
+            //                        return new Response
+            //                        {
+            //                            Status = RequestStatusEnum.BadRequest,
+            //                            Message = "OTP Limit exceeded. Contact your ARO"
+            //                        };
+
+            //                    }
+            //                }
+
+
+
+
+            //            }
+            //            else
+            //            {
+            //                return new Response
+            //                {
+            //                    Status = RequestStatusEnum.BadRequest,
+            //                    Message = "Your Account is Locked"
+            //                };
+            //            }
+            //        }
+            //        else
+            //        {
+            //            return new Response()
+            //            {
+            //                Status = RequestStatusEnum.BadRequest,
+            //                Message = "Mobile Number does not exist"
+            //            };
+
+            //        }
+            //}
+            ////BLO
+            //else
+            //{
+            //    var otp = GenerateOTP();
+            //    if (bloRecord.IsLocked == false)
+            //    {
+            //        if (validateMobile.Otp.Length >= 5)
+            //        {
+
+
+
+            //            if (bloRecord.OTP == validateMobile.Otp)
+            //            {
+
+
+            //                var timeNow = BharatDateTime();
+            //                // Check if OTP is still valid
+            //                if (timeNow <= bloRecord.OTPExpireTime)
+            //                {
+            //                    var userAssembly = await _eamsRepository.GetAssemblyById(bloRecord.AssemblyMasterId.ToString());
+
+            //                    var authClaims = new List<Claim>
+            //                    {
+            //                        new Claim(ClaimTypes.Name,bloRecord.BLOName),
+            //                        new Claim(ClaimTypes.MobilePhone,bloRecord.BLOMobile),
+            //                        new Claim("StateMasterId",userAssembly.StateMasterId.ToString()),
+            //                        //new Claim("ParentStateMasterId",userAssembly.StateMaster.ParentStateMasterId.ToString()),
+            //                        new Claim("DistrictMasterId",userAssembly.DistrictMasterId.ToString()),
+            //                        new Claim("AssemblyMasterId",userAssembly.AssemblyMasterId.ToString()),
+            //                        new Claim("BLOMasterId",bloRecord.BLOMasterId.ToString()),
+            //                        new Claim("JWTID", Guid.NewGuid().ToString()),
+            //                        new Claim(ClaimTypes.Role,"BLO"),
+            //                        new Claim("ElectionType", "LS")
+            //                    };
+
+
+            //                    response.AccessToken.LSToken = GenerateToken(authClaims);
+            //                    response.RefreshToken = GenerateRefreshToken();
+
+            //                    response.Message = "OTP Verified Successfully ";
+            //                    response.Status = RequestStatusEnum.OK;
+            //                    var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
+            //                    bloRecord.OTPAttempts = 0;
+            //                    bloRecord.RefreshToken = response.RefreshToken;
+            //                    bloRecord.RefreshTokenExpiryTime = expireRefreshToken;
+            //                    var isSucceed = await _authRepository.AddUpdateBLOMaster(bloRecord);
+            //                    if (isSucceed.IsSucceed == true)
+            //                    {
+            //                        return response;
+            //                    }
+            //                    else
+            //                    {
+            //                        return null;
+            //                    }
+
+            //                }
+            //                else
+            //                {
+            //                    return new Response()
+            //                    {
+            //                        Status = RequestStatusEnum.BadRequest,
+            //                        Message = "OTP Expired"
+            //                    };
+            //                }
+
+            //            }
+            //            else if (bloRecord.OTP != validateMobile.Otp)
+            //            {
+
+            //                return new Response()
+            //                {
+            //                    Status = RequestStatusEnum.BadRequest,
+            //                    Message = "OTP Invalid"
+
+            //                };
+
+            //            }
+            //        }
+            //        else
+            //        {
+
+            //            if (bloRecord.OTPAttempts < 5)
+            //            {
+            //                var isOtpSame = false;
+
+
+            //                var isOtpSend = await _notificationService.SendOtp(bloRecord.BLOMobile.ToString(), otp);
+            //                _logger.LogInformation($"SMS Gateway MSG Message Response {isOtpSend.IsSucceed} {isOtpSend.Message}");
+            //                if (isOtpSend.IsSucceed is true)
+            //                {
+
+            //                    BLOMaster bLOMaster = new BLOMaster()
+            //                    {
+            //                        BLOMobile = validateMobile.MobileNumber,
+            //                        OTP = otp,
+            //                        OTPAttempts = bloRecord.OTPAttempts + 1,
+            //                        OTPGeneratedTime = BharatDateTime(),
+            //                        OTPExpireTime = BharatTimeDynamic(0, 0, 0, 3, 0)
+            //                    };
+
+            //                    var isSucceed = await _authRepository.AddUpdateBLOMaster(bLOMaster);
+
+
+
+            //                    return new Response()
+            //                    {
+            //                        Status = RequestStatusEnum.OK,  //Message = "OTP Sent Successfully " + otp +"/"+"Response: "+ isSucced.Message,
+
+            //                        Message = $"We sent you a verification code {otp}  by text message to {bLOMaster.BLOMobile}. Attempt {bLOMaster.OTPAttempts} of 5"
+
+
+            //                    };
+
+
+
+            //                }
+            //                else
+            //                {
+            //                    return new Response()
+            //                    {
+            //                        Status = RequestStatusEnum.BadRequest,
+
+            //                        Message = "SMS gateway not working"
+
+            //                    };
+            //                }
+
+            //            }
+            //            else
+            //            {
+            //                return new Response
+            //                {
+            //                    Status = RequestStatusEnum.BadRequest,
+            //                    Message = "OTP Limit exceeded. Contact your ARO"
+            //                };
+
+            //            }
+            //        }
+
+
+
+
+            //    }
+            //    else
+            //    {
+            //        return new Response
+            //        {
+            //            Status = RequestStatusEnum.BadRequest,
+            //            Message = "Your Account is Locked"
+            //        };
+            //    }
+            //}
 
             return new Response { Status = RequestStatusEnum.BadRequest, Message = "Something is Wrong" };
 
@@ -741,304 +741,304 @@ namespace EAMS_BLL.AuthServices
             }
 
 
-            var roleLS = principalLS?.Claims.FirstOrDefault(d => d.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value ?? "No Data";
-            var roleVS = principalVS?.Claims.FirstOrDefault(d => d.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value ?? "No Data";
-            var electionTypeLS = principalLS?.Claims.FirstOrDefault(d => d.Type == "ElectionType")?.Value ?? "No Data";
-            var electionTypeVS = principalVS != null ? principalVS.Claims.FirstOrDefault(d => d.Type == "ElectionType")?.Value : "No Data";
-            string newRefreshToken = "";
-            if (roleLS is "SO" || roleVS is "SO")
-            {
-                if (electionTypeLS is "LS")
-                {
-                    var soId = principalLS.Claims.FirstOrDefault(d => d.Type == "SoId").Value;
-                    var soUser = await _authRepository.GetSOById(Convert.ToInt32(soId));
+            //var roleLS = principalLS?.Claims.FirstOrDefault(d => d.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value ?? "No Data";
+            //var roleVS = principalVS?.Claims.FirstOrDefault(d => d.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value ?? "No Data";
+            //var electionTypeLS = principalLS?.Claims.FirstOrDefault(d => d.Type == "ElectionType")?.Value ?? "No Data";
+            //var electionTypeVS = principalVS != null ? principalVS.Claims.FirstOrDefault(d => d.Type == "ElectionType")?.Value : "No Data";
+            //string newRefreshToken = "";
+            //if (roleLS is "SO" || roleVS is "SO")
+            //{
+            //    if (electionTypeLS is "LS")
+            //    {
+            //        var soId = principalLS.Claims.FirstOrDefault(d => d.Type == "SoId").Value;
+            //        var soUser = await _authRepository.GetSOById(Convert.ToInt32(soId));
 
-                    if (soUser == null || soUser.RefreshToken != model.RefreshToken || !IsRefreshTokenValid(soUser.RefreshTokenExpiryTime))
-                    {
-                        _Token.IsSucceed = false;
-                        _Token.Message = "Invalid access token or refresh token";
-                        return _Token;
-                    }
-                    var userAssembly = await _eamsRepository.GetAssemblyByCode(soUser.SoAssemblyCode.ToString(), soUser.StateMasterId.ToString());
+            //        if (soUser == null || soUser.RefreshToken != model.RefreshToken || !IsRefreshTokenValid(soUser.RefreshTokenExpiryTime))
+            //        {
+            //            _Token.IsSucceed = false;
+            //            _Token.Message = "Invalid access token or refresh token";
+            //            return _Token;
+            //        }
+            //        var userAssembly = await _eamsRepository.GetAssemblyByCode(soUser.SoAssemblyCode.ToString(), soUser.StateMasterId.ToString());
 
-                    var authClaims = new List<Claim>
-                                {
-                                    new Claim(ClaimTypes.Name,soUser.SoName),
-                                    new Claim(ClaimTypes.MobilePhone,soUser.SoMobile),
-                                    new Claim("StateMasterId",userAssembly.StateMasterId.ToString()),
-                                    new Claim("DistrictMasterId",userAssembly.DistrictMasterId.ToString()),
-                                    new Claim("AssemblyMasterId",userAssembly.AssemblyMasterId.ToString()),
-                                    new Claim("ElectionType","LS"),
-                                    new Claim("SoId",soUser.SOMasterId.ToString()),
-                                    new Claim("JWTID", Guid.NewGuid().ToString()),
-                                    new Claim(ClaimTypes.Role,"SO")
-                                };
-
-
-                    var newAccessToken = GenerateToken(authClaims);
-                    newRefreshToken = GenerateRefreshToken();
-                    var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
-                    soUser.RefreshToken = newRefreshToken;
-                    soUser.RefreshTokenExpiryTime = expireRefreshToken;
-                    var isSucceed = await _authRepository.SectorOfficerMasterRecord(soUser);
-                    if (isSucceed.IsSucceed == true)
-                    {
-                        _Token.IsSucceed = true;
-                        _Token.Message = "Success";
-
-                        if (soUser.ElectionTypeMasterId == 1)//LS
-                        {
-                            _Token.AccessToken.LSToken = newAccessToken;
-                        }
-                        else if (soUser.ElectionTypeMasterId == 2)//VS
-                        {
-                            _Token.AccessToken.VSToken = newAccessToken;
-
-                        }
-                        _Token.RefreshToken = newRefreshToken;
-                    }
-                    else
-                    {
-                        _Token.IsSucceed = false;
-                        _Token.Message = "Invalid access token or refresh token";
-                    }
-
-                }
-
-                if (electionTypeVS is "VS")
-                {
-                    var soId = principalVS.Claims.FirstOrDefault(d => d.Type == "SoId").Value;
-                    var soUser = await _authRepository.GetSOById(Convert.ToInt32(soId));
-
-                    if (soUser == null || soUser.RefreshToken != model.RefreshToken || !IsRefreshTokenValid(soUser.RefreshTokenExpiryTime))
-                    {
-                        _Token.IsSucceed = false;
-                        _Token.Message = "Invalid access token or refresh token";
-                        return _Token;
-                    }
-                    var userAssembly = await _eamsRepository.GetAssemblyByCode(soUser.SoAssemblyCode.ToString(), soUser.StateMasterId.ToString());
-
-                    var authClaims = new List<Claim>
-                                {
-                                    new Claim(ClaimTypes.Name,soUser.SoName),
-                                    new Claim(ClaimTypes.MobilePhone,soUser.SoMobile),
-                                    new Claim("StateMasterId",userAssembly.StateMasterId.ToString()),
-                                    new Claim("DistrictMasterId",userAssembly.DistrictMasterId.ToString()),
-                                    new Claim("AssemblyMasterId",userAssembly.AssemblyMasterId.ToString()),
-                                      new Claim("ElectionType","VS"),
-                                    new Claim("SoId",soUser.SOMasterId.ToString()),
-                                    new Claim("JWTID", Guid.NewGuid().ToString()),
-                                    new Claim(ClaimTypes.Role,"SO")
-                                };
-                    var newAccessToken = GenerateToken(authClaims);
-                    var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
-                    soUser.RefreshToken = newRefreshToken;
-                    soUser.RefreshTokenExpiryTime = expireRefreshToken;
-                    var isSucceed = await _authRepository.SectorOfficerMasterRecord(soUser);
-                    if (isSucceed.IsSucceed == true)
-                    {
-                        _Token.IsSucceed = true;
-                        _Token.Message = "Success";
-                        if (soUser.ElectionTypeMasterId == 1)//LS
-                        {
-                            _Token.AccessToken.LSToken = newAccessToken;
-                        }
-                        else if (soUser.ElectionTypeMasterId == 2)//VS
-                        {
-                            _Token.AccessToken.VSToken = newAccessToken;
-
-                        }
-                        _Token.RefreshToken = newRefreshToken;
-                    }
-                    else
-                    {
-                        _Token.IsSucceed = false;
-                        _Token.Message = "Invalid access token or refresh token";
-                    }
-
-                }
+            //        var authClaims = new List<Claim>
+            //                    {
+            //                        new Claim(ClaimTypes.Name,soUser.SoName),
+            //                        new Claim(ClaimTypes.MobilePhone,soUser.SoMobile),
+            //                        new Claim("StateMasterId",userAssembly.StateMasterId.ToString()),
+            //                        new Claim("DistrictMasterId",userAssembly.DistrictMasterId.ToString()),
+            //                        new Claim("AssemblyMasterId",userAssembly.AssemblyMasterId.ToString()),
+            //                        new Claim("ElectionType","LS"),
+            //                        new Claim("SoId",soUser.SOMasterId.ToString()),
+            //                        new Claim("JWTID", Guid.NewGuid().ToString()),
+            //                        new Claim(ClaimTypes.Role,"SO")
+            //                    };
 
 
+            //        var newAccessToken = GenerateToken(authClaims);
+            //        newRefreshToken = GenerateRefreshToken();
+            //        var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
+            //        soUser.RefreshToken = newRefreshToken;
+            //        soUser.RefreshTokenExpiryTime = expireRefreshToken;
+            //        var isSucceed = await _authRepository.SectorOfficerMasterRecord(soUser);
+            //        if (isSucceed.IsSucceed == true)
+            //        {
+            //            _Token.IsSucceed = true;
+            //            _Token.Message = "Success";
 
+            //            if (soUser.ElectionTypeMasterId == 1)//LS
+            //            {
+            //                _Token.AccessToken.LSToken = newAccessToken;
+            //            }
+            //            else if (soUser.ElectionTypeMasterId == 2)//VS
+            //            {
+            //                _Token.AccessToken.VSToken = newAccessToken;
 
-            }
-            else if (roleLS is "BLO" || roleVS is "BLO")
-            {
-                if (electionTypeLS is "LS")
-                {
-                    var bloId = principalLS.Claims.FirstOrDefault(d => d.Type == "BLOMasterId").Value;
-                    var bloUser = await _authRepository.GetBLOById(Convert.ToInt32(bloId));
+            //            }
+            //            _Token.RefreshToken = newRefreshToken;
+            //        }
+            //        else
+            //        {
+            //            _Token.IsSucceed = false;
+            //            _Token.Message = "Invalid access token or refresh token";
+            //        }
 
-                    if (bloUser == null || bloUser.RefreshToken != model.RefreshToken || !IsRefreshTokenValid(bloUser.RefreshTokenExpiryTime))
-                    {
-                        _Token.IsSucceed = false;
-                        _Token.Message = "Invalid access token or refresh token";
-                        return _Token;
-                    }
-                    var userAssembly = await _eamsRepository.GetAssemblyById(bloUser.AssemblyMasterId.ToString());
+            //    }
 
-                    var authClaims = new List<Claim>
-                                {
-                                    new Claim(ClaimTypes.Name,bloUser.BLOName),
-                                    new Claim(ClaimTypes.MobilePhone,bloUser.BLOMobile),
-                                    new Claim("StateMasterId",userAssembly.StateMasterId.ToString()),
-                                    new Claim("DistrictMasterId",userAssembly.DistrictMasterId.ToString()),
-                                    new Claim("AssemblyMasterId",userAssembly.AssemblyMasterId.ToString()),
-                                    new Claim("ElectionType","LS"),
-                                    new Claim("BLOMasterId",bloUser.BLOMasterId.ToString()),
-                                    new Claim("JWTID", Guid.NewGuid().ToString()),
-                                    new Claim(ClaimTypes.Role,"BLO")
-                                };
+            //    if (electionTypeVS is "VS")
+            //    {
+            //        var soId = principalVS.Claims.FirstOrDefault(d => d.Type == "SoId").Value;
+            //        var soUser = await _authRepository.GetSOById(Convert.ToInt32(soId));
 
+            //        if (soUser == null || soUser.RefreshToken != model.RefreshToken || !IsRefreshTokenValid(soUser.RefreshTokenExpiryTime))
+            //        {
+            //            _Token.IsSucceed = false;
+            //            _Token.Message = "Invalid access token or refresh token";
+            //            return _Token;
+            //        }
+            //        var userAssembly = await _eamsRepository.GetAssemblyByCode(soUser.SoAssemblyCode.ToString(), soUser.StateMasterId.ToString());
 
-                    var newAccessToken = GenerateToken(authClaims);
-                    newRefreshToken = GenerateRefreshToken();
-                    var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
-                    bloUser.RefreshToken = newRefreshToken;
-                    bloUser.RefreshTokenExpiryTime = expireRefreshToken;
-                    var isSucceed = await _authRepository.AddUpdateBLOMaster(bloUser);
-                    if (isSucceed.IsSucceed == true)
-                    {
-                        _Token.IsSucceed = true;
-                        _Token.Message = "Success";
+            //        var authClaims = new List<Claim>
+            //                    {
+            //                        new Claim(ClaimTypes.Name,soUser.SoName),
+            //                        new Claim(ClaimTypes.MobilePhone,soUser.SoMobile),
+            //                        new Claim("StateMasterId",userAssembly.StateMasterId.ToString()),
+            //                        new Claim("DistrictMasterId",userAssembly.DistrictMasterId.ToString()),
+            //                        new Claim("AssemblyMasterId",userAssembly.AssemblyMasterId.ToString()),
+            //                          new Claim("ElectionType","VS"),
+            //                        new Claim("SoId",soUser.SOMasterId.ToString()),
+            //                        new Claim("JWTID", Guid.NewGuid().ToString()),
+            //                        new Claim(ClaimTypes.Role,"SO")
+            //                    };
+            //        var newAccessToken = GenerateToken(authClaims);
+            //        var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
+            //        soUser.RefreshToken = newRefreshToken;
+            //        soUser.RefreshTokenExpiryTime = expireRefreshToken;
+            //        var isSucceed = await _authRepository.SectorOfficerMasterRecord(soUser);
+            //        if (isSucceed.IsSucceed == true)
+            //        {
+            //            _Token.IsSucceed = true;
+            //            _Token.Message = "Success";
+            //            if (soUser.ElectionTypeMasterId == 1)//LS
+            //            {
+            //                _Token.AccessToken.LSToken = newAccessToken;
+            //            }
+            //            else if (soUser.ElectionTypeMasterId == 2)//VS
+            //            {
+            //                _Token.AccessToken.VSToken = newAccessToken;
 
+            //            }
+            //            _Token.RefreshToken = newRefreshToken;
+            //        }
+            //        else
+            //        {
+            //            _Token.IsSucceed = false;
+            //            _Token.Message = "Invalid access token or refresh token";
+            //        }
 
-                        _Token.AccessToken.LSToken = newAccessToken;
-                        _Token.RefreshToken = newRefreshToken;
-                    }
-                    else
-                    {
-                        _Token.IsSucceed = false;
-                        _Token.Message = "Invalid access token or refresh token";
-                    }
-
-                }
-
-                if (electionTypeVS is "VS")
-                {
-                    var soId = principalVS.Claims.FirstOrDefault(d => d.Type == "SoId").Value;
-                    var soUser = await _authRepository.GetSOById(Convert.ToInt32(soId));
-
-                    if (soUser == null || soUser.RefreshToken != model.RefreshToken || !IsRefreshTokenValid(soUser.RefreshTokenExpiryTime))
-                    {
-                        _Token.IsSucceed = false;
-                        _Token.Message = "Invalid access token or refresh token";
-                        return _Token;
-                    }
-                    var userAssembly = await _eamsRepository.GetAssemblyByCode(soUser.SoAssemblyCode.ToString(), soUser.StateMasterId.ToString());
-
-                    var authClaims = new List<Claim>
-                                {
-                                    new Claim(ClaimTypes.Name,soUser.SoName),
-                                    new Claim(ClaimTypes.MobilePhone,soUser.SoMobile),
-                                    new Claim("StateMasterId",userAssembly.StateMasterId.ToString()),
-                                    new Claim("DistrictMasterId",userAssembly.DistrictMasterId.ToString()),
-                                    new Claim("AssemblyMasterId",userAssembly.AssemblyMasterId.ToString()),
-                                      new Claim("ElectionType","VS"),
-                                    new Claim("SoId",soUser.SOMasterId.ToString()),
-                                    new Claim("JWTID", Guid.NewGuid().ToString()),
-                                    new Claim(ClaimTypes.Role,"SO")
-                                };
-                    var newAccessToken = GenerateToken(authClaims);
-                    var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
-                    soUser.RefreshToken = newRefreshToken;
-                    soUser.RefreshTokenExpiryTime = expireRefreshToken;
-                    var isSucceed = await _authRepository.SectorOfficerMasterRecord(soUser);
-                    if (isSucceed.IsSucceed == true)
-                    {
-                        _Token.IsSucceed = true;
-                        _Token.Message = "Success";
-                        if (soUser.ElectionTypeMasterId == 1)//LS
-                        {
-                            _Token.AccessToken.LSToken = newAccessToken;
-                        }
-                        else if (soUser.ElectionTypeMasterId == 2)//VS
-                        {
-                            _Token.AccessToken.VSToken = newAccessToken;
-
-                        }
-                        _Token.RefreshToken = newRefreshToken;
-                    }
-                    else
-                    {
-                        _Token.IsSucceed = false;
-                        _Token.Message = "Invalid access token or refresh token";
-                    }
-
-                }
+            //    }
 
 
 
 
-            }
+            //}
+            //else if (roleLS is "BLO" || roleVS is "BLO")
+            //{
+            //    if (electionTypeLS is "LS")
+            //    {
+            //        var bloId = principalLS.Claims.FirstOrDefault(d => d.Type == "BLOMasterId").Value;
+            //        var bloUser = await _authRepository.GetBLOById(Convert.ToInt32(bloId));
 
-            else
-            {
-                var user = await _userManager.FindByNameAsync(userName);
+            //        if (bloUser == null || bloUser.RefreshToken != model.RefreshToken || !IsRefreshTokenValid(bloUser.RefreshTokenExpiryTime))
+            //        {
+            //            _Token.IsSucceed = false;
+            //            _Token.Message = "Invalid access token or refresh token";
+            //            return _Token;
+            //        }
+            //        var userAssembly = await _eamsRepository.GetAssemblyById(bloUser.AssemblyMasterId.ToString());
 
-                if (user == null || user.RefreshToken != model.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
-                {
-                    _Token.IsSucceed = false;
-                    _Token.Message = "Invalid access token or refresh token";
-                    return _Token;
-                }
-
-                if (user is not null)
-                {
-                    var userProfile = await _authRepository.GetUserMaster(user.Id);
-                    var userRoles = await _authRepository.GetRoleByUser(user);
-
-                    foreach (var userMaster in userProfile)
-                    {
-                        var authClaims = GenerateClaims(user, userMaster);
-
-                        // Add user roles to authClaims
-                        foreach (var userRole in userRoles)
-                        {
-                            authClaims.Add(new Claim(ClaimTypes.Role, userRole.RoleName));
-                        }
-                        if (_Token.AccessToken.LSToken == null)
-                        {
-                            authClaims.Add(new Claim("ElectionType", "LS"));
-
-                        }
-                        else if (_Token.AccessToken.VSToken == null)
-                        {
-                            authClaims.Add(new Claim("ElectionType", "VS"));
+            //        var authClaims = new List<Claim>
+            //                    {
+            //                        new Claim(ClaimTypes.Name,bloUser.BLOName),
+            //                        new Claim(ClaimTypes.MobilePhone,bloUser.BLOMobile),
+            //                        new Claim("StateMasterId",userAssembly.StateMasterId.ToString()),
+            //                        new Claim("DistrictMasterId",userAssembly.DistrictMasterId.ToString()),
+            //                        new Claim("AssemblyMasterId",userAssembly.AssemblyMasterId.ToString()),
+            //                        new Claim("ElectionType","LS"),
+            //                        new Claim("BLOMasterId",bloUser.BLOMasterId.ToString()),
+            //                        new Claim("JWTID", Guid.NewGuid().ToString()),
+            //                        new Claim(ClaimTypes.Role,"BLO")
+            //                    };
 
 
-                        }
-                        // Generate tokens
-
-                        var token = GenerateToken(authClaims);
-
-                        if (_Token.AccessToken.LSToken == null)
-                        {
-                            _Token.AccessToken.LSToken = token;
-
-
-                        }
-                        else if (_Token.AccessToken.VSToken == null)
-                        {
-                            _Token.AccessToken.VSToken = token;
+            //        var newAccessToken = GenerateToken(authClaims);
+            //        newRefreshToken = GenerateRefreshToken();
+            //        var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
+            //        bloUser.RefreshToken = newRefreshToken;
+            //        bloUser.RefreshTokenExpiryTime = expireRefreshToken;
+            //        var isSucceed = await _authRepository.AddUpdateBLOMaster(bloUser);
+            //        if (isSucceed.IsSucceed == true)
+            //        {
+            //            _Token.IsSucceed = true;
+            //            _Token.Message = "Success";
 
 
-                            break; // Break the loop after assigning VSToken
-                        }
+            //            _Token.AccessToken.LSToken = newAccessToken;
+            //            _Token.RefreshToken = newRefreshToken;
+            //        }
+            //        else
+            //        {
+            //            _Token.IsSucceed = false;
+            //            _Token.Message = "Invalid access token or refresh token";
+            //        }
+
+            //    }
+
+            //    if (electionTypeVS is "VS")
+            //    {
+            //        var soId = principalVS.Claims.FirstOrDefault(d => d.Type == "SoId").Value;
+            //        var soUser = await _authRepository.GetSOById(Convert.ToInt32(soId));
+
+            //        if (soUser == null || soUser.RefreshToken != model.RefreshToken || !IsRefreshTokenValid(soUser.RefreshTokenExpiryTime))
+            //        {
+            //            _Token.IsSucceed = false;
+            //            _Token.Message = "Invalid access token or refresh token";
+            //            return _Token;
+            //        }
+            //        var userAssembly = await _eamsRepository.GetAssemblyByCode(soUser.SoAssemblyCode.ToString(), soUser.StateMasterId.ToString());
+
+            //        var authClaims = new List<Claim>
+            //                    {
+            //                        new Claim(ClaimTypes.Name,soUser.SoName),
+            //                        new Claim(ClaimTypes.MobilePhone,soUser.SoMobile),
+            //                        new Claim("StateMasterId",userAssembly.StateMasterId.ToString()),
+            //                        new Claim("DistrictMasterId",userAssembly.DistrictMasterId.ToString()),
+            //                        new Claim("AssemblyMasterId",userAssembly.AssemblyMasterId.ToString()),
+            //                          new Claim("ElectionType","VS"),
+            //                        new Claim("SoId",soUser.SOMasterId.ToString()),
+            //                        new Claim("JWTID", Guid.NewGuid().ToString()),
+            //                        new Claim(ClaimTypes.Role,"SO")
+            //                    };
+            //        var newAccessToken = GenerateToken(authClaims);
+            //        var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
+            //        soUser.RefreshToken = newRefreshToken;
+            //        soUser.RefreshTokenExpiryTime = expireRefreshToken;
+            //        var isSucceed = await _authRepository.SectorOfficerMasterRecord(soUser);
+            //        if (isSucceed.IsSucceed == true)
+            //        {
+            //            _Token.IsSucceed = true;
+            //            _Token.Message = "Success";
+            //            if (soUser.ElectionTypeMasterId == 1)//LS
+            //            {
+            //                _Token.AccessToken.LSToken = newAccessToken;
+            //            }
+            //            else if (soUser.ElectionTypeMasterId == 2)//VS
+            //            {
+            //                _Token.AccessToken.VSToken = newAccessToken;
+
+            //            }
+            //            _Token.RefreshToken = newRefreshToken;
+            //        }
+            //        else
+            //        {
+            //            _Token.IsSucceed = false;
+            //            _Token.Message = "Invalid access token or refresh token";
+            //        }
+
+            //    }
 
 
-                    }
-                }
 
 
-                var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
-                user.RefreshToken = GenerateRefreshToken();
-                user.RefreshTokenExpiryTime = (DateTime)expireRefreshToken;
-                await _userManager.UpdateAsync(user);
-                _Token.IsSucceed = true;
-                _Token.Message = "Success";
-                _Token.RefreshToken = newRefreshToken;
-            }
+            //}
+
+            //else
+            //{
+            //    var user = await _userManager.FindByNameAsync(userName);
+
+            //    if (user == null || user.RefreshToken != model.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
+            //    {
+            //        _Token.IsSucceed = false;
+            //        _Token.Message = "Invalid access token or refresh token";
+            //        return _Token;
+            //    }
+
+            //    if (user is not null)
+            //    {
+            //        var userProfile = await _authRepository.GetUserMaster(user.Id);
+            //        var userRoles = await _authRepository.GetRoleByUser(user);
+
+            //        foreach (var userMaster in userProfile)
+            //        {
+            //            var authClaims = GenerateClaims(user, userMaster);
+
+            //            // Add user roles to authClaims
+            //            foreach (var userRole in userRoles)
+            //            {
+            //                authClaims.Add(new Claim(ClaimTypes.Role, userRole.RoleName));
+            //            }
+            //            if (_Token.AccessToken.LSToken == null)
+            //            {
+            //                authClaims.Add(new Claim("ElectionType", "LS"));
+
+            //            }
+            //            else if (_Token.AccessToken.VSToken == null)
+            //            {
+            //                authClaims.Add(new Claim("ElectionType", "VS"));
+
+
+            //            }
+            //            // Generate tokens
+
+            //            var token = GenerateToken(authClaims);
+
+            //            if (_Token.AccessToken.LSToken == null)
+            //            {
+            //                _Token.AccessToken.LSToken = token;
+
+
+            //            }
+            //            else if (_Token.AccessToken.VSToken == null)
+            //            {
+            //                _Token.AccessToken.VSToken = token;
+
+
+            //                break; // Break the loop after assigning VSToken
+            //            }
+
+
+            //        }
+            //    }
+
+
+            //    var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
+            //    user.RefreshToken = GenerateRefreshToken();
+            //    user.RefreshTokenExpiryTime = (DateTime)expireRefreshToken;
+            //    await _userManager.UpdateAsync(user);
+            //    _Token.IsSucceed = true;
+            //    _Token.Message = "Success";
+            //    _Token.RefreshToken = newRefreshToken;
+            //}
             return _Token;
         }
         private string GenerateToken(IEnumerable<Claim> claims)

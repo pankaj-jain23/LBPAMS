@@ -11,13 +11,28 @@ namespace EAMS_ACore.Models
             get;
             set;
         }
+        public int DistrictMasterId
+        {
+            get;
+            set;
+        }
 
+        public int? AssemblyMasterId
+        {
+            get;
+            set;
+        }
+        public int? FourthLevelHMasterId
+        {
+            get;
+            set;
+        }
         public string SoName { get; set; }
 
         public string SoDesignation { get; set; }
 
         public string SoOfficeName { get; set; }
-        public int SoAssemblyCode { get; set; }
+       
         public string SoMobile { get; set; }
 
         public DateTime? SoCreatedAt { get; set; }

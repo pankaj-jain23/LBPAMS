@@ -684,31 +684,23 @@ namespace EAMS.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (addSectorOfficerViewModel.SoAssemblyCode > 0)
+
+                var mappedData = _mapper.Map<SectorOfficerMaster>(addSectorOfficerViewModel);
+                var result = await _EAMSService.AddSectorOfficer(mappedData);
+
+                switch (result.Status)
                 {
+                    case RequestStatusEnum.OK:
+                        return Ok(result.Message);
+                    case RequestStatusEnum.BadRequest:
+                        return BadRequest(result.Message);
+                    case RequestStatusEnum.NotFound:
+                        return NotFound(result.Message);
 
-                    var mappedData = _mapper.Map<SectorOfficerMaster>(addSectorOfficerViewModel);
-                    var result = await _EAMSService.AddSectorOfficer(mappedData);
-
-                    switch (result.Status)
-                    {
-                        case RequestStatusEnum.OK:
-                            return Ok(result.Message);
-                        case RequestStatusEnum.BadRequest:
-                            return BadRequest(result.Message);
-                        case RequestStatusEnum.NotFound:
-                            return NotFound(result.Message);
-
-                        default:
-                            return StatusCode(500, "Internal Server Error");
-                    }
-                }
-                else
-                {
-                    return StatusCode(400, "Assembly Code not Found");
+                    default:
+                        return StatusCode(500, "Internal Server Error");
 
                 }
-
             }
             else
             {
@@ -797,9 +789,9 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetBoothListById")]
         //[Authorize]
-        public async Task<IActionResult> BoothListById(string stateMasterId, string districtMasterId, string assemblyMasterId, string fourthLevelHMasterId,string BlockZonePanchayatMasterId)
+        public async Task<IActionResult> BoothListById(string stateMasterId, string districtMasterId, string assemblyMasterId, string fourthLevelHMasterId, string BlockZonePanchayatMasterId)
         {
-            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && BlockZonePanchayatMasterId!=null)
+            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && BlockZonePanchayatMasterId != null)
             {
                 //  var boothList = await _EAMSService.GetBoothListById(stateMasterId, districtMasterId, assemblyMasterId, pSZoneMasterId);  // Corrected to await the asynchronous method
                 var boothList = await _EAMSService.GetBoothListByIdwithPsZone(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, BlockZonePanchayatMasterId);  // Corrected to await the asynchronous method
@@ -1771,7 +1763,7 @@ namespace EAMS.Controllers
         {
             if (ModelState.IsValid)
             {
-                var mappedData = _mapper.Map<AddBlockPanchayatViewModel, BlockZonePanchayat>(addBlockPanchayatViewModel);
+                var mappedData = _mapper.Map<AddBlockPanchayatViewModel, PSZonePanchayat>(addBlockPanchayatViewModel);
 
 
                 var result = await _EAMSService.AddBlockPanchayat(mappedData);
@@ -1802,7 +1794,7 @@ namespace EAMS.Controllers
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && fourthLevelHMasterId != null)
             {
                 var getBlockPanchayatList = await _EAMSService.GetBlockPanchayatListById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);
-                var mappeddata = _mapper.Map<List<BlockZonePanchayat>, List<ListBlockPanchayatViewModel>>(getBlockPanchayatList);
+                var mappeddata = _mapper.Map<List<PSZonePanchayat>, List<ListBlockPanchayatViewModel>>(getBlockPanchayatList);
                 if (mappeddata != null)
                 {
                     var data = new
@@ -1836,7 +1828,7 @@ namespace EAMS.Controllers
         {
             if (ModelState.IsValid)
             {
-                var mappedData = _mapper.Map<UpdateBlockPanchayatViewModel, BlockZonePanchayat>(updateBlockPanchayatViewModel);
+                var mappedData = _mapper.Map<UpdateBlockPanchayatViewModel, PSZonePanchayat>(updateBlockPanchayatViewModel);
                 var result = await _EAMSService.UpdateBlockZonePanchayat(mappedData);
                 switch (result.Status)
                 {
@@ -1865,7 +1857,7 @@ namespace EAMS.Controllers
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && fourthLevelHMasterId != null && blockZonePanchayatMasterId != null)
             {
                 var getBlockPanchayat = await _EAMSService.GetBlockZonePanchayatById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, blockZonePanchayatMasterId);  // Corrected to await the asynchronous method
-                var mappeddata = _mapper.Map<BlockZonePanchayat, ListBlockPanchayatViewModel>(getBlockPanchayat);
+                var mappeddata = _mapper.Map<PSZonePanchayat, ListBlockPanchayatViewModel>(getBlockPanchayat);
 
                 if (mappeddata != null)
                 {
@@ -1924,7 +1916,7 @@ namespace EAMS.Controllers
         {
             if (ModelState.IsValid)
             {
-                var mappedData = _mapper.Map<AddSarpanchWardsViewModel, SarpanchWards>(addSarpanchWardsViewModel);
+                var mappedData = _mapper.Map<AddSarpanchWardsViewModel, GPPanchayatWards>(addSarpanchWardsViewModel);
 
 
                 var result = await _EAMSService.AddSarpanchWards(mappedData);
@@ -1956,7 +1948,7 @@ namespace EAMS.Controllers
             {
                 var list = await _EAMSService.GetSarpanchWardsListById(stateMasterId, districtMasterId, assemblyMasterId, FourthLevelHMasterId, BlockZonePanchayatMasterId);  // Corrected to await the asynchronous method
 
-                var mappedData = _mapper.Map<List<SarpanchWards>, List<ListSarpanchWardsViewModel>>(list);
+                var mappedData = _mapper.Map<List<GPPanchayatWards>, List<ListSarpanchWardsViewModel>>(list);
                 if (list != null)
                 {
                     var data = new
@@ -1990,7 +1982,7 @@ namespace EAMS.Controllers
         {
             if (ModelState.IsValid)
             {
-                var mappedData = _mapper.Map<UpdateSarpanchWardsViewModel, SarpanchWards>(updateSarpanchWardsViewModel);
+                var mappedData = _mapper.Map<UpdateSarpanchWardsViewModel, GPPanchayatWards>(updateSarpanchWardsViewModel);
                 var result = await _EAMSService.UpdateSarpanchWards(mappedData);
                 switch (result.Status)
                 {

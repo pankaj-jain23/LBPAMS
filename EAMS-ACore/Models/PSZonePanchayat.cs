@@ -4,14 +4,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EAMS_ACore.Models
 {
-    public class SarpanchWards
+    public class PSZonePanchayat
     {
         [Key]
-        public int SarpanchWardsMasterId { get; set; }
-        public string SarpanchWardsName { get; set; }
-        public int SarpanchWardsCode { get; set; }
+        public int PSZonePanchayatMasterId { get; set; }
+        public string PSZonePanchayatName { get; set; }
+        public int PSZonePanchayatCode { get; set; }
 
-        public string? SarpanchWardsType { get; set; }
+        public string? PSZonePanchayatType { get; set; }
 
         public int ElectionTypeMasterId
         {
@@ -60,17 +60,11 @@ namespace EAMS_ACore.Models
             get;
             set;
         }
-
-
-
         public int FourthLevelHMasterId
-
         {
             get;
             set;
         }
-
-
         [ForeignKey("FourthLevelHMasterId")]
         public virtual FourthLevelH? FourthLevelH
         {
@@ -78,26 +72,20 @@ namespace EAMS_ACore.Models
             set;
         }
 
-        public int BlockZonePanchayatMasterId
+        public int BlockZonePanchayatBooths { get; set; }
+        public string? BlockZonePanchayatCategory { get; set; }
+        public DateTime? BlockZonePanchayatCreatedAt { get; set; }
+
+        public DateTime? BlockZonePanchayatUpdatedAt { get; set; }
+
+        public DateTime? BlockZonePanchayatDeletedAt { get; set; }
+        public bool BlockZonePanchayatStatus { get; set; }
+
+        public virtual List<BoothMaster> BoothMaster
         {
             get;
             set;
         }
-        [ForeignKey("BlockZonePanchayatMasterId")]
-        public virtual BlockZonePanchayat? BlockZonePanchayat
-
-        {
-            get;
-            set;
-        }
-        public string? SarpanchWardsCategory { get; set; }
-        public DateTime? SarpanchWardsCreatedAt { get; set; }
-
-        public DateTime? SarpanchWardsUpdatedAt { get; set; }
-
-        public DateTime? SarpanchWardsDeletedAt { get; set; }
-        public bool SarpanchWardsStatus { get; set; }
-
-
+       
     }
 }

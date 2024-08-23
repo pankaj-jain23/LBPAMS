@@ -222,34 +222,35 @@ namespace EAMS_BLL.Services
 
         public async Task<SectorOfficerMasterCustom> GetSOById(string soMasterId)
         {
-            var soRecord = await _eamsRepository.GetSOById(soMasterId);
-            //var stateRecord = await _eamsRepository.GetStateById(soRecord.StateMasterId.ToString());
-            //var districtRecord = await _eamsRepository.GetDistrictRecordById(stateRecord);
-            var soCustomRecord = await _eamsRepository.GetAssemblyByCodeandState(soRecord.SoAssemblyCode.ToString(), soRecord.StateMasterId.ToString());
-            var getElectionTypeRecord = await _eamsRepository.GetElectionTypeById(soRecord.ElectionTypeMasterId.ToString());
-            SectorOfficerMasterCustom sectorOfficerMasterCustom = new SectorOfficerMasterCustom()
-            {
-                StateMasterId = soCustomRecord.StateMasterId,
-                StateName = soCustomRecord.StateMaster.StateName,
-                DistrictMasterId = soCustomRecord.DistrictMasterId,
-                DistrictName = soCustomRecord.DistrictMaster.DistrictName,
-                DistrictStatus = soCustomRecord.DistrictMaster.DistrictStatus,
-                DistrictCode = soCustomRecord.DistrictMaster.DistrictCode,
-                AssemblyMasterId = soCustomRecord.AssemblyMasterId,
-                AssemblyName = soCustomRecord.AssemblyName,
-                AssemblyCode = soCustomRecord.AssemblyCode,
-                SoMasterId = soRecord.SOMasterId,
-                SoName = soRecord.SoName,
-                SoMobile = soRecord.SoMobile,
-                SoOfficeName = soRecord.SoOfficeName,
-                SoDesignation = soRecord.SoDesignation,
-                IsStatus = soRecord.SoStatus,
-                ElectionTypeMasterId = soRecord.ElectionTypeMasterId,
-                ElectionTypeName = getElectionTypeRecord.ElectionType,
+            //var soRecord = await _eamsRepository.GetSOById(soMasterId);
+            ////var stateRecord = await _eamsRepository.GetStateById(soRecord.StateMasterId.ToString());
+            ////var districtRecord = await _eamsRepository.GetDistrictRecordById(stateRecord);
+            //var soCustomRecord = await _eamsRepository.GetAssemblyByCodeandState(soRecord.SoAssemblyCode.ToString(), soRecord.StateMasterId.ToString());
+            //var getElectionTypeRecord = await _eamsRepository.GetElectionTypeById(soRecord.ElectionTypeMasterId.ToString());
+            //SectorOfficerMasterCustom sectorOfficerMasterCustom = new SectorOfficerMasterCustom()
+            //{
+            //    StateMasterId = soCustomRecord.StateMasterId,
+            //    StateName = soCustomRecord.StateMaster.StateName,
+            //    DistrictMasterId = soCustomRecord.DistrictMasterId,
+            //    DistrictName = soCustomRecord.DistrictMaster.DistrictName,
+            //    DistrictStatus = soCustomRecord.DistrictMaster.DistrictStatus,
+            //    DistrictCode = soCustomRecord.DistrictMaster.DistrictCode,
+            //    AssemblyMasterId = soCustomRecord.AssemblyMasterId,
+            //    AssemblyName = soCustomRecord.AssemblyName,
+            //    AssemblyCode = soCustomRecord.AssemblyCode,
+            //    SoMasterId = soRecord.SOMasterId,
+            //    SoName = soRecord.SoName,
+            //    SoMobile = soRecord.SoMobile,
+            //    SoOfficeName = soRecord.SoOfficeName,
+            //    SoDesignation = soRecord.SoDesignation,
+            //    IsStatus = soRecord.SoStatus,
+            //    ElectionTypeMasterId = soRecord.ElectionTypeMasterId,
+            //    ElectionTypeName = getElectionTypeRecord.ElectionType,
 
 
-            };
-            return sectorOfficerMasterCustom;
+            //};
+            //return sectorOfficerMasterCustom;
+            return null;
         }
         #endregion
 
@@ -3396,20 +3397,20 @@ namespace EAMS_BLL.Services
         #endregion
 
         #region BlockPanchayat
-        public async Task<Response> AddBlockPanchayat(BlockZonePanchayat blockPanchayat)
+        public async Task<Response> AddBlockPanchayat(PSZonePanchayat blockPanchayat)
         {
 
             return await _eamsRepository.AddBlockPanchayat(blockPanchayat);
         }
-        public async Task<List<BlockZonePanchayat>> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        public async Task<List<PSZonePanchayat>> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
             return await _eamsRepository.GetBlockPanchayatListById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);
         }
-        public async Task<BlockZonePanchayat> GetBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int blockZonePanchayatMasterId)
+        public async Task<PSZonePanchayat> GetBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int blockZonePanchayatMasterId)
         {
             return await _eamsRepository.GetBlockZonePanchayatById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, blockZonePanchayatMasterId);
         }
-        public async Task<Response> UpdateBlockZonePanchayat(BlockZonePanchayat blockZonePanchayat)
+        public async Task<Response> UpdateBlockZonePanchayat(PSZonePanchayat blockZonePanchayat)
         {
             return await _eamsRepository.UpdateBlockZonePanchayat(blockZonePanchayat);
         }
@@ -3420,21 +3421,21 @@ namespace EAMS_BLL.Services
         #endregion
 
         #region SarpanchWards
-        public async Task<Response> AddSarpanchWards(SarpanchWards sarpanchWards)
+        public async Task<Response> AddSarpanchWards(GPPanchayatWards sarpanchWards)
         {
 
             return await _eamsRepository.AddSarpanchWards(sarpanchWards);
         }
-        public async Task<List<SarpanchWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId)
+        public async Task<List<GPPanchayatWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId)
         {
             return await _eamsRepository.GetSarpanchWardsListById(stateMasterId, districtMasterId, assemblyMasterId, FourthLevelHMasterId, BlockZonePanchayatMasterId);
         }
-        public async Task<Response> UpdateSarpanchWards(SarpanchWards sarpanchWards)
+        public async Task<Response> UpdateSarpanchWards(GPPanchayatWards sarpanchWards)
         {
             return await _eamsRepository.UpdateSarpanchWards(sarpanchWards);
         }
 
-        public async Task<SarpanchWards> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId, int SarpanchWardsMasterId)
+        public async Task<GPPanchayatWards> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId, int SarpanchWardsMasterId)
         {
             return await _eamsRepository.GetSarpanchWardsById(stateMasterId, districtMasterId, assemblyMasterId, FourthLevelHMasterId, BlockZonePanchayatMasterId, SarpanchWardsMasterId);
         }

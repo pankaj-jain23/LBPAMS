@@ -244,7 +244,7 @@ namespace EAMS.Helper
                 .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
                 .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
                 .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
-                .ForMember(dest => dest.BlockZonePanchayatMasterId, opt => opt.MapFrom(src => src.BlockZonePanchayatMasterId))
+                .ForMember(dest => dest.PSZonePanchayatMasterId, opt => opt.MapFrom(src => src.BlockZonePanchayatMasterId))
                 .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
                 .ForMember(dest => dest.BoothName, opt => opt.MapFrom(src => src.BoothName))
                 .ForMember(dest => dest.BoothCode_No, opt => opt.MapFrom(src => src.BoothCode_No))
@@ -326,30 +326,30 @@ namespace EAMS.Helper
             #endregion
 
             #region SectorOfficerViewModel SectorOfficerMaster
-            CreateMap<SectorOfficerViewModel, SectorOfficerMaster>()
-              .ForMember(dest => dest.SOMasterId, opt => opt.MapFrom(src => src.SoId))
-              .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
-              .ForMember(dest => dest.SoOfficeName, opt => opt.MapFrom(src => src.SoOfficeName))
-              .ForMember(dest => dest.SoName, opt => opt.MapFrom(src => src.SoName))
-              .ForMember(dest => dest.SoMobile, opt => opt.MapFrom(src => src.SoMobile))
-              .ForMember(dest => dest.SoDesignation, opt => opt.MapFrom(src => src.SoDesignation))
-              .ForMember(dest => dest.SoAssemblyCode, opt => opt.MapFrom(src => src.SoAssemblyCode))
-              .ForMember(dest => dest.SoStatus, opt => opt.MapFrom(src => src.IsStatus))
-              .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
-              .ReverseMap();
+            //CreateMap<SectorOfficerViewModel, SectorOfficerMaster>()
+            //  .ForMember(dest => dest.SOMasterId, opt => opt.MapFrom(src => src.SoId))
+            //  .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+            //  .ForMember(dest => dest.SoOfficeName, opt => opt.MapFrom(src => src.SoOfficeName))
+            //  .ForMember(dest => dest.SoName, opt => opt.MapFrom(src => src.SoName))
+            //  .ForMember(dest => dest.SoMobile, opt => opt.MapFrom(src => src.SoMobile))
+            //  .ForMember(dest => dest.SoDesignation, opt => opt.MapFrom(src => src.SoDesignation))
+            //  .ForMember(dest => dest.SoAssemblyCode, opt => opt.MapFrom(src => src.SoAssemblyCode))
+            //  .ForMember(dest => dest.SoStatus, opt => opt.MapFrom(src => src.IsStatus))
+            //  .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+            //  .ReverseMap();
             #endregion
 
             #region AddSectorOfficerViewModel SectorOfficerMaster
-            CreateMap<AddSectorOfficerViewModel, SectorOfficerMaster>()
-              .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
-              .ForMember(dest => dest.SoOfficeName, opt => opt.MapFrom(src => src.SoOfficeName))
-              .ForMember(dest => dest.SoName, opt => opt.MapFrom(src => src.SoName))
-              .ForMember(dest => dest.SoMobile, opt => opt.MapFrom(src => src.SoMobile))
-              .ForMember(dest => dest.SoDesignation, opt => opt.MapFrom(src => src.SoDesignation))
-              .ForMember(dest => dest.SoAssemblyCode, opt => opt.MapFrom(src => src.SoAssemblyCode))
-              .ForMember(dest => dest.SoStatus, opt => opt.MapFrom(src => src.IsStatus))
-              .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
-              .ReverseMap();
+            //CreateMap<AddSectorOfficerViewModel, SectorOfficerMaster>()
+            //  .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+            //  .ForMember(dest => dest.SoOfficeName, opt => opt.MapFrom(src => src.SoOfficeName))
+            //  .ForMember(dest => dest.SoName, opt => opt.MapFrom(src => src.SoName))
+            //  .ForMember(dest => dest.SoMobile, opt => opt.MapFrom(src => src.SoMobile))
+            //  .ForMember(dest => dest.SoDesignation, opt => opt.MapFrom(src => src.SoDesignation))
+            //  .ForMember(dest => dest.SoAssemblyCode, opt => opt.MapFrom(src => src.SoAssemblyCode))
+            //  .ForMember(dest => dest.SoStatus, opt => opt.MapFrom(src => src.IsStatus))
+            //  .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+            //  .ReverseMap();
             #endregion
 
             #region SectorOfficerBoothViewModel CombinedMaster
@@ -741,10 +741,10 @@ namespace EAMS.Helper
             #endregion
 
             #region BlockPanchayatViewModel BlockPanchayat
-            CreateMap<AddBlockPanchayatViewModel, BlockZonePanchayat>()
-                     .ForMember(dest => dest.BlockZonePanchayatName, opt => opt.MapFrom(src => src.BlockZonePanchayatName))
-                     .ForMember(dest => dest.BlockZonePanchayatCode, opt => opt.MapFrom(src => src.BlockZonePanchayatCode))
-                     .ForMember(dest => dest.BlockZonePanchayatType, opt => opt.MapFrom(src => src.BlockZonePanchayatType))
+            CreateMap<AddBlockPanchayatViewModel, PSZonePanchayat>()
+                     .ForMember(dest => dest.PSZonePanchayatName, opt => opt.MapFrom(src => src.BlockZonePanchayatName))
+                     .ForMember(dest => dest.PSZonePanchayatCode, opt => opt.MapFrom(src => src.BlockZonePanchayatCode))
+                     .ForMember(dest => dest.PSZonePanchayatType, opt => opt.MapFrom(src => src.BlockZonePanchayatType))
                      .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
                      .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
                      .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
@@ -757,11 +757,11 @@ namespace EAMS.Helper
                      .ForMember(dest => dest.BlockZonePanchayatStatus, opt => opt.MapFrom(src => src.IsStatus))
      .ReverseMap();
 
-            CreateMap<UpdateBlockPanchayatViewModel, BlockZonePanchayat>()
-                     .ForMember(dest => dest.BlockZonePanchayatMasterId, opt => opt.MapFrom(src => src.BlockZonePanchayatMasterId))
-                     .ForMember(dest => dest.BlockZonePanchayatName, opt => opt.MapFrom(src => src.BlockZonePanchayatName))
-                     .ForMember(dest => dest.BlockZonePanchayatCode, opt => opt.MapFrom(src => src.BlockZonePanchayatCode))
-                     .ForMember(dest => dest.BlockZonePanchayatType, opt => opt.MapFrom(src => src.BlockZonePanchayatType))
+            CreateMap<UpdateBlockPanchayatViewModel, PSZonePanchayat>()
+                     .ForMember(dest => dest.PSZonePanchayatMasterId, opt => opt.MapFrom(src => src.BlockZonePanchayatMasterId))
+                     .ForMember(dest => dest.PSZonePanchayatName, opt => opt.MapFrom(src => src.BlockZonePanchayatName))
+                     .ForMember(dest => dest.PSZonePanchayatCode, opt => opt.MapFrom(src => src.BlockZonePanchayatCode))
+                     .ForMember(dest => dest.PSZonePanchayatType, opt => opt.MapFrom(src => src.BlockZonePanchayatType))
                      .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
                      .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
                      .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
@@ -772,11 +772,11 @@ namespace EAMS.Helper
 
                 .ReverseMap();
 
-            CreateMap<BlockZonePanchayat, ListBlockPanchayatViewModel>()
-                    .ForMember(dest => dest.BlockZonePanchayatMasterId, opt => opt.MapFrom(src => src.BlockZonePanchayatMasterId))
-                    .ForMember(dest => dest.BlockZonePanchayatName, opt => opt.MapFrom(src => src.BlockZonePanchayatName))
-                    .ForMember(dest => dest.BlockZonePanchayatCode, opt => opt.MapFrom(src => src.BlockZonePanchayatCode))
-                    .ForMember(dest => dest.BlockZonePanchayatType, opt => opt.MapFrom(src => src.BlockZonePanchayatType))
+            CreateMap<PSZonePanchayat, ListBlockPanchayatViewModel>()
+                    .ForMember(dest => dest.BlockZonePanchayatMasterId, opt => opt.MapFrom(src => src.PSZonePanchayatMasterId))
+                    .ForMember(dest => dest.BlockZonePanchayatName, opt => opt.MapFrom(src => src.PSZonePanchayatName))
+                    .ForMember(dest => dest.BlockZonePanchayatCode, opt => opt.MapFrom(src => src.PSZonePanchayatCode))
+                    .ForMember(dest => dest.BlockZonePanchayatType, opt => opt.MapFrom(src => src.PSZonePanchayatType))
                     .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
                    .ForMember(dest => dest.ElectionTypeName, opt => opt.MapFrom(src => src.ElectionTypeMaster.ElectionType))
                    .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
@@ -795,7 +795,7 @@ namespace EAMS.Helper
             #endregion
 
             #region AddSarpanchWardsViewModel
-            CreateMap<AddSarpanchWardsViewModel, SarpanchWards>()
+            CreateMap<AddSarpanchWardsViewModel, GPPanchayatWards>()
                      .ForMember(dest => dest.SarpanchWardsName, opt => opt.MapFrom(src => src.SarpanchWardsName))
                      .ForMember(dest => dest.SarpanchWardsCode, opt => opt.MapFrom(src => src.SarpanchWardsCode))
                      .ForMember(dest => dest.SarpanchWardsType, opt => opt.MapFrom(src => src.SarpanchWardsType))
@@ -803,14 +803,13 @@ namespace EAMS.Helper
                      .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
                      .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
                      .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
-                     .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
-                     .ForMember(dest => dest.BlockZonePanchayatMasterId, opt => opt.MapFrom(src => src.BlockZonePanchayatMasterId))
+                     .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))                    
                      .ForMember(dest => dest.SarpanchWardsCategory, opt => opt.MapFrom(src => src.SarpanchWardsCategory))
                      .ForMember(dest => dest.SarpanchWardsStatus, opt => opt.MapFrom(src => src.IsStatus))
 
             .ReverseMap();
 
-            CreateMap<UpdateSarpanchWardsViewModel, SarpanchWards>()
+            CreateMap<UpdateSarpanchWardsViewModel, GPPanchayatWards>()
                      .ForMember(dest => dest.SarpanchWardsMasterId, opt => opt.MapFrom(src => src.SarpanchWardsMasterId))
                      .ForMember(dest => dest.SarpanchWardsName, opt => opt.MapFrom(src => src.SarpanchWardsName))
                      .ForMember(dest => dest.SarpanchWardsCode, opt => opt.MapFrom(src => src.SarpanchWardsCode))
@@ -823,7 +822,7 @@ namespace EAMS.Helper
                      .ForMember(dest => dest.SarpanchWardsStatus, opt => opt.MapFrom(src => src.IsStatus))
 
             .ReverseMap();
-            CreateMap<SarpanchWards, ListSarpanchWardsViewModel>()
+            CreateMap<GPPanchayatWards, ListSarpanchWardsViewModel>()
                    .ForMember(dest => dest.SarpanchWardsMasterId, opt => opt.MapFrom(src => src.SarpanchWardsMasterId))
                    .ForMember(dest => dest.SarpanchWardsName, opt => opt.MapFrom(src => src.SarpanchWardsName))
                    .ForMember(dest => dest.SarpanchWardsCode, opt => opt.MapFrom(src => src.SarpanchWardsCode))

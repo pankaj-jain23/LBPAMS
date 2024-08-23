@@ -79,7 +79,7 @@ namespace EAMS_ACore
             set;
         }
 
-        public virtual List<BlockZonePanchayat> BlockPanchayat
+        public virtual List<PSZonePanchayat> BlockPanchayat
         {
             get;
             set;
