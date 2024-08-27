@@ -30,12 +30,12 @@
             set;
         }
 
-        public int? BlockZonePanchayatMasterId
+        public int? PSZonePanchayatMasterId
         {
             get;
             set;
         }
-        public int? SarpanchWardsMasterId
+        public int? GPPanchayatWardsMasterId
         {
             get;
             set;
@@ -104,12 +104,12 @@
             set;
         }
 
-        public int? BlockZonePanchayatMasterId
+        public int? PSZonePanchayatMasterId
         {
             get;
             set;
         }
-        public int? SarpanchWardsMasterId
+        public int? GPPanchayatWardsMasterId
         {
             get;
             set;

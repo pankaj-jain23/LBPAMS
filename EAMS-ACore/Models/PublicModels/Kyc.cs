@@ -37,12 +37,12 @@ namespace EAMS_ACore.Models.PublicModels
             set;
         }
 
-        public int BlockZonePanchayatMasterId
+        public int PSZonePanchayatMasterId
         {
             get;
             set;
         }
-        public int SarpanchWardsMasterId
+        public int GPPanchayatWardsMasterId
         {
             get;
             set;
@@ -132,28 +132,28 @@ namespace EAMS_ACore.Models.PublicModels
             set;
 
         }
-        public int BlockZonePanchayatMasterId
+        public int PSZonePanchayatMasterId
         {
             get;
             set;
         }
-        public int BlockZonePanchayatCode
+        public int PSZonePanchayatCode
         {
             get;
             set;
         }
-        public string BlockZonePanchayatName
+        public string PSZonePanchayatName
         {
             get;
             set;
 
         }
-        public int SarpanchWardsMasterId
+        public int GPPanchayatWardsMasterId
         {
             get;
             set;
         }
-        public string SarpanchWardsName
+        public string GPPanchayatWardsName
         {
             get;
             set;
@@ -163,12 +163,6 @@ namespace EAMS_ACore.Models.PublicModels
         {
             get;
             set;
-        }
-        public string SarpanchName
-        {
-            get;
-            set;
-
         }
         public string CandidateName
         {

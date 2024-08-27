@@ -1976,7 +1976,7 @@ namespace EAMS.Controllers
         }
 
         [HttpPut]
-        [Route("UpdateSarpanchWardsGPPanchayatWards")]
+        [Route("UpdateGPPanchayatWards")]
         [Authorize]
         public async Task<IActionResult> UpdateGPPanchayatWards(UpdateGPPanchayatWardsViewModel updateGPPanchayatWardsViewModel)
         {

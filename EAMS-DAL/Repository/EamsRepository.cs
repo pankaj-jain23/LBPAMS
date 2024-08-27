@@ -15970,8 +15970,8 @@ namespace EAMS_DAL.Repository
             existingKyc.ElectionTypeMasterId = kyc.ElectionTypeMasterId;
             existingKyc.AssemblyMasterId = kyc.AssemblyMasterId;
             existingKyc.FourthLevelHMasterId = kyc.FourthLevelHMasterId;
-            existingKyc.BlockZonePanchayatMasterId = kyc.BlockZonePanchayatMasterId;
-            existingKyc.SarpanchWardsMasterId = kyc.SarpanchWardsMasterId;
+            existingKyc.PSZonePanchayatMasterId = kyc.PSZonePanchayatMasterId;
+            existingKyc.GPPanchayatWardsMasterId = kyc.GPPanchayatWardsMasterId;
             existingKyc.CandidateName = kyc.CandidateName;
             existingKyc.FatherName = kyc.FatherName;
             existingKyc.NominationPdfPath = kyc.NominationPdfPath;
@@ -15995,8 +15995,8 @@ namespace EAMS_DAL.Repository
             //                k.DistrictMasterId == districtMasterId &&
             //                k.AssemblyMasterId == assemblyMasterId &&
             //                k.FourthLevelHMasterId == fourthLevelhMasterId)
-            //    .Join(_context.BlockZonePanchayat.Include(d => d.SarpanchWards),
-            //        kyc => kyc.BlockZonePanchayatMasterId,
+            //    .Join(_context.PSZonePanchayat.Include(d => d.SarpanchWards),
+            //        kyc => kyc.PSZonePanchayatMasterId,
             //        panchayat => panchayat.BlockZonePanchayatMasterId,
             //        (kyc, panchayat) => new { Kyc = kyc, Panchayat = panchayat })
             //    .Select(joined => new KycList
@@ -16027,55 +16027,53 @@ namespace EAMS_DAL.Repository
         }
         public async Task<KycList> GetKycById(int kycMasterId)
         {
-            //var kyc = await _context.Kyc.FirstOrDefaultAsync(d => d.KycMasterId == kycMasterId);
-            //if (kyc == null)
-            //{
-            //    return null; // or throw an exception, or handle the case appropriately
-            //}
+            var kyc = await _context.Kyc.FirstOrDefaultAsync(d => d.KycMasterId == kycMasterId);
+            if (kyc == null)
+            {
+                return null; // or throw an exception, or handle the case appropriately
+            }
 
-            //var panchayat = await _context.BlockZonePanchayat
-            //    .Where(d => d.BlockZonePanchayatMasterId == kyc.BlockZonePanchayatMasterId)
-            //    .Include(d => d.StateMaster)
-            //    .Include(d => d.DistrictMaster)
-            //    .Include(d => d.AssemblyMaster)
-            //    .Include(d => d.FourthLevelH)
-            //    .Include(d => d.SarpanchWards)
-            //    .FirstOrDefaultAsync();
+            var panchayat = await _context.PSZonePanchayat
+                .Where(d => d.PSZonePanchayatMasterId == kyc.PSZonePanchayatMasterId)
+                .Include(d => d.StateMaster)
+                .Include(d => d.DistrictMaster)
+                .Include(d => d.AssemblyMaster)
+                .Include(d => d.FourthLevelH)                
+                .FirstOrDefaultAsync();
 
-            //if (panchayat == null)
-            //{
-            //    return null; // or handle the case appropriately
-            //}
+            if (panchayat == null)
+            {
+                return null; // or handle the case appropriately
+            }
 
-            //var result = new KycList
-            //{
-            //    KycMasterId = kyc.KycMasterId,
-            //    ElectionTypeMasterId = kyc.ElectionTypeMasterId,
-            //    StateMasterId = panchayat.StateMasterId,
-            //    StateName = panchayat.StateMaster.StateName,
-            //    DistrictMasterId = panchayat.DistrictMasterId,
-            //    DistrictName = panchayat.DistrictMaster.DistrictName,
-            //    AssemblyMasterId = panchayat.AssemblyMasterId,
-            //    AssemblyName = panchayat.AssemblyMaster.AssemblyName,
-            //    FourthLevelHMasterId = panchayat.FourthLevelHMasterId,
-            //    FourthLevelName = panchayat.FourthLevelH.HierarchyName,
-            //    BlockZonePanchayatMasterId = panchayat.BlockZonePanchayatMasterId,
-            //    BlockZonePanchayatName = panchayat.BlockZonePanchayatName,
-            //    SarpanchWardsMasterId = panchayat.SarpanchWards
-            //        .Where(d => d.SarpanchWardsMasterId == kyc.SarpanchWardsMasterId)
-            //        .Select(d => d.SarpanchWardsMasterId)
-            //        .FirstOrDefault(), // Change this to get a single value
-            //    SarpanchWardsName = panchayat.SarpanchWards
-            //        .Where(d => d.SarpanchWardsMasterId == kyc.SarpanchWardsMasterId)
-            //        .Select(d => d.SarpanchWardsName)
-            //        .FirstOrDefault(), // Change this to get a single value
-            //    CandidateName = kyc.CandidateName,
-            //    FatherName = kyc.FatherName,
-            //};
+            var result = new KycList
+            {
+                KycMasterId = kyc.KycMasterId,
+                ElectionTypeMasterId = kyc.ElectionTypeMasterId,
+                StateMasterId = panchayat.StateMasterId,
+                StateName = panchayat.StateMaster.StateName,
+                DistrictMasterId = panchayat.DistrictMasterId,
+                DistrictName = panchayat.DistrictMaster.DistrictName,
+                AssemblyMasterId = panchayat.AssemblyMasterId,
+                AssemblyName = panchayat.AssemblyMaster.AssemblyName,
+                FourthLevelHMasterId = panchayat.FourthLevelHMasterId,
+                FourthLevelName = panchayat.FourthLevelH.HierarchyName,
+                PSZonePanchayatMasterId = panchayat.PSZonePanchayatMasterId,
+                PSZonePanchayatName = panchayat.PSZonePanchayatName,
+                //GPPanchayatWardsMasterId = panchayat.GPPanchayatWards
+                    //.Where(d => d.GPPanchayatWardsMasterId == kyc.GPPanchayatWardsMasterId)
+                    //.Select(d => d.GPPanchayatWardsMasterId)
+                    //.FirstOrDefault(), // Change this to get a single value
+                //GPPanchayatWardsName = panchayat.GPPanchayatWards
+                //    .Where(d => d.GPPanchayatWardsMasterId == kyc.GPPanchayatWardsMasterId)
+                //    .Select(d => d.GPPanchayatWardsName)
+                //    .FirstOrDefault(), // Change this to get a single value
+                CandidateName = kyc.CandidateName,
+                FatherName = kyc.FatherName,
+            };
 
-            //return result;
+            return result;
 
-            return null;
         }
         public async Task<ServiceResponse> DeleteKycById(int kycMasterId)
         {

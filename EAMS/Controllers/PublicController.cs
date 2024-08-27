@@ -84,7 +84,7 @@ namespace EAMS.Controllers
                 ElectionTypeMasterId = kyc.ElectionTypeMasterId,
                 AssemblyMasterId = kyc.AssemblyMasterId,
                 FourthLevelHMasterId = kyc.FourthLevelHMasterId,
-                SarpanchWardsMasterId = kyc.SarpanchWardsMasterId,
+                GPPanchayatWardsMasterId = kyc.GPPanchayatWardsMasterId,
                 CandidateName = kyc.CandidateName,
                 FatherName = kyc.FatherName,
                 NominationPdfPath = !string.IsNullOrEmpty(kyc.NominationPdfPath)
@@ -160,8 +160,8 @@ namespace EAMS.Controllers
                 var data = new
                 {
                     count = result.Count,
-                    Sarpacnh = result.Where(k => k.SarpanchWardsMasterId == 0).ToList(),
-                    Panch = result.Where(k => k.SarpanchWardsMasterId != 0).ToList()
+                    Sarpacnh = result.Where(k => k.GPPanchayatWardsMasterId == 0).ToList(),
+                    Panch = result.Where(k => k.GPPanchayatWardsMasterId != 0).ToList()
 
                 };
                 return Ok(data);
