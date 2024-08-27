@@ -584,7 +584,7 @@ namespace EAMS_DAL.Repository
                     if (updateMasterStatus.IsStatus == false)
                     {
                         var spWardCount = await _context.GPPanchayatWards
-                            .Where(d => d.FourthLevelHMasterId == blockZonePanchayat.FourthLevelHMasterId && d.SarpanchWardsStatus == true).CountAsync();
+                            .Where(d => d.FourthLevelHMasterId == blockZonePanchayat.FourthLevelHMasterId && d.GPPanchayatWardsStatus == true).CountAsync();
 
                         var boothCount = await _context.BoothMaster
                           .Where(d => d.FourthLevelHMasterId == blockZonePanchayat.FourthLevelHMasterId && d.BoothStatus == true).CountAsync();
@@ -594,16 +594,16 @@ namespace EAMS_DAL.Repository
                         }
                     }
 
-                    blockZonePanchayat.BlockZonePanchayatStatus = updateMasterStatus.IsStatus;
+                    blockZonePanchayat.PSZonePanchayatStatus = updateMasterStatus.IsStatus;
                     _context.PSZonePanchayat.Update(blockZonePanchayat);
                     await _context.SaveChangesAsync();
 
-                    string messageSp = blockZonePanchayat.BlockZonePanchayatStatus ? "Panchayat Activated Successfully" : "Panchayat Deactivated Successfully";
+                    string messageSp = blockZonePanchayat.PSZonePanchayatStatus ? "Panchayat Activated Successfully" : "Panchayat Deactivated Successfully";
                     return new ServiceResponse { IsSucceed = true, Message = messageSp };
 
                 case "SPWards":
                     var spWards = await _context.GPPanchayatWards
-                        .Where(d => d.SarpanchWardsMasterId == Convert.ToInt32(updateMasterStatus.Id))
+                        .Where(d => d.GPPanchayatWardsMasterId == Convert.ToInt32(updateMasterStatus.Id))
                         .FirstOrDefaultAsync();
 
                     if (spWards == null)
@@ -611,11 +611,11 @@ namespace EAMS_DAL.Repository
                         return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
                     }
 
-                    spWards.SarpanchWardsStatus = updateMasterStatus.IsStatus;
+                    spWards.GPPanchayatWardsStatus = updateMasterStatus.IsStatus;
                     _context.GPPanchayatWards.Update(spWards);
                     await _context.SaveChangesAsync();
 
-                    string messageSpWard = spWards.SarpanchWardsStatus ? "Ward Activated Successfully" : "Ward Deactivated Successfully";
+                    string messageSpWard = spWards.GPPanchayatWardsStatus ? "Ward Activated Successfully" : "Ward Deactivated Successfully";
                     return new ServiceResponse { IsSucceed = true, Message = messageSpWard };
 
                 default:
@@ -16577,23 +16577,23 @@ namespace EAMS_DAL.Repository
         {
             try
             {
-                var ispsZoneExist = await _context.GPPanchayatWards.Where(p => p.SarpanchWardsCode == sarpanchWards.SarpanchWardsCode && p.StateMasterId == sarpanchWards.StateMasterId && p.DistrictMasterId == sarpanchWards.DistrictMasterId && p.AssemblyMasterId == sarpanchWards.AssemblyMasterId && p.ElectionTypeMasterId == sarpanchWards.ElectionTypeMasterId).FirstOrDefaultAsync();
+                var ispsZoneExist = await _context.GPPanchayatWards.Where(p => p.GPPanchayatWardsCode == sarpanchWards.GPPanchayatWardsCode && p.StateMasterId == sarpanchWards.StateMasterId && p.DistrictMasterId == sarpanchWards.DistrictMasterId && p.AssemblyMasterId == sarpanchWards.AssemblyMasterId && p.ElectionTypeMasterId == sarpanchWards.ElectionTypeMasterId).FirstOrDefaultAsync();
 
                 if (ispsZoneExist == null)
                 {
 
-                    sarpanchWards.SarpanchWardsCreatedAt = BharatDateTime();
+                    sarpanchWards.GPPanchayatWardsCreatedAt = BharatDateTime();
                     _context.GPPanchayatWards.Add(sarpanchWards);
                     _context.SaveChanges();
 
-                    return new Response { Status = RequestStatusEnum.OK, Message = sarpanchWards.SarpanchWardsName + "Added Successfully" };
+                    return new Response { Status = RequestStatusEnum.OK, Message = sarpanchWards.GPPanchayatWardsName + "Added Successfully" };
 
 
 
                 }
                 else
                 {
-                    return new Response { Status = RequestStatusEnum.BadRequest, Message = ispsZoneExist.SarpanchWardsName + "Same PS Zone Code Already Exists in the selected Election Type" };
+                    return new Response { Status = RequestStatusEnum.BadRequest, Message = ispsZoneExist.GPPanchayatWardsName + "Same PS Zone Code Already Exists in the selected Election Type" };
 
                 }
 
@@ -16620,7 +16620,7 @@ namespace EAMS_DAL.Repository
         {
             // Check if the SarpanchWards entity exists in the database
             var existingSarpanchWards = await _context.GPPanchayatWards
-                .Where(d => d.SarpanchWardsMasterId == sarpanchWards.SarpanchWardsMasterId)
+                .Where(d => d.GPPanchayatWardsMasterId == sarpanchWards.GPPanchayatWardsMasterId)
                 .FirstOrDefaultAsync();
 
             if (existingSarpanchWards == null)
@@ -16633,17 +16633,17 @@ namespace EAMS_DAL.Repository
             }
 
             // Update the properties of the existing entity
-            existingSarpanchWards.SarpanchWardsName = sarpanchWards.SarpanchWardsName;
-            existingSarpanchWards.SarpanchWardsCode = sarpanchWards.SarpanchWardsCode;
-            existingSarpanchWards.SarpanchWardsType = sarpanchWards.SarpanchWardsType;
+            existingSarpanchWards.GPPanchayatWardsName = sarpanchWards.GPPanchayatWardsName;
+            existingSarpanchWards.GPPanchayatWardsCode = sarpanchWards.GPPanchayatWardsCode;
+            existingSarpanchWards.GPPanchayatWardsType = sarpanchWards.GPPanchayatWardsType;
             existingSarpanchWards.ElectionTypeMasterId = sarpanchWards.ElectionTypeMasterId;
             existingSarpanchWards.StateMasterId = sarpanchWards.StateMasterId;
             existingSarpanchWards.DistrictMasterId = sarpanchWards.DistrictMasterId;
             existingSarpanchWards.AssemblyMasterId = sarpanchWards.AssemblyMasterId;
-            existingSarpanchWards.SarpanchWardsCategory = sarpanchWards.SarpanchWardsCategory;
-            existingSarpanchWards.SarpanchWardsUpdatedAt = DateTime.UtcNow;
-            existingSarpanchWards.SarpanchWardsDeletedAt = sarpanchWards.SarpanchWardsDeletedAt;
-            existingSarpanchWards.SarpanchWardsStatus = sarpanchWards.SarpanchWardsStatus;
+            existingSarpanchWards.GPPanchayatWardsCategory = sarpanchWards.GPPanchayatWardsCategory;
+            existingSarpanchWards.GPPanchayatWardsUpdatedAt = DateTime.UtcNow;
+            existingSarpanchWards.GPPanchayatWardsDeletedAt = sarpanchWards.GPPanchayatWardsDeletedAt;
+            existingSarpanchWards.GPPanchayatWardsStatus = sarpanchWards.GPPanchayatWardsStatus;
 
 
             // Save changes to the database
@@ -16674,7 +16674,7 @@ namespace EAMS_DAL.Repository
                             w.AssemblyMasterId == assemblyMasterId &&
                             w.FourthLevelHMasterId == FourthLevelHMasterId &&
                           
-                            w.SarpanchWardsMasterId == SarpanchWardsMasterId)
+                            w.GPPanchayatWardsMasterId == SarpanchWardsMasterId)
                 .FirstOrDefaultAsync();
 
             if (sarpanchWards == null)
@@ -16694,7 +16694,7 @@ namespace EAMS_DAL.Repository
                             w.AssemblyMasterId == assemblyMasterId &&
                             w.FourthLevelHMasterId == FourthLevelHMasterId &&
                              
-                            w.SarpanchWardsMasterId == SarpanchWardsMasterId)
+                            w.GPPanchayatWardsMasterId == SarpanchWardsMasterId)
                 .FirstOrDefaultAsync();
 
             if (sarpanchWards == null)

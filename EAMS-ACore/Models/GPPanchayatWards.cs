@@ -7,11 +7,11 @@ namespace EAMS_ACore.Models
     public class GPPanchayatWards
     {
         [Key]
-        public int SarpanchWardsMasterId { get; set; }
-        public string SarpanchWardsName { get; set; }
-        public int SarpanchWardsCode { get; set; }
+        public int GPPanchayatWardsMasterId { get; set; }
+        public string GPPanchayatWardsName { get; set; }
+        public int GPPanchayatWardsCode { get; set; }
 
-        public string? SarpanchWardsType { get; set; }
+        public string? GPPanchayatWardsType { get; set; }
 
         public int ElectionTypeMasterId
         {
@@ -79,13 +79,13 @@ namespace EAMS_ACore.Models
         }
 
         
-        public string? SarpanchWardsCategory { get; set; }
-        public DateTime? SarpanchWardsCreatedAt { get; set; }
+        public string? GPPanchayatWardsCategory { get; set; }
+        public DateTime? GPPanchayatWardsCreatedAt { get; set; }
 
-        public DateTime? SarpanchWardsUpdatedAt { get; set; }
+        public DateTime? GPPanchayatWardsUpdatedAt { get; set; }
 
-        public DateTime? SarpanchWardsDeletedAt { get; set; }
-        public bool SarpanchWardsStatus { get; set; }
+        public DateTime? GPPanchayatWardsDeletedAt { get; set; }
+        public bool GPPanchayatWardsStatus { get; set; }
 
 
     }

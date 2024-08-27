@@ -1755,15 +1755,15 @@ namespace EAMS.Controllers
 
         #endregion
 
-        #region BlockPanchayat
+        #region PSZonePanchayat
         [HttpPost]
         [Route("AddBlockPanchayat")]
         [Authorize]
-        public async Task<IActionResult> AddBlockPanchayat(AddBlockPanchayatViewModel addBlockPanchayatViewModel)
+        public async Task<IActionResult> AddBlockPanchayat(PSZonePanchayatViewModel addBlockPanchayatViewModel)
         {
             if (ModelState.IsValid)
             {
-                var mappedData = _mapper.Map<AddBlockPanchayatViewModel, PSZonePanchayat>(addBlockPanchayatViewModel);
+                var mappedData = _mapper.Map<PSZonePanchayatViewModel, PSZonePanchayat>(addBlockPanchayatViewModel);
 
 
                 var result = await _EAMSService.AddBlockPanchayat(mappedData);
@@ -1794,7 +1794,7 @@ namespace EAMS.Controllers
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && fourthLevelHMasterId != null)
             {
                 var getBlockPanchayatList = await _EAMSService.GetBlockPanchayatListById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);
-                var mappeddata = _mapper.Map<List<PSZonePanchayat>, List<ListBlockPanchayatViewModel>>(getBlockPanchayatList);
+                var mappeddata = _mapper.Map<List<PSZonePanchayat>, List<PSZonePanchayatViewModel>>(getBlockPanchayatList);
                 if (mappeddata != null)
                 {
                     var data = new
@@ -1824,11 +1824,11 @@ namespace EAMS.Controllers
         [HttpPut]
         [Route("UpdateBlockPanchayat")]
         [Authorize]
-        public async Task<IActionResult> UpdateBlockPanchayat(UpdateBlockPanchayatViewModel updateBlockPanchayatViewModel)
+        public async Task<IActionResult> UpdateBlockPanchayat(UpdatePSZonePanchayatViewModel updatePSZonePanchayatViewModel)
         {
             if (ModelState.IsValid)
             {
-                var mappedData = _mapper.Map<UpdateBlockPanchayatViewModel, PSZonePanchayat>(updateBlockPanchayatViewModel);
+                var mappedData = _mapper.Map<UpdatePSZonePanchayatViewModel, PSZonePanchayat>(updatePSZonePanchayatViewModel);
                 var result = await _EAMSService.UpdateBlockZonePanchayat(mappedData);
                 switch (result.Status)
                 {
@@ -1857,7 +1857,7 @@ namespace EAMS.Controllers
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && fourthLevelHMasterId != null && blockZonePanchayatMasterId != null)
             {
                 var getBlockPanchayat = await _EAMSService.GetBlockZonePanchayatById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, blockZonePanchayatMasterId);  // Corrected to await the asynchronous method
-                var mappeddata = _mapper.Map<PSZonePanchayat, ListBlockPanchayatViewModel>(getBlockPanchayat);
+                var mappeddata = _mapper.Map<PSZonePanchayat, ListPSZonePanchayatViewModel>(getBlockPanchayat);
 
                 if (mappeddata != null)
                 {
@@ -1908,15 +1908,15 @@ namespace EAMS.Controllers
 
         #endregion
 
-        #region SarpanchWards
+        #region  GPPanchayatWards 
         [HttpPost]
         [Route("AddSarpanchWards")]
         [Authorize]
-        public async Task<IActionResult> AddSarpanchWards(AddSarpanchWardsViewModel addSarpanchWardsViewModel)
+        public async Task<IActionResult> AddSarpanchWards(AddGPPanchayatWardsViewModel addSarpanchWardsViewModel)
         {
             if (ModelState.IsValid)
             {
-                var mappedData = _mapper.Map<AddSarpanchWardsViewModel, GPPanchayatWards>(addSarpanchWardsViewModel);
+                var mappedData = _mapper.Map<AddGPPanchayatWardsViewModel, GPPanchayatWards>(addSarpanchWardsViewModel);
 
 
                 var result = await _EAMSService.AddSarpanchWards(mappedData);
@@ -1948,7 +1948,7 @@ namespace EAMS.Controllers
             {
                 var list = await _EAMSService.GetSarpanchWardsListById(stateMasterId, districtMasterId, assemblyMasterId, FourthLevelHMasterId, BlockZonePanchayatMasterId);  // Corrected to await the asynchronous method
 
-                var mappedData = _mapper.Map<List<GPPanchayatWards>, List<ListSarpanchWardsViewModel>>(list);
+                var mappedData = _mapper.Map<List<GPPanchayatWards>, List<ListGPPanchayatWardsViewModel>>(list);
                 if (list != null)
                 {
                     var data = new
@@ -1978,11 +1978,11 @@ namespace EAMS.Controllers
         [HttpPut]
         [Route("UpdateSarpanchWards")]
         [Authorize]
-        public async Task<IActionResult> UpdateSarpanchWards(UpdateSarpanchWardsViewModel updateSarpanchWardsViewModel)
+        public async Task<IActionResult> UpdateSarpanchWards(UpdateGPPanchayatWardsViewModel updateGPPanchayatWardsViewModel)
         {
             if (ModelState.IsValid)
             {
-                var mappedData = _mapper.Map<UpdateSarpanchWardsViewModel, GPPanchayatWards>(updateSarpanchWardsViewModel);
+                var mappedData = _mapper.Map<UpdateGPPanchayatWardsViewModel, GPPanchayatWards>(updateGPPanchayatWardsViewModel);
                 var result = await _EAMSService.UpdateSarpanchWards(mappedData);
                 switch (result.Status)
                 {

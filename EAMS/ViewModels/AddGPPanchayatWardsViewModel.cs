@@ -1,12 +1,58 @@
 ﻿namespace LBPAMS.ViewModels
 {
-    public class AddBlockPanchayatViewModel
+    public class AddGPPanchayatWardsViewModel
     {
+        public string GPPanchayatWardsName { get; set; }
+        public int GPPanchayatWardsCode { get; set; }
 
-        public string BlockZonePanchayatName { get; set; }
-        public int BlockZonePanchayatCode { get; set; }
+        public string? GPPanchayatWardsType { get; set; }
 
-        public string? BlockZonePanchayatType { get; set; }
+        public int ElectionTypeMasterId
+        {
+            get;
+            set;
+        }
+
+
+        public int StateMasterId
+        {
+            get;
+            set;
+        }
+
+
+        public int DistrictMasterId
+        {
+            get;
+            set;
+        }
+
+
+        public int AssemblyMasterId
+        {
+            get;
+            set;
+        }
+        public int? FourthLevelHMasterId
+        {
+            get;
+            set;
+        }
+       
+
+        public string? GPPanchayatWardsCategory { get; set; }
+
+        public bool IsStatus { get; set; }
+
+    }
+    public class UpdateGPPanchayatWardsViewModel
+    {
+        public int GPPanchayatWardsMasterId { get; set; }
+
+        public string GPPanchayatWardsName { get; set; }
+        public int GPPanchayatWardsCode { get; set; }
+
+        public string? GPPanchayatWardsType { get; set; }
 
         public int ElectionTypeMasterId
         {
@@ -35,81 +81,26 @@
             set;
         }
 
-        public int FourthLevelHMasterId
+
+        public int? FourthLevelHMasterId
         {
             get;
             set;
         }
-
-
-        public int BlockZonePanchayatBooths { get; set; }
-        public string? BlockZonePanchayatCategory { get; set; }
-        public DateTime? BlockZonePanchayatCreatedAt { get; set; }
-
-        public DateTime? BlockZonePanchayatUpdatedAt { get; set; }
-
-        public DateTime? BlockZonePanchayatDeletedAt { get; set; }
-
-        public bool IsStatus { get; set; }
-
-
-    }
-    public class UpdateBlockPanchayatViewModel
-    {
-        public int BlockZonePanchayatMasterId { get; set; }
-        public string BlockZonePanchayatName { get; set; }
-        public int BlockZonePanchayatCode { get; set; }
-
-        public string? BlockZonePanchayatType { get; set; }
-
-        public int ElectionTypeMasterId
-        {
-            get;
-            set;
-        }
-
-
-        public int StateMasterId
-        {
-            get;
-            set;
-        }
-
-
-        public int DistrictMasterId
-        {
-            get;
-            set;
-        }
-
-
-        public int AssemblyMasterId
-        {
-            get;
-            set;
-        }
-
-        public int FourthLevelHMasterId
-        {
-            get;
-            set;
-        }
-
-
-        public int BlockZonePanchayatBooths { get; set; }
-        public string? BlockZonePanchayatCategory { get; set; }
+        
+        public string? GPPanchayatWardsCategory { get; set; }
 
         public bool IsStatus { get; set; }
 
     }
 
-    public class ListBlockPanchayatViewModel
+    public class ListGPPanchayatWardsViewModel
     {
-        public int BlockZonePanchayatMasterId { get; set; }
-        public string BlockZonePanchayatName { get; set; }
-        public int BlockZonePanchayatCode { get; set; }
+        public int GPPanchayatWardsMasterId { get; set; }
+        public string GPPanchayatWardsName { get; set; }
+        public int GPPanchayatWardsCode { get; set; }
 
-        public string? BlockZonePanchayatType { get; set; }
+        public string? GPPanchayatWardsType { get; set; }
 
         public int ElectionTypeMasterId
         {
@@ -138,16 +129,14 @@
             set;
         }
         public string AssemblyName { get; set; }
-
-        public int FourthLevelHMasterId
+        public int? FourthLevelHMasterId
         {
             get;
             set;
         }
         public string FourthLevelHName { get; set; }
-
-        public int BlockZonePanchayatBooths { get; set; }
-        public string? BlockZonePanchayatCategory { get; set; }
+       
+        public string? GPPanchayatWardsCategory { get; set; }
 
         public bool IsStatus { get; set; }
     }

@@ -72,14 +72,14 @@ namespace EAMS_ACore.Models
             set;
         }
 
-        public int BlockZonePanchayatBooths { get; set; }
-        public string? BlockZonePanchayatCategory { get; set; }
-        public DateTime? BlockZonePanchayatCreatedAt { get; set; }
+        public int PSZonePanchayatBooths { get; set; }
+        public string? PSZonePanchayatCategory { get; set; }
+        public DateTime? PSZonePanchayatCreatedAt { get; set; }
 
-        public DateTime? BlockZonePanchayatUpdatedAt { get; set; }
+        public DateTime? PSZonePanchayatUpdatedAt { get; set; }
 
-        public DateTime? BlockZonePanchayatDeletedAt { get; set; }
-        public bool BlockZonePanchayatStatus { get; set; }
+        public DateTime? PSZonePanchayatDeletedAt { get; set; }
+        public bool PSZonePanchayatStatus { get; set; }
 
         public virtual List<BoothMaster> BoothMaster
         {
