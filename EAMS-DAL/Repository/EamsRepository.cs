@@ -16439,54 +16439,54 @@ namespace EAMS_DAL.Repository
 
         #endregion
 
-        #region  BlockPanchayat
-        public async Task<Response> AddBlockPanchayat(PSZonePanchayat blockPanchayat)
+        #region  PSZonePanchayat
+        public async Task<Response> AddPSZonePanchayat(PSZonePanchayat psZonePanchayat)
         {
-            //try
-            //{
+            try
+            {
 
-            //    PSZonePanchayat? ispsZoneExist = null;
-            //    if (blockPanchayat.ElectionTypeMasterId == 1)// for gram panchyat only check fourth level
-            //    {
-            //        ispsZoneExist = await _context.BlockZonePanchayat.Where(p => p.BlockZonePanchayatCode == blockPanchayat.BlockZonePanchayatCode && p.StateMasterId == blockPanchayat.StateMasterId && p.DistrictMasterId == blockPanchayat.DistrictMasterId && p.AssemblyMasterId == blockPanchayat.AssemblyMasterId && p.ElectionTypeMasterId == blockPanchayat.ElectionTypeMasterId && p.FourthLevelHMasterId == blockPanchayat.FourthLevelHMasterId).FirstOrDefaultAsync();
+                PSZonePanchayat? ispsZoneExist = null;
+                if (psZonePanchayat.ElectionTypeMasterId == 1)// for gram panchyat only check fourth level
+                {
+                    ispsZoneExist = await _context.PSZonePanchayat.Where(p => p.PSZonePanchayatCode == psZonePanchayat.PSZonePanchayatCode && p.StateMasterId == psZonePanchayat.StateMasterId && p.DistrictMasterId == psZonePanchayat.DistrictMasterId && p.AssemblyMasterId == psZonePanchayat.AssemblyMasterId && p.ElectionTypeMasterId == psZonePanchayat.ElectionTypeMasterId && p.FourthLevelHMasterId == psZonePanchayat.FourthLevelHMasterId).FirstOrDefaultAsync();
 
-            //    }
-            //    else
-            //    {
-            //        ispsZoneExist = await _context.BlockZonePanchayat.Where(p => p.BlockZonePanchayatCode == blockPanchayat.BlockZonePanchayatCode && p.StateMasterId == blockPanchayat.StateMasterId && p.DistrictMasterId == blockPanchayat.DistrictMasterId && p.AssemblyMasterId == blockPanchayat.AssemblyMasterId && p.ElectionTypeMasterId == blockPanchayat.ElectionTypeMasterId).FirstOrDefaultAsync();
+                }
+                else
+                {
+                    ispsZoneExist = await _context.PSZonePanchayat.Where(p => p.PSZonePanchayatCode == psZonePanchayat.PSZonePanchayatCode && p.StateMasterId == psZonePanchayat.StateMasterId && p.DistrictMasterId == psZonePanchayat.DistrictMasterId && p.AssemblyMasterId == psZonePanchayat.AssemblyMasterId && p.ElectionTypeMasterId == psZonePanchayat.ElectionTypeMasterId).FirstOrDefaultAsync();
 
-            //    }
-
-
-
-            //    if (ispsZoneExist == null)
-            //    {
-
-            //        blockPanchayat.BlockZonePanchayatCreatedAt = BharatDateTime();
-            //        _context.BlockZonePanchayat.Add(blockPanchayat);
-            //        _context.SaveChanges();
-
-            //        return new Response { Status = RequestStatusEnum.OK, Message = blockPanchayat.BlockZonePanchayatName + "Added Successfully" };
+                }
 
 
 
-            //    }
-            //    else
-            //    {
-            //        return new Response { Status = RequestStatusEnum.BadRequest, Message = ispsZoneExist.BlockZonePanchayatName + "Same Panchayat  Code Already Exists in the selected Election Type" };
+                if (ispsZoneExist == null)
+                {
 
-            //    }
+                    psZonePanchayat.PSZonePanchayatCreatedAt = BharatDateTime();
+                    _context.PSZonePanchayat.Add(psZonePanchayat);
+                    _context.SaveChanges();
 
-            //}
+                    return new Response { Status = RequestStatusEnum.OK, Message = psZonePanchayat.PSZonePanchayatName + "Added Successfully" };
 
-            //catch (Exception ex)
-            //{
-            //    return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
-            //}
+
+
+                }
+                else
+                {
+                    return new Response { Status = RequestStatusEnum.BadRequest, Message = ispsZoneExist.PSZonePanchayatName + "Same Panchayat  Code Already Exists in the selected Election Type" };
+
+                }
+
+            }
+
+            catch (Exception ex)
+            {
+                return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
+            }
             return null;
         }
 
-        public async Task<List<PSZonePanchayat>> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        public async Task<List<PSZonePanchayat>> GetPSZonePanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
             var getBlockPanchayat = await _context.PSZonePanchayat.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.FourthLevelHMasterId == fourthLevelHMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).ToListAsync();
             if (getBlockPanchayat != null)
@@ -16498,52 +16498,52 @@ namespace EAMS_DAL.Repository
                 return null;
             }
         }
-        public async Task<Response> UpdateBlockZonePanchayat(PSZonePanchayat updatedBlockPanchayat)
-        {
-            //try
-            //{
-            //    var existingBlockPanchayat = await _context.BlockZonePanchayat.FirstOrDefaultAsync(p => p.BlockZonePanchayatMasterId == updatedBlockPanchayat.BlockZonePanchayatMasterId);
-
-            //    if (existingBlockPanchayat == null)
-            //    {
-            //        return new Response { Status = RequestStatusEnum.NotFound, Message = "Block Panchayat not found" };
-            //    }
-
-            //    existingBlockPanchayat.BlockZonePanchayatName = updatedBlockPanchayat.BlockZonePanchayatName;
-            //    existingBlockPanchayat.BlockZonePanchayatCode = updatedBlockPanchayat.BlockZonePanchayatCode;
-            //    existingBlockPanchayat.BlockZonePanchayatType = updatedBlockPanchayat.BlockZonePanchayatType;
-            //    existingBlockPanchayat.ElectionTypeMasterId = updatedBlockPanchayat.ElectionTypeMasterId;
-            //    existingBlockPanchayat.StateMasterId = updatedBlockPanchayat.StateMasterId;
-            //    existingBlockPanchayat.DistrictMasterId = updatedBlockPanchayat.DistrictMasterId;
-            //    existingBlockPanchayat.AssemblyMasterId = updatedBlockPanchayat.AssemblyMasterId;
-            //    existingBlockPanchayat.FourthLevelHMasterId = updatedBlockPanchayat.FourthLevelHMasterId;
-            //    existingBlockPanchayat.BlockZonePanchayatBooths = updatedBlockPanchayat.BlockZonePanchayatBooths;
-            //    existingBlockPanchayat.BlockZonePanchayatCategory = updatedBlockPanchayat.BlockZonePanchayatCategory;
-            //    existingBlockPanchayat.BlockZonePanchayatUpdatedAt = BharatDateTime();
-            //    existingBlockPanchayat.BlockZonePanchayatDeletedAt = updatedBlockPanchayat.BlockZonePanchayatDeletedAt;
-            //    existingBlockPanchayat.BlockZonePanchayatStatus = updatedBlockPanchayat.BlockZonePanchayatStatus;
-            //    _context.BlockZonePanchayat.Update(existingBlockPanchayat);
-            //    _context.SaveChanges();
-
-            //    return new Response { Status = RequestStatusEnum.OK, Message = "Block Panchayat updated successfully" };
-            //}
-            //catch (Exception ex)
-            //{
-            //    return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
-            //}
-            return null;
-        }
-        public async Task<PSZonePanchayat> GetBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int blockZonePanchayatMasterId)
-        {
-            var blockPanchayat = await _context.PSZonePanchayat.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.FourthLevelHMasterId == fourthLevelHMasterId && d.PSZonePanchayatMasterId == blockZonePanchayatMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).FirstOrDefaultAsync();
-
-            return blockPanchayat ?? new PSZonePanchayat(); // Return a default instance if null
-        }
-        public async Task<Response> DeleteBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int blockZonePanchayatMasterId)
+        public async Task<Response> UpdatePSZonePanchayat(PSZonePanchayat updatedPSZonePanchayat)
         {
             try
             {
-                var isBoothExist = await _context.BoothMaster.Where(d => d.PSZonePanchayatMasterId == blockZonePanchayatMasterId).CountAsync();
+                var existingPSZonePanchayat = await _context.PSZonePanchayat.FirstOrDefaultAsync(p => p.PSZonePanchayatMasterId == updatedPSZonePanchayat.PSZonePanchayatMasterId);
+
+                if (existingPSZonePanchayat == null)
+                {
+                    return new Response { Status = RequestStatusEnum.NotFound, Message = "Block Panchayat not found" };
+                }
+
+                existingPSZonePanchayat.PSZonePanchayatName = updatedPSZonePanchayat.PSZonePanchayatName;
+                existingPSZonePanchayat.PSZonePanchayatCode = updatedPSZonePanchayat.PSZonePanchayatCode;
+                existingPSZonePanchayat.PSZonePanchayatType = updatedPSZonePanchayat.PSZonePanchayatType;
+                existingPSZonePanchayat.ElectionTypeMasterId = updatedPSZonePanchayat.ElectionTypeMasterId;
+                existingPSZonePanchayat.StateMasterId = updatedPSZonePanchayat.StateMasterId;
+                existingPSZonePanchayat.DistrictMasterId = updatedPSZonePanchayat.DistrictMasterId;
+                existingPSZonePanchayat.AssemblyMasterId = updatedPSZonePanchayat.AssemblyMasterId;
+                existingPSZonePanchayat.FourthLevelHMasterId = updatedPSZonePanchayat.FourthLevelHMasterId;
+                existingPSZonePanchayat.PSZonePanchayatBooths = updatedPSZonePanchayat.PSZonePanchayatBooths;
+                existingPSZonePanchayat.PSZonePanchayatCategory = updatedPSZonePanchayat.PSZonePanchayatCategory;
+                existingPSZonePanchayat.PSZonePanchayatUpdatedAt = BharatDateTime();
+                existingPSZonePanchayat.PSZonePanchayatDeletedAt = updatedPSZonePanchayat.PSZonePanchayatDeletedAt;
+                existingPSZonePanchayat.PSZonePanchayatStatus = updatedPSZonePanchayat.PSZonePanchayatStatus;
+                _context.PSZonePanchayat.Update(existingPSZonePanchayat);
+                _context.SaveChanges();
+
+                return new Response { Status = RequestStatusEnum.OK, Message = "Block Panchayat updated successfully" };
+            }
+            catch (Exception ex)
+            {
+                return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
+            }
+            return null;
+        }
+        public async Task<PSZonePanchayat> GetPSZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId)
+        {
+            var blockPanchayat = await _context.PSZonePanchayat.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.FourthLevelHMasterId == fourthLevelHMasterId && d.PSZonePanchayatMasterId == psZonePanchayatMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).FirstOrDefaultAsync();
+
+            return blockPanchayat ?? new PSZonePanchayat(); // Return a default instance if null
+        }
+        public async Task<Response> DeletePSZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId)
+        {
+            try
+            {
+                var isBoothExist = await _context.BoothMaster.Where(d => d.PSZonePanchayatMasterId == psZonePanchayatMasterId).CountAsync();
                 if (isBoothExist != 0)
                 {
                     return new Response { Status = RequestStatusEnum.BadRequest, Message = $"Booths exist under this Panchayat, kindly delete them first." };
@@ -16554,7 +16554,7 @@ namespace EAMS_DAL.Repository
                         p.DistrictMasterId == districtMasterId &&
                         p.AssemblyMasterId == assemblyMasterId &&
                         p.FourthLevelHMasterId == fourthLevelHMasterId &&
-                        p.PSZonePanchayatMasterId == blockZonePanchayatMasterId);
+                        p.PSZonePanchayatMasterId == psZonePanchayatMasterId);
                 if (blockPanchayat == null)
                 {
                     return new Response { Status = RequestStatusEnum.NotFound, Message = "Block Panchayat not found" };
@@ -16572,28 +16572,28 @@ namespace EAMS_DAL.Repository
         }
         #endregion
 
-        #region SarpanchWards
-        public async Task<Response> AddSarpanchWards(GPPanchayatWards sarpanchWards)
+        #region GPPanchayatWards
+        public async Task<Response> AddGPPanchayatWards(GPPanchayatWards gpPanchayatWards)
         {
             try
             {
-                var ispsZoneExist = await _context.GPPanchayatWards.Where(p => p.GPPanchayatWardsCode == sarpanchWards.GPPanchayatWardsCode && p.StateMasterId == sarpanchWards.StateMasterId && p.DistrictMasterId == sarpanchWards.DistrictMasterId && p.AssemblyMasterId == sarpanchWards.AssemblyMasterId && p.ElectionTypeMasterId == sarpanchWards.ElectionTypeMasterId).FirstOrDefaultAsync();
+                var isgpPanchayatWardsExist = await _context.GPPanchayatWards.Where(p => p.GPPanchayatWardsCode == gpPanchayatWards.GPPanchayatWardsCode && p.StateMasterId == gpPanchayatWards.StateMasterId && p.DistrictMasterId == gpPanchayatWards.DistrictMasterId && p.AssemblyMasterId == gpPanchayatWards.AssemblyMasterId && p.ElectionTypeMasterId == gpPanchayatWards.ElectionTypeMasterId).FirstOrDefaultAsync();
 
-                if (ispsZoneExist == null)
+                if (isgpPanchayatWardsExist == null)
                 {
 
-                    sarpanchWards.GPPanchayatWardsCreatedAt = BharatDateTime();
-                    _context.GPPanchayatWards.Add(sarpanchWards);
+                    gpPanchayatWards.GPPanchayatWardsCreatedAt = BharatDateTime();
+                    _context.GPPanchayatWards.Add(gpPanchayatWards);
                     _context.SaveChanges();
 
-                    return new Response { Status = RequestStatusEnum.OK, Message = sarpanchWards.GPPanchayatWardsName + "Added Successfully" };
+                    return new Response { Status = RequestStatusEnum.OK, Message = gpPanchayatWards.GPPanchayatWardsName + "Added Successfully" };
 
 
 
                 }
                 else
                 {
-                    return new Response { Status = RequestStatusEnum.BadRequest, Message = ispsZoneExist.GPPanchayatWardsName + "Same PS Zone Code Already Exists in the selected Election Type" };
+                    return new Response { Status = RequestStatusEnum.BadRequest, Message = isgpPanchayatWardsExist.GPPanchayatWardsName + "Same PS Zone Code Already Exists in the selected Election Type" };
 
                 }
 
@@ -16604,7 +16604,7 @@ namespace EAMS_DAL.Repository
                 return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
             }
         }
-        public async Task<List<GPPanchayatWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId)
+        public async Task<List<GPPanchayatWards>> GetGPPanchayatWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId)
         {
             var getPsZone = await _context.GPPanchayatWards.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.FourthLevelHMasterId == FourthLevelHMasterId  ).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).ToListAsync();
             if (getPsZone != null)
@@ -16616,14 +16616,14 @@ namespace EAMS_DAL.Repository
                 return null;
             }
         }
-        public async Task<Response> UpdateSarpanchWards(GPPanchayatWards sarpanchWards)
+        public async Task<Response> UpdateGPPanchayatWards(GPPanchayatWards gpPanchayatWards)
         {
             // Check if the SarpanchWards entity exists in the database
-            var existingSarpanchWards = await _context.GPPanchayatWards
-                .Where(d => d.GPPanchayatWardsMasterId == sarpanchWards.GPPanchayatWardsMasterId)
+            var existingGPPanchayatWards = await _context.GPPanchayatWards
+                .Where(d => d.GPPanchayatWardsMasterId == gpPanchayatWards.GPPanchayatWardsMasterId)
                 .FirstOrDefaultAsync();
 
-            if (existingSarpanchWards == null)
+            if (existingGPPanchayatWards == null)
             {
                 return new Response
                 {
@@ -16633,17 +16633,17 @@ namespace EAMS_DAL.Repository
             }
 
             // Update the properties of the existing entity
-            existingSarpanchWards.GPPanchayatWardsName = sarpanchWards.GPPanchayatWardsName;
-            existingSarpanchWards.GPPanchayatWardsCode = sarpanchWards.GPPanchayatWardsCode;
-            existingSarpanchWards.GPPanchayatWardsType = sarpanchWards.GPPanchayatWardsType;
-            existingSarpanchWards.ElectionTypeMasterId = sarpanchWards.ElectionTypeMasterId;
-            existingSarpanchWards.StateMasterId = sarpanchWards.StateMasterId;
-            existingSarpanchWards.DistrictMasterId = sarpanchWards.DistrictMasterId;
-            existingSarpanchWards.AssemblyMasterId = sarpanchWards.AssemblyMasterId;
-            existingSarpanchWards.GPPanchayatWardsCategory = sarpanchWards.GPPanchayatWardsCategory;
-            existingSarpanchWards.GPPanchayatWardsUpdatedAt = DateTime.UtcNow;
-            existingSarpanchWards.GPPanchayatWardsDeletedAt = sarpanchWards.GPPanchayatWardsDeletedAt;
-            existingSarpanchWards.GPPanchayatWardsStatus = sarpanchWards.GPPanchayatWardsStatus;
+            existingGPPanchayatWards.GPPanchayatWardsName = gpPanchayatWards.GPPanchayatWardsName;
+            existingGPPanchayatWards.GPPanchayatWardsCode = gpPanchayatWards.GPPanchayatWardsCode;
+            existingGPPanchayatWards.GPPanchayatWardsType = gpPanchayatWards.GPPanchayatWardsType;
+            existingGPPanchayatWards.ElectionTypeMasterId = gpPanchayatWards.ElectionTypeMasterId;
+            existingGPPanchayatWards.StateMasterId = gpPanchayatWards.StateMasterId;
+            existingGPPanchayatWards.DistrictMasterId = gpPanchayatWards.DistrictMasterId;
+            existingGPPanchayatWards.AssemblyMasterId = gpPanchayatWards.AssemblyMasterId;
+            existingGPPanchayatWards.GPPanchayatWardsCategory = gpPanchayatWards.GPPanchayatWardsCategory;
+            existingGPPanchayatWards.GPPanchayatWardsUpdatedAt = DateTime.UtcNow;
+            existingGPPanchayatWards.GPPanchayatWardsDeletedAt = gpPanchayatWards.GPPanchayatWardsDeletedAt;
+            existingGPPanchayatWards.GPPanchayatWardsStatus = gpPanchayatWards.GPPanchayatWardsStatus;
 
 
             // Save changes to the database
@@ -16666,38 +16666,37 @@ namespace EAMS_DAL.Repository
                 };
             }
         }
-        public async Task<GPPanchayatWards> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId, int SarpanchWardsMasterId)
+        public async Task<GPPanchayatWards> GetGPPanchayatWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId)
         {
-            var sarpanchWards = await _context.GPPanchayatWards
+            var gpPanchayatWards = await _context.GPPanchayatWards
                 .Where(w => w.StateMasterId == stateMasterId &&
                             w.DistrictMasterId == districtMasterId &&
                             w.AssemblyMasterId == assemblyMasterId &&
                             w.FourthLevelHMasterId == FourthLevelHMasterId &&
-                          
-                            w.GPPanchayatWardsMasterId == SarpanchWardsMasterId)
+                            w.GPPanchayatWardsMasterId == gpPanchayatWardsMasterId)
                 .FirstOrDefaultAsync();
 
-            if (sarpanchWards == null)
+            if (gpPanchayatWards == null)
             {
                 return null;
             }
 
-            return sarpanchWards;
+            return gpPanchayatWards;
         }
 
 
-        public async Task<Response> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId, int SarpanchWardsMasterId)
+        public async Task<Response> DeleteGPPanchayatWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId)
         {
-            var sarpanchWards = await _context.GPPanchayatWards
+            var gpPanchayatWards = await _context.GPPanchayatWards
                 .Where(w => w.StateMasterId == stateMasterId &&
                             w.DistrictMasterId == districtMasterId &&
                             w.AssemblyMasterId == assemblyMasterId &&
                             w.FourthLevelHMasterId == FourthLevelHMasterId &&
                              
-                            w.GPPanchayatWardsMasterId == SarpanchWardsMasterId)
+                            w.GPPanchayatWardsMasterId == gpPanchayatWardsMasterId)
                 .FirstOrDefaultAsync();
 
-            if (sarpanchWards == null)
+            if (gpPanchayatWards == null)
             {
                 return new Response
                 {
@@ -16706,7 +16705,7 @@ namespace EAMS_DAL.Repository
                 };
             }
 
-            _context.GPPanchayatWards.Remove(sarpanchWards);
+            _context.GPPanchayatWards.Remove(gpPanchayatWards);
 
             try
             {

@@ -3396,53 +3396,53 @@ namespace EAMS_BLL.Services
         }
         #endregion
 
-        #region BlockPanchayat
-        public async Task<Response> AddBlockPanchayat(PSZonePanchayat blockPanchayat)
+        #region PSZonePanchayat
+        public async Task<Response> AddPSZonePanchayat(PSZonePanchayat psZonePanchayat)
         {
 
-            return await _eamsRepository.AddBlockPanchayat(blockPanchayat);
+            return await _eamsRepository.AddPSZonePanchayat(psZonePanchayat);
         }
-        public async Task<List<PSZonePanchayat>> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        public async Task<List<PSZonePanchayat>> GetPSZonePanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
-            return await _eamsRepository.GetBlockPanchayatListById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);
+            return await _eamsRepository.GetPSZonePanchayatListById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);
         }
-        public async Task<PSZonePanchayat> GetBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int blockZonePanchayatMasterId)
+        public async Task<PSZonePanchayat> GetPSZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId)
         {
-            return await _eamsRepository.GetBlockZonePanchayatById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, blockZonePanchayatMasterId);
+            return await _eamsRepository.GetPSZonePanchayatById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, psZonePanchayatMasterId);
         }
-        public async Task<Response> UpdateBlockZonePanchayat(PSZonePanchayat blockZonePanchayat)
+        public async Task<Response> UpdatePSZonePanchayat(PSZonePanchayat psZonePanchayat)
         {
-            return await _eamsRepository.UpdateBlockZonePanchayat(blockZonePanchayat);
+            return await _eamsRepository.UpdatePSZonePanchayat(psZonePanchayat);
         }
-        public async Task<Response> DeleteBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int blockZonePanchayatMasterId)
+        public async Task<Response> DeletePSZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId)
         {
-            return await _eamsRepository.DeleteBlockZonePanchayatById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, blockZonePanchayatMasterId);
+            return await _eamsRepository.DeletePSZonePanchayatById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, psZonePanchayatMasterId);
         }
         #endregion
 
-        #region SarpanchWards
-        public async Task<Response> AddSarpanchWards(GPPanchayatWards sarpanchWards)
+        #region GPPanchayatWards
+        public async Task<Response> AddGPPanchayatWards(GPPanchayatWards gpPanchayatWards)
         {
 
-            return await _eamsRepository.AddSarpanchWards(sarpanchWards);
+            return await _eamsRepository.AddGPPanchayatWards(gpPanchayatWards);
         }
-        public async Task<List<GPPanchayatWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId)
+        public async Task<List<GPPanchayatWards>> GetGPPanchayatWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId)
         {
-            return await _eamsRepository.GetSarpanchWardsListById(stateMasterId, districtMasterId, assemblyMasterId, FourthLevelHMasterId, BlockZonePanchayatMasterId);
+            return await _eamsRepository.GetGPPanchayatWardsListById(stateMasterId, districtMasterId, assemblyMasterId, FourthLevelHMasterId);
         }
-        public async Task<Response> UpdateSarpanchWards(GPPanchayatWards sarpanchWards)
+        public async Task<Response> UpdateGPPanchayatWards(GPPanchayatWards gpPanchayatWards)
         {
-            return await _eamsRepository.UpdateSarpanchWards(sarpanchWards);
-        }
-
-        public async Task<GPPanchayatWards> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId, int SarpanchWardsMasterId)
-        {
-            return await _eamsRepository.GetSarpanchWardsById(stateMasterId, districtMasterId, assemblyMasterId, FourthLevelHMasterId, BlockZonePanchayatMasterId, SarpanchWardsMasterId);
+            return await _eamsRepository.UpdateGPPanchayatWards(gpPanchayatWards);
         }
 
-        public async Task<Response> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId, int SarpanchWardsMasterId)
+        public async Task<GPPanchayatWards> GetGPPanchayatWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId)
         {
-            return await _eamsRepository.DeleteSarpanchWardsById(stateMasterId, districtMasterId, assemblyMasterId, FourthLevelHMasterId, BlockZonePanchayatMasterId, SarpanchWardsMasterId);
+            return await _eamsRepository.GetGPPanchayatWardsById(stateMasterId, districtMasterId, assemblyMasterId, FourthLevelHMasterId, gpPanchayatWardsMasterId);
+        }
+
+        public async Task<Response> DeleteGPPanchayatWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId)
+        {
+            return await _eamsRepository.DeleteGPPanchayatWardsById(stateMasterId, districtMasterId, assemblyMasterId, FourthLevelHMasterId, gpPanchayatWardsMasterId);
         }
 
         #endregion

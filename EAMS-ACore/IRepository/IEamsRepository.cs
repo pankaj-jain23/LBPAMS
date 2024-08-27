@@ -302,21 +302,21 @@ namespace EAMS_ACore.IRepository
         #endregion
 
         #region SarpanchWards
-        Task<Response> AddSarpanchWards(GPPanchayatWards sarpanchWards);
-        Task<List<GPPanchayatWards>> GetSarpanchWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId);
-        Task<Response> UpdateSarpanchWards(GPPanchayatWards sarpanchWards);
-        Task<GPPanchayatWards> GetSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId, int SarpanchWardsMasterId);
+        Task<Response> AddGPPanchayatWards(GPPanchayatWards gpPanchayatWards);
+        Task<List<GPPanchayatWards>> GetGPPanchayatWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId);
+        Task<Response> UpdateGPPanchayatWards(GPPanchayatWards gpPanchayatWards);
+        Task<GPPanchayatWards> GetGPPanchayatWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId);
 
-        Task<Response> DeleteSarpanchWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int BlockZonePanchayatMasterId, int SarpanchWardsMasterId);
+        Task<Response> DeleteGPPanchayatWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId);
 
         #endregion
 
-        #region  BlockPanchayat
-        Task<Response> AddBlockPanchayat(PSZonePanchayat blockPanchayat);
-        Task<List<PSZonePanchayat>> GetBlockPanchayatListById(int stateMasterId, int districtMasterId, int fourthLevelHMasterId, int assemblyMasterId);
-        Task<PSZonePanchayat> GetBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int blockZonePanchayatMasterId);
-        Task<Response> UpdateBlockZonePanchayat(PSZonePanchayat blockZonePanchayat);
-        Task<Response> DeleteBlockZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int blockZonePanchayatMasterId);
+        #region  PSZonePanchayat
+        Task<Response> AddPSZonePanchayat(PSZonePanchayat psZonePanchayat);
+        Task<List<PSZonePanchayat>> GetPSZonePanchayatListById(int stateMasterId, int districtMasterId, int fourthLevelHMasterId, int assemblyMasterId);
+        Task<PSZonePanchayat> GetPSZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId);
+        Task<Response> UpdatePSZonePanchayat(PSZonePanchayat psZonePanchayat);
+        Task<Response> DeletePSZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId);
 
         #endregion
     }
