@@ -3446,5 +3446,25 @@ namespace EAMS_BLL.Services
         }
 
         #endregion
+
+        #region GPVoter
+        public async Task<ServiceResponse> AddGPVoterDetails(GPVoter gpVoterPdf)
+        {
+            return await _eamsRepository.AddGPVoterDetails(gpVoterPdf);
+        }
+
+        public async Task<ServiceResponse> UpdateGPVoterDetails(GPVoter gpVoterPdf)
+        {
+            return await _eamsRepository.UpdateGPVoterDetails(gpVoterPdf);
+        }
+        public async Task<GPVoter> GetGPVoterById(int gpVoterMasterId)
+        {
+            return await _eamsRepository.GetGPVoterById(gpVoterMasterId);
+        }
+        public async Task<List<GPVoterList>> GetGPVoterById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId)
+        {
+            return await _eamsRepository.GetGPVoterById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelhMasterId);
+        }
+        #endregion
     }
 }

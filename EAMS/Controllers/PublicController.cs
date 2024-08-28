@@ -417,6 +417,145 @@ namespace EAMS.Controllers
         }
 
         #endregion
+        #region GPVoter 
+        [HttpPost("AddGPVoterDetails")]
+        public async Task<IActionResult> AddGPVoterDetails([FromForm] GPVoterViewModel gpVoterPdfViewModel)
+        {
+            if (gpVoterPdfViewModel.GPVoterPdf == null || gpVoterPdfViewModel.GPVoterPdf.Length == 0)
+            {
+                return BadRequest("PDF file is missing.");
+            }
 
+            // Generate a unique file name for the PDF file
+            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(gpVoterPdfViewModel.GPVoterPdf.FileName);
+            var staticFolderPath = @"C:\inetpub\wwwroot\GPVoter";
+
+            // Ensure the GPVoter directory exists, create if it doesn't
+            if (!Directory.Exists(staticFolderPath))
+            {
+                Directory.CreateDirectory(staticFolderPath);
+            }
+
+            var filePath = Path.Combine(staticFolderPath, fileName);
+
+            // Save the file to the static path
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await gpVoterPdfViewModel.GPVoterPdf.CopyToAsync(stream);
+            }
+
+            // Map the ViewModel to the Model
+            var mappedData = _mapper.Map<GPVoter>(gpVoterPdfViewModel);
+            var fullpathName = Path.Combine("GPVoter", fileName);
+            mappedData.GPVoterPdfPath = $"{fullpathName.Replace("\\", "/")}";
+            var result = await _eamsService.AddGPVoterDetails(mappedData);
+
+            // Check if adding GP Voter details was successful
+            if (result.IsSucceed)
+            {
+                return Ok(new { Message = "GP Voter data added successfully" });
+            }
+            else
+            {
+                return BadRequest("Failed to add GP Voter data.");
+            }
+        }
+        [HttpPut("UpdateGPVoterDetails")]
+        public async Task<IActionResult> UpdateGPVoterDetails([FromForm] UpdateGPVoterViewModel updateGPVoterViewModel)
+        {
+            // Map the ViewModel to the Model
+            var mappedData = _mapper.Map<GPVoter>(updateGPVoterViewModel);
+
+            // Handle file upload (if applicable)
+            if (updateGPVoterViewModel.GPVoterPdf != null && updateGPVoterViewModel.GPVoterPdf.Length > 0)
+            {
+                // Generate a unique file name for the new PDF file
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(updateGPVoterViewModel.GPVoterPdf.FileName);
+                var staticFolderPath = @"C:\inetpub\wwwroot\GPVoter";
+            
+                // Ensure the GPVoter directory exists, create if it doesn't
+                if (!Directory.Exists(staticFolderPath))
+                {
+                    Directory.CreateDirectory(staticFolderPath);
+                }
+
+                var filePath = Path.Combine(staticFolderPath, fileName);
+
+                // Save the new file to the static path
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await updateGPVoterViewModel.GPVoterPdf.CopyToAsync(stream);
+                }
+
+                // Optionally, delete the old file if needed
+                if (!string.IsNullOrEmpty(mappedData.GPVoterPdfPath))
+                {
+                    var oldFilePath = Path.Combine(staticFolderPath, Path.GetFileName(mappedData.GPVoterPdfPath));
+                    if (System.IO.File.Exists(oldFilePath))
+                    {
+                        System.IO.File.Delete(oldFilePath);
+                    }
+                }
+
+                // Update GPVoterPath with the new file name
+                mappedData.GPVoterPdfPath = Path.Combine("GPVoter", fileName).Replace("\\", "/");
+            }
+
+            // Call your service method to update GP Voter details
+            var result = await _eamsService.UpdateGPVoterDetails(mappedData);
+
+            if (result.IsSucceed)
+            {
+                return Ok(new { Message = "GP Voter data updated successfully" });
+            }
+            else
+            {
+                return BadRequest("Failed to update GP Voter data.");
+            }
+        }
+
+        [HttpGet("GetGPVoterById")]
+        public async Task<IActionResult> GetGPVoterById(int gpVoterMasterId)
+        {
+            if (gpVoterMasterId == null)
+            {
+                return BadRequest("Master Id is null");
+            }
+            else
+            {
+
+
+                var resutlt = await _eamsService.GetGPVoterById(gpVoterMasterId);
+                if (resutlt is not null)
+                {
+                    return Ok(resutlt);
+                }
+                else
+                {
+                    return NotFound(resutlt);
+                }
+            }
+        }
+        [HttpGet("GetGPVoterById")]
+        public async Task<IActionResult> GetGPVoterById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId)
+        {
+            var result = await _eamsService.GetGPVoterById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelhMasterId);
+
+            if (result.Count != 0 || result != null)
+            {
+                var data = new
+                {
+                    count = result.Count,
+                    gpVoter = result.Where(k => k.GPVoterMasterId != 0).ToList(),
+
+                };
+                return Ok(data);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+        #endregion
     }
 }

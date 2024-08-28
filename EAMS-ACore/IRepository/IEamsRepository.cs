@@ -319,5 +319,12 @@ namespace EAMS_ACore.IRepository
         Task<Response> DeletePSZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId);
 
         #endregion
+
+        #region GPVoter
+        Task<ServiceResponse> AddGPVoterDetails(GPVoter gpVoterPdf);
+        Task<ServiceResponse> UpdateGPVoterDetails(GPVoter gpVoterPdf);
+        Task<GPVoter> GetGPVoterById(int gpVoterMasterId);
+        Task<List<GPVoterList>> GetGPVoterById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId);
+        #endregion
     }
 }

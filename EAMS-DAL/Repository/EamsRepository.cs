@@ -16725,5 +16725,104 @@ namespace EAMS_DAL.Repository
         }
 
         #endregion
+
+        #region UnOpposed Public Details
+        public async Task<ServiceResponse> AddGPVoterDetails(GPVoter gpVoterPdf)
+        {
+
+            _context.GPVoter.Add(gpVoterPdf);
+            _context.SaveChanges();
+
+
+            return new ServiceResponse { IsSucceed = true, Message = "Successfully added" };
+        }
+
+        public async Task<ServiceResponse> UpdateGPVoterDetails(GPVoter gpVoterPdf)
+        {
+            var existing = await _context.GPVoter.FirstOrDefaultAsync(k => k.GPVoterMasterId == gpVoterPdf.GPVoterMasterId);
+
+            if (existing == null)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "GP Voter Pdf not found" };
+            }
+
+            // Update properties of the existing Kyc entity
+            existing.StateMasterId = gpVoterPdf.StateMasterId;
+            existing.DistrictMasterId = gpVoterPdf.DistrictMasterId;
+            existing.AssemblyMasterId = gpVoterPdf.AssemblyMasterId;
+            existing.FourthLevelHMasterId = gpVoterPdf.FourthLevelHMasterId;
+            existing.GPVoterPdfPath = gpVoterPdf.GPVoterPdfPath;
+            await _context.SaveChangesAsync();
+
+            return new ServiceResponse { IsSucceed = true, Message = "GP Voter Pdf updated successfully" };
+        }
+
+        public async Task<GPVoter> GetGPVoterById(int gpVoterMasterId)
+        {
+            // Fetch the GPVoter record by ID
+            var gpGPVoter = await _context.GPVoter
+                .Where(w => w.GPVoterMasterId == gpVoterMasterId)
+                .FirstOrDefaultAsync();
+
+            if (gpGPVoter == null)
+            {
+                return null;
+            }
+
+            // Define the base URL
+            var baseUrl = "https://lbpams.punjab.gov.in/";
+
+            // Concatenate the base URL with the GPVoterPath
+            if (!string.IsNullOrEmpty(gpGPVoter.GPVoterPdfPath))
+            {
+                gpGPVoter.GPVoterPdfPath = $"{baseUrl}{gpGPVoter.GPVoterPdfPath.Replace("\\", "/")}";
+            }
+
+            return gpGPVoter;
+        }
+        public async Task<List<GPVoterList>> GetGPVoterById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        {
+            var baseUrl = "https://lbpams.punjab.gov.in/";
+
+            var gpVoterList = await _context.GPVoter
+                .Where(gv => gv.StateMasterId == stateMasterId &&
+                             gv.DistrictMasterId == districtMasterId &&
+                             gv.AssemblyMasterId == assemblyMasterId &&
+                             gv.FourthLevelHMasterId == fourthLevelHMasterId)
+                .Join(_context.StateMaster,
+                      gv => gv.StateMasterId,
+                      sm => sm.StateMasterId,
+                      (gv, sm) => new { GPVoter = gv, StateMaster = sm })
+                .Join(_context.DistrictMaster,
+                      joined => joined.GPVoter.DistrictMasterId,
+                      dm => dm.DistrictMasterId,
+                      (joined, dm) => new { joined.GPVoter, joined.StateMaster, DistrictMaster = dm })
+                .Join(_context.AssemblyMaster,
+                      joined => joined.GPVoter.AssemblyMasterId,
+                      am => am.AssemblyMasterId,
+                      (joined, am) => new { joined.GPVoter, joined.StateMaster, joined.DistrictMaster, AssemblyMaster = am })
+                .Join(_context.FourthLevelH,
+                      joined => joined.GPVoter.FourthLevelHMasterId,
+                      flh => flh.FourthLevelHMasterId,
+                      (joined, flh) => new GPVoterList
+                      {
+                          GPVoterMasterId = joined.GPVoter.GPVoterMasterId,
+                          StateMasterId = joined.GPVoter.StateMasterId,
+                          DistrictMasterId = joined.GPVoter.DistrictMasterId,
+                          AssemblyMasterId = joined.GPVoter.AssemblyMasterId,
+                          FourthLevelHMasterId = joined.GPVoter.FourthLevelHMasterId,
+                          GPVoterPdfPath = $"{baseUrl}{joined.GPVoter.GPVoterPdfPath.Replace("\\", "/")}",
+                          StateName = joined.StateMaster.StateName,
+                          DistrictName = joined.DistrictMaster.DistrictName,
+                          AssemblyName = joined.AssemblyMaster.AssemblyName,
+                          FourthLevelName = flh.HierarchyName,
+                          GPVoterStatus = joined.GPVoter.GPVoterStatus
+                      })
+                .ToListAsync();
+
+            return gpVoterList;
+        }
+
+        #endregion
     }
 }

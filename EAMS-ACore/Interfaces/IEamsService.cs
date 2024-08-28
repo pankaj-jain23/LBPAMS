@@ -309,5 +309,12 @@ namespace EAMS_ACore.Interfaces
         Task<Response> DeleteGPPanchayatWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId);
 
         #endregion
+
+        #region GPVoter
+        Task<ServiceResponse> AddGPVoterDetails(GPVoter gpVoterPdf);
+        Task<ServiceResponse> UpdateGPVoterDetails(GPVoter gpVoterPdf);
+        Task<GPVoter> GetGPVoterById(int gpVoterMasterId);
+        Task<List<GPVoterList>> GetGPVoterById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId);
+        #endregion
     }
 }

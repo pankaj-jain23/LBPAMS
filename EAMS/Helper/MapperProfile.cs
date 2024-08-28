@@ -842,7 +842,18 @@ namespace EAMS.Helper
           .ReverseMap();
             #endregion
 
+            #region GPVoterViewModel GPVoter
+            
+            CreateMap<GPVoterViewModel, GPVoter>()
+             .ForMember(dest => dest.GPVoterPdfPath, opt => opt.Ignore())
 
+            .ReverseMap();
+
+            CreateMap<UpdateGPVoterViewModel, GPVoter>()
+            .ForMember(dest => dest.GPVoterPdfPath, opt => opt.Ignore())
+
+           .ReverseMap();
+            #endregion
         }
         #region Convert DateTime UTC
         private DateTime? ParseAndConvertToUtc(string dateTimeString)
