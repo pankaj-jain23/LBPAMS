@@ -417,6 +417,7 @@ namespace EAMS.Controllers
         }
 
         #endregion
+
         #region GPVoter 
         [HttpPost("AddGPVoterDetails")]
         public async Task<IActionResult> AddGPVoterDetails([FromForm] GPVoterViewModel gpVoterPdfViewModel)
@@ -460,6 +461,7 @@ namespace EAMS.Controllers
                 return BadRequest("Failed to add GP Voter data.");
             }
         }
+   
         [HttpPut("UpdateGPVoterDetails")]
         public async Task<IActionResult> UpdateGPVoterDetails([FromForm] UpdateGPVoterViewModel updateGPVoterViewModel)
         {
@@ -536,10 +538,10 @@ namespace EAMS.Controllers
                 }
             }
         }
-        [HttpGet("GetGPVoterById")]
-        public async Task<IActionResult> GetGPVoterById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId)
+        [HttpGet("GetGPVoterListById")]
+        public async Task<IActionResult> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId)
         {
-            var result = await _eamsService.GetGPVoterById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelhMasterId);
+            var result = await _eamsService.GetGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelhMasterId);
 
             if (result.Count != 0 || result != null)
             {

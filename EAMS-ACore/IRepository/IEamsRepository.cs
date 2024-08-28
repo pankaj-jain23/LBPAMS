@@ -307,7 +307,7 @@ namespace EAMS_ACore.IRepository
         Task<Response> UpdateGPPanchayatWards(GPPanchayatWards gpPanchayatWards);
         Task<GPPanchayatWards> GetGPPanchayatWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId);
 
-        Task<Response> DeleteGPPanchayatWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId);
+        Task<Response> DeleteGPPanchayatWardsById( int gpPanchayatWardsMasterId);
 
         #endregion
 
@@ -316,7 +316,7 @@ namespace EAMS_ACore.IRepository
         Task<List<PSZonePanchayat>> GetPSZonePanchayatListById(int stateMasterId, int districtMasterId, int fourthLevelHMasterId, int assemblyMasterId);
         Task<PSZonePanchayat> GetPSZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId);
         Task<Response> UpdatePSZonePanchayat(PSZonePanchayat psZonePanchayat);
-        Task<Response> DeletePSZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId);
+        Task<Response> DeletePSZonePanchayatById(int psZonePanchayatMasterId);
 
         #endregion
 
@@ -324,7 +324,7 @@ namespace EAMS_ACore.IRepository
         Task<ServiceResponse> AddGPVoterDetails(GPVoter gpVoterPdf);
         Task<ServiceResponse> UpdateGPVoterDetails(GPVoter gpVoterPdf);
         Task<GPVoter> GetGPVoterById(int gpVoterMasterId);
-        Task<List<GPVoterList>> GetGPVoterById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId);
+        Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId);
         #endregion
     }
 }

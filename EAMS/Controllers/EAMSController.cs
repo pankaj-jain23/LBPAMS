@@ -1881,11 +1881,11 @@ namespace EAMS.Controllers
 
         [HttpDelete("DeletePSZonePanchayatById")]
         [Authorize]
-        public async Task<IActionResult> DeletePSZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId)
+        public async Task<IActionResult> DeletePSZonePanchayatById( int psZonePanchayatMasterId)
         {
-            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && fourthLevelHMasterId != null && psZonePanchayatMasterId != null)
+            if (psZonePanchayatMasterId != null)
             {
-                var psZoneList = await _EAMSService.DeletePSZonePanchayatById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, psZonePanchayatMasterId);  // Corrected to await the asynchronous method
+                var psZoneList = await _EAMSService.DeletePSZonePanchayatById(psZonePanchayatMasterId);  // Corrected to await the asynchronous method
                 if (psZoneList != null)
                 {
 
@@ -2033,12 +2033,12 @@ namespace EAMS.Controllers
 
         [HttpDelete("DeleteGPPanchayatWardsById")]
         [Authorize]
-        public async Task<IActionResult> DeleteGPPanchayatWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int wardsMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId)
+        public async Task<IActionResult> DeleteGPPanchayatWardsById(int gpPanchayatWardsMasterId)
         {
-            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && FourthLevelHMasterId != null && gpPanchayatWardsMasterId != null)
+            if (gpPanchayatWardsMasterId != null)
             {
 
-                var isDelete = await _EAMSService.DeleteGPPanchayatWardsById(stateMasterId, districtMasterId, assemblyMasterId, FourthLevelHMasterId, gpPanchayatWardsMasterId);
+                var isDelete = await _EAMSService.DeleteGPPanchayatWardsById(gpPanchayatWardsMasterId);
                 if (isDelete != null)
                 {
 

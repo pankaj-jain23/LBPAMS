@@ -5,7 +5,7 @@
 namespace EAMS_DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class AddMigrate : Migration
+    public partial class noUseOnlyForNullable : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

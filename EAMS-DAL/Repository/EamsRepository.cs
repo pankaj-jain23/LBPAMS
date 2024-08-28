@@ -16529,7 +16529,7 @@ namespace EAMS_DAL.Repository
             {
                 return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
             }
-            return null;
+            
         }
         public async Task<PSZonePanchayat> GetPSZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId)
         {
@@ -16537,7 +16537,7 @@ namespace EAMS_DAL.Repository
 
             return blockPanchayat ?? new PSZonePanchayat(); // Return a default instance if null
         }
-        public async Task<Response> DeletePSZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId)
+        public async Task<Response> DeletePSZonePanchayatById( int psZonePanchayatMasterId)
         {
             try
             {
@@ -16547,12 +16547,7 @@ namespace EAMS_DAL.Repository
                     return new Response { Status = RequestStatusEnum.BadRequest, Message = $"Booths exist under this Panchayat, kindly delete them first." };
                 }
                 var blockPanchayat = await _context.PSZonePanchayat
-                    .FirstOrDefaultAsync(p =>
-                        p.StateMasterId == stateMasterId &&
-                        p.DistrictMasterId == districtMasterId &&
-                        p.AssemblyMasterId == assemblyMasterId &&
-                        p.FourthLevelHMasterId == fourthLevelHMasterId &&
-                        p.PSZonePanchayatMasterId == psZonePanchayatMasterId);
+                    .FirstOrDefaultAsync(p =>p.PSZonePanchayatMasterId == psZonePanchayatMasterId);
                 if (blockPanchayat == null)
                 {
                     return new Response { Status = RequestStatusEnum.NotFound, Message = "Block Panchayat not found" };
@@ -16683,15 +16678,10 @@ namespace EAMS_DAL.Repository
         }
 
 
-        public async Task<Response> DeleteGPPanchayatWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId)
+        public async Task<Response> DeleteGPPanchayatWardsById( int gpPanchayatWardsMasterId)
         {
             var gpPanchayatWards = await _context.GPPanchayatWards
-                .Where(w => w.StateMasterId == stateMasterId &&
-                            w.DistrictMasterId == districtMasterId &&
-                            w.AssemblyMasterId == assemblyMasterId &&
-                            w.FourthLevelHMasterId == FourthLevelHMasterId &&
-                             
-                            w.GPPanchayatWardsMasterId == gpPanchayatWardsMasterId)
+                .Where(w =>w.GPPanchayatWardsMasterId == gpPanchayatWardsMasterId)
                 .FirstOrDefaultAsync();
 
             if (gpPanchayatWards == null)
@@ -16780,7 +16770,7 @@ namespace EAMS_DAL.Repository
 
             return gpGPVoter;
         }
-        public async Task<List<GPVoterList>> GetGPVoterById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
             var baseUrl = "https://lbpams.punjab.gov.in/";
 

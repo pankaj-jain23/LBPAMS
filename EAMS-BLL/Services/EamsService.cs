@@ -3414,9 +3414,9 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.UpdatePSZonePanchayat(psZonePanchayat);
         }
-        public async Task<Response> DeletePSZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId)
+        public async Task<Response> DeletePSZonePanchayatById( int psZonePanchayatMasterId)
         {
-            return await _eamsRepository.DeletePSZonePanchayatById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, psZonePanchayatMasterId);
+            return await _eamsRepository.DeletePSZonePanchayatById(psZonePanchayatMasterId);
         }
         #endregion
 
@@ -3440,9 +3440,9 @@ namespace EAMS_BLL.Services
             return await _eamsRepository.GetGPPanchayatWardsById(stateMasterId, districtMasterId, assemblyMasterId, FourthLevelHMasterId, gpPanchayatWardsMasterId);
         }
 
-        public async Task<Response> DeleteGPPanchayatWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId)
+        public async Task<Response> DeleteGPPanchayatWardsById(int gpPanchayatWardsMasterId)
         {
-            return await _eamsRepository.DeleteGPPanchayatWardsById(stateMasterId, districtMasterId, assemblyMasterId, FourthLevelHMasterId, gpPanchayatWardsMasterId);
+            return await _eamsRepository.DeleteGPPanchayatWardsById( gpPanchayatWardsMasterId);
         }
 
         #endregion
@@ -3461,9 +3461,9 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetGPVoterById(gpVoterMasterId);
         }
-        public async Task<List<GPVoterList>> GetGPVoterById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId)
+        public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId)
         {
-            return await _eamsRepository.GetGPVoterById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelhMasterId);
+            return await _eamsRepository.GetGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelhMasterId);
         }
         #endregion
     }

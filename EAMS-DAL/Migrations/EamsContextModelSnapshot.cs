@@ -1653,6 +1653,46 @@ namespace EAMS_DAL.Migrations
                     b.ToTable("RandomizationTaskDetail");
                 });
 
+            modelBuilder.Entity("EAMS_ACore.Models.PublicModels.GPVoter", b =>
+                {
+                    b.Property<int>("GPVoterMasterId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("GPVoterMasterId"));
+
+                    b.Property<int?>("AssemblyMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("DistrictMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("FourthLevelHMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("GPVoterCreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("GPVoterDeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("GPVoterPdfPath")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("GPVoterStatus")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("GPVoterUpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("StateMasterId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("GPVoterMasterId");
+
+                    b.ToTable("GPVoter");
+                });
+
             modelBuilder.Entity("EAMS_ACore.Models.PublicModels.Kyc", b =>
                 {
                     b.Property<int>("KycMasterId")
@@ -1662,9 +1702,6 @@ namespace EAMS_DAL.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("KycMasterId"));
 
                     b.Property<int?>("AssemblyMasterId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("BlockZonePanchayatMasterId")
                         .HasColumnType("integer");
 
                     b.Property<string>("CandidateName")
@@ -1684,6 +1721,9 @@ namespace EAMS_DAL.Migrations
                     b.Property<int>("FourthLevelHMasterId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("GPPanchayatWardsMasterId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("NominationPdfPath")
                         .IsRequired()
                         .HasColumnType("text");
@@ -1694,7 +1734,7 @@ namespace EAMS_DAL.Migrations
                     b.Property<string>("Option2")
                         .HasColumnType("text");
 
-                    b.Property<int>("SarpanchWardsMasterId")
+                    b.Property<int>("PSZonePanchayatMasterId")
                         .HasColumnType("integer");
 
                     b.Property<int>("StateMasterId")
