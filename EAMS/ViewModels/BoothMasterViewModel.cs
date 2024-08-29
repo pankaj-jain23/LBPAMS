@@ -16,7 +16,7 @@ namespace EAMS.ViewModels
             get;
             set;
         }
-        public int? BlockZonePanchayatMasterId { get; set; }
+        public int? PSZonePanchayatMasterId { get; set; }
         public int ElectionTypeMasterId
         {
             get;
