@@ -518,9 +518,8 @@ namespace EAMS.Controllers
             {
                 var mappedData = _mapper.Map<AddAssemblyMasterViewModel, AssemblyMaster>(addAssemblyMasterViewModel);
 
-                if (addAssemblyMasterViewModel.ElectionTypeMasterId == 1)// gram panchyat then total booths either null 0r 0
-                {
-                    if (addAssemblyMasterViewModel.TotalBooths == 0 || addAssemblyMasterViewModel.TotalBooths == null)
+                
+                    if (addAssemblyMasterViewModel.TotalBooths > 0)
                     {
                         var result = await _EAMSService.AddAssemblies(mappedData);
                         switch (result.Status)
@@ -540,31 +539,7 @@ namespace EAMS.Controllers
                     {
                         return BadRequest("For a Gram Panchayat, entering the total number of booths is not allowed.");
                     }
-                }
-                else
-                {
-                    if (addAssemblyMasterViewModel.TotalBooths > 0)
-                    {
-                        var result = await _EAMSService.AddAssemblies(mappedData);
-                        switch (result.Status)
-                        {
-                            case RequestStatusEnum.OK:
-                                return Ok(result.Message);
-                            case RequestStatusEnum.BadRequest:
-                                return BadRequest(result.Message);
-                            case RequestStatusEnum.NotFound:
-                                return NotFound(result.Message);
-
-                            default:
-                                return StatusCode(500, "Internal Server Error");
-                        }
-                    }
-                    else
-                    {
-                        return BadRequest("Please Enter total number of booths.");
-
-                    }
-                }
+             
 
             }
             else
@@ -935,66 +910,75 @@ namespace EAMS.Controllers
                 {// check booths filled in assembly
                     var asemRecord = await _EAMSService.GetAssemblyById(BoothMasterViewModel.AssemblyMasterId.ToString());
                     var boothsEntered = await _EAMSService.GetBoothListById(BoothMasterViewModel.StateMasterId.ToString(), BoothMasterViewModel.DistrictMasterId.ToString(), BoothMasterViewModel.AssemblyMasterId.ToString());
-
-                    if (asemRecord != null)
+                    if (BoothMasterViewModel.Male + BoothMasterViewModel.Female + BoothMasterViewModel.Transgender == BoothMasterViewModel.TotalVoters)
                     {
-                        if (asemRecord.ElectionTypeMasterId != 1)
+                        if (asemRecord != null)
                         {
-                            if (asemRecord.TotalBooths > 0)
+                            if (asemRecord.ElectionTypeMasterId != 1)
                             {
-                                if (boothsEntered.Count < asemRecord.TotalBooths)
+                                if (asemRecord.TotalBooths > 0)
                                 {
-                                    var mappedData = _mapper.Map<BoothMasterViewModel, BoothMaster>(BoothMasterViewModel);
-                                    var electionType = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId").Value;
-
-                                    var result = await _EAMSService.AddBooth(mappedData);
-                                    switch (result.Status)
+                                    if (boothsEntered.Count < asemRecord.TotalBooths)
                                     {
-                                        case RequestStatusEnum.OK:
-                                            return Ok(result.Message);
-                                        case RequestStatusEnum.BadRequest:
-                                            return BadRequest(result.Message);
-                                        case RequestStatusEnum.NotFound:
-                                            return NotFound(result.Message);
+                                        var mappedData = _mapper.Map<BoothMasterViewModel, BoothMaster>(BoothMasterViewModel);
+                                        var electionType = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId").Value;
 
-                                        default:
-                                            return StatusCode(500, "Internal Server Error");
+                                        var result = await _EAMSService.AddBooth(mappedData);
+                                        switch (result.Status)
+                                        {
+                                            case RequestStatusEnum.OK:
+                                                return Ok(result.Message);
+                                            case RequestStatusEnum.BadRequest:
+                                                return BadRequest(result.Message);
+                                            case RequestStatusEnum.NotFound:
+                                                return NotFound(result.Message);
+
+                                            default:
+                                                return StatusCode(500, "Internal Server Error");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        return BadRequest("You have already Entered " + asemRecord.TotalBooths + " " + ", cannot exceed from limit");
+
                                     }
                                 }
                                 else
                                 {
-                                    return BadRequest("You have already Entered " + asemRecord.TotalBooths + " " + ", cannot exceed from limit");
-
+                                    return StatusCode(500, "Please Enter Your Total Booths in Assembly");
                                 }
                             }
                             else
                             {
-                                return StatusCode(500, "Please Enter Your Total Booths in Assembly");
+                                var mappedData = _mapper.Map<BoothMasterViewModel, BoothMaster>(BoothMasterViewModel);
+                                var electionType = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId").Value;
+
+                                var result = await _EAMSService.AddBooth(mappedData);
+                                switch (result.Status)
+                                {
+                                    case RequestStatusEnum.OK:
+                                        return Ok(result.Message);
+                                    case RequestStatusEnum.BadRequest:
+                                        return BadRequest(result.Message);
+                                    case RequestStatusEnum.NotFound:
+                                        return NotFound(result.Message);
+
+                                    default:
+                                        return StatusCode(500, "Internal Server Error");
+                                }
                             }
                         }
                         else
                         {
-                            var mappedData = _mapper.Map<BoothMasterViewModel, BoothMaster>(BoothMasterViewModel);
-                            var electionType = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId").Value;
-
-                            var result = await _EAMSService.AddBooth(mappedData);
-                            switch (result.Status)
-                            {
-                                case RequestStatusEnum.OK:
-                                    return Ok(result.Message);
-                                case RequestStatusEnum.BadRequest:
-                                    return BadRequest(result.Message);
-                                case RequestStatusEnum.NotFound:
-                                    return NotFound(result.Message);
-
-                                default:
-                                    return StatusCode(500, "Internal Server Error");
-                            }
+                            return StatusCode(500, "Assembly Not Found");
                         }
                     }
                     else
                     {
-                        return StatusCode(500, "Assembly Not Found");
+                        
+                        return StatusCode(500, "The total sum of voters does not match the individual counts of Male, Female, and Transgender categories.");
+
+
                     }
 
                 }
