@@ -1794,7 +1794,7 @@ namespace EAMS.Controllers
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && fourthLevelHMasterId != null)
             {
                 var getBlockPanchayatList = await _EAMSService.GetPSZonePanchayatListById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);
-                var mappeddata = _mapper.Map<List<PSZonePanchayat>, List<PSZonePanchayatViewModel>>(getBlockPanchayatList);
+                var mappeddata = _mapper.Map<List<PSZonePanchayat>, List<ListPSZonePanchayatViewModel>>(getBlockPanchayatList);
                 if (mappeddata != null)
                 {
                     var data = new
@@ -2011,15 +2011,17 @@ namespace EAMS.Controllers
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && FourthLevelHMasterId != null && gpPanchayatWardsMasterId != null)
             {
                 var wardsList = await _EAMSService.GetGPPanchayatWardsById(stateMasterId, districtMasterId, assemblyMasterId, FourthLevelHMasterId, gpPanchayatWardsMasterId);
-                if (wardsList != null)
+                var mappeddata = _mapper.Map<GPPanchayatWards, ListGPPanchayatWardsViewModel>(wardsList);
+
+                if (mappeddata != null)
                 {
 
-                    return Ok(wardsList);
+                    return Ok(mappeddata);
 
                 }
                 else
                 {
-                    return NotFound("Booth Not Found");
+                    return NotFound("Not Found");
 
                 }
             }

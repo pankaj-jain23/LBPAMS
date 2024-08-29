@@ -1313,22 +1313,7 @@ namespace EAMS_DAL.Repository
                                 districtMasterRecord.DistrictUpdatedAt = BharatDateTime();
                                 _context.DistrictMaster.Update(districtMasterRecord);
                                 await _context.SaveChangesAsync();
-                                if (getAssemblyForElectionType.ElectionTypeMasterId == 1)
-                                {
-                                    AssemblyMaster assemblyMaster = new AssemblyMaster()
-                                    {
-                                        AssemblyMasterId = getAssemblyForElectionType.AssemblyMasterId,
-                                        StateMasterId = districtMaster.StateMasterId,
-                                        DistrictMasterId = districtMaster.DistrictMasterId,
-                                        AssemblyName = districtMaster.DistrictName,
-                                        AssemblyCode = Convert.ToInt32(districtMaster.DistrictCode),
-                                        AssemblyStatus = districtMaster.DistrictStatus,
-                                        ElectionTypeMasterId = 1
-
-
-                                    };
-                                    await UpdateAssembliesById(assemblyMaster);
-                                }
+                               
                                 return new Response { Status = RequestStatusEnum.OK, Message = "District Updated Successfully" + districtMaster.DistrictName };
                             }
                         }
@@ -1349,22 +1334,7 @@ namespace EAMS_DAL.Repository
                                 districtMasterRecord.DistrictUpdatedAt = BharatDateTime();
                                 _context.DistrictMaster.Update(districtMasterRecord);
                                 await _context.SaveChangesAsync();
-                                if (getAssemblyForElectionType.ElectionTypeMasterId == 1)
-                                {
-                                    AssemblyMaster assemblyMaster = new AssemblyMaster()
-                                    {
-                                        AssemblyMasterId = getAssemblyForElectionType.AssemblyMasterId,
-                                        StateMasterId = districtMaster.StateMasterId,
-                                        DistrictMasterId = districtMaster.DistrictMasterId,
-                                        AssemblyName = districtMaster.DistrictName,
-                                        AssemblyCode = Convert.ToInt32(districtMaster.DistrictCode),
-                                        AssemblyStatus = districtMaster.DistrictStatus,
-                                        ElectionTypeMasterId = 1
-
-
-                                    };
-                                    await UpdateAssembliesById(assemblyMaster);
-                                }
+                               
                                 return new Response { Status = RequestStatusEnum.OK, Message = "District Updated Successfully" + districtMaster.DistrictName };
 
                             }
@@ -1410,18 +1380,7 @@ namespace EAMS_DAL.Repository
                             _context.DistrictMaster.Add(districtMaster);
                             _context.SaveChanges();
 
-                            AssemblyMaster assemblyMaster = new AssemblyMaster()
-                            {
-                                StateMasterId = districtMaster.StateMasterId,
-                                DistrictMasterId = districtMaster.DistrictMasterId,
-                                AssemblyName = districtMaster.DistrictName,
-                                AssemblyCode = Convert.ToInt32(districtMaster.DistrictCode),
-                                AssemblyStatus = districtMaster.DistrictStatus,
-                                ElectionTypeMasterId = 1
-
-
-                            };
-                            await AddAssemblies(assemblyMaster);
+                            
                             return new Response { Status = RequestStatusEnum.OK, Message = "District Added Successfully " + districtMaster.DistrictName };
 
                         }
