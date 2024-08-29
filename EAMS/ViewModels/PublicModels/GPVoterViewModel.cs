@@ -28,15 +28,16 @@
             get;
             set;
         }
-        public DateTime? GPVoterCreatedAt { get; set; }
-
-        public DateTime? GPVoterUpdatedAt { get; set; }
-
-        public DateTime? GPVoterDeletedAt { get; set; }
+       
         public bool GPVoterStatus { get; set; }
     }
     public class UpdateGPVoterViewModel
     {
+        public int GPVoterMasterId
+        {
+            get;
+            set;
+        }
         public int? StateMasterId
         {
             get;
@@ -63,11 +64,6 @@
             get;
             set;
         }
-        public DateTime? GPVoterCreatedAt { get; set; }
-
-        public DateTime? GPVoterUpdatedAt { get; set; }
-
-        public DateTime? GPVoterDeletedAt { get; set; }
         public bool GPVoterStatus { get; set; }
     }
 }

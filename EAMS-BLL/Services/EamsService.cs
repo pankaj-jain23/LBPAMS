@@ -3465,6 +3465,10 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelhMasterId);
         }
+        public async Task<ServiceResponse> DeleteGPVoterById(int gpVoterMasterId)
+        {
+            return await _eamsRepository.DeleteGPVoterById(gpVoterMasterId);
+        }
         #endregion
     }
 }

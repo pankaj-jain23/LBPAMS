@@ -449,6 +449,9 @@ namespace EAMS.Controllers
             var mappedData = _mapper.Map<GPVoter>(gpVoterPdfViewModel);
             var fullpathName = Path.Combine("GPVoter", fileName);
             mappedData.GPVoterPdfPath = $"{fullpathName.Replace("\\", "/")}";
+            mappedData.GPVoterCreatedAt = DateTime.UtcNow; 
+            mappedData.GPVoterUpdatedAt = DateTime.UtcNow;
+            mappedData.GPVoterDeletedAt = DateTime.UtcNow;
             var result = await _eamsService.AddGPVoterDetails(mappedData);
 
             // Check if adding GP Voter details was successful
@@ -461,27 +464,44 @@ namespace EAMS.Controllers
                 return BadRequest("Failed to add GP Voter data.");
             }
         }
-   
         [HttpPut("UpdateGPVoterDetails")]
         public async Task<IActionResult> UpdateGPVoterDetails([FromForm] UpdateGPVoterViewModel updateGPVoterViewModel)
         {
+            // Fetch the existing GPVoter record from the database
+            var existingGPVoter = await _eamsService.GetGPVoterById(updateGPVoterViewModel.GPVoterMasterId);
+            if (existingGPVoter == null)
+            {
+                return NotFound("GP Voter not found.");
+            }
+
             // Map the ViewModel to the Model
             var mappedData = _mapper.Map<GPVoter>(updateGPVoterViewModel);
+
+            // Define the static folder path
+            var staticFolderPath = @"C:\inetpub\wwwroot\GPVoter";
 
             // Handle file upload (if applicable)
             if (updateGPVoterViewModel.GPVoterPdf != null && updateGPVoterViewModel.GPVoterPdf.Length > 0)
             {
+                // If there is an existing file path, delete the old file
+                if (!string.IsNullOrEmpty(existingGPVoter.GPVoterPdfPath))
+                {
+                    var oldFilePath = Path.Combine(staticFolderPath, Path.GetFileName(existingGPVoter.GPVoterPdfPath));
+                    if (System.IO.File.Exists(oldFilePath))
+                    {
+                        System.IO.File.Delete(oldFilePath);
+                    }
+                }
+
                 // Generate a unique file name for the new PDF file
                 var fileName = Guid.NewGuid().ToString() + Path.GetExtension(updateGPVoterViewModel.GPVoterPdf.FileName);
-                var staticFolderPath = @"C:\inetpub\wwwroot\GPVoter";
-            
+                var filePath = Path.Combine(staticFolderPath, fileName);
+
                 // Ensure the GPVoter directory exists, create if it doesn't
                 if (!Directory.Exists(staticFolderPath))
                 {
                     Directory.CreateDirectory(staticFolderPath);
                 }
-
-                var filePath = Path.Combine(staticFolderPath, fileName);
 
                 // Save the new file to the static path
                 using (var stream = new FileStream(filePath, FileMode.Create))
@@ -489,19 +509,17 @@ namespace EAMS.Controllers
                     await updateGPVoterViewModel.GPVoterPdf.CopyToAsync(stream);
                 }
 
-                // Optionally, delete the old file if needed
-                if (!string.IsNullOrEmpty(mappedData.GPVoterPdfPath))
-                {
-                    var oldFilePath = Path.Combine(staticFolderPath, Path.GetFileName(mappedData.GPVoterPdfPath));
-                    if (System.IO.File.Exists(oldFilePath))
-                    {
-                        System.IO.File.Delete(oldFilePath);
-                    }
-                }
-
                 // Update GPVoterPath with the new file name
                 mappedData.GPVoterPdfPath = Path.Combine("GPVoter", fileName).Replace("\\", "/");
             }
+            else
+            {
+                // If no new file is uploaded, retain the existing file path
+                mappedData.GPVoterPdfPath = existingGPVoter.GPVoterPdfPath;
+            }
+
+            // Update the timestamp for when the record was updated
+            mappedData.GPVoterUpdatedAt = DateTime.UtcNow;
 
             // Call your service method to update GP Voter details
             var result = await _eamsService.UpdateGPVoterDetails(mappedData);
@@ -556,6 +574,27 @@ namespace EAMS.Controllers
             else
             {
                 return NotFound();
+            }
+        }
+        [HttpDelete("DeleteGPVoterById")]
+        public async Task<IActionResult> DeleteGPVoterById(int gpVoterMasterId)
+        {
+            if (gpVoterMasterId == null)
+            {
+                return BadRequest("Master Id is null");
+            }
+            else
+            {
+
+                var resutlt = await _eamsService.DeleteGPVoterById(gpVoterMasterId);
+                if (resutlt.IsSucceed == true)
+                {
+                    return Ok(resutlt);
+                }
+                else
+                {
+                    return BadRequest(resutlt);
+                }
             }
         }
         #endregion
