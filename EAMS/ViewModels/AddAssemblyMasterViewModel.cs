@@ -24,7 +24,7 @@ namespace EAMS.ViewModels
             set;
         }
 
-        [Required(ErrorMessage = "Assembly Type is required")]
+        
         public string? AssemblyType { get; set; }
 
         [Required(ErrorMessage = "Status is required")]

@@ -17,7 +17,7 @@ namespace EAMS.ViewModels
         [Required(ErrorMessage = "Pc Master Id is required")]
         public int PCMasterId { get; set; }
 
-        [Required(ErrorMessage = "Assembly Type is required")]
+       
         public string? AssemblyType { get; set; }
 
         [Required(ErrorMessage = "Election Type is required")]
