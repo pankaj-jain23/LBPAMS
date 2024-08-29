@@ -2717,7 +2717,7 @@ namespace EAMS_DAL.Repository
                     "")
                 {
                     bool checkBoothName = false;
-                    if (boothMaster.ElectionTypeMasterId == 1) // for gram panchyat
+                    if (boothMaster.ElectionTypeMasterId == 2) // for panchayat samiti chekc pszonepachat table
                     {
                         checkBoothName = await _context.BoothMaster.AnyAsync(d =>
                                          d.StateMasterId == boothMaster.StateMasterId &&
@@ -2725,7 +2725,7 @@ namespace EAMS_DAL.Repository
                                          d.AssemblyMasterId == boothMaster.AssemblyMasterId &&
                                          d.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId &&
                                          d.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId &&
-                                         d.BoothCode_No.Equals(boothMaster.BoothCode_No));
+                                         d.BoothCode_No.Equals(boothMaster.BoothCode_No) && d.PSZonePanchayatMasterId== boothMaster.PSZonePanchayatMasterId);
                     }
                     else
                     {
@@ -2734,6 +2734,7 @@ namespace EAMS_DAL.Repository
                                          d.DistrictMasterId == boothMaster.DistrictMasterId &&
                                          d.AssemblyMasterId == boothMaster.AssemblyMasterId &&
                                          d.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId &&
+                                          d.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId &&
                                          d.BoothCode_No.Equals(boothMaster.BoothCode_No));
                     }
 
@@ -2748,24 +2749,24 @@ namespace EAMS_DAL.Repository
                 }
                 else
                 {
-                    //check as per grmappanchyat electiontype isprimary booth....update old if they are isprimary
+                    //check as per panchayt samiti electiontype isprimary booth....update old if they are isprimary
                     List<BoothMaster> existingBooths = null;
-                    if (boothMaster.ElectionTypeMasterId == 1)
+                    if (boothMaster.ElectionTypeMasterId == 2)
                     {
                         existingBooths = await _context.BoothMaster.Where(p =>
                                     p.BoothCode_No == boothMaster.BoothCode_No &&
                                      p.StateMasterId == boothMaster.StateMasterId &&
                                      p.AssemblyMasterId == boothMaster.AssemblyMasterId &&
-                                     p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId).ToListAsync();
+                                     p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId && p.PSZonePanchayatMasterId== boothMaster.PSZonePanchayatMasterId).ToListAsync();
 
                     }
                     else
-                    {// for other elections
+                    { // for other elections
                         existingBooths = await _context.BoothMaster.Where(p =>
                         p.BoothCode_No == boothMaster.BoothCode_No &&
                          p.StateMasterId == boothMaster.StateMasterId &&
                          p.AssemblyMasterId == boothMaster.AssemblyMasterId &&
-                         p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId).ToListAsync();
+                         p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMasterId== boothMaster.FourthLevelHMasterId).ToListAsync();
                     }
 
 
@@ -2790,7 +2791,7 @@ namespace EAMS_DAL.Repository
                                         existingBooth.IsPrimaryBooth = false;
                                         _context.BoothMaster.Update(existingBooth);
                                     }
-                                    boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
+                                    boothMaster.BoothCreatedAt = BharatDateTime(); 
                                     _context.BoothMaster.Add(boothMaster);
                                     await _context.SaveChangesAsync();
                                     return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
