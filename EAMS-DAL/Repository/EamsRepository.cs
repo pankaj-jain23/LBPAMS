@@ -16974,36 +16974,45 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 };
             }
 
-            // Update the properties of the existing entity
-            existing.HierarchyName = fourthLevelH.HierarchyName;
-            existing.HierarchyCode = fourthLevelH.HierarchyCode;
-            existing.HierarchyType = fourthLevelH.HierarchyType;
-            existing.ElectionTypeMasterId = fourthLevelH.ElectionTypeMasterId;
-            existing.StateMasterId = fourthLevelH.StateMasterId;
-            existing.DistrictMasterId = fourthLevelH.DistrictMasterId;
-            existing.AssemblyMasterId = fourthLevelH.AssemblyMasterId;
-            existing.HierarchyCreatedAt = fourthLevelH.HierarchyCreatedAt;
-            existing.HierarchyUpdatedAt = DateTime.UtcNow;
-            existing.HierarchyStatus = fourthLevelH.HierarchyStatus;
+            var issFourthLeveCodeExist = await _context.FourthLevelH.Where(p => p.HierarchyCode == fourthLevelH.HierarchyCode && p.StateMasterId == fourthLevelH.StateMasterId && p.ElectionTypeMasterId == fourthLevelH.ElectionTypeMasterId && p.AssemblyMasterId != fourthLevelH.AssemblyMasterId && p.DistrictMasterId == fourthLevelH.DistrictMasterId).ToListAsync();
+            if (issFourthLeveCodeExist.Count == 0)
+            {
+                // Update the properties of the existing entity
+                existing.HierarchyName = fourthLevelH.HierarchyName;
+                existing.HierarchyCode = fourthLevelH.HierarchyCode;
+                existing.HierarchyType = fourthLevelH.HierarchyType;
+                existing.ElectionTypeMasterId = fourthLevelH.ElectionTypeMasterId;
+                existing.StateMasterId = fourthLevelH.StateMasterId;
+                existing.DistrictMasterId = fourthLevelH.DistrictMasterId;
+                existing.AssemblyMasterId = fourthLevelH.AssemblyMasterId;
+                existing.HierarchyCreatedAt = fourthLevelH.HierarchyCreatedAt;
+                existing.HierarchyUpdatedAt = DateTime.UtcNow;
+                existing.HierarchyStatus = fourthLevelH.HierarchyStatus;
 
-            // Save changes to the database
-            try
-            {
-                await _context.SaveChangesAsync();
-                return new Response
+                // Save changes to the database
+                try
                 {
-                    Status = RequestStatusEnum.OK,
-                    Message = "updated successfully."
-                };
+                    await _context.SaveChangesAsync();
+                    return new Response
+                    {
+                        Status = RequestStatusEnum.OK,
+                        Message = "updated successfully."
+                    };
+                }
+                catch (Exception ex)
+                {
+                    // Handle any errors that may have occurred
+                    return new Response
+                    {
+                        Status = RequestStatusEnum.BadRequest,
+                        Message = $"An error occurred: {ex.Message}"
+                    };
+                }
             }
-            catch (Exception ex)
+            else
             {
-                // Handle any errors that may have occurred
-                return new Response
-                {
-                    Status = RequestStatusEnum.BadRequest,
-                    Message = $"An error occurred: {ex.Message}"
-                };
+                return new Response { Status = RequestStatusEnum.BadRequest, Message = isFourthLevelHExist.HierarchyName + " Same Hierarchy  Code Already Exists in the selected Election Type" };
+
             }
         }
 
