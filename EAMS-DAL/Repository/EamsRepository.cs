@@ -17011,7 +17011,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
             else
             {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = isFourthLevelHExist.HierarchyName + " Same Hierarchy  Code Already Exists in the selected Election Type" };
+                return new Response { Status = RequestStatusEnum.BadRequest, Message = fourthLevelH.HierarchyName + " Same Hierarchy  Code Already Exists in the selected Election Type" };
 
             }
         }
