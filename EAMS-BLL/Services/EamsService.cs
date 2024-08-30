@@ -3470,5 +3470,40 @@ namespace EAMS_BLL.Services
             return await _eamsRepository.DeleteGPVoterById(gpVoterMasterId);
         }
         #endregion
+
+        #region ResultDeclaration
+        public async Task<ServiceResponse> AddResultDeclarationDetails(ResultDeclaration resultDeclaration)
+        {
+            return await _eamsRepository.AddResultDeclarationDetails(resultDeclaration);
+        }
+        public async Task<Response> UpdateResultDeclarationDetails(ResultDeclaration resultDeclaration)
+        {
+            return await _eamsRepository.UpdateResultDeclarationDetails(resultDeclaration);
+        }
+        public async Task<ResultDeclaration> GetResultDeclarationById(int resultDeclarationMasterId)
+        {
+            return await _eamsRepository.GetResultDeclarationById(resultDeclarationMasterId);
+
+        }
+        public async Task<ServiceResponse> DeleteResultDeclarationById(int resultDeclarationMasterId)
+        {
+            return await _eamsRepository.DeleteResultDeclarationById(resultDeclarationMasterId);
+        }
+        public async Task<List<ResultDeclarationList>> GetPanchayatWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId)
+        {
+            return await _eamsRepository.GetPanchayatWiseResults(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId, gpPanchayatWardsMasterId);
+        }
+
+        public async Task<List<ResultDeclarationList>> GetBlockWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        {
+            return await _eamsRepository.GetBlockWiseResults(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId);
+        }
+
+        public async Task<List<ResultDeclarationList>> GetDistrictWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.GetDistrictWiseResults(stateMasterId, districtMasterId, electionTypeMasterId);
+        }
+        #endregion
+
     }
 }

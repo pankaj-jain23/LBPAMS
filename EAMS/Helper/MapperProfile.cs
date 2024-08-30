@@ -727,6 +727,7 @@ namespace EAMS.Helper
                    .ForMember(dest => dest.HierarchyName, opt => opt.MapFrom(src => src.HierarchyName))
                    .ForMember(dest => dest.HierarchyCode, opt => opt.MapFrom(src => src.HierarchyCode))
                    .ForMember(dest => dest.HierarchyType, opt => opt.MapFrom(src => src.HierarchyType))
+                   .ForMember(dest => dest.HierarchyCategory, opt => opt.MapFrom(src => src.HierarchyType))
                    .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
                    .ForMember(dest => dest.ElectionTypeName, opt => opt.MapFrom(src => src.ElectionTypeMaster.ElectionType))
                    .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
@@ -803,7 +804,7 @@ namespace EAMS.Helper
                      .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
                      .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
                      .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
-                     .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))                    
+                     .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
                      .ForMember(dest => dest.GPPanchayatWardsCategory, opt => opt.MapFrom(src => src.GPPanchayatWardsCategory))
                      .ForMember(dest => dest.GPPanchayatWardsStatus, opt => opt.MapFrom(src => src.IsStatus))
 
@@ -843,7 +844,7 @@ namespace EAMS.Helper
             #endregion
 
             #region GPVoterViewModel GPVoter
-            
+
             CreateMap<GPVoterViewModel, GPVoter>()
              .ForMember(dest => dest.GPVoterPdfPath, opt => opt.Ignore())
 
@@ -853,6 +854,37 @@ namespace EAMS.Helper
             .ForMember(dest => dest.GPVoterPdfPath, opt => opt.Ignore())
 
            .ReverseMap();
+            #endregion
+
+            #region ResultDeclarationViewModel  ResultDeclaration 
+            CreateMap<ResultDeclarationViewModel, ResultDeclaration>()
+     .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+     .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+     .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+     .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+     .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
+     .ForMember(dest => dest.GPPanchayatWardsMasterId, opt => opt.MapFrom(src => src.GPPanchayatWardsMasterId))
+     .ForMember(dest => dest.CandidateName, opt => opt.MapFrom(src => src.CandidateName))
+     .ForMember(dest => dest.FatherName, opt => opt.MapFrom(src => src.FatherName))
+     .ForMember(dest => dest.VoteMargin, opt => opt.MapFrom(src => src.VoteMargin))
+     .ForMember(dest => dest.ResultDecStatus, opt => opt.MapFrom(src => src.ResultDecStatus))
+     .ReverseMap();
+            #endregion
+
+            #region UpdateResultDeclarationViewModel  ResultDeclaration
+            CreateMap<UpdateResultDeclarationViewModel, ResultDeclaration>()
+                 .ForMember(dest => dest.ResultDeclarationMasterId, opt => opt.MapFrom(src => src.ResultDeclarationMasterId))
+                 .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+                 .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+                 .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+                 .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+                 .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
+                 .ForMember(dest => dest.GPPanchayatWardsMasterId, opt => opt.MapFrom(src => src.GPPanchayatWardsMasterId))
+                 .ForMember(dest => dest.CandidateName, opt => opt.MapFrom(src => src.CandidateName))
+                 .ForMember(dest => dest.FatherName, opt => opt.MapFrom(src => src.FatherName))
+                 .ForMember(dest => dest.VoteMargin, opt => opt.MapFrom(src => src.VoteMargin))
+                 .ForMember(dest => dest.ResultDecStatus, opt => opt.MapFrom(src => src.ResultDecStatus))
+                 .ReverseMap();
             #endregion
         }
         #region Convert DateTime UTC

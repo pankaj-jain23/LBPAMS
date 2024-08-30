@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using EAMS.ViewModels;
 using EAMS.ViewModels.PublicModels;
+using EAMS_ACore.HelperModels;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.Models.PublicModels;
 using LBPAMS.ViewModels.PublicModels;
@@ -598,5 +599,162 @@ namespace EAMS.Controllers
             }
         }
         #endregion
+
+        #region ResultDeclaration 
+
+        [HttpPost("AddResultDeclarationDetails")]
+        public async Task<IActionResult> AddResultDeclarationDetails([FromForm] ResultDeclarationViewModel resultDeclarationViewModel)
+        {
+            var mappedData = _mapper.Map<ResultDeclaration>(resultDeclarationViewModel);
+            mappedData.ResultDecCreatedAt = DateTime.UtcNow;
+            mappedData.ResultDecUpdatedAt = DateTime.UtcNow;
+            mappedData.ResultDecDeletedAt = DateTime.UtcNow;
+            var result = await _eamsService.AddResultDeclarationDetails(mappedData);
+
+            if (result.IsSucceed == true)
+            {
+
+                return Ok(new { Message = "Result Declaration data added successfully" });
+            }
+            else
+            {
+                return BadRequest("Failed to add Result Declaration data.");
+            }
+        }
+        [HttpPut("UpdateResultDeclarationDetails")]
+
+        public async Task<IActionResult> UpdateResultDeclarationDetails(UpdateResultDeclarationViewModel updateResultDeclarationViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                var mappedData = _mapper.Map<UpdateResultDeclarationViewModel, ResultDeclaration>(updateResultDeclarationViewModel);
+                mappedData.ResultDecUpdatedAt = DateTime.UtcNow;
+                var result = await _eamsService.UpdateResultDeclarationDetails(mappedData);
+                switch (result.Status)
+                {
+                    case RequestStatusEnum.OK:
+                        return Ok(result.Message);
+                    case RequestStatusEnum.BadRequest:
+                        return BadRequest(result.Message);
+                    case RequestStatusEnum.NotFound:
+                        return NotFound(result.Message);
+
+                    default:
+                        return StatusCode(500, "Internal Server Error");
+                }
+
+            }
+            else
+            {
+                return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
+            }
+        }
+
+        [HttpGet("GetResultDeclarationById")]
+        public async Task<IActionResult> GetResultDeclarationById(int resultDeclarationMasterId)
+        {
+            if (resultDeclarationMasterId == null)
+            {
+                return BadRequest("Master Id is null");
+            }
+            else
+            {
+
+
+                var resutlt = await _eamsService.GetResultDeclarationById(resultDeclarationMasterId);
+                if (resutlt is not null)
+                {
+                    return Ok(resutlt);
+                }
+                else
+                {
+                    return NotFound(resutlt);
+                }
+            }
+        }
+        [HttpDelete("DeleteResultDeclarationById")]
+        public async Task<IActionResult> DeleteResultDeclarationById(int resultDeclarationMasterId)
+        {
+            if (resultDeclarationMasterId == null)
+            {
+                return BadRequest("Master Id is null");
+            }
+            else
+            {
+
+                var resutlt = await _eamsService.DeleteResultDeclarationById(resultDeclarationMasterId);
+                if (resutlt.IsSucceed == true)
+                {
+                    return Ok(resutlt);
+                }
+                else
+                {
+                    return BadRequest(resutlt);
+                }
+            }
+        }
+
+        [HttpGet("GetPanchayatWiseResults")]
+        public async Task<IActionResult> GetPanchayatWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId)
+        {
+            var result = await _eamsService.GetPanchayatWiseResults(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId, gpPanchayatWardsMasterId);
+
+            if (result.Count != 0 || result != null)
+            {
+                var data = new
+                {
+                    count = result.Count,
+                    resultDeclaration = result.Where(k => k.ResultDeclarationMasterId != 0).ToList(),
+
+                };
+                return Ok(data);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+        [HttpGet("GetBlockWiseResults")]
+        public async Task<IActionResult> GetBlockWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        {
+            var result = await _eamsService.GetBlockWiseResults(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId);
+
+            if (result.Count != 0 || result != null)
+            {
+                var data = new
+                {
+                    count = result.Count,
+                    resultDeclaration = result.Where(k => k.ResultDeclarationMasterId != 0).ToList(),
+
+                };
+                return Ok(data);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+        [HttpGet("GetDistrictWiseResults")]
+        public async Task<IActionResult> GetDistrictWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId)
+        {
+            var result = await _eamsService.GetDistrictWiseResults(stateMasterId, districtMasterId, electionTypeMasterId);
+
+            if (result.Count != 0 || result != null)
+            {
+                var data = new
+                {
+                    count = result.Count,
+                    resultDeclaration = result.Where(k => k.ResultDeclarationMasterId != 0).ToList(),
+
+                };
+                return Ok(data);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+        #endregion
+
     }
 }

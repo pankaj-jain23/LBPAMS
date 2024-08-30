@@ -317,5 +317,18 @@ namespace EAMS_ACore.Interfaces
         Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId);
         Task<ServiceResponse> DeleteGPVoterById(int gpVoterMasterId);
         #endregion
+
+        #region ResultDeclaration
+        Task<ServiceResponse> AddResultDeclarationDetails(ResultDeclaration resultDeclaration);
+        Task<Response> UpdateResultDeclarationDetails(ResultDeclaration resultDeclaration);
+        Task<ResultDeclaration> GetResultDeclarationById(int resultDeclarationMasterId);
+        Task<ServiceResponse> DeleteResultDeclarationById(int resultDeclarationMasterId);
+        Task<List<ResultDeclarationList>> GetPanchayatWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId);
+
+        //Task<List<ResultDeclaration>> GetPanchayatWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId);
+        Task<List<ResultDeclarationList>> GetBlockWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId);
+        Task<List<ResultDeclarationList>> GetDistrictWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId);
+        #endregion
+
     }
 }

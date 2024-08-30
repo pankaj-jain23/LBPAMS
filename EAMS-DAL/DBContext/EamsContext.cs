@@ -73,6 +73,7 @@ public partial class EamsContext : IdentityDbContext<UserRegistration>
     public virtual DbSet<Kyc> Kyc { get; set; }
     public virtual DbSet<UnOpposed> UnOpposed { get; set; }
     public virtual DbSet<GPVoter> GPVoter { get; set; }
+    public virtual DbSet<ResultDeclaration> ResultDeclaration { get; set; }
     //  public virtual DbSet<BLOBoothMaster> BLOBoothMaster { get; set; } 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

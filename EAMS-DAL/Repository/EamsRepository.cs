@@ -17313,7 +17313,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         public async Task<GPPanchayatWards> GetGPPanchayatWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId)
         {
-            var gpPanchayatWards = await _context.GPPanchayatWards
+            var gpPanchayatWards = await _context.GPPanchayatWards.Include(d=>d.StateMaster).Include(d=>d.DistrictMaster).Include(d=>d.AssemblyMaster).Include(d=>d.FourthLevelH)
                 .Where(w => w.StateMasterId == stateMasterId &&
                             w.DistrictMasterId == districtMasterId &&
                             w.AssemblyMasterId == assemblyMasterId &&
@@ -17479,5 +17479,234 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
         }
         #endregion
+
+        #region ResultDeclaration
+        public async Task<ServiceResponse> AddResultDeclarationDetails(ResultDeclaration resultDeclaration)
+        {
+
+            _context.ResultDeclaration.Add(resultDeclaration);
+            _context.SaveChanges();
+
+
+            return new ServiceResponse { IsSucceed = true, Message = "Successfully added" };
+        }
+
+        public async Task<Response> UpdateResultDeclarationDetails(ResultDeclaration resultDeclaration)
+        {
+            var existingresultDeclaration = await _context.ResultDeclaration
+                .Where(d => d.ResultDeclarationMasterId == resultDeclaration.ResultDeclarationMasterId)
+                .FirstOrDefaultAsync();
+
+            if (existingresultDeclaration == null)
+            {
+                return new Response
+                {
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = "Result Not Declared."
+                };
+            }
+
+            // Update the properties of the existing entity
+            existingresultDeclaration.StateMasterId = resultDeclaration.StateMasterId;
+            existingresultDeclaration.DistrictMasterId = resultDeclaration.DistrictMasterId;
+            existingresultDeclaration.ElectionTypeMasterId = resultDeclaration.ElectionTypeMasterId;
+            existingresultDeclaration.AssemblyMasterId = resultDeclaration.AssemblyMasterId;
+            existingresultDeclaration.FourthLevelHMasterId = resultDeclaration.FourthLevelHMasterId;
+            existingresultDeclaration.GPPanchayatWardsMasterId = resultDeclaration.GPPanchayatWardsMasterId;
+            existingresultDeclaration.CandidateName = resultDeclaration.CandidateName;
+            existingresultDeclaration.FatherName = resultDeclaration.FatherName;
+            existingresultDeclaration.VoteMargin = resultDeclaration.VoteMargin;
+            existingresultDeclaration.ResultDecUpdatedAt = DateTime.UtcNow;
+            existingresultDeclaration.ResultDecStatus = resultDeclaration.ResultDecStatus;
+
+
+            // Save changes to the database
+            try
+            {
+                await _context.SaveChangesAsync();
+                return new Response
+                {
+                    Status = RequestStatusEnum.OK,
+                    Message = "Result Declaration updated successfully."
+                };
+            }
+            catch (Exception ex)
+            {
+                // Handle any errors that may have occurred
+                return new Response
+                {
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = $"An error occurred: {ex.Message}"
+                };
+            }
+        }
+        public async Task<ResultDeclaration> GetResultDeclarationById(int resultDeclarationMasterId)
+        {
+            var resultDeclaration = await _context.ResultDeclaration.FirstOrDefaultAsync(d => d.ResultDeclarationMasterId == resultDeclarationMasterId);
+            if (resultDeclaration == null)
+            {
+                return null; // or throw an exception, or handle the case appropriately
+            }
+            return resultDeclaration;
+        }
+
+        public async Task<ServiceResponse> DeleteResultDeclarationById(int resultDeclarationMasterId)
+        {
+            var isExist = await _context.ResultDeclaration.Where(d => d.ResultDeclarationMasterId == resultDeclarationMasterId).FirstOrDefaultAsync();
+            if (isExist == null)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "Record not Found" };
+            }
+            else
+            {
+                _context.ResultDeclaration.Remove(isExist);
+                _context.SaveChanges();
+                return new ServiceResponse { IsSucceed = true, Message = "Record Deleted successfully" };
+            }
+        }
+        public async Task<List<ResultDeclarationList>> GetPanchayatWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId)
+        {
+            var resultList = await _context.ResultDeclaration
+                .Where(rd => rd.StateMasterId == stateMasterId &&
+                             rd.DistrictMasterId == districtMasterId &&
+                             rd.AssemblyMasterId == assemblyMasterId &&
+                             rd.FourthLevelHMasterId == fourthLevelHMasterId &&
+                             rd.GPPanchayatWardsMasterId == gpPanchayatWardsMasterId)
+                .Join(_context.StateMaster,
+                      rd => rd.StateMasterId,
+                      sm => sm.StateMasterId,
+                      (rd, sm) => new { ResultDeclaration = rd, StateMaster = sm })
+                .Join(_context.DistrictMaster,
+                      joined => joined.ResultDeclaration.DistrictMasterId,
+                      dm => dm.DistrictMasterId,
+                      (joined, dm) => new { joined.ResultDeclaration, joined.StateMaster, DistrictMaster = dm })
+                .Join(_context.ElectionTypeMaster,
+                      joined => joined.ResultDeclaration.ElectionTypeMasterId,
+                      etm => etm.ElectionTypeMasterId,
+                      (joined, etm) => new { joined.ResultDeclaration, joined.StateMaster, joined.DistrictMaster, ElectionTypeMaster = etm })
+                .Join(_context.AssemblyMaster,
+                      joined => joined.ResultDeclaration.AssemblyMasterId,
+                      am => am.AssemblyMasterId,
+                      (joined, am) => new { joined.ResultDeclaration, joined.StateMaster, joined.DistrictMaster, joined.ElectionTypeMaster, AssemblyMaster = am })
+                .Join(_context.FourthLevelH,
+                      joined => joined.ResultDeclaration.FourthLevelHMasterId,
+                      flh => flh.FourthLevelHMasterId,
+                      (joined, flh) => new { joined.ResultDeclaration, joined.StateMaster, joined.DistrictMaster, joined.ElectionTypeMaster, joined.AssemblyMaster, FourthLevelH = flh })
+                .Join(_context.GPPanchayatWards,
+                      joined => joined.ResultDeclaration.GPPanchayatWardsMasterId,
+                      gpw => gpw.GPPanchayatWardsMasterId,
+                      (joined, gpw) => new ResultDeclarationList
+                      {
+                          ResultDeclarationMasterId = joined.ResultDeclaration.ResultDeclarationMasterId,
+                          StateMasterId = joined.ResultDeclaration.StateMasterId,
+                          StateName = joined.StateMaster.StateName,
+                          DistrictMasterId = joined.ResultDeclaration.DistrictMasterId,
+                          DistrictName = joined.DistrictMaster.DistrictName,
+                          ElectionTypeMasterId = joined.ResultDeclaration.ElectionTypeMasterId,
+                          ElectionType = joined.ElectionTypeMaster.ElectionType,
+                          AssemblyMasterId = joined.ResultDeclaration.AssemblyMasterId,
+                          AssemblyName = joined.AssemblyMaster.AssemblyName,
+                          FourthLevelHMasterId = joined.ResultDeclaration.FourthLevelHMasterId,
+                          FourthLevelName = joined.FourthLevelH.HierarchyName,
+                          GPPanchayatWardsMasterId = joined.ResultDeclaration.GPPanchayatWardsMasterId,
+                          GPPanchayatWardsName = gpw.GPPanchayatWardsName,
+                          CandidateName = joined.ResultDeclaration.CandidateName,
+                          FatherName = joined.ResultDeclaration.FatherName,
+                          VoteMargin = joined.ResultDeclaration.VoteMargin,
+                          ResultDecStatus = joined.ResultDeclaration.ResultDecStatus
+                      })
+                .ToListAsync();
+
+            return resultList;
+        }
+        public async Task<List<ResultDeclarationList>> GetBlockWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        {
+            var resultList = await _context.ResultDeclaration
+                .Where(rd => rd.StateMasterId == stateMasterId &&
+                             rd.DistrictMasterId == districtMasterId &&
+                             rd.ElectionTypeMasterId == electionTypeMasterId &&
+                             rd.AssemblyMasterId == assemblyMasterId &&
+                             rd.FourthLevelHMasterId == fourthLevelHMasterId)
+                .Join(_context.StateMaster,
+                      rd => rd.StateMasterId,
+                      sm => sm.StateMasterId,
+                      (rd, sm) => new { ResultDeclaration = rd, StateMaster = sm })
+                .Join(_context.DistrictMaster,
+                      joined => joined.ResultDeclaration.DistrictMasterId,
+                      dm => dm.DistrictMasterId,
+                      (joined, dm) => new { joined.ResultDeclaration, joined.StateMaster, DistrictMaster = dm })
+                .Join(_context.ElectionTypeMaster,
+                      joined => joined.ResultDeclaration.ElectionTypeMasterId,
+                      etm => etm.ElectionTypeMasterId,
+                      (joined, etm) => new { joined.ResultDeclaration, joined.StateMaster, joined.DistrictMaster, ElectionTypeMaster = etm })
+                .Join(_context.AssemblyMaster,
+                      joined => joined.ResultDeclaration.AssemblyMasterId,
+                      am => am.AssemblyMasterId,
+                      (joined, am) => new { joined.ResultDeclaration, joined.StateMaster, joined.DistrictMaster, joined.ElectionTypeMaster, AssemblyMaster = am })
+                .Join(_context.FourthLevelH,
+                      joined => joined.ResultDeclaration.FourthLevelHMasterId,
+                      flh => flh.FourthLevelHMasterId,
+                      (joined, flh) => new { joined.ResultDeclaration, joined.StateMaster, joined.DistrictMaster, joined.ElectionTypeMaster, joined.AssemblyMaster, FourthLevelH = flh })
+                .Select(result => new ResultDeclarationList
+                {
+                    ResultDeclarationMasterId = result.ResultDeclaration.ResultDeclarationMasterId,
+                    StateMasterId = result.ResultDeclaration.StateMasterId,
+                    StateName = result.StateMaster.StateName,
+                    DistrictMasterId = result.ResultDeclaration.DistrictMasterId,
+                    DistrictName = result.DistrictMaster.DistrictName,
+                    ElectionTypeMasterId = result.ResultDeclaration.ElectionTypeMasterId,
+                    ElectionType = result.ElectionTypeMaster.ElectionType,
+                    AssemblyMasterId = result.ResultDeclaration.AssemblyMasterId,
+                    AssemblyName = result.AssemblyMaster.AssemblyName,
+                    FourthLevelHMasterId = result.ResultDeclaration.FourthLevelHMasterId,
+                    FourthLevelName = result.FourthLevelH.HierarchyName,
+                    CandidateName = result.ResultDeclaration.CandidateName,
+                    FatherName = result.ResultDeclaration.FatherName,
+                    VoteMargin = result.ResultDeclaration.VoteMargin,
+                    ResultDecStatus = result.ResultDeclaration.ResultDecStatus
+                })
+                .ToListAsync();
+
+            return resultList;
+        }
+
+        public async Task<List<ResultDeclarationList>> GetDistrictWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId)
+        {
+            var resultList = await _context.ResultDeclaration
+                .Where(rd => rd.StateMasterId == stateMasterId &&
+                             rd.DistrictMasterId == districtMasterId &&
+                             rd.ElectionTypeMasterId == electionTypeMasterId)
+                .Join(_context.StateMaster,
+                      rd => rd.StateMasterId,
+                      sm => sm.StateMasterId,
+                      (rd, sm) => new { ResultDeclaration = rd, StateMaster = sm })
+                .Join(_context.DistrictMaster,
+                      joined => joined.ResultDeclaration.DistrictMasterId,
+                      dm => dm.DistrictMasterId,
+                      (joined, dm) => new { joined.ResultDeclaration, joined.StateMaster, DistrictMaster = dm })
+                .Join(_context.ElectionTypeMaster,
+                      joined => joined.ResultDeclaration.ElectionTypeMasterId,
+                      etm => etm.ElectionTypeMasterId,
+                      (joined, etm) => new { joined.ResultDeclaration, joined.StateMaster, joined.DistrictMaster, ElectionTypeMaster = etm })
+                .Select(result => new ResultDeclarationList
+                {
+                    ResultDeclarationMasterId = result.ResultDeclaration.ResultDeclarationMasterId,
+                    StateMasterId = result.ResultDeclaration.StateMasterId,
+                    StateName = result.StateMaster.StateName,
+                    DistrictMasterId = result.ResultDeclaration.DistrictMasterId,
+                    DistrictName = result.DistrictMaster.DistrictName,
+                    ElectionTypeMasterId = result.ResultDeclaration.ElectionTypeMasterId,
+                    ElectionType = result.ElectionTypeMaster.ElectionType,
+                    CandidateName = result.ResultDeclaration.CandidateName,
+                    FatherName = result.ResultDeclaration.FatherName,
+                    VoteMargin = result.ResultDeclaration.VoteMargin,
+                    ResultDecStatus = result.ResultDeclaration.ResultDecStatus
+                })
+                .ToListAsync();
+
+            return resultList;
+        }
+        #endregion
+
     }
 }
