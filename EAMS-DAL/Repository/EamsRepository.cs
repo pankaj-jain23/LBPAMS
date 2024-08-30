@@ -2915,6 +2915,223 @@ namespace EAMS_DAL.Repository
 
 
 
+        //public async Task<Response> UpdateBooth(BoothMaster boothMaster)
+        //{
+        //    if (boothMaster.BoothName != string.Empty)
+        //    {
+        //        var existingbooth = await _context.BoothMaster.FirstOrDefaultAsync(so => so.BoothMasterId == boothMaster.BoothMasterId);
+
+        //        if (existingbooth == null)
+        //        {
+        //            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Booth Record Not Found" };
+        //        }
+        //        else
+        //        {
+        //            if (boothMaster.Male + boothMaster.Female + boothMaster.Transgender == boothMaster.TotalVoters)
+        //            {
+        //                if (existingbooth != null)
+        //                {
+        //                    if (boothMaster.ElectionTypeMasterId != null)
+        //                    {
+        //                        var electionAssemblyTypeId = _context.AssemblyMaster
+        //                            .Where(s => s.AssemblyMasterId == boothMaster.AssemblyMasterId)
+        //                            .Select(s => s.ElectionTypeMasterId)
+        //                            .FirstOrDefault(); // Assuming you expect only one result or want the first one
+
+
+        //                        if (boothMaster.ElectionTypeMasterId == electionAssemblyTypeId)
+        //                        {
+        //                            var electionInfoRecord = _context.ElectionInfoMaster
+        //                                  .Where(d => d.StateMasterId == boothMaster.StateMasterId && d.DistrictMasterId == boothMaster.DistrictMasterId && d.AssemblyMasterId == boothMaster.AssemblyMasterId && d.BoothMasterId == boothMaster.BoothMasterId)
+        //                                .FirstOrDefault();
+
+        //                            //means election_info null,also booth not mapped
+        //                            if (electionInfoRecord == null && (existingbooth.AssignedTo == null || existingbooth.AssignedTo == ""))
+        //                            {
+        //                                if (boothMaster.BoothStatus == false)
+        //                                {
+        //                                    //check if Isprimary=true,update others false
+
+        //                                    existingbooth.LocationMasterId = null;
+        //                                    existingbooth.BoothName = boothMaster.BoothName;
+        //                                    existingbooth.BoothCode_No = boothMaster.BoothCode_No;
+        //                                    existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
+        //                                    existingbooth.Longitude = boothMaster.Longitude;
+        //                                    existingbooth.Latitude = boothMaster.Latitude;
+        //                                    existingbooth.BoothUpdatedAt = BharatDateTime();
+        //                                    existingbooth.TotalVoters = boothMaster.TotalVoters;
+        //                                    existingbooth.BoothStatus = boothMaster.BoothStatus;
+        //                                    existingbooth.Male = boothMaster.Male;
+        //                                    existingbooth.Female = boothMaster.Female;
+        //                                    existingbooth.Transgender = boothMaster.Transgender;
+
+        //                                    _context.BoothMaster.Update(existingbooth);
+        //                                    await _context.SaveChangesAsync();
+        //                                    return new Response { Status = RequestStatusEnum.OK, Message = "Booth Record Updated Sucessfully, and Booth is Unmapped from Location." };
+
+        //                                }
+
+
+        //                                else if (boothMaster.BoothStatus == true)
+
+        //                                {
+        //                                    var isassmblytrue = _context.AssemblyMaster.Any(s => s.AssemblyMasterId == boothMaster.AssemblyMasterId && s.AssemblyStatus == true);
+        //                                    if (isassmblytrue == false)
+        //                                    {
+        //                                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Assembly must be active and Booth Location can't be null in order to activate Booth." };
+
+        //                                    }
+        //                                    else
+        //                                    {
+        //                                        //check if Isprimary=true,update others false
+        //                                        existingbooth.BoothName = boothMaster.BoothName;
+        //                                        existingbooth.BoothCode_No = boothMaster.BoothCode_No;
+        //                                        existingbooth.Longitude = boothMaster.Longitude;
+        //                                        existingbooth.Latitude = boothMaster.Latitude;
+        //                                        existingbooth.BoothUpdatedAt = BharatDateTime();
+        //                                        existingbooth.TotalVoters = boothMaster.TotalVoters;
+        //                                        existingbooth.BoothStatus = boothMaster.BoothStatus;
+        //                                        existingbooth.Male = boothMaster.Male;
+        //                                        existingbooth.Female = boothMaster.Female;
+        //                                        existingbooth.Transgender = boothMaster.Transgender;
+        //                                        existingbooth.AssemblyMasterId = boothMaster.AssemblyMasterId;
+        //                                        existingbooth.DistrictMasterId = boothMaster.DistrictMasterId;
+        //                                        existingbooth.StateMasterId = boothMaster.StateMasterId;
+        //                                        _context.BoothMaster.Update(existingbooth);
+        //                                        await _context.SaveChangesAsync();
+
+        //                                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Booth Updated Successfully. Kindly Map your Booth Location." };
+
+
+        //                                    }
+        //                                }
+
+        //                                else
+        //                                {
+        //                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please Select Active/InActive Status" };
+
+        //                                }
+        //                            }
+
+        //                            //means info null, but booth mapped, that case 4 fields can editable--> changed method
+        //                            else if (electionInfoRecord == null && existingbooth.AssignedTo != null)
+        //                            {  // can update only 4 fields
+        //                                if (existingbooth.BoothName == boothMaster.BoothName && existingbooth.BoothCode_No == boothMaster.BoothCode_No &&
+        //                                    existingbooth.DistrictMasterId == boothMaster.DistrictMasterId && existingbooth.AssemblyMasterId == boothMaster.AssemblyMasterId
+        //                                    && existingbooth.BoothStatus == boothMaster.BoothStatus && existingbooth.BoothNoAuxy == boothMaster.BoothNoAuxy && existingbooth.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId)
+        //                                {
+
+        //                                    if (boothMaster.BoothStatus == false)
+        //                                    {
+        //                                        existingbooth.LocationMasterId = null;
+        //                                        existingbooth.BoothUpdatedAt = BharatDateTime();
+        //                                        existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
+        //                                        existingbooth.TotalVoters = boothMaster.TotalVoters;
+        //                                        existingbooth.Male = boothMaster.Male;
+        //                                        existingbooth.Female = boothMaster.Female;
+        //                                        existingbooth.Transgender = boothMaster.Transgender;
+        //                                        _context.BoothMaster.Update(existingbooth);
+        //                                        await _context.SaveChangesAsync();
+        //                                        //return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux Booth is Unmapped from Location and Booth is Inactive." };
+        //                                        return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux. Kindly Release Booth in order to update all fields" };
+
+        //                                    }
+        //                                    else if (boothMaster.BoothStatus == true)
+
+        //                                    {
+        //                                        var isassmblytrue = _context.AssemblyMaster.Any(s => s.AssemblyMasterId == boothMaster.AssemblyMasterId && s.AssemblyStatus == true);
+        //                                        if (isassmblytrue == false)
+        //                                        {
+        //                                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Assembly must be active and Booth Location can't be null in order to activate Booth." };
+
+        //                                        }
+        //                                        else
+        //                                        {
+
+
+        //                                            existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
+        //                                            existingbooth.BoothUpdatedAt = BharatDateTime();
+        //                                            existingbooth.TotalVoters = boothMaster.TotalVoters;
+        //                                            existingbooth.Male = boothMaster.Male;
+        //                                            existingbooth.Female = boothMaster.Female;
+        //                                            existingbooth.Transgender = boothMaster.Transgender;
+
+        //                                            _context.BoothMaster.Update(existingbooth);
+        //                                            await _context.SaveChangesAsync();
+        //                                            return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux. Kindly Release Booth in order to update all fields" };
+
+
+
+        //                                        }
+        //                                    }
+        //                                    else
+        //                                    {
+        //                                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please Select Active/InActive Status" };
+
+        //                                    }
+        //                                }
+        //                                else
+        //                                {
+        //                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = " Kindly Release Booth in order to update fields." };
+        //                                }
+        //                            }
+
+        //                            else if (electionInfoRecord != null)
+        //                            {
+        //                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Election Info Record found aganist this Booth, thus can't change status" };
+
+        //                            }
+        //                            else
+        //                            {
+        //                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Problem while Updating Booth" };
+
+        //                            }
+        //                        }
+        //                        else
+        //                        {
+        //                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "The election types of Booth and assembly are different." };
+
+        //                        }
+        //                    }
+        //                    else
+        //                    {
+        //                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Election Type Can't be Null" };
+
+        //                    }
+
+        //                    //end
+        //                }
+        //                else
+        //                {
+        //                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Booth record Not Found." };
+
+        //                }
+
+
+        //                //}
+        //                //else
+        //                //{
+        //                //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Booth with Same Code Already Exists in the State: " + string.Join(", ", isExist.Select(p => $"{p.BoothName} ({p.BoothCode_No})")) };
+        //                //}
+
+
+
+
+        //            }
+        //            else
+        //            {
+        //                return new Response { Status = RequestStatusEnum.BadRequest, Message = "The total sum of voters does not match the individual counts of Male, Female, and Transgender categories." };
+
+        //            }
+        //        }
+        //    }
+        //    else
+        //    {
+        //        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Booth Name cannot Be Empty" };
+
+        //    }
+
+        //}
         public async Task<Response> UpdateBooth(BoothMaster boothMaster)
         {
             if (boothMaster.BoothName != string.Empty)
@@ -2927,6 +3144,7 @@ namespace EAMS_DAL.Repository
                 }
                 else
                 {
+                  
                     if (boothMaster.Male + boothMaster.Female + boothMaster.Transgender == boothMaster.TotalVoters)
                     {
                         if (existingbooth != null)
@@ -2944,31 +3162,116 @@ namespace EAMS_DAL.Repository
                                     var electionInfoRecord = _context.ElectionInfoMaster
                                           .Where(d => d.StateMasterId == boothMaster.StateMasterId && d.DistrictMasterId == boothMaster.DistrictMasterId && d.AssemblyMasterId == boothMaster.AssemblyMasterId && d.BoothMasterId == boothMaster.BoothMasterId)
                                         .FirstOrDefault();
-
+                                    //check if booths of Gram Panchyat case
+                                    //{ 
                                     //means election_info null,also booth not mapped
                                     if (electionInfoRecord == null && (existingbooth.AssignedTo == null || existingbooth.AssignedTo == ""))
                                     {
                                         if (boothMaster.BoothStatus == false)
                                         {
                                             //check if Isprimary=true,update others false
+                                            if (boothMaster.ElectionTypeMasterId == 1)// for gram
+                                            {
+                                                var existingBooths = await _context.BoothMaster.Where(p =>
 
-                                            existingbooth.LocationMasterId = null;
-                                            existingbooth.BoothName = boothMaster.BoothName;
-                                            existingbooth.BoothCode_No = boothMaster.BoothCode_No;
-                                            existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
-                                            existingbooth.Longitude = boothMaster.Longitude;
-                                            existingbooth.Latitude = boothMaster.Latitude;
-                                            existingbooth.BoothUpdatedAt = BharatDateTime();
-                                            existingbooth.TotalVoters = boothMaster.TotalVoters;
-                                            existingbooth.BoothStatus = boothMaster.BoothStatus;
-                                            existingbooth.Male = boothMaster.Male;
-                                            existingbooth.Female = boothMaster.Female;
-                                            existingbooth.Transgender = boothMaster.Transgender;
+    p.StateMasterId == boothMaster.StateMasterId &&
+    p.AssemblyMasterId == boothMaster.AssemblyMasterId &&
+    p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId).ToListAsync();
 
-                                            _context.BoothMaster.Update(existingbooth);
-                                            await _context.SaveChangesAsync();
-                                            return new Response { Status = RequestStatusEnum.OK, Message = "Booth Record Updated Sucessfully, and Booth is Unmapped from Location." };
+                                                if (existingBooths.Any())
+                                                {
+                                                    if (existingBooths.Count > 0 && boothMaster.IsPrimaryBooth == true)
+                                                    {
+                                                        foreach (var boothrecord in existingBooths)
+                                                        {
+                                                            boothrecord.IsPrimaryBooth = false;
+                                                            _context.BoothMaster.Update(boothrecord);
+                                                        }
 
+                                                        // Update the single existing booth
+                                                        existingbooth.LocationMasterId = null;
+                                                        existingbooth.BoothName = boothMaster.BoothName;
+                                                        existingbooth.BoothCode_No = boothMaster.BoothCode_No;
+                                                        existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
+                                                        existingbooth.Longitude = boothMaster.Longitude;
+                                                        existingbooth.Latitude = boothMaster.Latitude;
+                                                        existingbooth.BoothUpdatedAt = BharatDateTime();
+                                                        existingbooth.TotalVoters = boothMaster.TotalVoters;
+                                                        existingbooth.BoothStatus = boothMaster.BoothStatus;
+                                                        existingbooth.Male = boothMaster.Male;
+                                                        existingbooth.Female = boothMaster.Female;
+                                                        existingbooth.Transgender = boothMaster.Transgender;
+                                                        existingbooth.IsPrimaryBooth = boothMaster.IsPrimaryBooth;
+                                                        _context.BoothMaster.Update(existingbooth);
+
+                                                        // Save all changes to the database
+                                                        await _context.SaveChangesAsync();
+
+                                                        return new Response { Status = RequestStatusEnum.OK, Message = "Booth Records Updated Successfully, and Booths are Unmapped from Location." };
+
+                                                    }
+                                                    else
+                                                    {
+                                                        existingbooth.LocationMasterId = null;
+                                                        existingbooth.BoothName = boothMaster.BoothName;
+                                                        existingbooth.BoothCode_No = boothMaster.BoothCode_No;
+                                                        existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
+                                                        existingbooth.Longitude = boothMaster.Longitude;
+                                                        existingbooth.Latitude = boothMaster.Latitude;
+                                                        existingbooth.BoothUpdatedAt = BharatDateTime();
+                                                        existingbooth.TotalVoters = boothMaster.TotalVoters;
+                                                        existingbooth.BoothStatus = boothMaster.BoothStatus;
+                                                        existingbooth.Male = boothMaster.Male;
+                                                        existingbooth.Female = boothMaster.Female;
+                                                        existingbooth.Transgender = boothMaster.Transgender;
+                                                        existingbooth.IsPrimaryBooth = boothMaster.IsPrimaryBooth;
+                                                        _context.BoothMaster.Update(existingbooth);
+                                                        await _context.SaveChangesAsync();
+                                                        return new Response { Status = RequestStatusEnum.OK, Message = "Booth Record Updated Sucessfully, and Booth is Unmapped from Location." };
+
+                                                    }
+
+
+                                                }
+                                                else
+                                                {
+                                                    existingbooth.LocationMasterId = null;
+                                                    existingbooth.BoothName = boothMaster.BoothName;
+                                                    existingbooth.BoothCode_No = boothMaster.BoothCode_No;
+                                                    existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
+                                                    existingbooth.Longitude = boothMaster.Longitude;
+                                                    existingbooth.Latitude = boothMaster.Latitude;
+                                                    existingbooth.BoothUpdatedAt = BharatDateTime();
+                                                    existingbooth.TotalVoters = boothMaster.TotalVoters;
+                                                    existingbooth.BoothStatus = boothMaster.BoothStatus;
+                                                    existingbooth.Male = boothMaster.Male;
+                                                    existingbooth.Female = boothMaster.Female;
+                                                    existingbooth.Transgender = boothMaster.Transgender;
+                                                    existingbooth.IsPrimaryBooth = boothMaster.IsPrimaryBooth;
+                                                    _context.BoothMaster.Update(existingbooth);
+                                                    await _context.SaveChangesAsync();
+                                                    return new Response { Status = RequestStatusEnum.OK, Message = "Booth Record Updated Sucessfully, and Booth is Unmapped from Location." };
+                                                }
+                                            }
+                                            else
+                                            {
+                                                existingbooth.LocationMasterId = null;
+                                                existingbooth.BoothName = boothMaster.BoothName;
+                                                existingbooth.BoothCode_No = boothMaster.BoothCode_No;
+                                                existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
+                                                existingbooth.Longitude = boothMaster.Longitude;
+                                                existingbooth.Latitude = boothMaster.Latitude;
+                                                existingbooth.BoothUpdatedAt = BharatDateTime();
+                                                existingbooth.TotalVoters = boothMaster.TotalVoters;
+                                                existingbooth.BoothStatus = boothMaster.BoothStatus;
+                                                existingbooth.Male = boothMaster.Male;
+                                                existingbooth.Female = boothMaster.Female;
+                                                existingbooth.Transgender = boothMaster.Transgender;
+                                                existingbooth.IsPrimaryBooth = boothMaster.IsPrimaryBooth;
+                                                _context.BoothMaster.Update(existingbooth);
+                                                await _context.SaveChangesAsync();
+                                                return new Response { Status = RequestStatusEnum.OK, Message = "Booth Record Updated Sucessfully, and Booth is Unmapped from Location." };
+                                            }
                                         }
 
 
@@ -2984,23 +3287,114 @@ namespace EAMS_DAL.Repository
                                             else
                                             {
                                                 //check if Isprimary=true,update others false
-                                                existingbooth.BoothName = boothMaster.BoothName;
-                                                existingbooth.BoothCode_No = boothMaster.BoothCode_No;
-                                                existingbooth.Longitude = boothMaster.Longitude;
-                                                existingbooth.Latitude = boothMaster.Latitude;
-                                                existingbooth.BoothUpdatedAt = BharatDateTime();
-                                                existingbooth.TotalVoters = boothMaster.TotalVoters;
-                                                existingbooth.BoothStatus = boothMaster.BoothStatus;
-                                                existingbooth.Male = boothMaster.Male;
-                                                existingbooth.Female = boothMaster.Female;
-                                                existingbooth.Transgender = boothMaster.Transgender;
-                                                existingbooth.AssemblyMasterId = boothMaster.AssemblyMasterId;
-                                                existingbooth.DistrictMasterId = boothMaster.DistrictMasterId;
-                                                existingbooth.StateMasterId = boothMaster.StateMasterId;
-                                                _context.BoothMaster.Update(existingbooth);
-                                                await _context.SaveChangesAsync();
+                                                if (boothMaster.ElectionTypeMasterId == 1)// for gram
+                                                {
+                                                    var existingBooths = await _context.BoothMaster.Where(p =>
 
-                                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Booth Updated Successfully. Kindly Map your Booth Location." };
+        p.StateMasterId == boothMaster.StateMasterId &&
+        p.AssemblyMasterId == boothMaster.AssemblyMasterId &&
+        p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId).ToListAsync();
+
+                                                    if (existingBooths.Any())
+                                                    {
+                                                        if (existingBooths.Count > 0 && boothMaster.IsPrimaryBooth == true)
+                                                        {
+                                                            foreach (var boothrecord in existingBooths)
+                                                            {
+                                                                boothrecord.IsPrimaryBooth = false;
+                                                                _context.BoothMaster.Update(boothrecord);
+                                                            }
+
+                                                            existingbooth.BoothName = boothMaster.BoothName;
+                                                            existingbooth.BoothCode_No = boothMaster.BoothCode_No;
+                                                            existingbooth.Longitude = boothMaster.Longitude;
+                                                            existingbooth.Latitude = boothMaster.Latitude;
+                                                            existingbooth.BoothUpdatedAt = BharatDateTime();
+                                                            existingbooth.TotalVoters = boothMaster.TotalVoters;
+                                                            existingbooth.BoothStatus = boothMaster.BoothStatus;
+                                                            existingbooth.Male = boothMaster.Male;
+                                                            existingbooth.Female = boothMaster.Female;
+                                                            existingbooth.Transgender = boothMaster.Transgender;
+                                                            existingbooth.AssemblyMasterId = boothMaster.AssemblyMasterId;
+                                                            existingbooth.DistrictMasterId = boothMaster.DistrictMasterId;
+                                                            existingbooth.StateMasterId = boothMaster.StateMasterId;
+                                                            _context.BoothMaster.Update(existingbooth);
+                                                            await _context.SaveChangesAsync();
+
+                                                            return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated Successfully. Kindly Map your Booth Location." };
+
+
+                                                        }
+                                                        else
+                                                        {
+                                                            existingbooth.BoothName = boothMaster.BoothName;
+                                                            existingbooth.BoothCode_No = boothMaster.BoothCode_No;
+                                                            existingbooth.Longitude = boothMaster.Longitude;
+                                                            existingbooth.Latitude = boothMaster.Latitude;
+                                                            existingbooth.BoothUpdatedAt = BharatDateTime();
+                                                            existingbooth.TotalVoters = boothMaster.TotalVoters;
+                                                            existingbooth.BoothStatus = boothMaster.BoothStatus;
+                                                            existingbooth.Male = boothMaster.Male;
+                                                            existingbooth.Female = boothMaster.Female;
+                                                            existingbooth.Transgender = boothMaster.Transgender;
+                                                            existingbooth.AssemblyMasterId = boothMaster.AssemblyMasterId;
+                                                            existingbooth.DistrictMasterId = boothMaster.DistrictMasterId;
+                                                            existingbooth.StateMasterId = boothMaster.StateMasterId;
+                                                            _context.BoothMaster.Update(existingbooth);
+                                                            await _context.SaveChangesAsync();
+
+                                                            return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated Successfully. Kindly Map your Booth Location." };
+
+
+                                                        }
+
+
+                                                    }
+                                                    else
+                                                    {
+                                                        existingbooth.BoothName = boothMaster.BoothName;
+                                                        existingbooth.BoothCode_No = boothMaster.BoothCode_No;
+                                                        existingbooth.Longitude = boothMaster.Longitude;
+                                                        existingbooth.Latitude = boothMaster.Latitude;
+                                                        existingbooth.BoothUpdatedAt = BharatDateTime();
+                                                        existingbooth.TotalVoters = boothMaster.TotalVoters;
+                                                        existingbooth.BoothStatus = boothMaster.BoothStatus;
+                                                        existingbooth.Male = boothMaster.Male;
+                                                        existingbooth.Female = boothMaster.Female;
+                                                        existingbooth.Transgender = boothMaster.Transgender;
+                                                        existingbooth.AssemblyMasterId = boothMaster.AssemblyMasterId;
+                                                        existingbooth.DistrictMasterId = boothMaster.DistrictMasterId;
+                                                        existingbooth.StateMasterId = boothMaster.StateMasterId;
+                                                        existingbooth.IsPrimaryBooth = boothMaster.IsPrimaryBooth;
+                                                        _context.BoothMaster.Update(existingbooth);
+                                                        await _context.SaveChangesAsync();
+
+                                                        return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated Successfully. Kindly Map your Booth Location." };
+
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    existingbooth.BoothName = boothMaster.BoothName;
+                                                    existingbooth.BoothCode_No = boothMaster.BoothCode_No;
+                                                    existingbooth.Longitude = boothMaster.Longitude;
+                                                    existingbooth.Latitude = boothMaster.Latitude;
+                                                    existingbooth.BoothUpdatedAt = BharatDateTime();
+                                                    existingbooth.TotalVoters = boothMaster.TotalVoters;
+                                                    existingbooth.BoothStatus = boothMaster.BoothStatus;
+                                                    existingbooth.Male = boothMaster.Male;
+                                                    existingbooth.Female = boothMaster.Female;
+                                                    existingbooth.Transgender = boothMaster.Transgender;
+                                                    existingbooth.AssemblyMasterId = boothMaster.AssemblyMasterId;
+                                                    existingbooth.DistrictMasterId = boothMaster.DistrictMasterId;
+                                                    existingbooth.StateMasterId = boothMaster.StateMasterId;
+                                                    _context.BoothMaster.Update(existingbooth);
+                                                    await _context.SaveChangesAsync();
+
+                                                    return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated Successfully. Kindly Map your Booth Location." };
+
+                                                }
+
 
 
                                             }
@@ -3023,17 +3417,84 @@ namespace EAMS_DAL.Repository
 
                                             if (boothMaster.BoothStatus == false)
                                             {
-                                                existingbooth.LocationMasterId = null;
-                                                existingbooth.BoothUpdatedAt = BharatDateTime();
-                                                existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
-                                                existingbooth.TotalVoters = boothMaster.TotalVoters;
-                                                existingbooth.Male = boothMaster.Male;
-                                                existingbooth.Female = boothMaster.Female;
-                                                existingbooth.Transgender = boothMaster.Transgender;
-                                                _context.BoothMaster.Update(existingbooth);
-                                                await _context.SaveChangesAsync();
-                                                //return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux Booth is Unmapped from Location and Booth is Inactive." };
-                                                return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux. Kindly Release Booth in order to update all fields" };
+                                                //check if Isprimary=true,update others false
+                                                if (boothMaster.ElectionTypeMasterId == 1)// for gram
+                                                {
+                                                    var existingBooths = await _context.BoothMaster.Where(p =>
+
+        p.StateMasterId == boothMaster.StateMasterId &&
+        p.AssemblyMasterId == boothMaster.AssemblyMasterId &&
+        p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId).ToListAsync();
+
+                                                    if (existingBooths.Any())
+                                                    {
+                                                        if (existingBooths.Count > 0 && boothMaster.IsPrimaryBooth == true)
+                                                        {
+                                                            foreach (var boothrecord in existingBooths)
+                                                            {
+                                                                boothrecord.IsPrimaryBooth = false;
+                                                                _context.BoothMaster.Update(boothrecord);
+                                                            }
+                                                            existingbooth.LocationMasterId = null;
+                                                            existingbooth.BoothUpdatedAt = BharatDateTime();
+                                                            existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
+                                                            existingbooth.TotalVoters = boothMaster.TotalVoters;
+                                                            existingbooth.Male = boothMaster.Male;
+                                                            existingbooth.Female = boothMaster.Female;
+                                                            existingbooth.Transgender = boothMaster.Transgender;
+                                                            _context.BoothMaster.Update(existingbooth);
+                                                            await _context.SaveChangesAsync();
+                                                            //return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux Booth is Unmapped from Location and Booth is Inactive." };
+                                                            return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux. Kindly Release Booth in order to update all fields" };
+
+                                                        }
+                                                        else
+                                                        {
+                                                            existingbooth.LocationMasterId = null;
+                                                            existingbooth.BoothUpdatedAt = BharatDateTime();
+                                                            existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
+                                                            existingbooth.TotalVoters = boothMaster.TotalVoters;
+                                                            existingbooth.Male = boothMaster.Male;
+                                                            existingbooth.Female = boothMaster.Female;
+                                                            existingbooth.Transgender = boothMaster.Transgender;
+                                                            _context.BoothMaster.Update(existingbooth);
+                                                            await _context.SaveChangesAsync();
+                                                            //return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux Booth is Unmapped from Location and Booth is Inactive." };
+                                                            return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux. Kindly Release Booth in order to update all fields" };
+
+                                                        }
+
+
+                                                    }
+                                                    else
+                                                    {
+                                                        existingbooth.LocationMasterId = null;
+                                                        existingbooth.BoothUpdatedAt = BharatDateTime();
+                                                        existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
+                                                        existingbooth.TotalVoters = boothMaster.TotalVoters;
+                                                        existingbooth.Male = boothMaster.Male;
+                                                        existingbooth.Female = boothMaster.Female;
+                                                        existingbooth.Transgender = boothMaster.Transgender;
+                                                        _context.BoothMaster.Update(existingbooth);
+                                                        await _context.SaveChangesAsync();
+                                                        //return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux Booth is Unmapped from Location and Booth is Inactive." };
+                                                        return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux. Kindly Release Booth in order to update all fields" };
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    existingbooth.LocationMasterId = null;
+                                                    existingbooth.BoothUpdatedAt = BharatDateTime();
+                                                    existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
+                                                    existingbooth.TotalVoters = boothMaster.TotalVoters;
+                                                    existingbooth.Male = boothMaster.Male;
+                                                    existingbooth.Female = boothMaster.Female;
+                                                    existingbooth.Transgender = boothMaster.Transgender;
+                                                    _context.BoothMaster.Update(existingbooth);
+                                                    await _context.SaveChangesAsync();
+                                                    //return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux Booth is Unmapped from Location and Booth is Inactive." };
+                                                    return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux. Kindly Release Booth in order to update all fields" };
+                                                }
 
                                             }
                                             else if (boothMaster.BoothStatus == true)
@@ -3047,18 +3508,84 @@ namespace EAMS_DAL.Repository
                                                 }
                                                 else
                                                 {
+                                                    //check if Isprimary=true,update others false
+                                                    if (boothMaster.ElectionTypeMasterId == 1)// for gram
+                                                    {
+                                                        var existingBooths = await _context.BoothMaster.Where(p =>
+
+            p.StateMasterId == boothMaster.StateMasterId &&
+            p.AssemblyMasterId == boothMaster.AssemblyMasterId &&
+            p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId).ToListAsync();
+
+                                                        if (existingBooths.Any())
+                                                        {
+                                                            if (existingBooths.Count > 0 && boothMaster.IsPrimaryBooth == true)
+                                                            {
+                                                                foreach (var boothrecord in existingBooths)
+                                                                {
+                                                                    boothrecord.IsPrimaryBooth = false;
+                                                                    _context.BoothMaster.Update(boothrecord);
+                                                                }
+                                                                existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
+                                                                existingbooth.BoothUpdatedAt = BharatDateTime();
+                                                                existingbooth.TotalVoters = boothMaster.TotalVoters;
+                                                                existingbooth.Male = boothMaster.Male;
+                                                                existingbooth.Female = boothMaster.Female;
+                                                                existingbooth.Transgender = boothMaster.Transgender;
+                                                                existingbooth.IsPrimaryBooth = boothMaster.IsPrimaryBooth;
+                                                                _context.BoothMaster.Update(existingbooth);
+                                                                await _context.SaveChangesAsync();
+                                                                return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux. Kindly Release Booth in order to update all fields" };
+
+                                                            }
+                                                            else
+                                                            {
+                                                                existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
+                                                                existingbooth.BoothUpdatedAt = BharatDateTime();
+                                                                existingbooth.TotalVoters = boothMaster.TotalVoters;
+                                                                existingbooth.Male = boothMaster.Male;
+                                                                existingbooth.Female = boothMaster.Female;
+                                                                existingbooth.Transgender = boothMaster.Transgender;
+                                                                existingbooth.IsPrimaryBooth = boothMaster.IsPrimaryBooth;
+                                                                _context.BoothMaster.Update(existingbooth);
+                                                                await _context.SaveChangesAsync();
+                                                                return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux. Kindly Release Booth in order to update all fields" };
 
 
-                                                    existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
-                                                    existingbooth.BoothUpdatedAt = BharatDateTime();
-                                                    existingbooth.TotalVoters = boothMaster.TotalVoters;
-                                                    existingbooth.Male = boothMaster.Male;
-                                                    existingbooth.Female = boothMaster.Female;
-                                                    existingbooth.Transgender = boothMaster.Transgender;
+                                                            }
 
-                                                    _context.BoothMaster.Update(existingbooth);
-                                                    await _context.SaveChangesAsync();
-                                                    return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux. Kindly Release Booth in order to update all fields" };
+
+                                                        }
+                                                        else
+                                                        {
+                                                            existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
+                                                            existingbooth.BoothUpdatedAt = BharatDateTime();
+                                                            existingbooth.TotalVoters = boothMaster.TotalVoters;
+                                                            existingbooth.Male = boothMaster.Male;
+                                                            existingbooth.Female = boothMaster.Female;
+                                                            existingbooth.Transgender = boothMaster.Transgender;
+
+                                                            _context.BoothMaster.Update(existingbooth);
+                                                            await _context.SaveChangesAsync();
+                                                            return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux. Kindly Release Booth in order to update all fields" };
+
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
+                                                        existingbooth.BoothUpdatedAt = BharatDateTime();
+                                                        existingbooth.TotalVoters = boothMaster.TotalVoters;
+                                                        existingbooth.Male = boothMaster.Male;
+                                                        existingbooth.Female = boothMaster.Female;
+                                                        existingbooth.Transgender = boothMaster.Transgender;
+                                                        existingbooth.IsPrimaryBooth = boothMaster.IsPrimaryBooth;
+                                                        _context.BoothMaster.Update(existingbooth);
+                                                        await _context.SaveChangesAsync();
+                                                        return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux. Kindly Release Booth in order to update all fields" };
+
+                                                    }
+
 
 
 
@@ -3078,7 +3605,61 @@ namespace EAMS_DAL.Repository
 
                                     else if (electionInfoRecord != null)
                                     {
-                                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Election Info Record found aganist this Booth, thus can't change status" };
+                                        //allow editing of isprimary only
+
+                                        //return new Response { Status = RequestStatusEnum.BadRequest, Message = "Election Info Record found aganist this Booth, thus can't change status" };
+                                        if (boothMaster.ElectionTypeMasterId == 1)// for gram
+                                        {
+                                            var existingBooths = await _context.BoothMaster.Where(p =>
+
+p.StateMasterId == boothMaster.StateMasterId &&
+p.AssemblyMasterId == boothMaster.AssemblyMasterId &&
+p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId).ToListAsync();
+
+                                            if (existingBooths.Any())
+                                            {
+                                                if (existingBooths.Count > 0 && boothMaster.IsPrimaryBooth == true)
+                                                {
+                                                    foreach (var boothrecord in existingBooths)
+                                                    {
+                                                        boothrecord.IsPrimaryBooth = false;
+                                                        _context.BoothMaster.Update(boothrecord);
+                                                    }
+                                                    existingbooth.IsPrimaryBooth = boothMaster.IsPrimaryBooth;
+
+                                                    _context.BoothMaster.Update(existingbooth);
+                                                    await _context.SaveChangesAsync();
+                                                    return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux. Kindly Release Booth in order to update all fields" };
+
+                                                }
+                                                else
+                                                {
+                                                    existingbooth.IsPrimaryBooth = boothMaster.IsPrimaryBooth;
+
+                                                    _context.BoothMaster.Update(existingbooth);
+                                                    await _context.SaveChangesAsync();
+                                                    return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux. Kindly Release Booth in order to update all fields" };
+
+
+                                                }
+
+
+                                            }
+                                            else
+                                            {
+                                                existingbooth.IsPrimaryBooth = boothMaster.IsPrimaryBooth;
+                                                _context.BoothMaster.Update(existingbooth);
+                                                await _context.SaveChangesAsync();
+                                                return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux. Kindly Release Booth in order to update all fields" };
+
+                                            }
+                                        }
+                                        else
+                                        {
+                                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Election Info Record found aganist this Booth, thus can't change status" };
+
+                                        }
+
 
                                     }
                                     else
@@ -3086,6 +3667,8 @@ namespace EAMS_DAL.Repository
                                         return new Response { Status = RequestStatusEnum.BadRequest, Message = "Problem while Updating Booth" };
 
                                     }
+                                //}
+
                                 }
                                 else
                                 {
