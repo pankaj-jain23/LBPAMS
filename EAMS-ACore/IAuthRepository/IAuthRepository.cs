@@ -29,7 +29,7 @@ namespace EAMS_ACore.IAuthRepository
         Task<ServiceResponse> CreateSOPin(CreateSOPin createSOPin, string soId);
         Task<SectorOfficerMaster> GetSOById(int soId);
         Task<DashBoardProfile> GetDashboardProfile(string userId, int? stateMasterId);
-        Task<List<UserState>> GetUserMaster(string userId);
+   
         Task<ServiceResponse> UpdateDashboardProfile(string userId, UpdateDashboardProfile updateDashboardProfile);
         Task<List<AssemblyMaster>> GetAssemblyByDistrictId(string stateMasterid, string districtMasterId);
         Task<List<ParliamentConstituencyMaster>> GetPCList(string stateMasterId);

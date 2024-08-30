@@ -4,13 +4,9 @@ namespace EAMS.AuthViewModels
 {
     public class GetRefreshTokenViewModel
     {
-        public GetAccessTokenViewModel AccessToken { get; set; }
+        public string? AccessToken { get; set; }
         [Required]
-        public string RefreshToken { get; set; }
+        public string? RefreshToken { get; set; }
     }
-    public class GetAccessTokenViewModel
-    {
-        public string? LSToken { get; set; }
-        public string? VSToken { get; set; }
-    }
+   
 }

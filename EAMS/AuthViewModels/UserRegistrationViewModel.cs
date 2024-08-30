@@ -5,7 +5,26 @@ namespace EAMS.AuthViewModels
     public class UserRegistrationViewModel
     {
         public int? ElectionTypeMasterId { get; set; }
-        public List<StateViewModel> UserStates { get; set; }
+        public int? StateMasterId
+        {
+            get;
+            set;
+        }
+        public int? DistrictMasterId
+        {
+            get;
+            set;
+        }
+        public int? AssemblyMasterId
+        {
+            get;
+            set;
+        }
+        public int? FourthLevelHMasterId
+        {
+            get;
+            set;
+        }
 
         [Required(ErrorMessage = "PhoneNumber is required")]
         public string PhoneNumber { get; set; }
@@ -25,32 +44,5 @@ namespace EAMS.AuthViewModels
             set;
         }
     }
-    public class StateViewModel
-    {
-        public int StateMasterId { get; set; }
-        public List<DistrictViewModel> Districts { get; set; }
-        public List<PCConstituencyViewModel> PCConstituencies { get; set; }
-    }
 
-    public class DistrictViewModel
-    {
-        public int DistrictMasterId { get; set; }
-        public List<AssemblyViewModel> Assemblies { get; set; }
-    }
-    public class PCConstituencyViewModel
-    {
-        public int PCMasterId { get; set; }
-        public List<AssemblyViewModel> Assemblies { get; set; }
-    }
-    public class AssemblyViewModel
-    {
-        public int AssemblyMasterId { get; set; }
-        public List<PSZoneViewModel> PSZone { get; set; }
-    }
-
-    public class PSZoneViewModel
-    {
-
-        public int PSZoneMasterId { get; set; }
-    }
 }

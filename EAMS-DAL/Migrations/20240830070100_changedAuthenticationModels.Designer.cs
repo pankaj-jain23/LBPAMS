@@ -3,6 +3,7 @@ using System;
 using EAMS_DAL.DBContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EAMS_DAL.Migrations
 {
     [DbContext(typeof(EamsContext))]
-    partial class EamsContextModelSnapshot : ModelSnapshot
+    [Migration("20240830070100_changedAuthenticationModels")]
+    partial class changedAuthenticationModels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1645,60 +1648,6 @@ namespace EAMS_DAL.Migrations
                     b.HasKey("KycMasterId");
 
                     b.ToTable("Kyc");
-                });
-
-            modelBuilder.Entity("EAMS_ACore.Models.PublicModels.ResultDeclaration", b =>
-                {
-                    b.Property<int>("ResultDeclarationMasterId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ResultDeclarationMasterId"));
-
-                    b.Property<int?>("AssemblyMasterId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("CandidateName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int?>("DistrictMasterId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("ElectionTypeMasterId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("FatherName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int?>("FourthLevelHMasterId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("GPPanchayatWardsMasterId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("ResultDecCreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("ResultDecDeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("ResultDecStatus")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("ResultDecUpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("StateMasterId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("VoteMargin")
-                        .HasColumnType("text");
-
-                    b.HasKey("ResultDeclarationMasterId");
-
-                    b.ToTable("ResultDeclaration");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.PublicModels.UnOpposed", b =>

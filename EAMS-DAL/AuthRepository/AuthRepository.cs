@@ -258,143 +258,6 @@ namespace EAMS_DAL.AuthRepository
                 var isExist = await _roleManager.Roles.Where(r => roleIds.Contains(r.Id)).ToListAsync();
                 if (isExist.Count > 0)
                 {
-                    foreach (var userState in userRegistration.UserStates)
-                    {
-                        if (isExist.Any(d => d.Name.Contains("ECI") || d.Name.Contains("SuperAdmin") || d.Name.Contains("StateAdmin")))
-                        {
-                            var districtList = _context.DistrictMaster.OrderBy(d => d.DistrictMasterId)
-                                                    .Where(d => d.StateMasterId == userState.StateMasterId)
-                                                    .Select(d => new UserDistrict
-                                                    {
-                                                        DistrictMasterId = d.DistrictMasterId,
-                                                    })
-                                                    .ToList();
-                            var pcList = _context.ParliamentConstituencyMaster.OrderBy(d => d.PCMasterId)
-                                                      .Where(d => d.StateMasterId == userState.StateMasterId)
-                                                      .Select(d => new UserPCConstituency
-                                                      {
-                                                          PCMasterId = d.PCMasterId,
-                                                      })
-                                                      .ToList();
-
-                            var matchingUserState = userRegistration.UserStates.FirstOrDefault(us => us.StateMasterId == userState.StateMasterId);
-
-                            if (matchingUserState != null)
-                            {
-                                matchingUserState.UserDistrict = districtList;
-                                matchingUserState.UserPCConstituency = pcList;
-                            }
-
-                        }
-
-                        if (isExist.Any(d => d.Name.Contains("DistrictAdmin")))
-                        {
-                            foreach (var district in userState.UserDistrict)
-                            {
-                                var assemblieList = _context.AssemblyMaster.OrderBy(d => d.AssemblyMasterId)
-                                    .Where(d => d.StateMasterId == userState.StateMasterId && d.DistrictMasterId == district.DistrictMasterId)
-                                    .Select(d => new UserAssembly
-                                    {
-                                        AssemblyMasterId = d.AssemblyMasterId,
-                                        // Set other properties as needed
-                                    })
-                                    .ToList();
-
-                                var matchingUserState = userRegistration.UserStates.FirstOrDefault(us => us.StateMasterId == userState.StateMasterId);
-
-                                if (matchingUserState != null)
-                                {
-                                    foreach (var assemblie in matchingUserState.UserDistrict)
-                                    {
-                                        // Create a list of UserAssembly from the list of AssemblyMaster
-                                        var userAssemblyList = assemblieList.Select(assembly => new UserAssembly
-                                        {
-                                            AssemblyMasterId = assembly.AssemblyMasterId,
-                                            // Set other properties as needed
-                                        }).ToList();
-
-                                        // Assign the list of UserAssembly to the UserAssembly property
-                                        assemblie.UserAssembly = userAssemblyList;
-                                    }
-                                }
-                            }
-                        }
-
-                        if (isExist.Any(d => d.Name.Contains("PC")))
-                        {
-                            foreach (var pc in userState.UserPCConstituency)
-                            {
-                                var assemblieList = _context.AssemblyMaster.OrderBy(d => d.AssemblyMasterId)
-                                    .Where(d => d.StateMasterId == userState.StateMasterId && d.PCMasterId == pc.PCMasterId)
-                                    .Select(d => new UserAssembly
-                                    {
-                                        AssemblyMasterId = d.AssemblyMasterId,
-                                        // Set other properties as needed
-                                    })
-                                    .ToList();
-
-                                var matchingUserState = userRegistration.UserStates.FirstOrDefault(us => us.StateMasterId == userState.StateMasterId);
-
-                                if (matchingUserState != null)
-                                {
-                                    foreach (var assemblie in matchingUserState.UserPCConstituency)
-                                    {
-                                        // Create a list of UserAssembly from the list of AssemblyMaster
-                                        var userAssemblyList = assemblieList.Select(assembly => new UserAssembly
-                                        {
-                                            AssemblyMasterId = assembly.AssemblyMasterId,
-                                            // Set other properties as needed
-                                        }).ToList();
-
-                                        // Assign the list of UserAssembly to the UserAssembly property
-                                        assemblie.UserAssembly = userAssemblyList;
-                                    }
-                                }
-                            }
-                        }
-
-                        if (isExist.Any(d => d.Name.Contains("ARO")))
-                        {
-
-                            foreach (var district in userState.UserDistrict)
-                            {
-                                if (district.DistrictMasterId == 0)
-                                {
-                                    district.UserAssembly = null;
-                                    userState.UserDistrict = null;
-                                }
-
-                            }
-                            foreach (var district in userState.UserPCConstituency)
-                            {
-                                if (district.PCMasterId == 0)
-                                {
-                                    district.UserAssembly = null;
-                                    userState.UserPCConstituency = null;
-                                }
-                            }
-
-                        }
-                        if (isExist.Any(d => d.Name.Contains("PSZone")))
-                        {
-
-                            foreach (var district in userState.UserDistrict)
-                            {
-                                foreach (var assembly in district.UserAssembly)
-                                {
-                                    if (assembly.AssemblyMasterId != 0)
-                                    {
-
-                                        userState.UserPCConstituency = null;
-                                    }
-                                }
-
-                            }
-
-
-                        }
-
-                    }
 
 
                     var createUserResult = await _userManager.CreateAsync(userRegistration, userRegistration.PasswordHash);
@@ -452,16 +315,7 @@ namespace EAMS_DAL.AuthRepository
             }
             catch (DbUpdateException ex)
             {
-                // Log the exception details for investigation
-                foreach (var entry in ex.Entries)
-                {
-                    Console.WriteLine($"Entity Type: {entry.Entity.GetType().Name}");
-                    Console.WriteLine($"Entity State: {entry.State}");
-                    Console.WriteLine($"Original Values: {string.Join(", ", entry.OriginalValues.Properties.Select(p => $"{p.Name}: {entry.OriginalValues[p]}"))}");
-                    Console.WriteLine($"Current Values: {string.Join(", ", entry.CurrentValues.Properties.Select(p => $"{p.Name}: {entry.CurrentValues[p]}"))}");
-
-                    // Log entry details, such as entry.State, entry.OriginalValues, entry.CurrentValues, etc.
-                }
+                
 
                 return new ServiceResponse()
                 {
@@ -506,6 +360,7 @@ namespace EAMS_DAL.AuthRepository
 
         }
         #endregion
+
         #region  DeleteUser
         // public async Task<ServiceResponse> DeleteUser(UserRegistration userRegistration)
         public async Task<ServiceResponse> DeleteUser(string userId)
@@ -530,31 +385,6 @@ namespace EAMS_DAL.AuthRepository
                     }
 
 
-
-                    // Retrieve related user states
-                    var userStates = await _context.UserState
-                        .Where(us => us.Id == userId).ToListAsync();
-
-                    if (!userStates.Any())
-                    {
-                        return new ServiceResponse
-                        {
-                            IsSucceed = false,
-                            Message = "No related user states found!"
-                        };
-                    }
-
-                    // Extract IDs
-                    var userStateIds = userStates.Select(us => us.UserStateId).FirstOrDefault();
-
-                    // Retrieve related user districts
-                    var userDistricts = await _context.UserDistrict.Where(ud => ud.UserStateId == userStateIds).Include(d => d.UserAssembly).ThenInclude(d => d.UserPSZone).ToListAsync();
-                    var userPc = await _context.UserPCConstituency.Where(ud => ud.UserStateId == userStateIds).Include(d => d.UserAssembly).ThenInclude(d => d.UserPSZone).ToListAsync();
-                    var userDistrictAseemblyZone = userDistricts.SelectMany(d => d.UserAssembly.Where(ud => ud.UserPSZone != null)).FirstOrDefault();
-                    _context.UserDistrict.RemoveRange(userDistricts);
-                    _context.UserPCConstituency.RemoveRange(userPc);
-                    //_context.UserPSZone.Remove(userDistrictAseemblyZone.user);
-                    // find any mapping of this user with Booths, electioninfo activity performed
                     // Delete the user
                     var result = await _userManager.DeleteAsync(userRecord);
                     if (!result.Succeeded)
@@ -714,31 +544,6 @@ namespace EAMS_DAL.AuthRepository
         #endregion
 
         #region GetDashboardProfile && UpdateDashboardProfile
-        public async Task<List<UserState>> GetUserMaster(string userId)
-        {
-            var userRecord = await _userManager.FindByIdAsync(userId);
-
-            if (userRecord != null)
-            {
-                var userSubDetails = await _context.UserState.Where(u => u.Id == userId)
-                    .Include(u => u.UserDistrict)
-                        .ThenInclude(d => d.UserAssembly).ThenInclude(d => d.UserPSZone)
-                    .Include(u => u.UserPCConstituency)
-                        .ThenInclude(pc => pc.UserAssembly)
-                    .ToListAsync();
-
-
-
-
-
-
-                return userSubDetails;
-            }
-            else
-            {
-                return null; // Return null when userRecord is null
-            }
-        }
 
         public async Task<DashBoardProfile> GetDashboardProfile(string userId, int? stateMasterId)
         {
@@ -749,53 +554,32 @@ namespace EAMS_DAL.AuthRepository
                 return null; // Return null when userRecord is null
             }
 
-            var userSubDetails = await _context.UserState
-                .Include(u => u.UserDistrict)
-                    .ThenInclude(d => d.UserAssembly)
-                .Include(u => u.UserPCConstituency)
-                    .ThenInclude(pc => pc.UserAssembly)
-                .FirstOrDefaultAsync(u => u.Id == userId && u.StateMasterId == stateMasterId);
-
             var roles = await _userManager.GetRolesAsync(userRecord);
             var rolesList = roles.ToList();
+            var state = _context.StateMaster.Include(d => d.DistrictMasters)
+      .Include(d => d.DistrictMasters.Select(dm => dm.AssemblyMaster))
+      .Include(d => d.DistrictMasters.Select(dm => dm.AssemblyMaster.Select(am => am.FourthLevelH)))
+      .FirstOrDefault(d => d.StateMasterId == userRecord.StateMasterId &&
+                           d.DistrictMasters.Any(dm => dm.DistrictMasterId == userRecord.DistrictMasterId));
 
-            var stateCount = userRecord.UserStates?.Count() ?? 0;
-            var state = _context.StateMaster.FirstOrDefault(d => d.StateMasterId == userSubDetails.StateMasterId);
-
-            var userDistrict = userSubDetails.UserDistrict?.Select(d => _context.DistrictMaster.FirstOrDefault(dm => dm.DistrictMasterId == d.DistrictMasterId)).Where(dm => dm != null).ToList();
-            var userAssemblyDistrict = userSubDetails.UserDistrict?.SelectMany(d => d.UserAssembly).Select(a => _context.AssemblyMaster.FirstOrDefault(am => am.AssemblyMasterId == a.AssemblyMasterId)).Where(am => am != null).ToList();
-            var userPC = userSubDetails.UserPCConstituency?.Select(pc => _context.ParliamentConstituencyMaster.FirstOrDefault(pcm => pcm.PCMasterId == pc.PCMasterId)).Where(pcm => pcm != null).ToList();
-            var userAssemblyPC = userSubDetails.UserPCConstituency?.SelectMany(pc => pc.UserAssembly).Select(a => _context.AssemblyMaster.FirstOrDefault(am => am.AssemblyMasterId == a.AssemblyMasterId)).Where(am => am != null).ToList();
-
-            var dashBoardProfile = new DashBoardProfile
+            return new DashBoardProfile
             {
                 Name = userRecord.UserName,
                 MobileNumber = userRecord.PhoneNumber,
                 UserEmail = userRecord.Email,
                 UserType = "DashBoard",
                 Roles = rolesList,
-                StateCount = stateCount,
-                StateName = state?.StateName ?? "0",
-                StateMasterId = state?.StateMasterId ?? 0,
-                DistrictCount = userDistrict?.Count > 2 ? 0 : (userDistrict?.Count == 0 ? 0 : 1),
-                DistrictName = userDistrict.Count > 1 ? "0" : userDistrict?.FirstOrDefault()?.DistrictName ?? "0",
-                DistrictMasterId = userDistrict.Count > 1 ? 0 : userDistrict?.FirstOrDefault()?.DistrictMasterId ?? 0,
-
-                DistrictAssemblyCount = userAssemblyDistrict?.Count > 2 ? 0 : (userAssemblyDistrict?.Count == 0 ? 0 : 1),
-                DistrictAssemblyMasterId = userAssemblyDistrict.Count > 1 ? 0 : userAssemblyDistrict.FirstOrDefault()?.AssemblyMasterId ?? 0,
-                DistrictAssemblyName = userAssemblyDistrict.Count > 1 ? "0" : userAssemblyDistrict?.FirstOrDefault()?.AssemblyName ?? "0",
-
-                PCCount = userPC?.Count > 2 ? 0 : (userPC?.Count == 0 ? 0 : 1),
-                PCMasterId = userPC.Count > 1 ? 0 : userPC.FirstOrDefault()?.PCMasterId ?? 0,
-                PCName = userPC.Count > 1 ? "0" : userPC?.FirstOrDefault()?.PcName ?? "0",
-
-                PCAssemblyCount = userAssemblyPC?.Count > 2 ? 0 : (userAssemblyPC?.Count == 0 ? 0 : 1),
-                PCAssemblyMasterId = userAssemblyPC.Count > 1 ? 0 : userAssemblyPC.FirstOrDefault()?.AssemblyMasterId ?? 0,
-                PCAssemblyName = userAssemblyPC.Count > 1 ? "0" : userAssemblyPC?.FirstOrDefault()?.AssemblyName ?? "0",
-                DistrictAssemblyCode = userAssemblyDistrict.Count > 1 ? "0" : userAssemblyDistrict?.FirstOrDefault()?.AssemblyCode.ToString() ?? "0",
+                StateMasterId = state?.StateMasterId,
+                StateName = state?.StateName,
+                DistrictMasterId = state?.DistrictMasters?.FirstOrDefault()?.DistrictMasterId, // Handle potential null state or DistrictMasters collection
+                DistrictName = state?.DistrictMasters?.FirstOrDefault()?.DistrictName,
+                AssemblyMasterId = state?.DistrictMasters?.FirstOrDefault()?.AssemblyMaster?.FirstOrDefault()?.AssemblyMasterId, // Nested null checks
+                AssemblyName = state?.DistrictMasters?.FirstOrDefault()?.AssemblyMaster?.FirstOrDefault()?.AssemblyName,
+                FourthLevelHMasterId = state?.DistrictMasters?.FirstOrDefault()?.AssemblyMaster?.FirstOrDefault()?.FourthLevelH?.FirstOrDefault()?.FourthLevelHMasterId,
+                FourthLevelHName = state?.DistrictMasters?.FirstOrDefault()?.AssemblyMaster?.FirstOrDefault()?.FourthLevelH?.FirstOrDefault()?.HierarchyName
             };
 
-            return dashBoardProfile;
+
         }
 
 
@@ -918,27 +702,7 @@ namespace EAMS_DAL.AuthRepository
 
         public async Task<Dictionary<string, object>> GetUserList(GetUser getUser)
         {
-            IQueryable<UserRegistration> query = _userManager.Users.Include(u => u.UserStates);
-
-            if (getUser.StateMasterId != 0 && getUser.DistrictMasterId == 0)
-            {
-                query = query.Where(u => u.UserStates.Any(s => s.StateMasterId == getUser.StateMasterId));
-            }
-
-            if (getUser.DistrictMasterId != 0 && getUser.PCMasterId == 0)
-            {
-                query = query.Where(u => u.UserStates.Any(s => s.UserDistrict.Any(d => d.DistrictMasterId == getUser.DistrictMasterId)));
-            }
-
-            if (getUser.PCMasterId != 0 && getUser.AssemblyMasterId == 0)
-            {
-                query = query.Where(u => u.UserStates.Any(s => s.UserPCConstituency.Any(pc => pc.PCMasterId == getUser.PCMasterId)));
-            }
-
-            if (getUser.AssemblyMasterId != 0)
-            {
-                query = query.Where(u => u.UserStates.Any(s => s.UserDistrict.Any(d => d.UserAssembly.Any(a => a.AssemblyMasterId == getUser.AssemblyMasterId))));
-            }
+            IQueryable<UserRegistration> query = _userManager.Users;
 
             // Pagination
             int page = getUser.Page == 0 ? 1 : getUser.Page;

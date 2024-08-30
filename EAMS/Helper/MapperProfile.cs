@@ -39,29 +39,13 @@ namespace EAMS.Helper
             #region UserRegistration UserRegistration  
             CreateMap<UserRegistrationViewModel, UserRegistration>()
             .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+            .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+            .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+            .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+            .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName))
-            .ForMember(dest => dest.PasswordHash, opt => opt.MapFrom(src => src.Password))
-             .ForMember(dest => dest.UserStates, opt => opt.MapFrom(src => src.UserStates));
-
-            CreateMap<StateViewModel, UserState>()
-                .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
-                .ForMember(dest => dest.UserDistrict, opt => opt.MapFrom(src => src.Districts))
-                .ForMember(dest => dest.UserPCConstituency, opt => opt.MapFrom(src => src.PCConstituencies));
-
-            CreateMap<DistrictViewModel, UserDistrict>()
-                .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
-                .ForMember(dest => dest.UserAssembly, opt => opt.MapFrom(src => src.Assemblies));
-
-            CreateMap<PCConstituencyViewModel, UserPCConstituency>()
-                .ForMember(dest => dest.PCMasterId, opt => opt.MapFrom(src => src.PCMasterId))
-                .ForMember(dest => dest.UserAssembly, opt => opt.MapFrom(src => src.Assemblies));
-
-            CreateMap<AssemblyViewModel, UserAssembly>()
-                .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
-                .ForMember(dest => dest.UserPSZone, opt => opt.MapFrom(src => src.PSZone));
-            CreateMap<PSZoneViewModel, UserPSZone>()
-                .ForMember(dest => dest.PSZoneMasterId, opt => opt.MapFrom(src => src.PSZoneMasterId));
+            .ForMember(dest => dest.PasswordHash, opt => opt.MapFrom(src => src.Password));
 
 
             #endregion
@@ -123,9 +107,7 @@ namespace EAMS.Helper
             #endregion
 
 
-            #region GetRefreshTokenViewModel GetRefreshToken
-            CreateMap<GetAccessTokenViewModel, GetAccessToken>().ReverseMap(); // Add this line to handle nested mapping
-
+            #region GetRefreshTokenViewModel GetRefreshToken 
             CreateMap<GetRefreshTokenViewModel, GetRefreshToken>()
                 .ForMember(dest => dest.AccessToken, opt => opt.MapFrom(src => src.AccessToken))
                 .ReverseMap();

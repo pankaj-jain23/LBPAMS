@@ -62,8 +62,8 @@ namespace EAMS_BLL.AuthServices
         #region Login && Generate Token
         public async Task<Token> LoginAsync(Login login)
         {
-            Token _Token = new();
-            _Token.AccessToken = new AccessToken();
+            Token _Token = new Token();
+
 
             // Check if the user exists
             var user = await _authRepository.CheckUserLogin(login);
@@ -81,81 +81,57 @@ namespace EAMS_BLL.AuthServices
             {
                 if (user is not null)
                 {
-                    var userProfile = await _authRepository.GetUserMaster(user.Id);
+
                     var userRoles = await _authRepository.GetRoleByUser(user);
 
-                    foreach (var userMaster in userProfile)
+
+                    var authClaims = GenerateClaims(user);
+
+                    // Add user roles to authClaims
+                    foreach (var userRole in userRoles)
                     {
-                        var authClaims = GenerateClaims(user, userMaster);
-
-                        // Add user roles to authClaims
-                        foreach (var userRole in userRoles)
-                        {
-                            authClaims.Add(new Claim(ClaimTypes.Role, userRole.RoleName));
-                        }
-                        if (_Token.AccessToken.LSToken == null)
-                        {
-                            authClaims.Add(new Claim("ElectionTypeMasterId", user.ElectionTypeMasterId.ToString()));
-
-                        }
-                        else if (_Token.AccessToken.VSToken == null)
-                        {
-                            authClaims.Add(new Claim("ElectionTypeMasterId", user.ElectionTypeMasterId.ToString()));
-
-
-                        }
-                        // Generate tokens
-                        var token = GenerateToken(authClaims);
-
-                        if (_Token.AccessToken.LSToken == null)
-                        {
-                            _Token.AccessToken.LSToken = token;
-
-
-                        }
-                        else if (_Token.AccessToken.VSToken == null)
-                        {
-                            _Token.AccessToken.VSToken = token;
-
-
-                            break; // Break the loop after assigning VSToken
-                        }
-
-                        _Token.RefreshToken = GenerateRefreshToken();
-                        _Token.Message = "Success";
-
-                        // Update user details with tokens
-                        if (user != null)
-                        {
-                            var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
-                            var _RefreshTokenValidityInDays = Convert.ToInt64(_configuration["JWTKey:RefreshTokenValidityInDays"]);
-                            user.RefreshToken = _Token.RefreshToken;
-                            user.RefreshTokenExpiryTime = expireRefreshToken;
-
-                            // Update user and handle any exceptions
-                            try
-                            {
-                                var updateUserResult = await _authRepository.UpdateUser(user);
-                            }
-                            catch (Exception ex)
-                            {
-                                // Log the exception or handle it appropriately
-                                // You may also want to return an error response
-                                return new Token()
-                                {
-                                    IsSucceed = false,
-                                    Message = "Error updating user: " + ex.Message
-                                };
-                            }
-                        }
-
-                        // Return the generated token
+                        authClaims.Add(new Claim(ClaimTypes.Role, userRole.RoleName));
                     }
+
+                    // Generate tokens
+                    var token = GenerateToken(authClaims);
+
+                    _Token.RefreshToken = GenerateRefreshToken();
+
+                    // Update user details with tokens
+                    if (user != null)
+                    {
+                        var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
+                        var _RefreshTokenValidityInDays = Convert.ToInt64(_configuration["JWTKey:RefreshTokenValidityInDays"]);
+                        user.RefreshToken = _Token.RefreshToken;
+                        user.RefreshTokenExpiryTime = expireRefreshToken;
+
+                        // Update user and handle any exceptions
+                        try
+                        {
+                            var updateUserResult = await _authRepository.UpdateUser(user);
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log the exception or handle it appropriately
+                            // You may also want to return an error response
+                            return new Token()
+                            {
+                                IsSucceed = false,
+                                Message = "Error updating user: " + ex.Message
+                            };
+                        }
+                    }
+                    _Token.IsSucceed = true;
+                    _Token.AccessToken = token;
+                    _Token.Message = "Success";
+
+
                 }
                 return new Token()
                 {
-                    IsSucceed = true,
-                    Message = "Success",
+                    IsSucceed = _Token.IsSucceed,
+                    Message = _Token.Message,
                     AccessToken = _Token.AccessToken,
                     RefreshToken = _Token.RefreshToken,
                 };
@@ -170,7 +146,7 @@ namespace EAMS_BLL.AuthServices
 
         }
 
-        private List<Claim> GenerateClaims(UserRegistration user, UserState userProfile)
+        private List<Claim> GenerateClaims(UserRegistration user)
         {
             var authClaims = new List<Claim>
             {
@@ -178,38 +154,13 @@ namespace EAMS_BLL.AuthServices
                 new Claim(ClaimTypes.MobilePhone, user.PhoneNumber),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim("UserId", user.Id),
-                new Claim("StateMasterId", userProfile.StateMasterId.ToString()),
-                new Claim("DistrictMasterId",
-                      userProfile.UserDistrict.Count() > 1 ? "0" :
-                      (userProfile.UserDistrict.FirstOrDefault()?.DistrictMasterId?.ToString() ?? "0")),
+                new Claim("StateMasterId", user.StateMasterId.ToString()),
+                new Claim("DistrictMasterId", user.DistrictMasterId.ToString()),
+                new Claim("AssemblyMasterId", user.AssemblyMasterId.ToString()),
+                new Claim("FourthLevelHMasterId", user.FourthLevelHMasterId.ToString()),
 
-               new Claim("PCMasterId",
-                      userProfile.UserPCConstituency.Count() > 1 ? "0" :
-                      (userProfile.UserPCConstituency.FirstOrDefault()?.PCMasterId?.ToString() ?? "0"))
              };
-            // Check if PCMaterId is not null and add AssemblyMasterId claim accordingly
-            if (userProfile.UserPCConstituency.FirstOrDefault() != null)
-            {
-                var assemblyId = userProfile.UserPCConstituency.FirstOrDefault()?.UserAssembly?.FirstOrDefault()?.AssemblyMasterId;
-                authClaims.Add(new Claim("AssemblyMasterId", assemblyId?.ToString() ?? "0"));
-            }
-            else if (userProfile.UserDistrict.FirstOrDefault() != null)
-            {
-                var firstUserDistrict = userProfile.UserDistrict.FirstOrDefault();
-                var assembly = firstUserDistrict?.UserAssembly.FirstOrDefault();
-                var psZone = assembly?.UserPSZone.FirstOrDefault();
 
-                var assemblyId = assembly?.AssemblyMasterId;
-                var psZoneId = psZone?.PSZoneMasterId;
-
-                authClaims.Add(new Claim("AssemblyMasterId", assemblyId?.ToString() ?? "0"));
-                authClaims.Add(new Claim("PSZoneMasterId", psZoneId?.ToString() ?? "0"));
-            }
-
-            else
-            {
-                authClaims.Add(new Claim("AssemblyMasterId", "0"));
-            }
 
             return authClaims;
 
@@ -242,7 +193,6 @@ namespace EAMS_BLL.AuthServices
                     return createUserResult;
                 }
             }
-            throw new NotImplementedException();
 
         }
         #endregion
@@ -715,330 +665,17 @@ namespace EAMS_BLL.AuthServices
         public async Task<Token> GetRefreshToken(GetRefreshToken model)
         {
             Token _Token = new();
-            _Token.AccessToken = new();
+
             string userName = "";
-            var principalLS = default(ClaimsPrincipal);
-            var principalVS = default(ClaimsPrincipal);
+            var principal = default(ClaimsPrincipal);
 
-            if (!string.IsNullOrWhiteSpace(model.AccessToken.LSToken))
+
+            if (!string.IsNullOrWhiteSpace(model.AccessToken))
             {
-                principalLS = await GetPrincipalFromExpiredToken(model.AccessToken.LSToken);
+                principal = await GetPrincipalFromExpiredToken(model.AccessToken);
             }
-
-            if (!string.IsNullOrWhiteSpace(model.AccessToken.VSToken))
-            {
-                principalVS = await GetPrincipalFromExpiredToken(model.AccessToken.VSToken);
-            }
-
-            if (principalLS.Identity.Name is not null)
-            {
-                userName = principalLS.Identity.Name;
-            }
-            else if (principalVS is not null)
-            {
-                userName = principalVS.Identity.Name;
-
-            }
-
-
-            //var roleLS = principalLS?.Claims.FirstOrDefault(d => d.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value ?? "No Data";
-            //var roleVS = principalVS?.Claims.FirstOrDefault(d => d.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value ?? "No Data";
-            //var electionTypeLS = principalLS?.Claims.FirstOrDefault(d => d.Type == "ElectionType")?.Value ?? "No Data";
-            //var electionTypeVS = principalVS != null ? principalVS.Claims.FirstOrDefault(d => d.Type == "ElectionType")?.Value : "No Data";
-            //string newRefreshToken = "";
-            //if (roleLS is "SO" || roleVS is "SO")
-            //{
-            //    if (electionTypeLS is "LS")
-            //    {
-            //        var soId = principalLS.Claims.FirstOrDefault(d => d.Type == "SoId").Value;
-            //        var soUser = await _authRepository.GetSOById(Convert.ToInt32(soId));
-
-            //        if (soUser == null || soUser.RefreshToken != model.RefreshToken || !IsRefreshTokenValid(soUser.RefreshTokenExpiryTime))
-            //        {
-            //            _Token.IsSucceed = false;
-            //            _Token.Message = "Invalid access token or refresh token";
-            //            return _Token;
-            //        }
-            //        var userAssembly = await _eamsRepository.GetAssemblyByCode(soUser.SoAssemblyCode.ToString(), soUser.StateMasterId.ToString());
-
-            //        var authClaims = new List<Claim>
-            //                    {
-            //                        new Claim(ClaimTypes.Name,soUser.SoName),
-            //                        new Claim(ClaimTypes.MobilePhone,soUser.SoMobile),
-            //                        new Claim("StateMasterId",userAssembly.StateMasterId.ToString()),
-            //                        new Claim("DistrictMasterId",userAssembly.DistrictMasterId.ToString()),
-            //                        new Claim("AssemblyMasterId",userAssembly.AssemblyMasterId.ToString()),
-            //                        new Claim("ElectionType","LS"),
-            //                        new Claim("SoId",soUser.SOMasterId.ToString()),
-            //                        new Claim("JWTID", Guid.NewGuid().ToString()),
-            //                        new Claim(ClaimTypes.Role,"SO")
-            //                    };
-
-
-            //        var newAccessToken = GenerateToken(authClaims);
-            //        newRefreshToken = GenerateRefreshToken();
-            //        var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
-            //        soUser.RefreshToken = newRefreshToken;
-            //        soUser.RefreshTokenExpiryTime = expireRefreshToken;
-            //        var isSucceed = await _authRepository.SectorOfficerMasterRecord(soUser);
-            //        if (isSucceed.IsSucceed == true)
-            //        {
-            //            _Token.IsSucceed = true;
-            //            _Token.Message = "Success";
-
-            //            if (soUser.ElectionTypeMasterId == 1)//LS
-            //            {
-            //                _Token.AccessToken.LSToken = newAccessToken;
-            //            }
-            //            else if (soUser.ElectionTypeMasterId == 2)//VS
-            //            {
-            //                _Token.AccessToken.VSToken = newAccessToken;
-
-            //            }
-            //            _Token.RefreshToken = newRefreshToken;
-            //        }
-            //        else
-            //        {
-            //            _Token.IsSucceed = false;
-            //            _Token.Message = "Invalid access token or refresh token";
-            //        }
-
-            //    }
-
-            //    if (electionTypeVS is "VS")
-            //    {
-            //        var soId = principalVS.Claims.FirstOrDefault(d => d.Type == "SoId").Value;
-            //        var soUser = await _authRepository.GetSOById(Convert.ToInt32(soId));
-
-            //        if (soUser == null || soUser.RefreshToken != model.RefreshToken || !IsRefreshTokenValid(soUser.RefreshTokenExpiryTime))
-            //        {
-            //            _Token.IsSucceed = false;
-            //            _Token.Message = "Invalid access token or refresh token";
-            //            return _Token;
-            //        }
-            //        var userAssembly = await _eamsRepository.GetAssemblyByCode(soUser.SoAssemblyCode.ToString(), soUser.StateMasterId.ToString());
-
-            //        var authClaims = new List<Claim>
-            //                    {
-            //                        new Claim(ClaimTypes.Name,soUser.SoName),
-            //                        new Claim(ClaimTypes.MobilePhone,soUser.SoMobile),
-            //                        new Claim("StateMasterId",userAssembly.StateMasterId.ToString()),
-            //                        new Claim("DistrictMasterId",userAssembly.DistrictMasterId.ToString()),
-            //                        new Claim("AssemblyMasterId",userAssembly.AssemblyMasterId.ToString()),
-            //                          new Claim("ElectionType","VS"),
-            //                        new Claim("SoId",soUser.SOMasterId.ToString()),
-            //                        new Claim("JWTID", Guid.NewGuid().ToString()),
-            //                        new Claim(ClaimTypes.Role,"SO")
-            //                    };
-            //        var newAccessToken = GenerateToken(authClaims);
-            //        var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
-            //        soUser.RefreshToken = newRefreshToken;
-            //        soUser.RefreshTokenExpiryTime = expireRefreshToken;
-            //        var isSucceed = await _authRepository.SectorOfficerMasterRecord(soUser);
-            //        if (isSucceed.IsSucceed == true)
-            //        {
-            //            _Token.IsSucceed = true;
-            //            _Token.Message = "Success";
-            //            if (soUser.ElectionTypeMasterId == 1)//LS
-            //            {
-            //                _Token.AccessToken.LSToken = newAccessToken;
-            //            }
-            //            else if (soUser.ElectionTypeMasterId == 2)//VS
-            //            {
-            //                _Token.AccessToken.VSToken = newAccessToken;
-
-            //            }
-            //            _Token.RefreshToken = newRefreshToken;
-            //        }
-            //        else
-            //        {
-            //            _Token.IsSucceed = false;
-            //            _Token.Message = "Invalid access token or refresh token";
-            //        }
-
-            //    }
-
-
-
-
-            //}
-            //else if (roleLS is "BLO" || roleVS is "BLO")
-            //{
-            //    if (electionTypeLS is "LS")
-            //    {
-            //        var bloId = principalLS.Claims.FirstOrDefault(d => d.Type == "BLOMasterId").Value;
-            //        var bloUser = await _authRepository.GetBLOById(Convert.ToInt32(bloId));
-
-            //        if (bloUser == null || bloUser.RefreshToken != model.RefreshToken || !IsRefreshTokenValid(bloUser.RefreshTokenExpiryTime))
-            //        {
-            //            _Token.IsSucceed = false;
-            //            _Token.Message = "Invalid access token or refresh token";
-            //            return _Token;
-            //        }
-            //        var userAssembly = await _eamsRepository.GetAssemblyById(bloUser.AssemblyMasterId.ToString());
-
-            //        var authClaims = new List<Claim>
-            //                    {
-            //                        new Claim(ClaimTypes.Name,bloUser.BLOName),
-            //                        new Claim(ClaimTypes.MobilePhone,bloUser.BLOMobile),
-            //                        new Claim("StateMasterId",userAssembly.StateMasterId.ToString()),
-            //                        new Claim("DistrictMasterId",userAssembly.DistrictMasterId.ToString()),
-            //                        new Claim("AssemblyMasterId",userAssembly.AssemblyMasterId.ToString()),
-            //                        new Claim("ElectionType","LS"),
-            //                        new Claim("BLOMasterId",bloUser.BLOMasterId.ToString()),
-            //                        new Claim("JWTID", Guid.NewGuid().ToString()),
-            //                        new Claim(ClaimTypes.Role,"BLO")
-            //                    };
-
-
-            //        var newAccessToken = GenerateToken(authClaims);
-            //        newRefreshToken = GenerateRefreshToken();
-            //        var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
-            //        bloUser.RefreshToken = newRefreshToken;
-            //        bloUser.RefreshTokenExpiryTime = expireRefreshToken;
-            //        var isSucceed = await _authRepository.AddUpdateBLOMaster(bloUser);
-            //        if (isSucceed.IsSucceed == true)
-            //        {
-            //            _Token.IsSucceed = true;
-            //            _Token.Message = "Success";
-
-
-            //            _Token.AccessToken.LSToken = newAccessToken;
-            //            _Token.RefreshToken = newRefreshToken;
-            //        }
-            //        else
-            //        {
-            //            _Token.IsSucceed = false;
-            //            _Token.Message = "Invalid access token or refresh token";
-            //        }
-
-            //    }
-
-            //    if (electionTypeVS is "VS")
-            //    {
-            //        var soId = principalVS.Claims.FirstOrDefault(d => d.Type == "SoId").Value;
-            //        var soUser = await _authRepository.GetSOById(Convert.ToInt32(soId));
-
-            //        if (soUser == null || soUser.RefreshToken != model.RefreshToken || !IsRefreshTokenValid(soUser.RefreshTokenExpiryTime))
-            //        {
-            //            _Token.IsSucceed = false;
-            //            _Token.Message = "Invalid access token or refresh token";
-            //            return _Token;
-            //        }
-            //        var userAssembly = await _eamsRepository.GetAssemblyByCode(soUser.SoAssemblyCode.ToString(), soUser.StateMasterId.ToString());
-
-            //        var authClaims = new List<Claim>
-            //                    {
-            //                        new Claim(ClaimTypes.Name,soUser.SoName),
-            //                        new Claim(ClaimTypes.MobilePhone,soUser.SoMobile),
-            //                        new Claim("StateMasterId",userAssembly.StateMasterId.ToString()),
-            //                        new Claim("DistrictMasterId",userAssembly.DistrictMasterId.ToString()),
-            //                        new Claim("AssemblyMasterId",userAssembly.AssemblyMasterId.ToString()),
-            //                          new Claim("ElectionType","VS"),
-            //                        new Claim("SoId",soUser.SOMasterId.ToString()),
-            //                        new Claim("JWTID", Guid.NewGuid().ToString()),
-            //                        new Claim(ClaimTypes.Role,"SO")
-            //                    };
-            //        var newAccessToken = GenerateToken(authClaims);
-            //        var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
-            //        soUser.RefreshToken = newRefreshToken;
-            //        soUser.RefreshTokenExpiryTime = expireRefreshToken;
-            //        var isSucceed = await _authRepository.SectorOfficerMasterRecord(soUser);
-            //        if (isSucceed.IsSucceed == true)
-            //        {
-            //            _Token.IsSucceed = true;
-            //            _Token.Message = "Success";
-            //            if (soUser.ElectionTypeMasterId == 1)//LS
-            //            {
-            //                _Token.AccessToken.LSToken = newAccessToken;
-            //            }
-            //            else if (soUser.ElectionTypeMasterId == 2)//VS
-            //            {
-            //                _Token.AccessToken.VSToken = newAccessToken;
-
-            //            }
-            //            _Token.RefreshToken = newRefreshToken;
-            //        }
-            //        else
-            //        {
-            //            _Token.IsSucceed = false;
-            //            _Token.Message = "Invalid access token or refresh token";
-            //        }
-
-            //    }
-
-
-
-
-            //}
-
-            //else
-            //{
-            //    var user = await _userManager.FindByNameAsync(userName);
-
-            //    if (user == null || user.RefreshToken != model.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
-            //    {
-            //        _Token.IsSucceed = false;
-            //        _Token.Message = "Invalid access token or refresh token";
-            //        return _Token;
-            //    }
-
-            //    if (user is not null)
-            //    {
-            //        var userProfile = await _authRepository.GetUserMaster(user.Id);
-            //        var userRoles = await _authRepository.GetRoleByUser(user);
-
-            //        foreach (var userMaster in userProfile)
-            //        {
-            //            var authClaims = GenerateClaims(user, userMaster);
-
-            //            // Add user roles to authClaims
-            //            foreach (var userRole in userRoles)
-            //            {
-            //                authClaims.Add(new Claim(ClaimTypes.Role, userRole.RoleName));
-            //            }
-            //            if (_Token.AccessToken.LSToken == null)
-            //            {
-            //                authClaims.Add(new Claim("ElectionType", "LS"));
-
-            //            }
-            //            else if (_Token.AccessToken.VSToken == null)
-            //            {
-            //                authClaims.Add(new Claim("ElectionType", "VS"));
-
-
-            //            }
-            //            // Generate tokens
-
-            //            var token = GenerateToken(authClaims);
-
-            //            if (_Token.AccessToken.LSToken == null)
-            //            {
-            //                _Token.AccessToken.LSToken = token;
-
-
-            //            }
-            //            else if (_Token.AccessToken.VSToken == null)
-            //            {
-            //                _Token.AccessToken.VSToken = token;
-
-
-            //                break; // Break the loop after assigning VSToken
-            //            }
-
-
-            //        }
-            //    }
-
-
-            //    var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
-            //    user.RefreshToken = GenerateRefreshToken();
-            //    user.RefreshTokenExpiryTime = (DateTime)expireRefreshToken;
-            //    await _userManager.UpdateAsync(user);
-            //    _Token.IsSucceed = true;
-            //    _Token.Message = "Success";
-            //    _Token.RefreshToken = newRefreshToken;
-            //}
+            var userId = principal.Claims.Where(d => d.Type == "UserId").FirstOrDefault().Value;
+            var getCurrentUser = _authRepository.GetUserById(userId);
             return _Token;
         }
         private string GenerateToken(IEnumerable<Claim> claims)
