@@ -41,6 +41,13 @@
         public int? OTPAttempts { get; set; }
         public int ElectionTypeMasterId { get; set; }
         public string ElectionTypeName { get; set; }
+        public int? FourthLevelHMasterId
+        {
+            get;
+            set;
+        }
+        public string? FourthLevelHName { get; set; }
+        public string? PSZonePanchayatName { get; set; }
         public int? PSZoneMasterId
         {
             get;

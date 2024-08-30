@@ -764,7 +764,7 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetBoothListById")]
         //[Authorize]
-        public async Task<IActionResult> BoothListById(string stateMasterId, string districtMasterId, string assemblyMasterId, string fourthLevelHMasterId, string BlockZonePanchayatMasterId)
+        public async Task<IActionResult> BoothListById(string stateMasterId, string districtMasterId, string assemblyMasterId, string fourthLevelHMasterId, string? BlockZonePanchayatMasterId)
         {
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && BlockZonePanchayatMasterId != null)
             {
