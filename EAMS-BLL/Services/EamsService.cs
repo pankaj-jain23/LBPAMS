@@ -3461,9 +3461,9 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetGPVoterById(gpVoterMasterId);
         }
-        public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId)
+        public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            return await _eamsRepository.GetGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelhMasterId);
+            return await _eamsRepository.GetGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId);
         }
         public async Task<ServiceResponse> DeleteGPVoterById(int gpVoterMasterId)
         {

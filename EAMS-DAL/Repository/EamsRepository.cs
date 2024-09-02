@@ -17015,29 +17015,25 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             }
         }
-
         public async Task<FourthLevelH> GetFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
-
-
-            // Retrieve the PSZone entity from the database
-            var psZone = await _context.FourthLevelH
+            var fourthLevelH = await _context.FourthLevelH
                 .Where(d => d.StateMasterId == stateMasterId &&
                             d.DistrictMasterId == districtMasterId &&
                             d.AssemblyMasterId == assemblyMasterId &&
-                            d.FourthLevelHMasterId == fourthLevelHMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.ElectionTypeMaster)
+                            d.FourthLevelHMasterId == fourthLevelHMasterId)
+                .Include(d => d.StateMaster)       
+                .Include(d => d.DistrictMaster)    
+                .Include(d => d.AssemblyMaster)    
+                .Include(d => d.ElectionTypeMaster)
+                .Include(d => d.BoothMaster)       
+                .Include(d => d.PSZonePanchayat)   
+                .Include(d => d.GPPanchayatWards)  
                 .FirstOrDefaultAsync();
 
-            // Check if the PSZone entity exists
-            if (psZone == null)
-            {
-
-                return null;
-            }
-
-
-            return psZone;
+            return fourthLevelH;
         }
+
         public async Task<Response> DeleteFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
             // Validate the input ID
@@ -17392,7 +17388,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             existing.StateMasterId = gpVoterPdf.StateMasterId;
             existing.DistrictMasterId = gpVoterPdf.DistrictMasterId;
             existing.AssemblyMasterId = gpVoterPdf.AssemblyMasterId;
-            existing.FourthLevelHMasterId = gpVoterPdf.FourthLevelHMasterId;
+            //existing.FourthLevelHMasterId = gpVoterPdf.FourthLevelHMasterId;
             existing.GPVoterPdfPath = gpVoterPdf.GPVoterPdfPath;
             await _context.SaveChangesAsync();
 
@@ -17422,48 +17418,42 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return gpGPVoter;
         }
-        public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
             var baseUrl = "https://lbpams.punjab.gov.in/";
 
             var gpVoterList = await _context.GPVoter
                 .Where(gv => gv.StateMasterId == stateMasterId &&
                              gv.DistrictMasterId == districtMasterId &&
-                             gv.AssemblyMasterId == assemblyMasterId &&
-                             gv.FourthLevelHMasterId == fourthLevelHMasterId)
+                             gv.AssemblyMasterId == assemblyMasterId)
                 .Join(_context.StateMaster,
                       gv => gv.StateMasterId,
                       sm => sm.StateMasterId,
                       (gv, sm) => new { GPVoter = gv, StateMaster = sm })
                 .Join(_context.DistrictMaster,
-                      joined => joined.GPVoter.DistrictMasterId,
+                      j => j.GPVoter.DistrictMasterId,
                       dm => dm.DistrictMasterId,
-                      (joined, dm) => new { joined.GPVoter, joined.StateMaster, DistrictMaster = dm })
+                      (j, dm) => new { j.GPVoter, j.StateMaster, DistrictMaster = dm })
                 .Join(_context.AssemblyMaster,
-                      joined => joined.GPVoter.AssemblyMasterId,
+                      j => j.GPVoter.AssemblyMasterId,
                       am => am.AssemblyMasterId,
-                      (joined, am) => new { joined.GPVoter, joined.StateMaster, joined.DistrictMaster, AssemblyMaster = am })
-                .Join(_context.FourthLevelH,
-                      joined => joined.GPVoter.FourthLevelHMasterId,
-                      flh => flh.FourthLevelHMasterId,
-                      (joined, flh) => new GPVoterList
+                      (j, am) => new GPVoterList
                       {
-                          GPVoterMasterId = joined.GPVoter.GPVoterMasterId,
-                          StateMasterId = joined.GPVoter.StateMasterId,
-                          DistrictMasterId = joined.GPVoter.DistrictMasterId,
-                          AssemblyMasterId = joined.GPVoter.AssemblyMasterId,
-                          FourthLevelHMasterId = joined.GPVoter.FourthLevelHMasterId,
-                          GPVoterPdfPath = $"{baseUrl}{joined.GPVoter.GPVoterPdfPath.Replace("\\", "/")}",
-                          StateName = joined.StateMaster.StateName,
-                          DistrictName = joined.DistrictMaster.DistrictName,
-                          AssemblyName = joined.AssemblyMaster.AssemblyName,
-                          FourthLevelName = flh.HierarchyName,
-                          GPVoterStatus = joined.GPVoter.GPVoterStatus
+                          GPVoterMasterId = j.GPVoter.GPVoterMasterId,
+                          StateMasterId = j.GPVoter.StateMasterId,
+                          DistrictMasterId = j.GPVoter.DistrictMasterId,
+                          AssemblyMasterId = j.GPVoter.AssemblyMasterId,
+                          GPVoterPdfPath = $"{baseUrl}{j.GPVoter.GPVoterPdfPath.Replace("\\", "/")}",
+                          StateName = j.StateMaster.StateName,
+                          DistrictName = j.DistrictMaster.DistrictName,
+                          AssemblyName = am.AssemblyName, 
+                          GPVoterStatus = j.GPVoter.GPVoterStatus
                       })
                 .ToListAsync();
 
             return gpVoterList;
         }
+
         public async Task<ServiceResponse> DeleteGPVoterById(int gpVoterMasterId)
         {
             var isExist = await _context.GPVoter.Where(d => d.GPVoterMasterId == gpVoterMasterId).FirstOrDefaultAsync();

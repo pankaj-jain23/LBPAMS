@@ -558,9 +558,9 @@ namespace EAMS.Controllers
             }
         }
         [HttpGet("GetGPVoterListById")]
-        public async Task<IActionResult> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId)
+        public async Task<IActionResult> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            var result = await _eamsService.GetGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelhMasterId);
+            var result = await _eamsService.GetGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId);
 
             if (result.Count != 0 || result != null)
             {
