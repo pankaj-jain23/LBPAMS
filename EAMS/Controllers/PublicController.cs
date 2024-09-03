@@ -156,7 +156,7 @@ namespace EAMS.Controllers
         {
             var result = await _eamsService.GetKYCDetailByFourthLevelId(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelhMasterId);
 
-            if (result.Count != 0 || result != null)
+            if (result != null)
             {
                 var data = new
                 {

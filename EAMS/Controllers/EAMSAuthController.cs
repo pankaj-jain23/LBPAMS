@@ -25,7 +25,7 @@ namespace EAMS.Controllers
 
         #region Register
         [HttpPost]
-        [Route("registeration")]
+        [Route("Register")]
 
         public async Task<IActionResult> Register(UserRegistrationViewModel registerViewModel)
         {
