@@ -430,7 +430,7 @@ namespace EAMS.Controllers
 
             // Generate a unique file name for the PDF file
             var fileName = Guid.NewGuid().ToString() + Path.GetExtension(gpVoterPdfViewModel.GPVoterPdf.FileName);
-            var staticFolderPath = @"C:\inetpub\wwwroot\GPVoter";
+            var staticFolderPath = @"C:\inetpub\wwwroot\LBPAMSDOC\GPVoter";
 
             // Ensure the GPVoter directory exists, create if it doesn't
             if (!Directory.Exists(staticFolderPath))
@@ -478,8 +478,8 @@ namespace EAMS.Controllers
             // Map the ViewModel to the Model
             var mappedData = _mapper.Map<GPVoter>(updateGPVoterViewModel);
 
-            // Define the static folder path
-            var staticFolderPath = @"C:\inetpub\wwwroot\GPVoter";
+            // Define the static folder pathC:\inetpub\wwwroot\LBPAMSDOC
+            var staticFolderPath = @"C:\inetpub\wwwroot\LBPAMSDOC\GPVoter";
 
             // Handle file upload (if applicable)
             if (updateGPVoterViewModel.GPVoterPdf != null && updateGPVoterViewModel.GPVoterPdf.Length > 0)
