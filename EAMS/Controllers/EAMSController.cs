@@ -1164,7 +1164,9 @@ namespace EAMS.Controllers
                     Transgender = boothRecord.Transgender,
                     LocationMasterId = boothRecord.LocationMasterId,
                     ElectionTypeMasterId = boothRecord.ElectionTypeMaster.ElectionTypeMasterId,
-                    ElectionTypeName = boothRecord.ElectionTypeMaster.ElectionType
+                    ElectionTypeName = boothRecord.ElectionTypeMaster.ElectionType,
+                    IsPrimaryBooth=boothRecord.IsPrimaryBooth,
+
 
                 };
 

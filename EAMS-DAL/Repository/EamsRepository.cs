@@ -2394,8 +2394,8 @@ namespace EAMS_DAL.Repository
                                     ElectionTypeMasterId = bt.ElectionTypeMasterId,
                                     ElectionTypeName = elec.ElectionType,
                                     FourthLevelHMasterId= bt.FourthLevelHMasterId,
-                                    FourthLevelHName=frth.HierarchyName
-
+                                    FourthLevelHName=frth.HierarchyName,
+                                    IsPrimaryBooth=bt.IsPrimaryBooth
 
 
                                 };
@@ -2443,7 +2443,7 @@ namespace EAMS_DAL.Repository
                                     FourthLevelHName = frth.HierarchyName,
                                     PSZoneMasterId=bt.PSZonePanchayatMasterId,
                                     PSZonePanchayatName=zp.PSZonePanchayatName
-
+                                     IsPrimaryBooth = bt.IsPrimaryBooth
 
                                 };
                 }

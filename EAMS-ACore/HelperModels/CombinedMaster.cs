@@ -54,7 +54,7 @@
             set;
         }
 
-
+        public bool? IsPrimaryBooth { get; set; }
     }
 }
 
