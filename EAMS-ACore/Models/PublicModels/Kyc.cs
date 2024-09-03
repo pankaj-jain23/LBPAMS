@@ -82,12 +82,12 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
-        public int StateMasterId
+        public int? StateMasterId
         {
             get;
             set;
         }
-        public string StateName
+        public string? StateName
         {
             get;
             set;
@@ -98,7 +98,7 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
-        public string DistrictName
+        public string? DistrictName
         {
             get;
             set;
@@ -114,46 +114,42 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
-        public string AssemblyName
+        public string? AssemblyName
         {
             get;
             set;
 
         }
-        public int FourthLevelHMasterId
+        public int? FourthLevelHMasterId
 
         {
             get;
             set;
         }
-        public string FourthLevelName
+        public string? FourthLevelName
         {
             get;
             set;
 
         }
-        public int PSZonePanchayatMasterId
+        public int? PSZonePanchayatMasterId
         {
             get;
             set;
         }
-        public int PSZonePanchayatCode
-        {
-            get;
-            set;
-        }
-        public string PSZonePanchayatName
+      
+        public string? PSZonePanchayatName
         {
             get;
             set;
 
         }
-        public int GPPanchayatWardsMasterId
+        public int? GPPanchayatWardsMasterId
         {
             get;
             set;
         }
-        public string GPPanchayatWardsName
+        public string? GPPanchayatWardsName
         {
             get;
             set;

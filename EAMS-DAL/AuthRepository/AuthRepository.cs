@@ -556,11 +556,14 @@ namespace EAMS_DAL.AuthRepository
 
             var roles = await _userManager.GetRolesAsync(userRecord);
             var rolesList = roles.ToList();
-            var state = _context.StateMaster.Include(d => d.DistrictMasters)
-      .Include(d => d.DistrictMasters.Select(dm => dm.AssemblyMaster))
-      .Include(d => d.DistrictMasters.Select(dm => dm.AssemblyMaster.Select(am => am.FourthLevelH)))
+
+            var state = _context.StateMaster
+      .Include(d => d.DistrictMasters)
+          .ThenInclude(dm => dm.AssemblyMaster)
+              .ThenInclude(am => am.FourthLevelH)
       .FirstOrDefault(d => d.StateMasterId == userRecord.StateMasterId &&
                            d.DistrictMasters.Any(dm => dm.DistrictMasterId == userRecord.DistrictMasterId));
+
 
             return new DashBoardProfile
             {

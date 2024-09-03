@@ -151,10 +151,10 @@ namespace EAMS.Controllers
             }
         }
 
-        [HttpGet("GetKYCDetailByFourthLevelHId")]
-        public async Task<IActionResult> GetKYCDetailByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId)
+        [HttpGet("GetKYCDetailByAssemblyId")]
+        public async Task<IActionResult> GetKYCDetailByAssemblyId(int electionType,int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            var result = await _eamsService.GetKYCDetailByFourthLevelId(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelhMasterId);
+            var result = await _eamsService.GetKYCDetailByAssemblyId(electionType, stateMasterId, districtMasterId, assemblyMasterId);
 
             if (result != null)
             {

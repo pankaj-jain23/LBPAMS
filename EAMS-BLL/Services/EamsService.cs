@@ -3326,9 +3326,9 @@ namespace EAMS_BLL.Services
             return await _eamsRepository.GetKycById(kycMasterId);
 
         }
-        public async Task<List<KycList>> GetKYCDetailByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId)
+        public async Task<List<KycList>> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            return await _eamsRepository.GetKYCDetailByFourthLevelId(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelhMasterId);
+            return await _eamsRepository.GetKYCDetailByAssemblyId(electionType,stateMasterId, districtMasterId, assemblyMasterId);
         }
         public async Task<ServiceResponse> DeleteKycById(int kycMasterId)
         {
