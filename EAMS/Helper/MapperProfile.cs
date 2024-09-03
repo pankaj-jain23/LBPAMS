@@ -219,7 +219,7 @@ namespace EAMS.Helper
 
             #region  BoothMasterViewModel and BoothMaster
 
-
+            
 
             CreateMap<BoothMasterViewModel, BoothMaster>()
                 .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
@@ -240,6 +240,29 @@ namespace EAMS.Helper
                   .ForMember(dest => dest.Transgender, opt => opt.MapFrom(src => src.Transgender))
                   .ForMember(dest => dest.LocationMasterId, opt => opt.MapFrom(src => src.LocationMasterId))
                   .ForMember(dest => dest.IsPrimaryBooth, opt => opt.MapFrom(src => src.IsPrimaryBooth))
+                  //.ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
+
+             .ReverseMap();
+            CreateMap<UpdateBoothMasterViewModel, BoothMaster>()
+                .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+                .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+                .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+                .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
+                .ForMember(dest => dest.PSZonePanchayatMasterId, opt => opt.MapFrom(src => src.PSZonePanchayatMasterId))
+                .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+                .ForMember(dest => dest.BoothName, opt => opt.MapFrom(src => src.BoothName))
+                .ForMember(dest => dest.BoothCode_No, opt => opt.MapFrom(src => src.BoothCode_No))
+                .ForMember(dest => dest.BoothNoAuxy, opt => opt.MapFrom(src => src.BoothNoAuxy))
+                .ForMember(dest => dest.BoothStatus, opt => opt.MapFrom(src => src.IsStatus))
+                .ForMember(dest => dest.Latitude, opt => opt.MapFrom(src => src.Latitude))
+                .ForMember(dest => dest.Longitude, opt => opt.MapFrom(src => src.Longitude))
+                .ForMember(dest => dest.TotalVoters, opt => opt.MapFrom(src => src.TotalVoters))
+                  .ForMember(dest => dest.Male, opt => opt.MapFrom(src => src.Male))
+                  .ForMember(dest => dest.Female, opt => opt.MapFrom(src => src.Female))
+                  .ForMember(dest => dest.Transgender, opt => opt.MapFrom(src => src.Transgender))
+                  .ForMember(dest => dest.LocationMasterId, opt => opt.MapFrom(src => src.LocationMasterId))
+                  .ForMember(dest => dest.IsPrimaryBooth, opt => opt.MapFrom(src => src.IsPrimaryBooth))
+             .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
 
              .ReverseMap();
 

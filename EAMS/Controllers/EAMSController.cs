@@ -1000,7 +1000,7 @@ namespace EAMS.Controllers
         [HttpPut]
         [Route("UpdateBooth")]
         [Authorize]
-        public async Task<IActionResult> UpdateBooth(BoothMasterViewModel boothMasterViewModel)
+        public async Task<IActionResult> UpdateBooth(UpdateBoothMasterViewModel boothMasterViewModel)
         {
             if (ModelState.IsValid)
             {

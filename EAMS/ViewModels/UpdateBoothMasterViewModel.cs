@@ -2,8 +2,10 @@
 
 namespace EAMS.ViewModels
 {
-    public class BoothMasterViewModel
+    public class UpdateBoothMasterViewModel
     {
+        [Required(ErrorMessage = "Booth Master Id is required")]
+        public int BoothMasterId { get; set; }
         [Required(ErrorMessage = "State Master Id is required")]
         public int StateMasterId { get; set; }
 
@@ -22,7 +24,7 @@ namespace EAMS.ViewModels
             get;
             set;
         }
-       
+
 
         [Required(ErrorMessage = "Booth Code No. is required")]
         public string BoothCode_No { get; set; }
@@ -50,7 +52,7 @@ namespace EAMS.ViewModels
 
         public int? LocationMasterId { get; set; }
 
-        
+
         public bool? IsPrimaryBooth { get; set; }
     }
 }
