@@ -16631,7 +16631,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         public async Task<List<KycList>> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            var baseUrl = "https://lbpams.punjab.gov.in/LBPAMSDOC/kyc/";
+            var baseUrl = "https://lbpams.punjab.gov.in/LBPAMSDOC/";
             
             // Execute the initial query that can be translated to SQL
             var kycList = from k in _context.Kyc
@@ -16750,7 +16750,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         public async Task<List<UnOpposedList>> GetUnOpposedDetailsByAssemblyId(int electionType,int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            var baseUrl = "https://lbpams.punjab.gov.in/LBPAMSDOC/unopposed/";
+            var baseUrl = "https://lbpams.punjab.gov.in/LBPAMSDOC/";
            
             // Execute the initial query that can be translated to SQL
             var unOpposedList = from un in _context.UnOpposed

@@ -306,7 +306,7 @@ namespace EAMS.Controllers
         {
             var result = await _eamsService.GetUnOpposedDetailsByAssemblyId(electionType,stateMasterId, districtMasterId, assemblyMasterId);
 
-            if (result.Count != 0 || result != null)
+            if (result != null)
             {
                 var data = new
                 {
