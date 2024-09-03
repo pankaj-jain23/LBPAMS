@@ -30,12 +30,12 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
-        //public int? FourthLevelHMasterId
+        public int? FourthLevelHMasterId
 
-        //{
-        //    get;
-        //    set;
-        //}
+        {
+            get;
+            set;
+        }
         public string? GPVoterPdfPath
         {
             get;
@@ -84,6 +84,18 @@ namespace EAMS_ACore.Models.PublicModels
             set;
         }
         public string AssemblyName
+        {
+            get;
+            set;
+
+        }
+        public int? FourthLevelHMasterId
+
+        {
+            get;
+            set;
+        }
+        public string PanchayatName
         {
             get;
             set;

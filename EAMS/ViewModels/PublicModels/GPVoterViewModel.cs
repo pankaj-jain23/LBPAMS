@@ -17,12 +17,12 @@
             get;
             set;
         }
-        //public int? FourthLevelHMasterId
+        public int? FourthLevelHMasterId
 
-        //{
-        //    get;
-        //    set;
-        //}
+        {
+            get;
+            set;
+        }
         public IFormFile? GPVoterPdf
         {
             get;
@@ -53,12 +53,12 @@
             get;
             set;
         }
-        //public int? FourthLevelHMasterId
+        public int? FourthLevelHMasterId
 
-        //{
-        //    get;
-        //    set;
-        //}
+        {
+            get;
+            set;
+        }
         public IFormFile? GPVoterPdf
         {
             get;
