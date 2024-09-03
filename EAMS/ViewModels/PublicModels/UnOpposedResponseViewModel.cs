@@ -8,7 +8,7 @@
             get;
             set;
         }
-        public int? StateMasterId
+        public int StateMasterId
         {
             get;
             set;
@@ -28,19 +28,19 @@
             get;
             set;
         }
-        public int? FourthLevelHMasterId
+        public int FourthLevelHMasterId
 
         {
             get;
             set;
         }
 
-        public int? BlockZonePanchayatMasterId
+        public int PSZonePanchayatMasterId
         {
             get;
             set;
         }
-        public int? SarpanchWardsMasterId
+        public int GPPanchayatWardsMasterId
         {
             get;
             set;

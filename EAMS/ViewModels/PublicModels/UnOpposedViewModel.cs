@@ -2,7 +2,7 @@
 {
     public class UnOpposedViewModel
     {
-        public int? StateMasterId
+        public int StateMasterId
         {
             get;
             set;
@@ -29,12 +29,12 @@
             set;
         }
 
-        public int? BlockZonePanchayatMasterId
+        public int? PSZonePanchayatMasterId
         {
             get;
             set;
         }
-        public int? SarpanchWardsMasterId
+        public int? GPPanchayatWardsMasterId
         {
             get;
             set;
@@ -73,7 +73,7 @@
             get;
             set;
         }
-        public int? StateMasterId
+        public int StateMasterId
         {
             get;
             set;
@@ -100,13 +100,12 @@
             set;
         }
 
-        public int? BlockZonePanchayatMasterId //Sarpanch is Panchyat
+        public int? PSZonePanchayatMasterId
         {
             get;
             set;
         }
-
-        public int? SarpanchWardsMasterId //Panch Wards
+        public int? GPPanchayatWardsMasterId
         {
             get;
             set;

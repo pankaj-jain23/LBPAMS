@@ -561,27 +561,41 @@ namespace EAMS_DAL.AuthRepository
       .Include(d => d.DistrictMasters)
           .ThenInclude(dm => dm.AssemblyMaster)
               .ThenInclude(am => am.FourthLevelH)
-      .FirstOrDefault(d => d.StateMasterId == userRecord.StateMasterId &&
-                           d.DistrictMasters.Any(dm => dm.DistrictMasterId == userRecord.DistrictMasterId));
+      .FirstOrDefault(d => d.StateMasterId == userRecord.StateMasterId);
 
-
-            return new DashBoardProfile
+            if (roles.Contains("SuperAdmin"))
             {
-                Name = userRecord.UserName,
-                MobileNumber = userRecord.PhoneNumber,
-                UserEmail = userRecord.Email,
-                UserType = "DashBoard",
-                Roles = rolesList,
-                StateMasterId = state?.StateMasterId,
-                StateName = state?.StateName,
-                DistrictMasterId = state?.DistrictMasters?.FirstOrDefault()?.DistrictMasterId, // Handle potential null state or DistrictMasters collection
-                DistrictName = state?.DistrictMasters?.FirstOrDefault()?.DistrictName,
-                AssemblyMasterId = state?.DistrictMasters?.FirstOrDefault()?.AssemblyMaster?.FirstOrDefault()?.AssemblyMasterId, // Nested null checks
-                AssemblyName = state?.DistrictMasters?.FirstOrDefault()?.AssemblyMaster?.FirstOrDefault()?.AssemblyName,
-                FourthLevelHMasterId = state?.DistrictMasters?.FirstOrDefault()?.AssemblyMaster?.FirstOrDefault()?.FourthLevelH?.FirstOrDefault()?.FourthLevelHMasterId,
-                FourthLevelHName = state?.DistrictMasters?.FirstOrDefault()?.AssemblyMaster?.FirstOrDefault()?.FourthLevelH?.FirstOrDefault()?.HierarchyName
-            };
+                return new DashBoardProfile
+                {
+                    Name = userRecord.UserName,
+                    MobileNumber = userRecord.PhoneNumber,
+                    UserEmail = userRecord.Email,
+                    UserType = "DashBoard",
+                    Roles = rolesList,
+                    StateMasterId = state?.StateMasterId,
+                    StateName = state?.StateName,
+                      };
+            }
+            else
+            {
+                return new DashBoardProfile
+                {
+                    Name = userRecord.UserName,
+                    MobileNumber = userRecord.PhoneNumber,
+                    UserEmail = userRecord.Email,
+                    UserType = "DashBoard",
+                    Roles = rolesList,
+                    StateMasterId = state?.StateMasterId,
+                    StateName = state?.StateName,
+                    DistrictMasterId = state?.DistrictMasters?.FirstOrDefault()?.DistrictMasterId, // Handle potential null state or DistrictMasters collection
+                    DistrictName = state?.DistrictMasters?.FirstOrDefault()?.DistrictName,
+                    AssemblyMasterId = state?.DistrictMasters?.FirstOrDefault()?.AssemblyMaster?.FirstOrDefault()?.AssemblyMasterId, // Nested null checks
+                    AssemblyName = state?.DistrictMasters?.FirstOrDefault()?.AssemblyMaster?.FirstOrDefault()?.AssemblyName,
+                    FourthLevelHMasterId = state?.DistrictMasters?.FirstOrDefault()?.AssemblyMaster?.FirstOrDefault()?.FourthLevelH?.FirstOrDefault()?.FourthLevelHMasterId,
+                    FourthLevelHName = state?.DistrictMasters?.FirstOrDefault()?.AssemblyMaster?.FirstOrDefault()?.FourthLevelH?.FirstOrDefault()?.HierarchyName
+                };
 
+            }
 
         }
 

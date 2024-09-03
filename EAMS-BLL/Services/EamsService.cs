@@ -3346,9 +3346,9 @@ namespace EAMS_BLL.Services
             return await _eamsRepository.GetUnOpposedDetails();
 
         }
-        public async Task<List<UnOpposedList>> GetUnOpposedDetailsByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId)
+        public async Task<List<UnOpposedList>> GetUnOpposedDetailsByAssemblyId(int electionType,int stateMasterId, int districtMasterId, int assemblyMasterId )
         {
-            return await _eamsRepository.GetUnOpposedDetailsByFourthLevelId(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelhMasterId);
+            return await _eamsRepository.GetUnOpposedDetailsByAssemblyId(electionType,stateMasterId, districtMasterId, assemblyMasterId);
         }
         public async Task<ServiceResponse> UpdateUnOpposedDetails(UnOpposed unOpposed)
         {

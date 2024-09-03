@@ -280,7 +280,7 @@ namespace EAMS_ACore.IRepository
         #region UnOpposed Public Details
         Task<ServiceResponse> AddUnOpposedDetails(UnOpposed unOpposed);
         Task<List<UnOpposed>> GetUnOpposedDetails();
-        Task<List<UnOpposedList>> GetUnOpposedDetailsByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId);
+        Task<List<UnOpposedList>> GetUnOpposedDetailsByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId);
         Task<ServiceResponse> UpdateUnOpposedDetails(UnOpposed unOpposed);
         Task<UnOpposedList> GetUnOpposedById(int unOpposedMasterId);
         Task<ServiceResponse> DeleteUnOpposedById(int unOpposedMasterId);

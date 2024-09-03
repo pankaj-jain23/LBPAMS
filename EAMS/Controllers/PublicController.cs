@@ -36,7 +36,9 @@ namespace EAMS.Controllers
 
             // Generate a unique file name for the PDF file
             var fileName = Guid.NewGuid().ToString() + Path.GetExtension(kycViewModel.NominationPdf.FileName);
-            var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "pdfs");
+            var folderPath = @"C:\inetpub\wwwroot\LBPAMSDOC\kyc";
+
+
             var filePath = Path.Combine(folderPath, fileName);
 
             // Ensure the directory exists
@@ -53,7 +55,7 @@ namespace EAMS.Controllers
 
             // Map the ViewModel to the Model
             var kyc = _mapper.Map<Kyc>(kycViewModel);
-            var fullpathName = Path.Combine("pdfs", fileName); // Store relative path
+            var fullpathName = Path.Combine("kyc", fileName); // Store relative path
             kyc.NominationPdfPath = $"{fullpathName.Replace("\\", "/")}";
             // Call your service method to add KYC details
             var result = await _eamsService.AddKYCDetails(kyc);
@@ -76,7 +78,8 @@ namespace EAMS.Controllers
             var kycList = await _eamsService.GetKYCDetails();
 
             var request = HttpContext.Request;
-            var baseUrl = $"{request.Scheme}://{request.Host}/lbpams/pdfs";
+            var baseUrl = $"{request.Scheme}://{request.Host}/LBPAMSDOC/kyc";
+
 
             var kycResponses = kycList.Select(kyc => new KycResponseViewModel
             {
@@ -110,7 +113,7 @@ namespace EAMS.Controllers
             {
                 // Generate a unique file name for the PDF file
                 var fileName = Guid.NewGuid().ToString() + Path.GetExtension(updateKycViewModel.NominationPdf.FileName);
-                var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "pdfs");
+                var folderPath = @"C:\inetpub\wwwroot\LBPAMSDOC\kyc";
                 var filePath = Path.Combine(folderPath, fileName);
 
                 // Ensure the directory exists
@@ -126,7 +129,7 @@ namespace EAMS.Controllers
                 }
 
                 // Update NominationPdfPath with the new file name
-                mappedData.NominationPdfPath = Path.Combine("pdfs", fileName);
+                mappedData.NominationPdfPath = Path.Combine("kyc", fileName);
 
                 // Optionally, delete the old file if needed
                 if (!string.IsNullOrEmpty(mappedData.NominationPdfPath))
@@ -234,7 +237,7 @@ namespace EAMS.Controllers
 
             // Generate a unique file name for the PDF file
             var fileName = Guid.NewGuid().ToString() + Path.GetExtension(unOppoedViewModel.NominationPdf.FileName);
-            var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "pdfs");
+            var folderPath = @"C:\inetpub\wwwroot\LBPAMSDOC\unopposed";
             var filePath = Path.Combine(folderPath, fileName);
 
             // Ensure the directory exists
@@ -251,7 +254,7 @@ namespace EAMS.Controllers
 
             // Map the ViewModel to the Model
             var mappedData = _mapper.Map<UnOpposed>(unOppoedViewModel); 
-            var fullpathName = Path.Combine("pdfs", fileName); // Store relative path
+            var fullpathName = Path.Combine("unopposed", fileName); // Store relative path
             mappedData.NominationPdfPath = $"{fullpathName.Replace("\\", "/")}";
             // Call your service method to add KYC details
             // Call your service method to add KYC details
@@ -275,8 +278,8 @@ namespace EAMS.Controllers
             var list = await _eamsService.GetUnOpposedDetails();
 
             var request = HttpContext.Request;
-            var baseUrl = $"{request.Scheme}://{request.Host}/lbpams/pdfs";
-
+            var baseUrl = $"{request.Scheme}://{request.Host}/LBPAMSDOC/unopposed";
+             
             var kycResponses = list.Select(unOpposed => new UnOpposedResponseViewModel
             {
                 UnOpposedMasterId = unOpposed.UnOpposedMasterId,
@@ -285,7 +288,8 @@ namespace EAMS.Controllers
                 ElectionTypeMasterId = unOpposed.ElectionTypeMasterId,
                 AssemblyMasterId = unOpposed.AssemblyMasterId,
                 FourthLevelHMasterId = unOpposed.FourthLevelHMasterId,
-                SarpanchWardsMasterId = unOpposed.SarpanchWardsMasterId,
+                GPPanchayatWardsMasterId = unOpposed.GPPanchayatWardsMasterId,
+                PSZonePanchayatMasterId = unOpposed.PSZonePanchayatMasterId,
                 CandidateName = unOpposed.CandidateName,
                 FatherName = unOpposed.FatherName,
                 NominationPdfPath = !string.IsNullOrEmpty(unOpposed.NominationPdfPath)
@@ -297,18 +301,18 @@ namespace EAMS.Controllers
             return Ok(kycResponses);
         }
          
-        [HttpGet("GetUnOpposedDetailsByFourthLevelId")]
-        public async Task<IActionResult> GetUnOpposedDetailsByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelhMasterId)
+        [HttpGet("GetUnOpposedDetailsByAssemblyId")]
+        public async Task<IActionResult> GetUnOpposedDetailsByAssemblyId(int electionType,int stateMasterId, int districtMasterId, int assemblyMasterId )
         {
-            var result = await _eamsService.GetUnOpposedDetailsByFourthLevelId(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelhMasterId);
+            var result = await _eamsService.GetUnOpposedDetailsByAssemblyId(electionType,stateMasterId, districtMasterId, assemblyMasterId);
 
             if (result.Count != 0 || result != null)
             {
                 var data = new
                 {
                     count = result.Count,
-                    Sarpacnh = result.Where(k => k.SarpanchWardsMasterId == null).ToList(),
-                    Panch = result.Where(k => k.SarpanchWardsMasterId != null).ToList()
+                    Sarpacnh = result.Where(k => k.GPPanchayatWardsMasterId == null).ToList(),
+                    Panch = result.Where(k => k.GPPanchayatWardsMasterId != null).ToList()
 
                 };
                 return Ok(data);
@@ -331,7 +335,7 @@ namespace EAMS.Controllers
             {
                 // Generate a unique file name for the PDF file
                 var fileName = Guid.NewGuid().ToString() + Path.GetExtension(updateUnOpposedViewModel.NominationPdf.FileName);
-                var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "pdfs");
+                var folderPath = @"C:\inetpub\wwwroot\LBPAMSDOC\unopposed";
                 var filePath = Path.Combine(folderPath, fileName);
 
                 // Ensure the directory exists
@@ -347,7 +351,7 @@ namespace EAMS.Controllers
                 }
 
                 // Update NominationPdfPath with the new file name
-                mappedData.NominationPdfPath = Path.Combine("pdfs", fileName);
+                mappedData.NominationPdfPath = Path.Combine("unopposed", fileName);
 
                 // Optionally, delete the old file if needed
                 if (!string.IsNullOrEmpty(mappedData.NominationPdfPath))
