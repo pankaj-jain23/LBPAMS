@@ -2442,7 +2442,7 @@ namespace EAMS_DAL.Repository
                                     FourthLevelHMasterId = bt.FourthLevelHMasterId,
                                     FourthLevelHName = frth.HierarchyName,
                                     PSZoneMasterId=bt.PSZonePanchayatMasterId,
-                                    PSZonePanchayatName=zp.PSZonePanchayatName
+                                    PSZonePanchayatName=zp.PSZonePanchayatName,
                                      IsPrimaryBooth = bt.IsPrimaryBooth
 
                                 };
