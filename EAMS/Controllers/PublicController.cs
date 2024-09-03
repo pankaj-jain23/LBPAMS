@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using EAMS.ViewModels;
 using EAMS.ViewModels.PublicModels;
+using EAMS_ACore;
 using EAMS_ACore.HelperModels;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.Models.PublicModels;
@@ -538,25 +539,22 @@ namespace EAMS.Controllers
         [HttpGet("GetGPVoterById")]
         public async Task<IActionResult> GetGPVoterById(int gpVoterMasterId)
         {
-            if (gpVoterMasterId == null)
+            var result = await _eamsService.GetGPVoterById(gpVoterMasterId);
+
+            if (result != null)
             {
-                return BadRequest("Master Id is null");
+                var data = new
+                {
+                    gpVoter = result
+                };
+                return Ok(data);
             }
             else
             {
-
-
-                var resutlt = await _eamsService.GetGPVoterById(gpVoterMasterId);
-                if (resutlt is not null)
-                {
-                    return Ok(resutlt);
-                }
-                else
-                {
-                    return NotFound(resutlt);
-                }
+                return NotFound();
             }
         }
+
         [HttpGet("GetGPVoterListById")]
         public async Task<IActionResult> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {

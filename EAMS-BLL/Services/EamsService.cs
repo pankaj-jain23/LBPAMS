@@ -3457,7 +3457,7 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.UpdateGPVoterDetails(gpVoterPdf);
         }
-        public async Task<GPVoter> GetGPVoterById(int gpVoterMasterId)
+        public async Task<GPVoterList> GetGPVoterById(int gpVoterMasterId)
         {
             return await _eamsRepository.GetGPVoterById(gpVoterMasterId);
         }
