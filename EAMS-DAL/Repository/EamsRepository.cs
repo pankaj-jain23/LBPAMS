@@ -16646,7 +16646,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                           from pz in psZones.DefaultIfEmpty()
                           join gpWard in _context.GPPanchayatWards on k.GPPanchayatWardsMasterId equals gpWard.GPPanchayatWardsMasterId into gpWards
                           from gw in gpWards.DefaultIfEmpty()
-                          where k.ElectionTypeMasterId == electionType &&
+                          where 
                                 k.StateMasterId == stateMasterId &&
                                 k.DistrictMasterId == districtMasterId &&
                                 k.AssemblyMasterId == assemblyMasterId
@@ -16765,7 +16765,11 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                           from pz in psZones.DefaultIfEmpty()
                           join gpWard in _context.GPPanchayatWards on un.GPPanchayatWardsMasterId equals gpWard.GPPanchayatWardsMasterId into gpWards
                           from gw in gpWards.DefaultIfEmpty()
-                          select new UnOpposedList
+                          where 
+                                   un.StateMasterId == stateMasterId &&
+                                  un.DistrictMasterId == districtMasterId &&
+                                  un.AssemblyMasterId == assemblyMasterId
+                                select new UnOpposedList
                           {
                               UnOpposedMasterId = un.UnOpposedMasterId,
                               StateName = state.StateName,
