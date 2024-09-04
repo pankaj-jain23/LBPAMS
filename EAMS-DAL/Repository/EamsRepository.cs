@@ -16632,8 +16632,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         public async Task<List<KycList>> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
             var baseUrl = "https://lbpams.punjab.gov.in/LBPAMSDOC/";
-            
-            // Execute the initial query that can be translated to SQL
+
+            // Execute the query with the necessary where conditions
             var kycList = from k in _context.Kyc
                           join state in _context.StateMaster on k.StateMasterId equals state.StateMasterId
                           join district in _context.DistrictMaster on k.DistrictMasterId equals district.DistrictMasterId into districts
@@ -16646,31 +16646,31 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                           from pz in psZones.DefaultIfEmpty()
                           join gpWard in _context.GPPanchayatWards on k.GPPanchayatWardsMasterId equals gpWard.GPPanchayatWardsMasterId into gpWards
                           from gw in gpWards.DefaultIfEmpty()
+                          where k.ElectionTypeMasterId == electionType &&
+                                k.StateMasterId == stateMasterId &&
+                                k.DistrictMasterId == districtMasterId &&
+                                k.AssemblyMasterId == assemblyMasterId
                           select new KycList
                           {
                               KycMasterId = k.KycMasterId,
-                              StateName=state.StateName,
+                              StateName = state.StateName,
                               StateMasterId = k.StateMasterId,
-                              DistrictName=d.DistrictName,
+                              DistrictName = d.DistrictName,
                               DistrictMasterId = k.DistrictMasterId,
-                              AssemblyName=a.AssemblyName,
+                              AssemblyName = a.AssemblyName,
                               AssemblyMasterId = k.AssemblyMasterId,
-                              FourthLevelName=fl.HierarchyName,
+                              FourthLevelName = fl.HierarchyName,
                               FourthLevelHMasterId = k.FourthLevelHMasterId,
-                              GPPanchayatWardsName=gw.GPPanchayatWardsName,
+                              GPPanchayatWardsName = gw.GPPanchayatWardsName,
                               GPPanchayatWardsMasterId = k.GPPanchayatWardsMasterId,
-                              CandidateType = k.GPPanchayatWardsMasterId == 0 ? "Sarpanch" : "Panch", 
+                              CandidateType = k.GPPanchayatWardsMasterId == 0 ? "Sarpanch" : "Panch",
                               CandidateName = k.CandidateName,
                               FatherName = k.FatherName,
                               NominationPdfPath = $"{baseUrl}{k.NominationPdfPath}",
-
                           };
 
-            
-
-            return kycList.ToList();
+            return await kycList.ToListAsync();
         }
-
 
         public async Task<KycList> GetKycById(int kycMasterId)
         {
