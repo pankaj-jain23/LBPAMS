@@ -82,10 +82,8 @@ namespace EAMS_BLL.AuthServices
                 if (user is not null)
                 {
 
-                    var userRoles = await _authRepository.GetRoleByUser(user);
-
-
-                    var authClaims = GenerateClaims(user);
+                    var userRoles = await _authRepository.GetRoleByUser(user); 
+                    var authClaims =await GenerateClaims(user);
 
                     // Add user roles to authClaims
                     foreach (var userRole in userRoles)
@@ -146,13 +144,17 @@ namespace EAMS_BLL.AuthServices
 
         }
 
-        private List<Claim> GenerateClaims(UserRegistration user)
+        private async Task<List<Claim>> GenerateClaims(UserRegistration user)
         {
+            var getElection = await  _authRepository.GetElectionTypeById(user.ElectionTypeMasterId);
+
             var authClaims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.MobilePhone, user.PhoneNumber),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim("ElectionTypeMasterId",user.ElectionTypeMasterId.ToString()),
+                new Claim("ElectionName",getElection.ElectionType),
                 new Claim("UserId", user.Id),
                 new Claim("StateMasterId", user.StateMasterId.ToString()),
                 new Claim("DistrictMasterId", user.DistrictMasterId.ToString()),

@@ -2,6 +2,7 @@
 using EAMS_ACore.HelperModels;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
+using EAMS_ACore.Models.ElectionType;
 
 namespace EAMS_ACore.IAuthRepository
 {
@@ -26,6 +27,7 @@ namespace EAMS_ACore.IAuthRepository
         Task<ServiceResponse> CreateUser(UserRegistration userRegistration, List<string> roleIds);
         Task<ServiceResponse> UpdateUser(UserRegistration userRegistration);
         Task<List<Role>> GetRoleByUser(UserRegistration user);
+     
         Task<ServiceResponse> CreateSOPin(CreateSOPin createSOPin, string soId);
         Task<SectorOfficerMaster> GetSOById(int soId);
         Task<DashBoardProfile> GetDashboardProfile(string userId, int? stateMasterId);
@@ -40,6 +42,6 @@ namespace EAMS_ACore.IAuthRepository
         Task<ServiceResponse> ResetPassword(ResetPasswordModel resetPasswordModel);
         Task<Dictionary<string, object>> GetUserList(GetUser getUser);
 
-
+        Task<ElectionTypeMaster> GetElectionTypeById(int? electionTypeMasterId);
     }
 }

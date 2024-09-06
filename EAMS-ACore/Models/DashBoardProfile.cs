@@ -7,7 +7,9 @@
         public string? UserType { get; set; }
         public string? UserEmail { get; set; }
         public List<string> Roles { get; set; }
-
+         
+        public int? ElectionTypeMasterId { get; set; }
+        public string? ElectionName { get; set; }
         public int? StateMasterId { get; set; }
         public string? StateName { get; set; }
         public int? DistrictMasterId { get; set; }

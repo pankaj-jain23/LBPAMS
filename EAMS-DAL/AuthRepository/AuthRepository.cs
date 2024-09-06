@@ -4,6 +4,7 @@ using EAMS_ACore.HelperModels;
 using EAMS_ACore.IAuthRepository;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
+using EAMS_ACore.Models.ElectionType;
 using EAMS_DAL.DBContext;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -315,7 +316,7 @@ namespace EAMS_DAL.AuthRepository
             }
             catch (DbUpdateException ex)
             {
-                
+
 
                 return new ServiceResponse()
                 {
@@ -556,6 +557,7 @@ namespace EAMS_DAL.AuthRepository
 
             var roles = await _userManager.GetRolesAsync(userRecord);
             var rolesList = roles.ToList();
+            var getElection = await GetElectionTypeById(userRecord.ElectionTypeMasterId);
 
             var state = _context.StateMaster
       .Include(d => d.DistrictMasters)
@@ -574,7 +576,9 @@ namespace EAMS_DAL.AuthRepository
                     Roles = rolesList,
                     StateMasterId = state?.StateMasterId,
                     StateName = state?.StateName,
-                      };
+                    ElectionTypeMasterId=userRecord.ElectionTypeMasterId,
+                    ElectionName=getElection.ElectionType
+                };
             }
             else
             {
@@ -585,6 +589,8 @@ namespace EAMS_DAL.AuthRepository
                     UserEmail = userRecord.Email,
                     UserType = "DashBoard",
                     Roles = rolesList,
+                    ElectionTypeMasterId = userRecord.ElectionTypeMasterId,
+                    ElectionName = getElection.ElectionType,
                     StateMasterId = state?.StateMasterId,
                     StateName = state?.StateName,
                     DistrictMasterId = state?.DistrictMasters?.FirstOrDefault()?.DistrictMasterId, // Handle potential null state or DistrictMasters collection
@@ -749,6 +755,14 @@ namespace EAMS_DAL.AuthRepository
     };
 
             return result;
+        }
+        #endregion
+
+
+        #region Get Election Type
+        public async Task<ElectionTypeMaster> GetElectionTypeById(int? electionTypeMasterId)
+        {
+            return await _context.ElectionTypeMaster.FirstOrDefaultAsync(d => d.ElectionTypeMasterId == electionTypeMasterId);
         }
         #endregion
     }
