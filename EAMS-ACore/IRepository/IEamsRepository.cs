@@ -59,12 +59,12 @@ namespace EAMS_ACore.IRepository
 
         Task<SectorOfficerProfile> GetSectorOfficerProfile(string soId);
         Task<SectorOfficerProfile> GetBLOOfficerProfile(string soId);
-        Task<Response> AddSectorOfficer(SectorOfficerMaster sectorOfficerMaster);
+        Task<Response> AddFieldOfficer(FieldOfficerMaster fieldOfficerViewModel);
         Task<Response> AddBLOOfficer(BLOMaster bLOMaster);
-        Task<Response> UpdateSectorOfficer(SectorOfficerMaster sectorOfficerMaster);
+        Task<Response> UpdateFieldOfficer(FieldOfficerMaster fieldOfficerViewModel);
         Task<Response> UpdateBLOOfficer(BLOMaster bLOMaster);
         Task<List<CombinedMaster>> GetBoothListBySoId(string stateMasterId, string districtMasterId, string assemblyMasterId, string soId);
-        Task<SectorOfficerMaster> GetSOById(string soId);
+        Task<FieldOfficerMaster> GetFieldOfficerById(int FieldOfficerMasterId);
         #endregion
 
         #region Booth Master

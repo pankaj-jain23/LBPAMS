@@ -426,16 +426,16 @@ namespace EAMS_DAL.AuthRepository
 
 
         #region ValidateMobile && Sector Officer Master && BLO Master
-        public async Task<List<SectorOfficerMaster>> ValidateMobile(ValidateMobile validateMobile)
+        public async Task<List<FieldOfficerMaster>> ValidateMobile(ValidateMobile validateMobile)
         {
-            var soRecord = await _context.SectorOfficerMaster.Where(d => d.SoMobile == validateMobile.MobileNumber && d.SoStatus == true).OrderBy(d => d.ElectionTypeMasterId).ToListAsync();
+            var soRecord = await _context.FieldOfficerMaster.Where(d => d.FieldOfficerMobile == validateMobile.MobileNumber && d.FieldOfficerStatus == true).OrderBy(d => d.ElectionTypeMasterId).ToListAsync();
             return soRecord;
         }
 
-        public async Task<ServiceResponse> SectorOfficerMasterRecord(SectorOfficerMaster sectorOfficerMaster)
+        public async Task<ServiceResponse> SectorOfficerMasterRecord(FieldOfficerMaster sectorOfficerMaster)
         {
-            var soRecord = await _context.SectorOfficerMaster
-                .FirstOrDefaultAsync(d => d.SoMobile == sectorOfficerMaster.SoMobile &&
+            var soRecord = await _context.FieldOfficerMaster
+                .FirstOrDefaultAsync(d => d.FieldOfficerMobile == sectorOfficerMaster.FieldOfficerMobile &&
                                           d.ElectionTypeMasterId == sectorOfficerMaster.ElectionTypeMasterId);
 
             if (soRecord != null && !soRecord.IsLocked)
@@ -460,7 +460,7 @@ namespace EAMS_DAL.AuthRepository
         #region CreateSO Pin
         public async Task<ServiceResponse> CreateSOPin(CreateSOPin createSOPin, string soId)
         {
-            var soRecord = _context.SectorOfficerMaster.Where(d => d.SOMasterId == Convert.ToInt32(soId)).FirstOrDefault();
+            var soRecord = _context.FieldOfficerMaster.Where(d => d.FieldOfficerMasterId == Convert.ToInt32(soId)).FirstOrDefault();
             if (soRecord == null)
             {
                 return new ServiceResponse()
@@ -472,7 +472,7 @@ namespace EAMS_DAL.AuthRepository
             else
             {
                 soRecord.AppPin = createSOPin.ConfirmSOPin;
-                _context.SectorOfficerMaster.Update(soRecord);
+                _context.FieldOfficerMaster.Update(soRecord);
                 _context.SaveChanges();
                 return new ServiceResponse()
                 {
@@ -530,9 +530,9 @@ namespace EAMS_DAL.AuthRepository
         #endregion
 
         #region GetSOByID
-        public async Task<SectorOfficerMaster> GetSOById(int soId)
+        public async Task<FieldOfficerMaster> GetSOById(int soId)
         {
-            var soRecord = _context.SectorOfficerMaster.Where(d => d.SOMasterId == soId).FirstOrDefault();
+            var soRecord = _context.FieldOfficerMaster.Where(d => d.FieldOfficerMasterId == soId).FirstOrDefault();
             if (soRecord is not null)
             {
                 return soRecord;

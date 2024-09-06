@@ -161,7 +161,7 @@ namespace EAMS_DAL.Repository
         public async Task<List<SOList>> GetSectorOfficerstoSendSMS(SendSMSModel sendSMSModel)
         {
             List<SOList> soEvents = new List<SOList>();
-            var soList = _context.SectorOfficerMaster.Where(p => p.StateMasterId == sendSMSModel.StateMasterId && p.SoStatus).Select(d => new { d.SOMasterId, d.SoName, d.SoMobile }).ToList();
+            var soList = _context.FieldOfficerMaster.Where(p => p.StateMasterId == sendSMSModel.StateMasterId && p.FieldOfficerStatus).Select(d => new { d.FieldOfficerMasterId, d.FieldOfficerName, d.FieldOfficerMobile }).ToList();
             if (soList.Count > 0)
             {
                 if (sendSMSModel.EventId > 0)
@@ -170,7 +170,7 @@ namespace EAMS_DAL.Repository
                     {
 
                         List<int> boothIdPending = new List<int>(); List<int> boothIdTotal = new List<int>();
-                        var boothList = await _context.BoothMaster.Where(d => d.StateMasterId == sendSMSModel.StateMasterId && d.BoothStatus == true && d.AssignedTo == so.SOMasterId.ToString()).Select(p => p.BoothMasterId).ToListAsync();
+                        var boothList = await _context.BoothMaster.Where(d => d.StateMasterId == sendSMSModel.StateMasterId && d.BoothStatus == true && d.AssignedTo == so.FieldOfficerMasterId.ToString()).Select(p => p.BoothMasterId).ToListAsync();
                         boothIdTotal.Add(boothList.Count);
                         foreach (var boothId in boothList)
                         {
@@ -203,9 +203,9 @@ namespace EAMS_DAL.Repository
 
                         var soRecord = new SOList
                         {
-                            SOMasterId = so.SOMasterId,
-                            SoName = so.SoName,
-                            SoMobile = so.SoMobile,
+                            SOMasterId = so.FieldOfficerMasterId,
+                            SoName = so.FieldOfficerName,
+                            SoMobile = so.FieldOfficerMobile,
                             PendingBooths = boothIdPending.Count,
                             TotalBooths = boothIdTotal.Count
                         };
@@ -222,9 +222,9 @@ namespace EAMS_DAL.Repository
 
                         var soRecord = new SOList
                         {
-                            SOMasterId = so.SOMasterId,
-                            SoName = so.SoName,
-                            SoMobile = so.SoMobile
+                            SOMasterId = so.FieldOfficerMasterId,
+                            SoName = so.FieldOfficerName,
+                            SoMobile = so.FieldOfficerMobile
 
                         };
                         soEvents.Add(soRecord);

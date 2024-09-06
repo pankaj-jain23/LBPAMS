@@ -78,7 +78,6 @@ namespace EAMS.Helper
             CreateMap<NotificationViewModel, Notification>().ReverseMap();
             #endregion
 
-
             #region SMSTemplateViewModel SMSTemplateModel
 
             CreateMap<SMSTemplateViewModel, SMSTemplate>()
@@ -105,7 +104,6 @@ namespace EAMS.Helper
             #region ResetPasswordViewModel ResetPassword
             CreateMap<ResetPasswordViewModel, ResetPasswordModel>().ReverseMap();
             #endregion
-
 
             #region GetRefreshTokenViewModel GetRefreshToken 
             CreateMap<GetRefreshTokenViewModel, GetRefreshToken>()
@@ -330,31 +328,33 @@ namespace EAMS.Helper
 
             #endregion
 
-            #region SectorOfficerViewModel SectorOfficerMaster
-            //CreateMap<SectorOfficerViewModel, SectorOfficerMaster>()
-            //  .ForMember(dest => dest.SOMasterId, opt => opt.MapFrom(src => src.SoId))
-            //  .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
-            //  .ForMember(dest => dest.SoOfficeName, opt => opt.MapFrom(src => src.SoOfficeName))
-            //  .ForMember(dest => dest.SoName, opt => opt.MapFrom(src => src.SoName))
-            //  .ForMember(dest => dest.SoMobile, opt => opt.MapFrom(src => src.SoMobile))
-            //  .ForMember(dest => dest.SoDesignation, opt => opt.MapFrom(src => src.SoDesignation))
-            //  .ForMember(dest => dest.SoAssemblyCode, opt => opt.MapFrom(src => src.SoAssemblyCode))
-            //  .ForMember(dest => dest.SoStatus, opt => opt.MapFrom(src => src.IsStatus))
-            //  .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
-            //  .ReverseMap();
+            #region FieldOfficerViewModel FieldOfficerMaster
+            CreateMap<UpdateFieldOfficerViewModel, FieldOfficerMaster>()
+              .ForMember(dest => dest.FieldOfficerMasterId, opt => opt.MapFrom(src => src.FieldOfficerMasterId))
+              .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+              .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+              .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId)) 
+              .ForMember(dest => dest.FieldOfficerName, opt => opt.MapFrom(src => src.FieldOfficerName))
+              .ForMember(dest => dest.FieldOfficerOfficeName, opt => opt.MapFrom(src => src.FieldOfficerOfficeName))
+              .ForMember(dest => dest.FieldOfficerMobile, opt => opt.MapFrom(src => src.FieldOfficerMobile))
+              .ForMember(dest => dest.FieldOfficerDesignation, opt => opt.MapFrom(src => src.FieldOfficerDesignation)) 
+              .ForMember(dest => dest.FieldOfficerStatus, opt => opt.MapFrom(src => src.IsStatus))
+              .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+              .ReverseMap();
             #endregion
 
-            #region AddSectorOfficerViewModel SectorOfficerMaster
-            //CreateMap<AddSectorOfficerViewModel, SectorOfficerMaster>()
-            //  .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
-            //  .ForMember(dest => dest.SoOfficeName, opt => opt.MapFrom(src => src.SoOfficeName))
-            //  .ForMember(dest => dest.SoName, opt => opt.MapFrom(src => src.SoName))
-            //  .ForMember(dest => dest.SoMobile, opt => opt.MapFrom(src => src.SoMobile))
-            //  .ForMember(dest => dest.SoDesignation, opt => opt.MapFrom(src => src.SoDesignation))
-            //  .ForMember(dest => dest.SoAssemblyCode, opt => opt.MapFrom(src => src.SoAssemblyCode))
-            //  .ForMember(dest => dest.SoStatus, opt => opt.MapFrom(src => src.IsStatus))
-            //  .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
-            //  .ReverseMap();
+            #region FieldOfficerViewModel FieldOfficerMaster
+            CreateMap<FieldOfficerViewModel, FieldOfficerMaster>() 
+              .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+              .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+              .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+              .ForMember(dest => dest.FieldOfficerName, opt => opt.MapFrom(src => src.FieldOfficerName))
+              .ForMember(dest => dest.FieldOfficerOfficeName, opt => opt.MapFrom(src => src.FieldOfficerOfficeName))
+              .ForMember(dest => dest.FieldOfficerMobile, opt => opt.MapFrom(src => src.FieldOfficerMobile))
+              .ForMember(dest => dest.FieldOfficerDesignation, opt => opt.MapFrom(src => src.FieldOfficerDesignation))
+              .ForMember(dest => dest.FieldOfficerStatus, opt => opt.MapFrom(src => src.IsStatus))
+              .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+              .ReverseMap();
             #endregion
 
             #region SectorOfficerBoothViewModel CombinedMaster

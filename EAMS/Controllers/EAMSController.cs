@@ -151,7 +151,6 @@ namespace EAMS.Controllers
 
         #endregion
 
-
         #region State master
         [HttpGet]
         [Route("StateList")]
@@ -587,7 +586,7 @@ namespace EAMS.Controllers
 
         #endregion
 
-        #region  SO Master
+        #region  FieldOfficer Master
         [HttpGet]
         [Route("GetSectorOfficersListById")]
         [Authorize]
@@ -654,14 +653,14 @@ namespace EAMS.Controllers
         }
 
         [HttpPost]
-        [Route("AddSOUser")]
-        public async Task<IActionResult> AddSoUser(AddSectorOfficerViewModel addSectorOfficerViewModel)
+        [Route("AddFieldOfficer")]
+        public async Task<IActionResult> AddFieldOfficer(FieldOfficerViewModel fieldOfficerViewModel)
         {
             if (ModelState.IsValid)
             {
 
-                var mappedData = _mapper.Map<SectorOfficerMaster>(addSectorOfficerViewModel);
-                var result = await _EAMSService.AddSectorOfficer(mappedData);
+                var mappedData = _mapper.Map<FieldOfficerMaster>(fieldOfficerViewModel);
+                var result = await _EAMSService.AddFieldOfficer(mappedData);
 
                 switch (result.Status)
                 {
@@ -684,14 +683,14 @@ namespace EAMS.Controllers
         }
 
         [HttpPut]
-        [Route("UpdateSOUser")]
-        public async Task<IActionResult> UpdateSOUser(SectorOfficerViewModel sectorOfficerViewModel)
+        [Route("UpdateFieldOfficer")]
+        public async Task<IActionResult> UpdateFieldOfficer(UpdateFieldOfficerViewModel updateFieldOfficerViewModel)
         {
             if (ModelState.IsValid)
             {
-                var mappedData = _mapper.Map<SectorOfficerMaster>(sectorOfficerViewModel);
+                var mappedData = _mapper.Map<FieldOfficerMaster>(updateFieldOfficerViewModel);
 
-                var result = await _EAMSService.UpdateSectorOfficer(mappedData);
+                var result = await _EAMSService.UpdateFieldOfficer(mappedData);
                 switch (result.Status)
                 {
                     case RequestStatusEnum.OK:
@@ -733,23 +732,24 @@ namespace EAMS.Controllers
         }
 
         [HttpGet]
-        [Route("GetSOById")]
-        public async Task<IActionResult> GetSOById(string soMasterId)
+        [Route("GetFieldOfficerById")]
+        public async Task<IActionResult> GetFieldOfficerById(int FieldOfficerMasterId)
         {
-            var soRecord = await _EAMSService.GetSOById(soMasterId);
-            if (soRecord != null)
+            var foRecord = await _EAMSService.GetFieldOfficerById(FieldOfficerMasterId);
+            if (foRecord != null)
             {
 
 
 
-                return Ok(soRecord);
+                return Ok(foRecord);
             }
             else
             {
-                return NotFound($"[{soMasterId}] not exist");
+                return NotFound($"[{FieldOfficerMasterId}] not exist");
             }
 
         }
+
         #endregion
 
         #region Booth Master

@@ -20,6 +20,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 using System.Data;
+using System.Diagnostics.Metrics;
 using System.Globalization;
 using System.Security.Claims;
 
@@ -269,61 +270,20 @@ namespace EAMS_DAL.Repository
                         return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
                     }
 
-                case "SOMaster":
-                //var isSOExist = await _context.SectorOfficerMaster.Where(d => d.SOMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
-                //if (isSOExist != null)
-                //{
-
-                //    if (updateMasterStatus.IsStatus == true)
-                //    {
-
-                //        var assemblyActive = await _context.AssemblyMaster.Where(p => p.AssemblyCode == isSOExist.SoAssemblyCode && p.StateMasterId == isSOExist.StateMasterId).Select(p => p.AssemblyStatus).FirstOrDefaultAsync();
-                //        if (assemblyActive == true)
-                //        {
-                //            isSOExist.SoStatus = updateMasterStatus.IsStatus;
-                //            _context.SectorOfficerMaster.Update(isSOExist);
-                //            _context.SaveChanges();
-                //            return new ServiceResponse { IsSucceed = true, Message = "SO Activated Successfully" };
-                //        }
-                //        else
-                //        {
-                //            return new ServiceResponse { IsSucceed = false, Message = "Assembly is not Active od this Sector officer" };
-
-                //        }
-                //    }
-                //    else if (updateMasterStatus.IsStatus == false)
-                //    {
-
-                //        var boothListSo = await _context.BoothMaster.Where(p => p.AssignedTo == isSOExist.SOMasterId.ToString() && p.StateMasterId == isSOExist.StateMasterId).ToListAsync();
-
-                //        if (boothListSo.Count == 0)
-                //        {
-
-                //            isSOExist.SoStatus = updateMasterStatus.IsStatus;
-                //            _context.SectorOfficerMaster.Update(isSOExist);
-                //            _context.SaveChanges();
-                //            return new ServiceResponse { IsSucceed = true, Message = "SO Deactivated Successfully" };
-
-                //        }
-                //        else
-                //        {
-                //            return new ServiceResponse { IsSucceed = false, Message = "Kindly Release Booths of this Sector Officer first in order to deactivate record." };
-
-                //        }
-
-
-                //    }
-                //    else
-                //    {
-                //        return new ServiceResponse { IsSucceed = false, Message = "Status Can't be Null." };
-
-                //    }
-
-                //}
-                //else
-                //{
-                //    return new ServiceResponse { IsSucceed = false, Message = "Sector Officer Record Not Found." };
-                //}
+                case "FOMaster":
+                var isFOExist = await _context.FieldOfficerMaster.Where(d => d.FieldOfficerMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
+                    if (isFOExist != null)
+                    {
+                        isFOExist.FieldOfficerStatus = updateMasterStatus.IsStatus;
+                        _context.FieldOfficerMaster.Update(isFOExist);
+                        _context.SaveChanges();
+                        string foMessage = isFOExist.FieldOfficerStatus ? "FO Activated Successfully" : "FO Deactivated Successfully";
+                        return new ServiceResponse { IsSucceed = true, Message = foMessage };
+                    }
+                    else
+                    {
+                        return new ServiceResponse { IsSucceed = false, Message = "Field Officer Record Not Found." };
+                    }
 
                 case "BoothMaster":
                     var isBoothExist = await _context.BoothMaster.Where(d => d.BoothMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
@@ -887,14 +847,14 @@ namespace EAMS_DAL.Repository
 
 
                 case "SOMaster":
-                    var isSOExist = await _context.SectorOfficerMaster.Where(d => d.SOMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
+                    var isSOExist = await _context.FieldOfficerMaster.Where(d => d.FieldOfficerMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
                     if (isSOExist != null)
                     {
-                        var boothsAllocated = await _context.BoothMaster.Where(p => p.AssignedTo == isSOExist.SOMasterId.ToString()).ToListAsync();
+                        var boothsAllocated = await _context.BoothMaster.Where(p => p.AssignedTo == isSOExist.FieldOfficerMasterId.ToString()).ToListAsync();
                         if (boothsAllocated.Count == 0)
                         {
                             // isSOExist.SoStatus = updateMasterStatus.IsStatus;
-                            _context.SectorOfficerMaster.Remove(isSOExist);
+                            _context.FieldOfficerMaster.Remove(isSOExist);
                             await _context.SaveChangesAsync();
                             return new ServiceResponse { IsSucceed = true, Message = "So Deleted Successfully" };
                         }
@@ -1109,7 +1069,7 @@ namespace EAMS_DAL.Repository
             int stateId = Convert.ToInt32(stateMasterId);
 
             // Fetch records for both tables
-            var soRecords = _context.SectorOfficerMaster
+            var soRecords = _context.FieldOfficerMaster
                                     .Where(d => d.StateMasterId == stateId && d.OTPAttempts >= 5)
                                     .ToList();
 
@@ -1844,7 +1804,7 @@ namespace EAMS_DAL.Repository
         }
         #endregion
 
-        #region SO Master
+        #region FO Master
         public async Task<List<CombinedMaster>> GetSectorOfficersListById(string stateMasterId, string districtMasterId, string assemblyMasterId)
         {
             //IQueryable<CombinedMaster> solist = Enumerable.Empty<CombinedMaster>().AsQueryable();
@@ -1988,269 +1948,103 @@ namespace EAMS_DAL.Repository
 
 
 
-        public async Task<Response> AddSectorOfficer(SectorOfficerMaster sectorOfficerMaster)
+        public async Task<Response> AddFieldOfficer(FieldOfficerMaster fieldOfficerViewModel)
         {
-            //var isExist = _context.SectorOfficerMaster.Where(d => d.SoMobile == sectorOfficerMaster.SoMobile && d.ElectionTypeMasterId == sectorOfficerMaster.ElectionTypeMasterId && d.StateMasterId == sectorOfficerMaster.StateMasterId).FirstOrDefault();
-            //var isExistCount = _context.SectorOfficerMaster.Where(d => d.SoMobile == sectorOfficerMaster.SoMobile && d.ElectionTypeMasterId == sectorOfficerMaster.ElectionTypeMasterId).Count();
+            // Check if FieldOfficer with the same mobile number, election type, and state already exists
+            var existingOfficer = await _context.FieldOfficerMaster
+                                                .FirstOrDefaultAsync(d => d.FieldOfficerMobile == fieldOfficerViewModel.FieldOfficerMobile
+                                                                         && d.ElectionTypeMasterId == fieldOfficerViewModel.ElectionTypeMasterId
+                                                                         && d.StateMasterId == fieldOfficerViewModel.StateMasterId);
 
-            //if (isExistCount > 2)
-            //{
-            //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "SO User " + sectorOfficerMaster.SoName + " " + "Already Exists more than 2 in this this election Type" };
-            //}
+            // Check the count of FieldOfficers with the same mobile number and election type
+            var existingOfficerCount = await _context.FieldOfficerMaster
+                                                     .CountAsync(d => d.FieldOfficerMobile == fieldOfficerViewModel.FieldOfficerMobile
+                                                                    && d.ElectionTypeMasterId == fieldOfficerViewModel.ElectionTypeMasterId);
 
+            // If more than two officers already exist with the same mobile number for this election type, return an error response
+            if (existingOfficerCount > 2)
+            {
+                return new Response
+                {
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = $"FO User {fieldOfficerViewModel.FieldOfficerName} Already Exists more than 1 in this election type"
+                };
+            }
 
-            ////     if (isExist == null || isExist.ElectionTypeMasterId != sectorOfficerMaster.ElectionTypeMasterId)
-            //if (isExist == null)
-            //{
-            //    var isAssemblyRecord = _context.AssemblyMaster.Where(d => d.AssemblyCode == sectorOfficerMaster.SoAssemblyCode && d.StateMasterId == sectorOfficerMaster.StateMasterId && d.ElectionTypeMasterId == sectorOfficerMaster.ElectionTypeMasterId).FirstOrDefault();
-            //    if (isAssemblyRecord != null && isAssemblyRecord.AssemblyStatus == true)
-            //    {
-            //        //check number already exists
-            //        if (isAssemblyRecord.StateMasterId == sectorOfficerMaster.StateMasterId && isAssemblyRecord.AssemblyCode == sectorOfficerMaster.SoAssemblyCode)
-            //        {
+            // If no duplicates exist, add the new FieldOfficer and save changes
+            _context.FieldOfficerMaster.Add(fieldOfficerViewModel);
+            await _context.SaveChangesAsync();
 
-            //            sectorOfficerMaster.SoCreatedAt = BharatDateTime();
-            //            _context.SectorOfficerMaster.Add(sectorOfficerMaster);
-            //            _context.SaveChanges();
-            //            return new Response { Status = RequestStatusEnum.OK, Message = "SO User " + sectorOfficerMaster.SoName + " " + "Added Successfully" };
-            //        }
-            //        else
-            //        {
-            //            if (isExist.ElectionTypeMasterId != sectorOfficerMaster.ElectionTypeMasterId)
-            //                return new Response { Status = RequestStatusEnum.BadRequest, Message = "For this Election type SO is Already Added Choose Another Election Type" };
-            //            else
-            //                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Assembly Code is not Valid" };
-            //        }
-
-            //    }
-            //    else
-            //    {
-            //        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Assembly is not active, kindly make active in order to add Sector Officer." };
-
-            //    }
-
-
-
-            //}
-            //else
-            //{
-            //    var existSo = _context.SectorOfficerMaster.Where(so => so.SoMobile == sectorOfficerMaster.SoMobile).FirstOrDefault();
-            //    var assembly = _context.AssemblyMaster.Where(d => d.AssemblyCode == existSo.SoAssemblyCode && d.StateMasterId == existSo.StateMasterId).FirstOrDefault();
-            //    if (assembly != null)
-            //    {
-            //        return new Response { Status = RequestStatusEnum.BadRequest, Message = "SO User WIth given Mobile Number already exist" };
-
-            //    }
-            //    else
-            //    {
-            //        return new Response { Status = RequestStatusEnum.BadRequest, Message = "SO User WIth given Mobile Number : " + sectorOfficerMaster.SoMobile + " " + "Already Exists with following Details " + " " + existSo.SoName + " , " + " AssemblyCode - " + existSo.SoAssemblyCode + " " + "Assembly Name - " + " " + assembly.AssemblyName };
-
-            //    }
-
-
-            //}
-            return null;
+            // Return success response
+            return new Response
+            {
+                Status = RequestStatusEnum.OK,
+                Message = "Field Officer added successfully"
+            };
         }
 
-        public async Task<Response> UpdateSectorOfficer(SectorOfficerMaster updatedSectorOfficer)
+
+        public async Task<Response> UpdateFieldOfficer(FieldOfficerMaster updatedFieldOfficer)
         {
-            //var existingSectorOfficer = await _context.SectorOfficerMaster
-            //                                           .FirstOrDefaultAsync(so => so.SOMasterId == updatedSectorOfficer.SOMasterId);
+            // Check if the record exists based on the FieldOfficerMasterId
+            var existingOfficer = await _context.FieldOfficerMaster
+                                                .FirstOrDefaultAsync(d => d.FieldOfficerMasterId == updatedFieldOfficer.FieldOfficerMasterId);
 
-            //if (existingSectorOfficer == null)
-            //{
+            if (existingOfficer == null)
+            {
+                // Return a response if the record is not found
+                return new Response
+                {
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = "No Record Found"
+                };
+            }
 
-            //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "SO User" + updatedSectorOfficer.SoName + " " + "Not found" };
-            //}
+            // Check if the phone number already exists for another officer
+            var isUniquePhoneNumber = await _context.FieldOfficerMaster
+                                                    .AnyAsync(d => d.FieldOfficerMobile == updatedFieldOfficer.FieldOfficerMobile&&d.ElectionTypeMasterId==updatedFieldOfficer.ElectionTypeMasterId);
 
+            if (isUniquePhoneNumber)
+            {
+                // Return a response if the phone number is not unique
+                return new Response
+                {
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = "Mobile Number Already Exists"
+                };
+            }
 
-            //if (updatedSectorOfficer.SoStatus == true)
-            //{
-            //    //check if true (then state,district,assembly acive
-            //    var assemblyActive = _context.AssemblyMaster.Where(p => p.AssemblyCode == existingSectorOfficer.SoAssemblyCode && p.StateMasterId == existingSectorOfficer.StateMasterId && p.ElectionTypeMasterId == existingSectorOfficer.ElectionTypeMasterId).Select(p => p.AssemblyStatus).FirstOrDefault();
-            //    if (assemblyActive == true)
-            //    {
-            //        // Check if the mobile number is unique among other sector officers (excluding the current one being updated)
-            //        var isMobileUnique = await _context.SectorOfficerMaster.AnyAsync(so => so.SoMobile == updatedSectorOfficer.SoMobile);
-            //        if (string.Equals(updatedSectorOfficer.SoMobile, existingSectorOfficer.SoMobile, StringComparison.OrdinalIgnoreCase))
-            //        {
-            //            var isAssemblyRecord = _context.AssemblyMaster.Where(d => d.AssemblyCode == existingSectorOfficer.SoAssemblyCode && d.StateMasterId == existingSectorOfficer.StateMasterId && d.ElectionTypeMasterId == existingSectorOfficer.ElectionTypeMasterId).FirstOrDefault();
-            //            if (isAssemblyRecord != null && isAssemblyRecord.AssemblyStatus == true)
-            //            {//check election type should be same of assembly
-            //                if (isAssemblyRecord.ElectionTypeMasterId == updatedSectorOfficer.ElectionTypeMasterId)
-            //                {
+            // Map all fields from updatedFieldOfficer to existingOfficer
+            existingOfficer.StateMasterId = updatedFieldOfficer.StateMasterId;
+            existingOfficer.DistrictMasterId = updatedFieldOfficer.DistrictMasterId;
+            existingOfficer.AssemblyMasterId = updatedFieldOfficer.AssemblyMasterId;
+            existingOfficer.FieldOfficerName = updatedFieldOfficer.FieldOfficerName;
+            existingOfficer.FieldOfficerDesignation = updatedFieldOfficer.FieldOfficerDesignation;
+            existingOfficer.FieldOfficerOfficeName = updatedFieldOfficer.FieldOfficerOfficeName;
+            existingOfficer.FieldOfficerMobile = updatedFieldOfficer.FieldOfficerMobile;
+            existingOfficer.FieldOfficerUpdatedAt =BharatDateTime(); // Set the updated time to the current time
+            existingOfficer.FieldOfficerStatus = updatedFieldOfficer.FieldOfficerStatus;
+            existingOfficer.OTPGeneratedTime = updatedFieldOfficer.OTPGeneratedTime;
+            existingOfficer.OTP = updatedFieldOfficer.OTP;
+            existingOfficer.OTPExpireTime = updatedFieldOfficer.OTPExpireTime;
+            existingOfficer.OTPAttempts = updatedFieldOfficer.OTPAttempts;
+            existingOfficer.RefreshToken = updatedFieldOfficer.RefreshToken;
+            existingOfficer.RefreshTokenExpiryTime = updatedFieldOfficer.RefreshTokenExpiryTime;
+            existingOfficer.AppPin = updatedFieldOfficer.AppPin;
+            existingOfficer.IsLocked = updatedFieldOfficer.IsLocked;
+            existingOfficer.ElectionTypeMasterId = updatedFieldOfficer.ElectionTypeMasterId;
 
-            //                    if (isAssemblyRecord.StateMasterId == existingSectorOfficer.StateMasterId && isAssemblyRecord.AssemblyCode == existingSectorOfficer.SoAssemblyCode && isAssemblyRecord.ElectionTypeMasterId == existingSectorOfficer.ElectionTypeMasterId)
-            //                    {
-            //                        existingSectorOfficer.SoName = updatedSectorOfficer.SoName;
-            //                        existingSectorOfficer.SoMobile = updatedSectorOfficer.SoMobile;
-            //                        existingSectorOfficer.SoOfficeName = updatedSectorOfficer.SoOfficeName;
-            //                        existingSectorOfficer.SoAssemblyCode = updatedSectorOfficer.SoAssemblyCode;
-            //                        existingSectorOfficer.SoDesignation = updatedSectorOfficer.SoDesignation;
-            //                        existingSectorOfficer.SoStatus = updatedSectorOfficer.SoStatus;
-            //                        existingSectorOfficer.ElectionTypeMasterId = updatedSectorOfficer.ElectionTypeMasterId;
-            //                        existingSectorOfficer.SOUpdatedAt = BharatDateTime();
+            _context.FieldOfficerMaster.Update(existingOfficer);
+             
+              _context.SaveChanges();
 
-            //                        _context.SectorOfficerMaster.Update(existingSectorOfficer);
-            //                        await _context.SaveChangesAsync();
-
-
-            //                        return new Response { Status = RequestStatusEnum.OK, Message = "SO User " + existingSectorOfficer.SoName + " " + "updated successfully" };
-
-            //                    }
-            //                    else
-            //                    {
-            //                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please check State, AssemblyCode & Election Type are not same" };
-
-            //                    }
-            //                }
-            //                else
-            //                {
-            //                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Election Type invalid for the selected Assembly." };
-
-            //                }
-            //            }
-            //            else
-            //            {
-            //                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Assembly is not active !" };
-
-            //            }
-
-
-            //        }
-            //        else
-            //        {
-            //            var isAssemblyRecords = _context.AssemblyMaster.Where(d => d.AssemblyCode == existingSectorOfficer.SoAssemblyCode && d.StateMasterId == existingSectorOfficer.StateMasterId && d.ElectionTypeMasterId == existingSectorOfficer.ElectionTypeMasterId).FirstOrDefault();
-
-            //            if (isAssemblyRecords.ElectionTypeMasterId == updatedSectorOfficer.ElectionTypeMasterId)
-            //            {
-
-            //                if (isMobileUnique == false)
-            //                {
-            //                    existingSectorOfficer.SoName = updatedSectorOfficer.SoName;
-            //                    existingSectorOfficer.SoMobile = updatedSectorOfficer.SoMobile;
-            //                    existingSectorOfficer.SoOfficeName = updatedSectorOfficer.SoOfficeName;
-            //                    existingSectorOfficer.SoAssemblyCode = updatedSectorOfficer.SoAssemblyCode;
-            //                    existingSectorOfficer.SoDesignation = updatedSectorOfficer.SoDesignation;
-            //                    existingSectorOfficer.SoStatus = updatedSectorOfficer.SoStatus;
-            //                    existingSectorOfficer.ElectionTypeMasterId = updatedSectorOfficer.ElectionTypeMasterId;
-            //                    existingSectorOfficer.SOUpdatedAt = BharatDateTime();
-
-            //                    _context.SectorOfficerMaster.Update(existingSectorOfficer);
-            //                    await _context.SaveChangesAsync();
-            //                    return new Response { Status = RequestStatusEnum.OK, Message = "SO User " + existingSectorOfficer.SoName + " " + "updated successfully" };
-
-            //                }
-            //                else
-            //                {
-            //                    var existSo = _context.SectorOfficerMaster.Where(so => so.SoMobile == updatedSectorOfficer.SoMobile).FirstOrDefault();
-            //                    var assembly = _context.AssemblyMaster.Where(d => d.AssemblyCode == existSo.SoAssemblyCode).FirstOrDefault();
-
-            //                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "SO User WIth given Mobile Number : " + updatedSectorOfficer.SoMobile + " " + "Already Exists with following Details " + " " + existSo.SoName + " , " + " AssemblyCode - " + existSo.SoAssemblyCode + " " + "Assembly Name - " + " " + assembly.AssemblyName };
-
-            //                }
-            //            }
-            //            else
-            //            {
-            //                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Election Type is invalid for the selected Assembly." };
-
-            //            }
-            //        }
-
-            //    }
-            //    else
-            //    {
-            //        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Assembly is not Active" };
-
-            //    }
-            //}
-            //else if (updatedSectorOfficer.SoStatus == false)
-            //{// if assigned any booths not allowed to deactivate
-
-            //    var boothListSo = _context.BoothMaster.Where(p => p.AssignedTo == existingSectorOfficer.SOMasterId.ToString() && p.StateMasterId == existingSectorOfficer.StateMasterId).ToList();
-
-            //    if (boothListSo.Count == 0)
-            //    {
-            //        //release booths first
-
-
-            //        // Check if the mobile number is unique among other sector officers (excluding the current one being updated)
-            //        var isMobileUnique = await _context.SectorOfficerMaster.AnyAsync(so => so.SoMobile == updatedSectorOfficer.SoMobile);
-            //        if (string.Equals(updatedSectorOfficer.SoMobile, existingSectorOfficer.SoMobile, StringComparison.OrdinalIgnoreCase))
-            //        {
-            //            var isAssemblyRecords = _context.AssemblyMaster.Where(d => d.AssemblyCode == updatedSectorOfficer.SoAssemblyCode && d.StateMasterId == updatedSectorOfficer.StateMasterId && d.ElectionTypeMasterId == updatedSectorOfficer.ElectionTypeMasterId).FirstOrDefault();
-
-            //            if (isAssemblyRecords.ElectionTypeMasterId == updatedSectorOfficer.ElectionTypeMasterId)
-            //            {
-
-            //                existingSectorOfficer.SoName = updatedSectorOfficer.SoName;
-            //                existingSectorOfficer.SoMobile = updatedSectorOfficer.SoMobile;
-            //                existingSectorOfficer.SoOfficeName = updatedSectorOfficer.SoOfficeName;
-            //                existingSectorOfficer.SoAssemblyCode = updatedSectorOfficer.SoAssemblyCode;
-            //                existingSectorOfficer.SoDesignation = updatedSectorOfficer.SoDesignation;
-            //                existingSectorOfficer.SoStatus = updatedSectorOfficer.SoStatus;
-            //                existingSectorOfficer.ElectionTypeMasterId = updatedSectorOfficer.ElectionTypeMasterId;
-            //                existingSectorOfficer.SOUpdatedAt = BharatDateTime();
-
-            //                _context.SectorOfficerMaster.Update(existingSectorOfficer);
-            //                await _context.SaveChangesAsync();
-
-
-            //                return new Response { Status = RequestStatusEnum.OK, Message = "SO User " + existingSectorOfficer.SoName + " " + "updated successfully" };
-
-            //            }
-            //            else
-            //            {
-            //                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Election Type is invalid for the selected Assembly." };
-
-            //            }
-            //        }
-            //        else
-            //        {
-            //            if (isMobileUnique == false)
-            //            {
-
-            //                existingSectorOfficer.SoName = updatedSectorOfficer.SoName;
-            //                existingSectorOfficer.SoMobile = updatedSectorOfficer.SoMobile;
-            //                existingSectorOfficer.SoOfficeName = updatedSectorOfficer.SoOfficeName;
-            //                existingSectorOfficer.SoAssemblyCode = updatedSectorOfficer.SoAssemblyCode;
-            //                existingSectorOfficer.SoDesignation = updatedSectorOfficer.SoDesignation;
-            //                existingSectorOfficer.SoStatus = updatedSectorOfficer.SoStatus;
-            //                existingSectorOfficer.SOUpdatedAt = BharatDateTime();
-            //                existingSectorOfficer.ElectionTypeMasterId = updatedSectorOfficer.ElectionTypeMasterId;
-            //                _context.SectorOfficerMaster.Update(existingSectorOfficer);
-            //                await _context.SaveChangesAsync();
-            //                return new Response { Status = RequestStatusEnum.OK, Message = "SO User " + existingSectorOfficer.SoName + " " + "updated successfully" };
-
-            //            }
-            //            else
-            //            {
-            //                var existSo = _context.SectorOfficerMaster.Where(so => so.SoMobile == updatedSectorOfficer.SoMobile).FirstOrDefault();
-            //                var assembly = _context.AssemblyMaster.Where(d => d.AssemblyCode == existSo.SoAssemblyCode).FirstOrDefault();
-
-            //                return new Response { Status = RequestStatusEnum.BadRequest, Message = "SO User WIth given Mobile Number : " + updatedSectorOfficer.SoMobile + " " + "Already Exists with following Details" + existSo.SoName + " AssemblyCode" + existSo.SoAssemblyCode + " ARO Assembly Name" + assembly.AssemblyName };
-
-            //            }
-
-            //        }
-
-            //    }
-            //    else
-            //    {
-            //        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Kindly Release Booths of this Sector Officer first in order to deactivate record." };
-
-            //    }
-
-
-            //}
-            //else
-            //{
-            //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Status Can't be Empty" };
-            //}
-            return null;
-
+            // Return a success response
+            return new Response
+            {
+                Status = RequestStatusEnum.OK,
+                Message = "Field Officer updated successfully"
+            };
         }
-
 
         public async Task<List<CombinedMaster>> GetBoothListBySoId(string stateMasterId, string districtMasterId, string assemblyMasterId, string soId)
         {
@@ -2287,9 +2081,10 @@ namespace EAMS_DAL.Repository
             var count = boothlist.Count();
             return await boothlist.ToListAsync();
         }
-        public async Task<SectorOfficerMaster> GetSOById(string soMasterId)
+
+        public async Task<FieldOfficerMaster> GetFieldOfficerById(int FieldOfficerMasterId)
         {
-            var soRecord = await _context.SectorOfficerMaster.Where(d => d.SOMasterId == Convert.ToInt32(soMasterId)).FirstOrDefaultAsync();
+            var soRecord = await _context.FieldOfficerMaster.Where(d => d.FieldOfficerMasterId == FieldOfficerMasterId).FirstOrDefaultAsync();
             return soRecord;
         }
         #endregion
@@ -3745,7 +3540,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                         //}
                         //else
                         //{
-                        var soExists = _context.SectorOfficerMaster.Any(p => p.SOMasterId == Convert.ToInt32(boothMaster.AssignedTo));
+                        var soExists = _context.FieldOfficerMaster.Any(p => p.FieldOfficerMasterId == Convert.ToInt32(boothMaster.AssignedTo));
                         if (soExists == true)
                         {
 
@@ -8100,13 +7895,13 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         #region UserList
         public async Task<List<UserList>> GetUserList(string soName, string type)
         {
-            var users = await _context.SectorOfficerMaster
-            .Where(u => EF.Functions.Like(u.SoName.ToUpper(), "%" + soName.ToUpper() + "%"))
-            .OrderBy(u => u.SOMasterId)
+            var users = await _context.FieldOfficerMaster
+            .Where(u => EF.Functions.Like(u.FieldOfficerOfficeName.ToUpper(), "%" + soName.ToUpper() + "%"))
+            .OrderBy(u => u.FieldOfficerMasterId)
             .Select(d => new UserList
             {
-                Name = d.SoName,
-                MobileNumber = d.SoMobile,
+                Name = d.FieldOfficerName,
+                MobileNumber = d.FieldOfficerMobile,
                 UserType = type
             })
             .ToListAsync();
@@ -15604,7 +15399,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             var getPcMasterId = _context.AssemblyMaster.FirstOrDefaultAsync(d => d.AssemblyMasterId == updatedBLOMaster.AssemblyMasterId).Result.PCMasterId;
             existingBLOOfficer.PCMasterId = getPcMasterId;
 
-            var isSoExistMobileNumber = _context.SectorOfficerMaster.Where(d => d.SoMobile == updatedBLOMaster.BLOMobile).FirstOrDefault();
+            var isSoExistMobileNumber = _context.FieldOfficerMaster.Where(d => d.FieldOfficerMobile == updatedBLOMaster.BLOMobile).FirstOrDefault();
             if (isSoExistMobileNumber == null)
             {
 
@@ -15753,7 +15548,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             var isExistCount = _context.BLOMaster.Where(d => d.BLOMobile == bLOMaster.BLOMobile).Count();
             var getPcMasterId = _context.AssemblyMaster.FirstOrDefaultAsync(d => d.AssemblyMasterId == bLOMaster.AssemblyMasterId).Result.PCMasterId;
 
-            var isSoExistMobileNumber = _context.SectorOfficerMaster.Where(d => d.SoMobile == bLOMaster.BLOMobile).FirstOrDefault();
+            var isSoExistMobileNumber = _context.FieldOfficerMaster.Where(d => d.FieldOfficerMobile == bLOMaster.BLOMobile).FirstOrDefault();
             if (isSoExistMobileNumber == null)
             {
                 if (isExistCount > 2)
@@ -16679,20 +16474,22 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             {
                 return null; // or throw an exception, or handle the case appropriately
             }
-
-            var panchayat = await _context.PSZonePanchayat
-                .Where(d => d.PSZonePanchayatMasterId == kyc.PSZonePanchayatMasterId)
-                .Include(d => d.StateMaster)
-                .Include(d => d.DistrictMaster)
-                .Include(d => d.AssemblyMaster)
-                .Include(d => d.FourthLevelH)
-                .FirstOrDefaultAsync();
-
-            if (panchayat == null)
+            //PS Zone Panchayat
+            if (kyc.PSZonePanchayatMasterId != 0)
             {
-                return null; // or handle the case appropriately
-            }
+                var panchayat = await _context.PSZonePanchayat
+                    .Where(d => d.PSZonePanchayatMasterId == kyc.PSZonePanchayatMasterId)
+                    .Include(d => d.StateMaster)
+                    .Include(d => d.DistrictMaster)
+                    .Include(d => d.AssemblyMaster)
+                    .Include(d => d.FourthLevelH)
+                    .FirstOrDefaultAsync();
 
+                if (panchayat == null)
+                {
+                    return null; // or handle the case appropriately
+                }
+            
             var result = new KycList
             {
                 KycMasterId = kyc.KycMasterId,
@@ -16712,7 +16509,108 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             };
 
             return result;
+            }
+            //Gp Panchayat ward
+            else if (kyc.GPPanchayatWardsMasterId != 0)
+            {
+                var gpWard = await _context.GPPanchayatWards
+                   .Where(d => d.GPPanchayatWardsMasterId == kyc.GPPanchayatWardsMasterId)
+                   .Include(d => d.StateMaster)
+                   .Include(d => d.DistrictMaster)
+                   .Include(d => d.AssemblyMaster)
+                   .Include(d => d.FourthLevelH)
+                   .FirstOrDefaultAsync();
 
+                if (gpWard == null)
+                {
+                    return null; // or handle the case appropriately
+                }
+
+                var result = new KycList
+                {
+                    KycMasterId = kyc.KycMasterId,
+                    ElectionTypeMasterId = kyc.ElectionTypeMasterId,
+                    StateMasterId = gpWard.StateMasterId,
+                    StateName = gpWard.StateMaster.StateName,
+                    DistrictMasterId = gpWard.DistrictMasterId,
+                    DistrictName = gpWard.DistrictMaster.DistrictName,
+                    AssemblyMasterId = gpWard.AssemblyMasterId,
+                    AssemblyName = gpWard.AssemblyMaster.AssemblyName,
+                    FourthLevelHMasterId = gpWard.FourthLevelHMasterId,
+                    FourthLevelName = gpWard.FourthLevelH.HierarchyName,
+                    GPPanchayatWardsMasterId=gpWard.GPPanchayatWardsMasterId,
+                    GPPanchayatWardsName=gpWard.GPPanchayatWardsName,                
+                    CandidateName = kyc.CandidateName,
+                    FatherName = kyc.FatherName,
+                };
+
+                return result;
+            }
+           //fourth level
+            else if(kyc.FourthLevelHMasterId != 0)
+            {
+                var fourthLevel = await _context.FourthLevelH
+                  .Where(d => d.FourthLevelHMasterId == kyc.FourthLevelHMasterId)
+                  .Include(d => d.StateMaster)
+                  .Include(d => d.DistrictMaster)
+                  .Include(d => d.AssemblyMaster)
+               
+                  .FirstOrDefaultAsync();
+
+                if (fourthLevel == null)
+                {
+                    return null; // or handle the case appropriately
+                }
+
+                var result = new KycList
+                {
+                    KycMasterId = kyc.KycMasterId,
+                    ElectionTypeMasterId = kyc.ElectionTypeMasterId,
+                    StateMasterId = fourthLevel.StateMasterId,
+                    StateName = fourthLevel.StateMaster.StateName,
+                    DistrictMasterId = fourthLevel.DistrictMasterId,
+                    DistrictName = fourthLevel.DistrictMaster.DistrictName,
+                    AssemblyMasterId = fourthLevel.AssemblyMasterId,
+                    AssemblyName = fourthLevel.AssemblyMaster.AssemblyName,
+                    FourthLevelHMasterId = fourthLevel.FourthLevelHMasterId,
+                    FourthLevelName = fourthLevel.HierarchyName, 
+                    CandidateName = kyc.CandidateName,
+                    FatherName = kyc.FatherName,
+                };
+
+                return result;
+            }
+           //assembly level
+            else
+            {
+                var assemblyMaster = await _context.AssemblyMaster
+                  .Where(d => d.AssemblyMasterId == kyc.AssemblyMasterId)
+                  .Include(d => d.StateMaster)
+                  .Include(d => d.DistrictMaster) 
+
+                  .FirstOrDefaultAsync();
+
+                if (assemblyMaster == null)
+                {
+                    return null; // or handle the case appropriately
+                }
+
+                var result = new KycList
+                {
+                    KycMasterId = kyc.KycMasterId,
+                    ElectionTypeMasterId = kyc.ElectionTypeMasterId,
+                    StateMasterId = assemblyMaster.StateMasterId,
+                    StateName = assemblyMaster.StateMaster.StateName,
+                    DistrictMasterId = assemblyMaster.DistrictMasterId,
+                    DistrictName = assemblyMaster.DistrictMaster.DistrictName,
+                    AssemblyMasterId = assemblyMaster.AssemblyMasterId,
+                    AssemblyName = assemblyMaster.AssemblyName,
+                    CandidateName = kyc.CandidateName,
+                    FatherName = kyc.FatherName,
+                };
+
+                return result;
+            }
         }
 
         public async Task<ServiceResponse> DeleteKycById(int kycMasterId)
@@ -16830,40 +16728,140 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             {
                 return null; // or throw an exception, or handle the case appropriately
             }
-
-            var panchayat = await _context.PSZonePanchayat
-                .Where(d => d.PSZonePanchayatMasterId == unOpposed.PSZonePanchayatMasterId)
-                .Include(d => d.StateMaster)
-                .Include(d => d.DistrictMaster)
-                .Include(d => d.AssemblyMaster)
-                .Include(d => d.FourthLevelH)
-                .FirstOrDefaultAsync();
-
-            if (panchayat == null)
+            if (unOpposed.PSZonePanchayatMasterId != 0)
             {
-                return null; // or handle the case appropriately
+                var panchayat = await _context.PSZonePanchayat
+                    .Where(d => d.PSZonePanchayatMasterId == unOpposed.PSZonePanchayatMasterId)
+                    .Include(d => d.StateMaster)
+                    .Include(d => d.DistrictMaster)
+                    .Include(d => d.AssemblyMaster)
+                    .Include(d => d.FourthLevelH)
+                    .FirstOrDefaultAsync();
+
+                if (panchayat == null)
+                {
+                    return null; // or handle the case appropriately
+                }
+
+                var result = new UnOpposedList
+                {
+                    UnOpposedMasterId = unOpposed.UnOpposedMasterId,
+                    ElectionTypeMasterId = unOpposed.ElectionTypeMasterId,
+                    StateMasterId = panchayat.StateMasterId,
+                    StateName = panchayat.StateMaster.StateName,
+                    DistrictMasterId = panchayat.DistrictMasterId,
+                    DistrictName = panchayat.DistrictMaster.DistrictName,
+                    AssemblyMasterId = panchayat.AssemblyMasterId,
+                    AssemblyName = panchayat.AssemblyMaster.AssemblyName,
+                    FourthLevelHMasterId = panchayat.FourthLevelHMasterId,
+                    FourthLevelName = panchayat.FourthLevelH.HierarchyName,
+                    PSZonePanchayatMasterId = panchayat.PSZonePanchayatMasterId,
+                    PSZonePanchayatName = panchayat.PSZonePanchayatName,
+                    CandidateName = unOpposed.CandidateName,
+                    FatherName = unOpposed.FatherName,
+                };
+
+                return result;
             }
-
-            var result = new UnOpposedList
+            else if (unOpposed.GPPanchayatWardsMasterId != 0)
             {
-                UnOpposedMasterId = unOpposed.UnOpposedMasterId,
-                ElectionTypeMasterId = unOpposed.ElectionTypeMasterId,
-                StateMasterId = panchayat.StateMasterId,
-                StateName = panchayat.StateMaster.StateName,
-                DistrictMasterId = panchayat.DistrictMasterId,
-                DistrictName = panchayat.DistrictMaster.DistrictName,
-                AssemblyMasterId = panchayat.AssemblyMasterId,
-                AssemblyName = panchayat.AssemblyMaster.AssemblyName,
-                FourthLevelHMasterId = panchayat.FourthLevelHMasterId,
-                FourthLevelName = panchayat.FourthLevelH.HierarchyName,
-                PSZonePanchayatMasterId = panchayat.PSZonePanchayatMasterId,
-                PSZonePanchayatName = panchayat.PSZonePanchayatName,
-                CandidateName = unOpposed.CandidateName,
-                FatherName = unOpposed.FatherName,
-            };
+                var gpWards = await _context.GPPanchayatWards
+                    .Where(d => d.GPPanchayatWardsMasterId == unOpposed.GPPanchayatWardsMasterId)
+                    .Include(d => d.StateMaster)
+                    .Include(d => d.DistrictMaster)
+                    .Include(d => d.AssemblyMaster)
+                    .Include(d => d.FourthLevelH)
+                    .FirstOrDefaultAsync();
 
-            return result;
-            
+                if (gpWards == null)
+                {
+                    return null; // or handle the case appropriately
+                }
+
+                var result = new UnOpposedList
+                {
+                    UnOpposedMasterId = unOpposed.UnOpposedMasterId,
+                    ElectionTypeMasterId = unOpposed.ElectionTypeMasterId,
+                    StateMasterId = gpWards.StateMasterId,
+                    StateName = gpWards.StateMaster.StateName,
+                    DistrictMasterId = gpWards.DistrictMasterId,
+                    DistrictName = gpWards.DistrictMaster.DistrictName,
+                    AssemblyMasterId = gpWards.AssemblyMasterId,
+                    AssemblyName = gpWards.AssemblyMaster.AssemblyName,
+                    FourthLevelHMasterId = gpWards.FourthLevelHMasterId,
+                    FourthLevelName = gpWards.FourthLevelH.HierarchyName,
+                    GPPanchayatWardsMasterId = gpWards.GPPanchayatWardsMasterId,
+                    GPPanchayatWardsName = gpWards.GPPanchayatWardsName,
+                    CandidateName = unOpposed.CandidateName,
+                    FatherName = unOpposed.FatherName,
+                };
+
+                return result;
+
+            }
+            else if (unOpposed.FourthLevelHMasterId != 0)
+            {
+                var fourthLevel = await _context.FourthLevelH
+                   .Where(d => d.FourthLevelHMasterId == unOpposed.FourthLevelHMasterId)
+                   .Include(d => d.StateMaster)
+                   .Include(d => d.DistrictMaster)
+                   .Include(d => d.AssemblyMaster)
+
+                   .FirstOrDefaultAsync();
+
+                if (fourthLevel == null)
+                {
+                    return null; // or handle the case appropriately
+                }
+
+                var result = new UnOpposedList
+                {
+                    UnOpposedMasterId = unOpposed.UnOpposedMasterId,
+                    ElectionTypeMasterId = unOpposed.ElectionTypeMasterId,
+                    StateMasterId = fourthLevel.StateMasterId,
+                    StateName = fourthLevel.StateMaster.StateName,
+                    DistrictMasterId = fourthLevel.DistrictMasterId,
+                    DistrictName = fourthLevel.DistrictMaster.DistrictName,
+                    AssemblyMasterId = fourthLevel.AssemblyMasterId,
+                    AssemblyName = fourthLevel.AssemblyMaster.AssemblyName,
+                    FourthLevelHMasterId = fourthLevel.FourthLevelHMasterId,
+                    FourthLevelName = fourthLevel.HierarchyName,
+                    CandidateName = unOpposed.CandidateName,
+                    FatherName = unOpposed.FatherName,
+                };
+
+                return result;
+            }
+            else
+            {
+                var assembly = await _context.AssemblyMaster
+                   .Where(d => d.AssemblyMasterId == unOpposed.AssemblyMasterId)
+                   .Include(d => d.StateMaster)
+                   .Include(d => d.DistrictMaster)
+                   .FirstOrDefaultAsync();
+
+                if (assembly == null)
+                {
+                    return null; // or handle the case appropriately
+                }
+
+                var result = new UnOpposedList
+                {
+                    UnOpposedMasterId = unOpposed.UnOpposedMasterId,
+                    ElectionTypeMasterId = unOpposed.ElectionTypeMasterId,
+                    StateMasterId = assembly.StateMasterId,
+                    StateName = assembly.StateMaster.StateName,
+                    DistrictMasterId = assembly.DistrictMasterId,
+                    DistrictName = assembly.DistrictMaster.DistrictName,
+                    AssemblyMasterId = assembly.AssemblyMasterId,
+                    AssemblyName = assembly.AssemblyName,
+
+                    CandidateName = unOpposed.CandidateName,
+                    FatherName = unOpposed.FatherName,
+                };
+
+                return result;
+            }
         }
         public async Task<ServiceResponse> DeleteUnOpposedById(int unOpposedMasterId)
         {

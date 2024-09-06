@@ -15,11 +15,11 @@ namespace EAMS_ACore.IAuthRepository
         Task<ServiceResponse> AddDynamicRole(Role role);
         Task<List<Role>> GetRoles();
         Task<List<UserRegistration>> GetUsersByRoleId(string roleId);
-        Task<List<SectorOfficerMaster>> ValidateMobile(ValidateMobile validateMobile);
+        Task<List<FieldOfficerMaster>> ValidateMobile(ValidateMobile validateMobile);
         Task<BLOMaster> GetBLO(ValidateMobile validateMobile);
         Task<ServiceResponse> AddUpdateBLOMaster(BLOMaster bloMaster);
         Task<BLOMaster> GetBLOById(int bloId);
-        Task<ServiceResponse> SectorOfficerMasterRecord(SectorOfficerMaster sectorOfficerMaster);
+        Task<ServiceResponse> SectorOfficerMasterRecord(FieldOfficerMaster sectorOfficerMaster);
         Task<ServiceResponse> FindUserByName(UserRegistration userRegistration);
         Task<List<UserRegistration>> FindUserListByName(string userName);
         Task<UserRegistration> CheckUserLogin(Login login);
@@ -29,7 +29,7 @@ namespace EAMS_ACore.IAuthRepository
         Task<List<Role>> GetRoleByUser(UserRegistration user);
      
         Task<ServiceResponse> CreateSOPin(CreateSOPin createSOPin, string soId);
-        Task<SectorOfficerMaster> GetSOById(int soId);
+        Task<FieldOfficerMaster> GetSOById(int soId);
         Task<DashBoardProfile> GetDashboardProfile(string userId, int? stateMasterId);
    
         Task<ServiceResponse> UpdateDashboardProfile(string userId, UpdateDashboardProfile updateDashboardProfile);

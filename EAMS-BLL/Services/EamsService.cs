@@ -177,7 +177,7 @@ namespace EAMS_BLL.Services
         }
         #endregion
 
-        #region  SO Master
+        #region  FO Master
         public async Task<List<CombinedMaster>> GetSectorOfficersListById(string stateMasterId, string districtMasterId, string assemblyMasterId)
         {
             return await _eamsRepository.GetSectorOfficersListById(stateMasterId, districtMasterId, assemblyMasterId);
@@ -199,17 +199,17 @@ namespace EAMS_BLL.Services
                 return await _eamsRepository.GetBLOOfficerProfile(Id);
             }
         }
-        public async Task<Response> AddSectorOfficer(SectorOfficerMaster sectorOfficerMaster)
+        public async Task<Response> AddFieldOfficer(FieldOfficerMaster fieldOfficerViewModel)
         {
-            return await _eamsRepository.AddSectorOfficer(sectorOfficerMaster);
+            return await _eamsRepository.AddFieldOfficer(fieldOfficerViewModel);
         }
         public async Task<Response> AddBLOOfficer(BLOMaster bLOMaster)
         {
             return await _eamsRepository.AddBLOOfficer(bLOMaster);
         }
-        public async Task<Response> UpdateSectorOfficer(SectorOfficerMaster sectorOfficerMaster)
+        public async Task<Response> UpdateFieldOfficer(FieldOfficerMaster fieldOfficerViewModel)
         {
-            return await _eamsRepository.UpdateSectorOfficer(sectorOfficerMaster);
+            return await _eamsRepository.UpdateFieldOfficer(fieldOfficerViewModel);
         }
         public async Task<Response> UpdateBLOOfficer(BLOMaster bLOMaster)
         {
@@ -220,37 +220,9 @@ namespace EAMS_BLL.Services
             return await _eamsRepository.GetBoothListBySoId(stateMasterId, districtMasterId, assemblyMasterId, soId);
         }
 
-        public async Task<SectorOfficerMasterCustom> GetSOById(string soMasterId)
+        public async Task<FieldOfficerMaster> GetFieldOfficerById(int FieldOfficerMasterId)
         {
-            //var soRecord = await _eamsRepository.GetSOById(soMasterId);
-            ////var stateRecord = await _eamsRepository.GetStateById(soRecord.StateMasterId.ToString());
-            ////var districtRecord = await _eamsRepository.GetDistrictRecordById(stateRecord);
-            //var soCustomRecord = await _eamsRepository.GetAssemblyByCodeandState(soRecord.SoAssemblyCode.ToString(), soRecord.StateMasterId.ToString());
-            //var getElectionTypeRecord = await _eamsRepository.GetElectionTypeById(soRecord.ElectionTypeMasterId.ToString());
-            //SectorOfficerMasterCustom sectorOfficerMasterCustom = new SectorOfficerMasterCustom()
-            //{
-            //    StateMasterId = soCustomRecord.StateMasterId,
-            //    StateName = soCustomRecord.StateMaster.StateName,
-            //    DistrictMasterId = soCustomRecord.DistrictMasterId,
-            //    DistrictName = soCustomRecord.DistrictMaster.DistrictName,
-            //    DistrictStatus = soCustomRecord.DistrictMaster.DistrictStatus,
-            //    DistrictCode = soCustomRecord.DistrictMaster.DistrictCode,
-            //    AssemblyMasterId = soCustomRecord.AssemblyMasterId,
-            //    AssemblyName = soCustomRecord.AssemblyName,
-            //    AssemblyCode = soCustomRecord.AssemblyCode,
-            //    SoMasterId = soRecord.SOMasterId,
-            //    SoName = soRecord.SoName,
-            //    SoMobile = soRecord.SoMobile,
-            //    SoOfficeName = soRecord.SoOfficeName,
-            //    SoDesignation = soRecord.SoDesignation,
-            //    IsStatus = soRecord.SoStatus,
-            //    ElectionTypeMasterId = soRecord.ElectionTypeMasterId,
-            //    ElectionTypeName = getElectionTypeRecord.ElectionType,
-
-
-            //};
-            //return sectorOfficerMasterCustom;
-            return null;
+           return await _eamsRepository.GetFieldOfficerById(FieldOfficerMasterId);
         }
         #endregion
 

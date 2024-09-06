@@ -39,7 +39,7 @@ public partial class EamsContext : IdentityDbContext<UserRegistration>
     public virtual DbSet<BoothMaster> BoothMaster { get; set; }
     public virtual DbSet<ParliamentConstituencyMaster> ParliamentConstituencyMaster { get; set; }
 
-    public virtual DbSet<SectorOfficerMaster> SectorOfficerMaster { get; set; }
+    public virtual DbSet<FieldOfficerMaster> FieldOfficerMaster { get; set; }
     public virtual DbSet<ElectionInfoMaster> ElectionInfoMaster { get; set; }
     public virtual DbSet<SlotManagementMaster> SlotManagementMaster { get; set; }
     public virtual DbSet<PollDetail> PollDetails { get; set; }

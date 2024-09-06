@@ -195,7 +195,7 @@ namespace EAMS.Controllers
                 }
                 else
                 {
-                    return NotFound(resutlt);
+                    return BadRequest(resutlt);
                 }
             }
         }

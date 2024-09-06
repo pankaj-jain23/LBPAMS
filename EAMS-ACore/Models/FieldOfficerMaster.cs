@@ -2,10 +2,10 @@
 
 namespace EAMS_ACore.Models
 {
-    public class SectorOfficerMaster
+    public class FieldOfficerMaster
     {
         [Key]
-        public int SOMasterId { get; set; }
+        public int FieldOfficerMasterId { get; set; }
         public int StateMasterId
         {
             get;
@@ -22,23 +22,19 @@ namespace EAMS_ACore.Models
             get;
             set;
         }
-        public int? FourthLevelHMasterId
-        {
-            get;
-            set;
-        }
-        public string SoName { get; set; }
 
-        public string SoDesignation { get; set; }
+        public string FieldOfficerName { get; set; }
 
-        public string SoOfficeName { get; set; }
-       
-        public string SoMobile { get; set; }
+        public string FieldOfficerDesignation { get; set; }
 
-        public DateTime? SoCreatedAt { get; set; }
+        public string FieldOfficerOfficeName { get; set; }
 
-        public DateTime? SOUpdatedAt { get; set; }
-        public bool SoStatus { get; set; }
+        public string FieldOfficerMobile { get; set; }
+
+        public DateTime? FieldOfficerCreatedAt { get; set; }
+
+        public DateTime? FieldOfficerUpdatedAt { get; set; }
+        public bool FieldOfficerStatus { get; set; }
 
         public DateTime? OTPGeneratedTime { get; set; }
         public string? OTP { get; set; }
