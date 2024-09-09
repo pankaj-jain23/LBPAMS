@@ -9,6 +9,8 @@ namespace EAMS_ACore.AuthInterfaces
     {
         Task<ServiceResponse> RegisterAsync(UserRegistration userRegistration, List<string> roleIds);
         Task<Token> LoginAsync(Login login);
+        
+
         Task<ServiceResponse> DeleteUser(string userId);
         Task<ServiceResponse> AddDynamicRole(Role role);
         Task<List<Role>> GetRoles();
@@ -22,6 +24,8 @@ namespace EAMS_ACore.AuthInterfaces
         Task<ServiceResponse> ForgetPassword(ForgetPasswordModel forgetPasswordModel);
         Task<ServiceResponse> ResetPassword(ResetPasswordModel resetPasswordModel);
         Task<Dictionary<string, object>> GetUserList(GetUser getUser);
+        Task<ServiceResponse> UpdateUserDetail(string userId, string mobileNumber, string? otp);
+
 
     }
 }

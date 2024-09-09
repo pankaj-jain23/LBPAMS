@@ -43,5 +43,9 @@ namespace EAMS_ACore.IAuthRepository
         Task<Dictionary<string, object>> GetUserList(GetUser getUser);
 
         Task<ElectionTypeMaster> GetElectionTypeById(int? electionTypeMasterId);
+        Task<ServiceResponse> LoginWithTwoFactorCheckAsync(Login login);
+        #region UpdateUserDetail
+        Task<bool> UpdateUserDetail(string userId, string mobileNumber);
+        #endregion
     }
 }

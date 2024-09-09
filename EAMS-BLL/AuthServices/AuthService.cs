@@ -67,7 +67,7 @@ namespace EAMS_BLL.AuthServices
 
             // Check if the user exists
             var user = await _authRepository.CheckUserLogin(login);
-
+            var is2FA = await _authRepository.LoginWithTwoFactorCheckAsync(login);
             if (user is null)
             {
                 // Return an appropriate response when the user is not found
@@ -82,8 +82,8 @@ namespace EAMS_BLL.AuthServices
                 if (user is not null)
                 {
 
-                    var userRoles = await _authRepository.GetRoleByUser(user); 
-                    var authClaims =await GenerateClaims(user);
+                    var userRoles = await _authRepository.GetRoleByUser(user);
+                    var authClaims = await GenerateClaims(user);
 
                     // Add user roles to authClaims
                     foreach (var userRole in userRoles)
@@ -116,7 +116,8 @@ namespace EAMS_BLL.AuthServices
                             return new Token()
                             {
                                 IsSucceed = false,
-                                Message = "Error updating user: " + ex.Message
+                                Message = "Error updating user: " + ex.Message,
+                                Is2FA = is2FA.IsSucceed
                             };
                         }
                     }
@@ -136,7 +137,6 @@ namespace EAMS_BLL.AuthServices
             }
         }
 
-
         public async Task<ServiceResponse> DeleteUser(string userId)
         {
 
@@ -146,7 +146,7 @@ namespace EAMS_BLL.AuthServices
 
         private async Task<List<Claim>> GenerateClaims(UserRegistration user)
         {
-            var getElection = await  _authRepository.GetElectionTypeById(user.ElectionTypeMasterId);
+            var getElection = await _authRepository.GetElectionTypeById(user.ElectionTypeMasterId);
 
             var authClaims = new List<Claim>
             {
@@ -169,6 +169,7 @@ namespace EAMS_BLL.AuthServices
         }
 
         #endregion
+
 
         #region Register
         public async Task<ServiceResponse> RegisterAsync(UserRegistration userRegistration, List<string> roleIds)
@@ -879,5 +880,59 @@ namespace EAMS_BLL.AuthServices
             return await _authRepository.GetUserList(getUser);
         }
         #endregion
+        #region UpdateUserDetail
+        public async Task<ServiceResponse> UpdateUserDetail(string userId, string mobileNumber, string? otp)
+        {
+            // Fetch the user by userId
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "User not found" };
+            }
+
+            // Check if OTP is empty or not 6 digits
+            if (string.IsNullOrEmpty(otp) || otp.Length != 6)
+            {
+                // Generate a new OTP and update the user record
+                var generatedOtp = GenerateOTP();
+                user.OTP = generatedOtp;
+                user.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 0, 60);
+                // var otpRecord = await _notificationService.SendOtp(mobileNumber, generatedOtp);
+                // Simulating OTP send and response
+                var otpRecord = new ServiceResponse
+                {
+                    IsSucceed = true,
+                    Message = "otp"
+                };
+
+                if (otpRecord.IsSucceed)
+                {
+                    await _userManager.UpdateAsync(user);
+                    return new ServiceResponse { IsSucceed = true, Message = "OTP Sent on your number" };
+                }
+
+                return new ServiceResponse { IsSucceed = false, Message = "Failed to send OTP" };
+            }
+
+            // Validate OTP and expiration time
+            if (user.OTP == otp && BharatDateTime() <= user.OTPExpireTime)
+            {
+                // Update mobile number and enable two-factor authentication
+                user.PhoneNumber = mobileNumber;
+                user.TwoFactorEnabled = true;
+                var updateResult = await _userManager.UpdateAsync(user);
+
+                if (!updateResult.Succeeded)
+                {
+                    return new ServiceResponse { IsSucceed = false, Message = "Failed to update mobile number" };
+                }
+
+                return new ServiceResponse { IsSucceed = true, Message = "Mobile number updated successfully" };
+            }
+
+            return new ServiceResponse { IsSucceed = false, Message = "OTP Expired or Invalid" };
+        }
+        #endregion
+
     }
 }

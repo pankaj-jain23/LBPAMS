@@ -4,10 +4,12 @@ using EAMS.Middleware;
 using EAMS_ACore.AuthInterfaces;
 using EAMS_ACore.AuthModels;
 using EAMS_ACore.IAuthRepository;
+using EAMS_ACore.IExternal;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.IRealTime;
 using EAMS_ACore.IRepository;
 using EAMS_BLL.AuthServices;
+using EAMS_BLL.ExternalServices;
 using EAMS_BLL.RealTimeServices;
 using EAMS_BLL.Services;
 using EAMS_DAL.AuthRepository;
@@ -108,6 +110,7 @@ builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IUserConnectionService, UserConnectionService>();
 builder.Services.AddScoped<IUserConnectionServiceRepository, UserConnectionServiceRepository>();
 builder.Services.AddScoped<IRealTime, RealTimeService>();
+builder.Services.AddScoped<IExternal, ExternalService>();
 //builder.Services.AddHostedService<DatabaseListenerService>();
 
 builder.Services.AddSwaggerGen(opt =>

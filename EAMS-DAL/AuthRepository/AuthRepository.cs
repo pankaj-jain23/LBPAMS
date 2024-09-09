@@ -765,5 +765,46 @@ namespace EAMS_DAL.AuthRepository
             return await _context.ElectionTypeMaster.FirstOrDefaultAsync(d => d.ElectionTypeMasterId == electionTypeMasterId);
         }
         #endregion
+        #region LoginWithTwoFactorCheckAsync
+        public async Task<ServiceResponse> LoginWithTwoFactorCheckAsync(Login login)
+        {
+            var user = await _userManager.FindByNameAsync(login.UserName);
+            if (user == null)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "User not found" };
+            }
+
+            var isPasswordCorrect = await _userManager.CheckPasswordAsync(user, login.Password);
+            if (!isPasswordCorrect)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "Invalid credentials" };
+            }
+
+            if (!user.TwoFactorEnabled)
+            {
+                // Redirect to verification
+                return new ServiceResponse { IsSucceed = false, Message = "Two-factor authentication is disabled. Redirect to verification." };
+            }
+
+            return new ServiceResponse { IsSucceed = true, Message = "Proceed with login" };
+        }
+
+        #endregion
+
+        #region UpdateUserDetail
+        public async Task<bool> UpdateUserDetail(string userId, string mobileNumber)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+            {
+                return false;
+            }
+
+            user.PhoneNumber = mobileNumber;
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        #endregion
     }
 }

@@ -4,8 +4,11 @@ using EAMS.ViewModels;
 using EAMS_ACore.AuthInterfaces;
 using EAMS_ACore.AuthModels;
 using EAMS_ACore.HelperModels;
+using EAMS_ACore.IExternal;
+using LBPAMS.AuthViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace EAMS.Controllers
 {
@@ -16,11 +19,13 @@ namespace EAMS.Controllers
         private readonly IAuthService _authService;
         private readonly IMapper _mapper;
         private readonly ILogger<EAMSAuthController> _logger;
-        public EAMSAuthController(IAuthService authService, IMapper mapper, ILogger<EAMSAuthController> logger)
+        private readonly IExternal _external;
+        public EAMSAuthController(IAuthService authService, IMapper mapper, ILogger<EAMSAuthController> logger, IExternal external)
         {
             _authService = authService;
             _mapper = mapper;
             _logger = logger;
+            _external = external;
         }
 
         #region Register
@@ -57,6 +62,8 @@ namespace EAMS.Controllers
         #endregion
 
         #region Login
+     
+
         [HttpPost]
         [Route("login")]
         public async Task<IActionResult> Login(LoginViewModel loginViewModel)
@@ -66,6 +73,8 @@ namespace EAMS.Controllers
                 if (!ModelState.IsValid)
                     return BadRequest("Invalid payload");
                 var mappedData = _mapper.Map<Login>(loginViewModel);
+
+                //var loginResult = await _authService.LoginWithTwoFactorCheckAsync(mappedData);
 
                 var loginResult = await _authService.LoginAsync(mappedData);
 
@@ -80,12 +89,13 @@ namespace EAMS.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
+
         #endregion
 
         #region AddDyanmicRole && Get Role
         [HttpPost]
         [Route("AddDyanmicRole")]
-        [Authorize(Roles = "SuperAdmin")]
+        //[Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> AddDyanmicRole([FromBody] RolesViewModel rolesViewModel)
         {
             try
@@ -424,6 +434,42 @@ namespace EAMS.Controllers
             }
         }
 
+        #endregion
+        #region UpdateUserDetail
+        [HttpPost]
+        [Route("UpdateUserDetail")]
+        [Authorize]
+        public async Task<IActionResult> UpdateUserDetail([FromBody] UserDetailViewModel userDetailViewModel)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                // Assuming you have a logged-in user, you can fetch their ID from the current context
+                var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId").Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized("User doesn't exist.");
+                }
+
+                // Call the service to update the mobile number
+                var updateResult = await _authService.UpdateUserDetail(userId, userDetailViewModel.MobileNumber, userDetailViewModel.Otp);
+
+                if (!updateResult.IsSucceed)
+                {
+                    return BadRequest(updateResult.Message);
+                }
+
+                return Ok(updateResult.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"UpdateMobileNumber: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while updating the mobile number.");
+            }
+        }
         #endregion
 
     }

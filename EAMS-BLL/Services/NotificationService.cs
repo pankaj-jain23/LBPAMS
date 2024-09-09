@@ -79,7 +79,7 @@ namespace EAMS_BLL.Services
             string finalsmsTemplateMsg = template.Replace(placeholder, otp.Trim());
 
             var result = await SendSMSAsync(userNameSMS, password, senderId, mobile, finalsmsTemplateMsg, entityId, getTemplate.TemplateId.ToString());
-            _logger.LogInformation(result);
+            
             bool isSucceed = result.Contains(SMSEnum.MessageAccepted.GetStringValue());
 
             return new ServiceResponse
