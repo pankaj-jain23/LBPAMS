@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EAMS_DAL.Migrations
 {
     [DbContext(typeof(EamsContext))]
-    [Migration("20240613082209_addedrandomization")]
-    partial class addedrandomization
+    [Migration("20240910085900_addednewmastes")]
+    partial class addednewmastes
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -58,10 +58,10 @@ namespace EAMS_DAL.Migrations
                     b.Property<int>("DistrictMasterId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("ElectionTypeId")
+                    b.Property<int>("ElectionTypeMasterId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("PCMasterId")
+                    b.Property<int?>("PCMasterId")
                         .HasColumnType("integer");
 
                     b.Property<string>("SecondLanguage")
@@ -70,86 +70,20 @@ namespace EAMS_DAL.Migrations
                     b.Property<int>("StateMasterId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("TotalBooths")
+                    b.Property<int?>("TotalBooths")
                         .HasColumnType("integer");
 
                     b.HasKey("AssemblyMasterId");
 
                     b.HasIndex("DistrictMasterId");
 
+                    b.HasIndex("ElectionTypeMasterId");
+
                     b.HasIndex("PCMasterId");
 
                     b.HasIndex("StateMasterId");
 
                     b.ToTable("AssemblyMaster");
-                });
-
-            modelBuilder.Entity("EAMS_ACore.AuthModels.UserAssembly", b =>
-                {
-                    b.Property<int>("UserAssemblyId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserAssemblyId"));
-
-                    b.Property<int?>("AssemblyMasterId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("UserDistrictId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("UserPCConstituencyId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("UserAssemblyId");
-
-                    b.HasIndex("UserDistrictId");
-
-                    b.HasIndex("UserPCConstituencyId");
-
-                    b.ToTable("UserAssembly");
-                });
-
-            modelBuilder.Entity("EAMS_ACore.AuthModels.UserDistrict", b =>
-                {
-                    b.Property<int>("UserDistrictId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserDistrictId"));
-
-                    b.Property<int?>("DistrictMasterId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("UserStateId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("UserDistrictId");
-
-                    b.HasIndex("UserStateId");
-
-                    b.ToTable("UserDistrict");
-                });
-
-            modelBuilder.Entity("EAMS_ACore.AuthModels.UserPCConstituency", b =>
-                {
-                    b.Property<int>("UserPCConstituencyId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserPCConstituencyId"));
-
-                    b.Property<int?>("PCMasterId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("UserStateId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("UserPCConstituencyId");
-
-                    b.HasIndex("UserStateId");
-
-                    b.ToTable("UserPCConstituency");
                 });
 
             modelBuilder.Entity("EAMS_ACore.AuthModels.UserRegistration", b =>
@@ -160,9 +94,18 @@ namespace EAMS_DAL.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("AssemblyMasterId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("text");
+
+                    b.Property<int?>("DistrictMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ElectionTypeMasterId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -170,6 +113,9 @@ namespace EAMS_DAL.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean");
+
+                    b.Property<int?>("FourthLevelHMasterId")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean");
@@ -215,6 +161,9 @@ namespace EAMS_DAL.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
 
+                    b.Property<int?>("StateMasterId")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean");
 
@@ -232,27 +181,6 @@ namespace EAMS_DAL.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
-                });
-
-            modelBuilder.Entity("EAMS_ACore.AuthModels.UserState", b =>
-                {
-                    b.Property<int>("UserStateId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserStateId"));
-
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("StateMasterId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("UserStateId");
-
-                    b.HasIndex("Id");
-
-                    b.ToTable("UserState");
                 });
 
             modelBuilder.Entity("EAMS_ACore.BoothMaster", b =>
@@ -300,19 +228,28 @@ namespace EAMS_DAL.Migrations
                     b.Property<DateTime?>("BoothUpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Category")
+                        .HasColumnType("text");
+
                     b.Property<int>("DistrictMasterId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("ElectionTypeId")
+                    b.Property<int>("ElectionTypeMasterId")
                         .HasColumnType("integer");
 
                     b.Property<int?>("Female")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("FourthLevelHMasterId")
                         .HasColumnType("integer");
 
                     b.Property<bool>("IsAssigned")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsPSOFormDone")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool?>("IsPrimaryBooth")
                         .HasColumnType("boolean");
 
                     b.Property<double?>("Latitude")
@@ -325,6 +262,9 @@ namespace EAMS_DAL.Migrations
                         .HasColumnType("double precision");
 
                     b.Property<int?>("Male")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("PSZonePanchayatMasterId")
                         .HasColumnType("integer");
 
                     b.Property<string>("SecondLanguage")
@@ -344,6 +284,12 @@ namespace EAMS_DAL.Migrations
                     b.HasIndex("AssemblyMasterId");
 
                     b.HasIndex("DistrictMasterId");
+
+                    b.HasIndex("ElectionTypeMasterId");
+
+                    b.HasIndex("FourthLevelHMasterId");
+
+                    b.HasIndex("PSZonePanchayatMasterId");
 
                     b.HasIndex("StateMasterId");
 
@@ -377,9 +323,6 @@ namespace EAMS_DAL.Migrations
 
                     b.Property<DateTime?>("DistrictUpdatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("ElectionTypeId")
-                        .HasColumnType("integer");
 
                     b.Property<string>("SecondLanguage")
                         .HasColumnType("text");
@@ -481,7 +424,7 @@ namespace EAMS_DAL.Migrations
                     b.Property<DateTime?>("OTPGeneratedTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("PCMasterId")
+                    b.Property<int?>("PCMasterId")
                         .HasColumnType("integer");
 
                     b.Property<string>("RefreshToken")
@@ -696,6 +639,9 @@ namespace EAMS_DAL.Migrations
                     b.Property<DateTime?>("ElectionInfoUpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("ElectionTypeMasterId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("EventMasterId")
                         .HasColumnType("integer");
 
@@ -821,9 +767,209 @@ namespace EAMS_DAL.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Hierarchy1")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Hierarchy2")
+                        .HasColumnType("text");
+
                     b.HasKey("ElectionTypeMasterId");
 
                     b.ToTable("ElectionTypeMaster");
+                });
+
+            modelBuilder.Entity("EAMS_ACore.Models.FieldOfficerMaster", b =>
+                {
+                    b.Property<int>("FieldOfficerMasterId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("FieldOfficerMasterId"));
+
+                    b.Property<int>("AppPin")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("AssemblyMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DistrictMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ElectionTypeMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("FieldOfficerCreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FieldOfficerDesignation")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("FieldOfficerMobile")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("FieldOfficerName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("FieldOfficerOfficeName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("FieldOfficerStatus")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("FieldOfficerUpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsLocked")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("OTP")
+                        .HasColumnType("text");
+
+                    b.Property<int>("OTPAttempts")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("OTPExpireTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("OTPGeneratedTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("RefreshTokenExpiryTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("StateMasterId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("FieldOfficerMasterId");
+
+                    b.ToTable("FieldOfficerMaster");
+                });
+
+            modelBuilder.Entity("EAMS_ACore.Models.FourthLevelH", b =>
+                {
+                    b.Property<int>("FourthLevelHMasterId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("FourthLevelHMasterId"));
+
+                    b.Property<int>("AssemblyMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DistrictMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ElectionTypeMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("HierarchyCode")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("HierarchyCreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("HierarchyDeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("HierarchyName")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("HierarchyStatus")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("HierarchyType")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("HierarchyUpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SecondLanguage")
+                        .HasColumnType("text");
+
+                    b.Property<int>("StateMasterId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("FourthLevelHMasterId");
+
+                    b.HasIndex("AssemblyMasterId");
+
+                    b.HasIndex("DistrictMasterId");
+
+                    b.HasIndex("ElectionTypeMasterId");
+
+                    b.HasIndex("StateMasterId");
+
+                    b.ToTable("FourthLevelH");
+                });
+
+            modelBuilder.Entity("EAMS_ACore.Models.GPPanchayatWards", b =>
+                {
+                    b.Property<int>("GPPanchayatWardsMasterId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("GPPanchayatWardsMasterId"));
+
+                    b.Property<int>("AssemblyMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DistrictMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ElectionTypeMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("FourthLevelHMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("GPPanchayatWardsCategory")
+                        .HasColumnType("text");
+
+                    b.Property<int>("GPPanchayatWardsCode")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("GPPanchayatWardsCreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("GPPanchayatWardsDeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("GPPanchayatWardsName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("GPPanchayatWardsStatus")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("GPPanchayatWardsType")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("GPPanchayatWardsUpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("StateMasterId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("GPPanchayatWardsMasterId");
+
+                    b.HasIndex("AssemblyMasterId");
+
+                    b.HasIndex("DistrictMasterId");
+
+                    b.HasIndex("ElectionTypeMasterId");
+
+                    b.HasIndex("FourthLevelHMasterId");
+
+                    b.HasIndex("StateMasterId");
+
+                    b.ToTable("GPPanchayatWards");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.HelpDeskDetail", b =>
@@ -900,6 +1046,72 @@ namespace EAMS_DAL.Migrations
                     b.ToTable("MobileVersion");
                 });
 
+            modelBuilder.Entity("EAMS_ACore.Models.PSZonePanchayat", b =>
+                {
+                    b.Property<int>("PSZonePanchayatMasterId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PSZonePanchayatMasterId"));
+
+                    b.Property<int>("AssemblyMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DistrictMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ElectionTypeMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("FourthLevelHMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PSZonePanchayatBooths")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("PSZonePanchayatCategory")
+                        .HasColumnType("text");
+
+                    b.Property<int>("PSZonePanchayatCode")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("PSZonePanchayatCreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("PSZonePanchayatDeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PSZonePanchayatName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("PSZonePanchayatStatus")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("PSZonePanchayatType")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("PSZonePanchayatUpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("StateMasterId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("PSZonePanchayatMasterId");
+
+                    b.HasIndex("AssemblyMasterId");
+
+                    b.HasIndex("DistrictMasterId");
+
+                    b.HasIndex("ElectionTypeMasterId");
+
+                    b.HasIndex("FourthLevelHMasterId");
+
+                    b.HasIndex("StateMasterId");
+
+                    b.ToTable("PSZonePanchayat");
+                });
+
             modelBuilder.Entity("EAMS_ACore.Models.PollDetail", b =>
                 {
                     b.Property<int>("PollDetailMasterId")
@@ -918,6 +1130,9 @@ namespace EAMS_DAL.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("DistrictMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ElectionTypeMasterId")
                         .HasColumnType("integer");
 
                     b.Property<int>("EventMasterId")
@@ -1368,9 +1583,6 @@ namespace EAMS_DAL.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PPRMasterId"));
 
-                    b.Property<int?>("AssemblyMasterId")
-                        .HasColumnType("integer");
-
                     b.Property<int>("CurrentRound")
                         .HasColumnType("integer");
 
@@ -1384,9 +1596,6 @@ namespace EAMS_DAL.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("DistrictMasterId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("PCMasterId")
                         .HasColumnType("integer");
 
                     b.Property<int>("RandomizationTaskDetailMasterId")
@@ -1421,6 +1630,204 @@ namespace EAMS_DAL.Migrations
                     b.HasKey("RandomizationTaskDetailMasterId");
 
                     b.ToTable("RandomizationTaskDetail");
+                });
+
+            modelBuilder.Entity("EAMS_ACore.Models.PublicModels.GPVoter", b =>
+                {
+                    b.Property<int>("GPVoterMasterId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("GPVoterMasterId"));
+
+                    b.Property<int?>("AssemblyMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("DistrictMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("FourthLevelHMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("GPVoterCreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("GPVoterDeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("GPVoterPdfPath")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("GPVoterStatus")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("GPVoterUpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("StateMasterId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("GPVoterMasterId");
+
+                    b.ToTable("GPVoter");
+                });
+
+            modelBuilder.Entity("EAMS_ACore.Models.PublicModels.Kyc", b =>
+                {
+                    b.Property<int>("KycMasterId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("KycMasterId"));
+
+                    b.Property<int?>("AssemblyMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CandidateName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("DistrictMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ElectionTypeMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("FatherName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("FourthLevelHMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("GPPanchayatWardsMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("NominationPdfPath")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Option1")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Option2")
+                        .HasColumnType("text");
+
+                    b.Property<int>("PSZonePanchayatMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("StateMasterId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("KycMasterId");
+
+                    b.ToTable("Kyc");
+                });
+
+            modelBuilder.Entity("EAMS_ACore.Models.PublicModels.ResultDeclaration", b =>
+                {
+                    b.Property<int>("ResultDeclarationMasterId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ResultDeclarationMasterId"));
+
+                    b.Property<int?>("AssemblyMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CandidateName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("DistrictMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ElectionTypeMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("FatherName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("FourthLevelHMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("GPPanchayatWardsMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("ResultDecCreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ResultDecDeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("ResultDecStatus")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("ResultDecUpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("StateMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("VoteMargin")
+                        .HasColumnType("text");
+
+                    b.HasKey("ResultDeclarationMasterId");
+
+                    b.ToTable("ResultDeclaration");
+                });
+
+            modelBuilder.Entity("EAMS_ACore.Models.PublicModels.UnOpposed", b =>
+                {
+                    b.Property<int?>("UnOpposedMasterId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("UnOpposedMasterId"));
+
+                    b.Property<int?>("AssemblyMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CandidateName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("DistrictMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ElectionTypeMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("FatherName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("FourthLevelHMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("GPPanchayatWardsMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("NominationPdfPath")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Option1")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Option2")
+                        .HasColumnType("text");
+
+                    b.Property<int>("PSZonePanchayatMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("StateMasterId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("UnOpposedMasterId");
+
+                    b.ToTable("UnOpposed");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.QueueModel.QIS", b =>
@@ -1471,77 +1878,6 @@ namespace EAMS_DAL.Migrations
                     b.HasKey("QueueMasterId");
 
                     b.ToTable("QIS");
-                });
-
-            modelBuilder.Entity("EAMS_ACore.Models.SectorOfficerMaster", b =>
-                {
-                    b.Property<int>("SOMasterId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("SOMasterId"));
-
-                    b.Property<int>("AppPin")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ElectionTypeMasterId")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("IsLocked")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("OTP")
-                        .HasColumnType("text");
-
-                    b.Property<int>("OTPAttempts")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("OTPExpireTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("OTPGeneratedTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("RefreshToken")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("RefreshTokenExpiryTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("SOUpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("SoAssemblyCode")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("SoCreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("SoDesignation")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("SoMobile")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("SoName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("SoOfficeName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("SoStatus")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("StateMasterId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("SOMasterId");
-
-                    b.ToTable("SectorOfficerMaster");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.SlotManagementMaster", b =>
@@ -1780,9 +2116,6 @@ namespace EAMS_DAL.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("StateMasterId"));
 
-                    b.Property<int>("ElectionTypeId")
-                        .HasColumnType("integer");
-
                     b.Property<bool>("IsGenderCapturedinVoterTurnOut")
                         .HasColumnType("boolean");
 
@@ -1954,11 +2287,15 @@ namespace EAMS_DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("EAMS_ACore.ParliamentConstituencyMaster", "ParliamentConstituencyMaster")
-                        .WithMany("AssemblyMaster")
-                        .HasForeignKey("PCMasterId")
+                    b.HasOne("EAMS_ACore.Models.ElectionType.ElectionTypeMaster", "ElectionTypeMaster")
+                        .WithMany()
+                        .HasForeignKey("ElectionTypeMasterId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("EAMS_ACore.ParliamentConstituencyMaster", "ParliamentConstituencyMaster")
+                        .WithMany("AssemblyMaster")
+                        .HasForeignKey("PCMasterId");
 
                     b.HasOne("EAMS_ACore.StateMaster", "StateMaster")
                         .WithMany("AssemblyMaster")
@@ -1968,55 +2305,11 @@ namespace EAMS_DAL.Migrations
 
                     b.Navigation("DistrictMaster");
 
+                    b.Navigation("ElectionTypeMaster");
+
                     b.Navigation("ParliamentConstituencyMaster");
 
                     b.Navigation("StateMaster");
-                });
-
-            modelBuilder.Entity("EAMS_ACore.AuthModels.UserAssembly", b =>
-                {
-                    b.HasOne("EAMS_ACore.AuthModels.UserDistrict", "UserDistrict")
-                        .WithMany("UserAssembly")
-                        .HasForeignKey("UserDistrictId");
-
-                    b.HasOne("EAMS_ACore.AuthModels.UserPCConstituency", "UserPCConstituency")
-                        .WithMany("UserAssembly")
-                        .HasForeignKey("UserPCConstituencyId");
-
-                    b.Navigation("UserDistrict");
-
-                    b.Navigation("UserPCConstituency");
-                });
-
-            modelBuilder.Entity("EAMS_ACore.AuthModels.UserDistrict", b =>
-                {
-                    b.HasOne("EAMS_ACore.AuthModels.UserState", "UserState")
-                        .WithMany("UserDistrict")
-                        .HasForeignKey("UserStateId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("UserState");
-                });
-
-            modelBuilder.Entity("EAMS_ACore.AuthModels.UserPCConstituency", b =>
-                {
-                    b.HasOne("EAMS_ACore.AuthModels.UserState", "UserState")
-                        .WithMany("UserPCConstituency")
-                        .HasForeignKey("UserStateId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("UserState");
-                });
-
-            modelBuilder.Entity("EAMS_ACore.AuthModels.UserState", b =>
-                {
-                    b.HasOne("EAMS_ACore.AuthModels.UserRegistration", "UserRegistration")
-                        .WithMany("UserStates")
-                        .HasForeignKey("Id");
-
-                    b.Navigation("UserRegistration");
                 });
 
             modelBuilder.Entity("EAMS_ACore.BoothMaster", b =>
@@ -2033,6 +2326,20 @@ namespace EAMS_DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("EAMS_ACore.Models.ElectionType.ElectionTypeMaster", "ElectionTypeMaster")
+                        .WithMany()
+                        .HasForeignKey("ElectionTypeMasterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EAMS_ACore.Models.FourthLevelH", "FourthLevelH")
+                        .WithMany("BoothMaster")
+                        .HasForeignKey("FourthLevelHMasterId");
+
+                    b.HasOne("EAMS_ACore.Models.PSZonePanchayat", "PsZonePanchayat")
+                        .WithMany("BoothMaster")
+                        .HasForeignKey("PSZonePanchayatMasterId");
+
                     b.HasOne("EAMS_ACore.StateMaster", "StateMaster")
                         .WithMany("BoothMaster")
                         .HasForeignKey("StateMasterId")
@@ -2042,6 +2349,12 @@ namespace EAMS_DAL.Migrations
                     b.Navigation("AssemblyMaster");
 
                     b.Navigation("DistrictMaster");
+
+                    b.Navigation("ElectionTypeMaster");
+
+                    b.Navigation("FourthLevelH");
+
+                    b.Navigation("PsZonePanchayat");
 
                     b.Navigation("StateMaster");
                 });
@@ -2141,6 +2454,127 @@ namespace EAMS_DAL.Migrations
                     b.Navigation("ElectionTypeMaster");
                 });
 
+            modelBuilder.Entity("EAMS_ACore.Models.FourthLevelH", b =>
+                {
+                    b.HasOne("EAMS_ACore.AssemblyMaster", "AssemblyMaster")
+                        .WithMany("FourthLevelH")
+                        .HasForeignKey("AssemblyMasterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EAMS_ACore.DistrictMaster", "DistrictMaster")
+                        .WithMany()
+                        .HasForeignKey("DistrictMasterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EAMS_ACore.Models.ElectionType.ElectionTypeMaster", "ElectionTypeMaster")
+                        .WithMany()
+                        .HasForeignKey("ElectionTypeMasterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EAMS_ACore.StateMaster", "StateMaster")
+                        .WithMany()
+                        .HasForeignKey("StateMasterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AssemblyMaster");
+
+                    b.Navigation("DistrictMaster");
+
+                    b.Navigation("ElectionTypeMaster");
+
+                    b.Navigation("StateMaster");
+                });
+
+            modelBuilder.Entity("EAMS_ACore.Models.GPPanchayatWards", b =>
+                {
+                    b.HasOne("EAMS_ACore.AssemblyMaster", "AssemblyMaster")
+                        .WithMany()
+                        .HasForeignKey("AssemblyMasterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EAMS_ACore.DistrictMaster", "DistrictMaster")
+                        .WithMany()
+                        .HasForeignKey("DistrictMasterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EAMS_ACore.Models.ElectionType.ElectionTypeMaster", "ElectionTypeMaster")
+                        .WithMany()
+                        .HasForeignKey("ElectionTypeMasterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EAMS_ACore.Models.FourthLevelH", "FourthLevelH")
+                        .WithMany("GPPanchayatWards")
+                        .HasForeignKey("FourthLevelHMasterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EAMS_ACore.StateMaster", "StateMaster")
+                        .WithMany()
+                        .HasForeignKey("StateMasterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AssemblyMaster");
+
+                    b.Navigation("DistrictMaster");
+
+                    b.Navigation("ElectionTypeMaster");
+
+                    b.Navigation("FourthLevelH");
+
+                    b.Navigation("StateMaster");
+                });
+
+            modelBuilder.Entity("EAMS_ACore.Models.PSZonePanchayat", b =>
+                {
+                    b.HasOne("EAMS_ACore.AssemblyMaster", "AssemblyMaster")
+                        .WithMany("BlockPanchayat")
+                        .HasForeignKey("AssemblyMasterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EAMS_ACore.DistrictMaster", "DistrictMaster")
+                        .WithMany()
+                        .HasForeignKey("DistrictMasterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EAMS_ACore.Models.ElectionType.ElectionTypeMaster", "ElectionTypeMaster")
+                        .WithMany()
+                        .HasForeignKey("ElectionTypeMasterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EAMS_ACore.Models.FourthLevelH", "FourthLevelH")
+                        .WithMany("PSZonePanchayat")
+                        .HasForeignKey("FourthLevelHMasterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EAMS_ACore.StateMaster", "StateMaster")
+                        .WithMany()
+                        .HasForeignKey("StateMasterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AssemblyMaster");
+
+                    b.Navigation("DistrictMaster");
+
+                    b.Navigation("ElectionTypeMaster");
+
+                    b.Navigation("FourthLevelH");
+
+                    b.Navigation("StateMaster");
+                });
+
             modelBuilder.Entity("EAMS_ACore.Models.PollingStationFormModels.PollingStationGender", b =>
                 {
                     b.HasOne("EAMS_ACore.Models.PollingStationFormModels.PollingStationMaster", "PollingStationMaster")
@@ -2225,35 +2659,31 @@ namespace EAMS_DAL.Migrations
 
             modelBuilder.Entity("EAMS_ACore.AssemblyMaster", b =>
                 {
+                    b.Navigation("BlockPanchayat");
+
                     b.Navigation("BoothMaster");
-                });
 
-            modelBuilder.Entity("EAMS_ACore.AuthModels.UserDistrict", b =>
-                {
-                    b.Navigation("UserAssembly");
-                });
-
-            modelBuilder.Entity("EAMS_ACore.AuthModels.UserPCConstituency", b =>
-                {
-                    b.Navigation("UserAssembly");
-                });
-
-            modelBuilder.Entity("EAMS_ACore.AuthModels.UserRegistration", b =>
-                {
-                    b.Navigation("UserStates");
-                });
-
-            modelBuilder.Entity("EAMS_ACore.AuthModels.UserState", b =>
-                {
-                    b.Navigation("UserDistrict");
-
-                    b.Navigation("UserPCConstituency");
+                    b.Navigation("FourthLevelH");
                 });
 
             modelBuilder.Entity("EAMS_ACore.DistrictMaster", b =>
                 {
                     b.Navigation("AssemblyMaster");
 
+                    b.Navigation("BoothMaster");
+                });
+
+            modelBuilder.Entity("EAMS_ACore.Models.FourthLevelH", b =>
+                {
+                    b.Navigation("BoothMaster");
+
+                    b.Navigation("GPPanchayatWards");
+
+                    b.Navigation("PSZonePanchayat");
+                });
+
+            modelBuilder.Entity("EAMS_ACore.Models.PSZonePanchayat", b =>
+                {
                     b.Navigation("BoothMaster");
                 });
 
