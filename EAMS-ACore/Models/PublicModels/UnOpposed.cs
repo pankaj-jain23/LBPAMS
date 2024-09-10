@@ -108,6 +108,11 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
+        public string? ElectionTypeName
+        {
+            get;
+            set;
+        }
         public int? AssemblyMasterId
         {
             get;

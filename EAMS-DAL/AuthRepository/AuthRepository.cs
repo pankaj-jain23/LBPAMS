@@ -549,7 +549,6 @@ namespace EAMS_DAL.AuthRepository
         public async Task<DashBoardProfile> GetDashboardProfile(string userId, int? stateMasterId)
         {
             var userRecord = await _userManager.FindByIdAsync(userId);
-
             if (userRecord == null)
             {
                 return null; // Return null when userRecord is null
@@ -559,50 +558,81 @@ namespace EAMS_DAL.AuthRepository
             var rolesList = roles.ToList();
             var getElection = await GetElectionTypeById(userRecord.ElectionTypeMasterId);
 
+            // Fetch the state only once
             var state = _context.StateMaster
-      .Include(d => d.DistrictMasters)
-          .ThenInclude(dm => dm.AssemblyMaster)
-              .ThenInclude(am => am.FourthLevelH)
-      .FirstOrDefault(d => d.StateMasterId == userRecord.StateMasterId);
+                .Include(d => d.DistrictMasters)
+                    .ThenInclude(dm => dm.AssemblyMaster)
+                        .ThenInclude(am => am.FourthLevelH)
+                .FirstOrDefault(d => d.StateMasterId == userRecord.StateMasterId);
 
+            // Initialize common fields
+            var dashboardProfile = new DashBoardProfile
+            {
+                Name = userRecord.UserName,
+                MobileNumber = userRecord.PhoneNumber,
+                UserEmail = userRecord.Email,
+                UserType = "DashBoard",
+                Roles = rolesList,
+                ElectionTypeMasterId = userRecord.ElectionTypeMasterId,
+                ElectionName = getElection?.ElectionType,
+                StateMasterId = state?.StateMasterId,
+                StateName = state?.StateName
+            };
+
+            // Handle different roles
             if (roles.Contains("SuperAdmin"))
             {
-                return new DashBoardProfile
-                {
-                    Name = userRecord.UserName,
-                    MobileNumber = userRecord.PhoneNumber,
-                    UserEmail = userRecord.Email,
-                    UserType = "DashBoard",
-                    Roles = rolesList,
-                    StateMasterId = state?.StateMasterId,
-                    StateName = state?.StateName,
-                    ElectionTypeMasterId=userRecord.ElectionTypeMasterId,
-                    ElectionName=getElection.ElectionType
-                };
+                return dashboardProfile;
             }
-            else
+            else if (roles.Contains("DistrictAdmin"))
             {
-                return new DashBoardProfile
-                {
-                    Name = userRecord.UserName,
-                    MobileNumber = userRecord.PhoneNumber,
-                    UserEmail = userRecord.Email,
-                    UserType = "DashBoard",
-                    Roles = rolesList,
-                    ElectionTypeMasterId = userRecord.ElectionTypeMasterId,
-                    ElectionName = getElection.ElectionType,
-                    StateMasterId = state?.StateMasterId,
-                    StateName = state?.StateName,
-                    DistrictMasterId = state?.DistrictMasters?.FirstOrDefault()?.DistrictMasterId, // Handle potential null state or DistrictMasters collection
-                    DistrictName = state?.DistrictMasters?.FirstOrDefault()?.DistrictName,
-                    AssemblyMasterId = state?.DistrictMasters?.FirstOrDefault()?.AssemblyMaster?.FirstOrDefault()?.AssemblyMasterId, // Nested null checks
-                    AssemblyName = state?.DistrictMasters?.FirstOrDefault()?.AssemblyMaster?.FirstOrDefault()?.AssemblyName,
-                    FourthLevelHMasterId = state?.DistrictMasters?.FirstOrDefault()?.AssemblyMaster?.FirstOrDefault()?.FourthLevelH?.FirstOrDefault()?.FourthLevelHMasterId,
-                    FourthLevelHName = state?.DistrictMasters?.FirstOrDefault()?.AssemblyMaster?.FirstOrDefault()?.FourthLevelH?.FirstOrDefault()?.HierarchyName
-                };
+                var district = _context.DistrictMaster
+                    .FirstOrDefault(d => d.StateMasterId == userRecord.StateMasterId && d.DistrictMasterId == userRecord.DistrictMasterId);
 
+                if (district != null)
+                {
+                    dashboardProfile.DistrictMasterId = district.DistrictMasterId;
+                    dashboardProfile.DistrictName = district.DistrictName;
+                }
+            }
+            else if (roles.Contains("LocalBodiesAdmin"))
+            {
+                var assembly = _context.AssemblyMaster
+                    .Include(a => a.DistrictMaster)
+                    .FirstOrDefault(a => a.StateMasterId == userRecord.StateMasterId &&
+                                         a.DistrictMasterId == userRecord.DistrictMasterId &&
+                                         a.AssemblyMasterId == userRecord.AssemblyMasterId);
+
+                if (assembly != null)
+                {
+                    dashboardProfile.DistrictMasterId = assembly.DistrictMaster?.DistrictMasterId;
+                    dashboardProfile.DistrictName = assembly.DistrictMaster?.DistrictName;
+                    dashboardProfile.AssemblyMasterId = assembly.AssemblyMasterId;
+                    dashboardProfile.AssemblyName = assembly.AssemblyName;
+                }
+            }
+            else if (roles.Contains("SubLocalBodiesAdmin"))
+            {
+                var fourthLevelH = _context.FourthLevelH
+                    .Include(f => f.DistrictMaster)
+                    .Include(f => f.AssemblyMaster)
+                    .FirstOrDefault(f => f.StateMasterId == userRecord.StateMasterId &&
+                                         f.DistrictMasterId == userRecord.DistrictMasterId &&
+                                         f.AssemblyMasterId == userRecord.AssemblyMasterId &&
+                                         f.FourthLevelHMasterId == userRecord.FourthLevelHMasterId);
+
+                if (fourthLevelH != null)
+                {
+                    dashboardProfile.DistrictMasterId = fourthLevelH.DistrictMaster?.DistrictMasterId;
+                    dashboardProfile.DistrictName = fourthLevelH.DistrictMaster?.DistrictName;
+                    dashboardProfile.AssemblyMasterId = fourthLevelH.AssemblyMasterId;
+                    dashboardProfile.AssemblyName = fourthLevelH.AssemblyMaster?.AssemblyName;
+                    dashboardProfile.FourthLevelHMasterId = fourthLevelH.FourthLevelHMasterId;
+                    dashboardProfile.FourthLevelHName = fourthLevelH.HierarchyName;
+                }
             }
 
+            return dashboardProfile; // If role doesn't match, return the base profile
         }
 
 

@@ -271,7 +271,7 @@ namespace EAMS_DAL.Repository
                     }
 
                 case "FOMaster":
-                var isFOExist = await _context.FieldOfficerMaster.Where(d => d.FieldOfficerMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
+                    var isFOExist = await _context.FieldOfficerMaster.Where(d => d.FieldOfficerMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
                     if (isFOExist != null)
                     {
                         isFOExist.FieldOfficerStatus = updateMasterStatus.IsStatus;
@@ -1273,7 +1273,7 @@ namespace EAMS_DAL.Repository
                                 districtMasterRecord.DistrictUpdatedAt = BharatDateTime();
                                 _context.DistrictMaster.Update(districtMasterRecord);
                                 await _context.SaveChangesAsync();
-                               
+
                                 return new Response { Status = RequestStatusEnum.OK, Message = "District Updated Successfully" + districtMaster.DistrictName };
                             }
                         }
@@ -1294,7 +1294,7 @@ namespace EAMS_DAL.Repository
                                 districtMasterRecord.DistrictUpdatedAt = BharatDateTime();
                                 _context.DistrictMaster.Update(districtMasterRecord);
                                 await _context.SaveChangesAsync();
-                               
+
                                 return new Response { Status = RequestStatusEnum.OK, Message = "District Updated Successfully" + districtMaster.DistrictName };
 
                             }
@@ -1340,7 +1340,7 @@ namespace EAMS_DAL.Repository
                             _context.DistrictMaster.Add(districtMaster);
                             _context.SaveChanges();
 
-                            
+
                             return new Response { Status = RequestStatusEnum.OK, Message = "District Added Successfully " + districtMaster.DistrictName };
 
                         }
@@ -1805,90 +1805,10 @@ namespace EAMS_DAL.Repository
         #endregion
 
         #region FO Master
-        public async Task<List<CombinedMaster>> GetSectorOfficersListById(string stateMasterId, string districtMasterId, string assemblyMasterId)
+        public async Task<List<FieldOfficerMaster>> GetFieldOfficersListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            //IQueryable<CombinedMaster> solist = Enumerable.Empty<CombinedMaster>().AsQueryable();
-            //var isStateActive = _context.StateMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId)).FirstOrDefault();
-            //var isDistrictActive = _context.DistrictMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId)).FirstOrDefault();
-            //var isAssemblyActive = _context.AssemblyMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId)).FirstOrDefault();
-            //if (isStateActive.StateStatus && isDistrictActive.DistrictStatus && isAssemblyActive.AssemblyStatus)
-            //{
-            //    if (districtMasterId == "0")
-            //    {
-            //        solist = from so in _context.SectorOfficerMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId)) // outer sequence
-            //                 join asem in _context.AssemblyMaster
-            //                 on so.SoAssemblyCode equals asem.AssemblyCode
-            //                 join pc in _context.ParliamentConstituencyMaster
-            //                 on asem.PCMasterId equals pc.PCMasterId
-            //                 where asem.StateMasterId == Convert.ToInt32(stateMasterId) && asem.AssemblyMasterId == Convert.ToInt32(assemblyMasterId) // key selector
-            //                 join state in _context.StateMaster
-            //                  on pc.StateMasterId equals state.StateMasterId
-
-            //                 select new CombinedMaster
-            //                 { // result selector 
-            //                     StateName = state.StateName,
-            //                     //DistrictId = dist.DistrictMasterId,
-            //                     //DistrictName = dist.DistrictName,
-            //                     //DistrictCode = dist.DistrictCode,
-            //                     PCMasterId = pc.PCMasterId,
-            //                     PCName = pc.PcName,
-            //                     AssemblyId = asem.AssemblyMasterId,
-            //                     AssemblyName = asem.AssemblyName,
-            //                     AssemblyCode = asem.AssemblyCode,
-            //                     soName = so.SoName,
-            //                     soMobile = so.SoMobile,
-            //                     soDesignation = so.SoDesignation,
-            //                     soMasterId = so.SOMasterId,
-            //                     RecentOTP = so.OTP,
-            //                     OTPExpireTime = so.OTPExpireTime,
-            //                     OTPAttempts = so.OTPAttempts,
-            //                     IsStatus = so.SoStatus
-
-
-            //                 };
-            //    }
-            //    else
-            //    {
-            //        solist = from so in _context.SectorOfficerMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId)) // outer sequence
-            //                 join asem in _context.AssemblyMaster
-            //                 on so.SoAssemblyCode equals asem.AssemblyCode
-            //                 join dist in _context.DistrictMaster
-            //                 on asem.DistrictMasterId equals dist.DistrictMasterId
-            //                 where asem.DistrictMasterId == Convert.ToInt32(districtMasterId) && asem.AssemblyMasterId == Convert.ToInt32(assemblyMasterId) // key selector
-            //                 join state in _context.StateMaster
-            //                  on dist.StateMasterId equals state.StateMasterId
-
-            //                 select new CombinedMaster
-            //                 { // result selector 
-            //                     StateName = state.StateName,
-            //                     DistrictId = dist.DistrictMasterId,
-            //                     DistrictName = dist.DistrictName,
-            //                     DistrictCode = dist.DistrictCode,
-            //                     AssemblyId = asem.AssemblyMasterId,
-            //                     AssemblyName = asem.AssemblyName,
-            //                     AssemblyCode = asem.AssemblyCode,
-            //                     soName = so.SoName,
-            //                     soMobile = so.SoMobile,
-            //                     soDesignation = so.SoDesignation,
-            //                     soMasterId = so.SOMasterId,
-            //                     RecentOTP = so.OTP,
-            //                     OTPExpireTime = so.OTPExpireTime,
-            //                     OTPAttempts = so.OTPAttempts,
-            //                     IsStatus = so.SoStatus
-
-
-            //                 };
-
-            //    }
-
-
-            //    return await solist.ToListAsync();
-            //}
-            //else
-            //{
-            //    return null;
-            //}
-            return null;
+            var foList = await _context.FieldOfficerMaster.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId).ToListAsync();
+            return foList;
         }
 
         public async Task<SectorOfficerProfile> GetSectorOfficerProfile2(string soId)
@@ -2002,7 +1922,7 @@ namespace EAMS_DAL.Repository
 
             // Check if the phone number already exists for another officer
             var isUniquePhoneNumber = await _context.FieldOfficerMaster
-                                                    .AnyAsync(d => d.FieldOfficerMobile == updatedFieldOfficer.FieldOfficerMobile&&d.ElectionTypeMasterId==updatedFieldOfficer.ElectionTypeMasterId);
+                                                    .AnyAsync(d => d.FieldOfficerMobile == updatedFieldOfficer.FieldOfficerMobile && d.ElectionTypeMasterId == updatedFieldOfficer.ElectionTypeMasterId);
 
             if (isUniquePhoneNumber)
             {
@@ -2022,7 +1942,7 @@ namespace EAMS_DAL.Repository
             existingOfficer.FieldOfficerDesignation = updatedFieldOfficer.FieldOfficerDesignation;
             existingOfficer.FieldOfficerOfficeName = updatedFieldOfficer.FieldOfficerOfficeName;
             existingOfficer.FieldOfficerMobile = updatedFieldOfficer.FieldOfficerMobile;
-            existingOfficer.FieldOfficerUpdatedAt =BharatDateTime(); // Set the updated time to the current time
+            existingOfficer.FieldOfficerUpdatedAt = BharatDateTime(); // Set the updated time to the current time
             existingOfficer.FieldOfficerStatus = updatedFieldOfficer.FieldOfficerStatus;
             existingOfficer.OTPGeneratedTime = updatedFieldOfficer.OTPGeneratedTime;
             existingOfficer.OTP = updatedFieldOfficer.OTP;
@@ -2035,8 +1955,8 @@ namespace EAMS_DAL.Repository
             existingOfficer.ElectionTypeMasterId = updatedFieldOfficer.ElectionTypeMasterId;
 
             _context.FieldOfficerMaster.Update(existingOfficer);
-             
-              _context.SaveChanges();
+
+            _context.SaveChanges();
 
             // Return a success response
             return new Response
@@ -2155,9 +2075,9 @@ namespace EAMS_DAL.Repository
             if (isStateActive.StateStatus && isDistrictActive.DistrictStatus && isAssemblyActive.AssemblyStatus && isFourthLevelActive.HierarchyStatus)
             {
                 IQueryable<CombinedMaster> boothlist = null;
-                if (Convert.ToInt32(fourthLevelHMasterId) > 0 && (Convert.ToInt32(BlockZonePanchayatMasterId) ==0 || BlockZonePanchayatMasterId == null))
+                if (Convert.ToInt32(fourthLevelHMasterId) > 0 && (Convert.ToInt32(BlockZonePanchayatMasterId) == 0 || BlockZonePanchayatMasterId == null))
                 {
-                    
+
                     boothlist = from bt in _context.BoothMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId) && d.FourthLevelHMasterId == Convert.ToInt32(fourthLevelHMasterId)) // outer sequenc)
                                 join asem in _context.AssemblyMaster
                                 on bt.AssemblyMasterId equals asem.AssemblyMasterId
@@ -2188,9 +2108,9 @@ namespace EAMS_DAL.Repository
                                     LocationMasterId = bt.LocationMasterId,
                                     ElectionTypeMasterId = bt.ElectionTypeMasterId,
                                     ElectionTypeName = elec.ElectionType,
-                                    FourthLevelHMasterId= bt.FourthLevelHMasterId,
-                                    FourthLevelHName=frth.HierarchyName,
-                                    IsPrimaryBooth=bt.IsPrimaryBooth
+                                    FourthLevelHMasterId = bt.FourthLevelHMasterId,
+                                    FourthLevelHName = frth.HierarchyName,
+                                    IsPrimaryBooth = bt.IsPrimaryBooth
 
 
                                 };
@@ -2236,9 +2156,9 @@ namespace EAMS_DAL.Repository
                                     ElectionTypeName = elec.ElectionType,
                                     FourthLevelHMasterId = bt.FourthLevelHMasterId,
                                     FourthLevelHName = frth.HierarchyName,
-                                    PSZoneMasterId=bt.PSZonePanchayatMasterId,
-                                    PSZonePanchayatName=zp.PSZonePanchayatName,
-                                     IsPrimaryBooth = bt.IsPrimaryBooth
+                                    PSZoneMasterId = bt.PSZonePanchayatMasterId,
+                                    PSZonePanchayatName = zp.PSZonePanchayatName,
+                                    IsPrimaryBooth = bt.IsPrimaryBooth
 
                                 };
                 }
@@ -2485,7 +2405,7 @@ namespace EAMS_DAL.Repository
                     return new Response { Status = RequestStatusEnum.BadRequest, Message = "Booth master data is null" };
                 //check full hierchythatids are in order or not
                 bool recordExistOfMasterIds = false;
-                if (boothMaster.ElectionTypeMasterId==2)
+                if (boothMaster.ElectionTypeMasterId == 2)
                 {
                     recordExistOfMasterIds = await _context.PSZonePanchayat.AnyAsync(d =>
                                         d.StateMasterId == boothMaster.StateMasterId &&
@@ -2539,7 +2459,7 @@ namespace EAMS_DAL.Repository
                             if (boothMaster.ElectionTypeMasterId == 1)//gram
                         {
                             var existingBooths = await _context.BoothMaster.Where(p =>
-                           
+
                              p.StateMasterId == boothMaster.StateMasterId &&
                              p.AssemblyMasterId == boothMaster.AssemblyMasterId &&
                              p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId).ToListAsync();
@@ -2581,7 +2501,7 @@ namespace EAMS_DAL.Repository
                             await _context.SaveChangesAsync();
                             return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
                         }
-                           
+
                     }
                     else
                     {
@@ -2597,24 +2517,24 @@ namespace EAMS_DAL.Repository
                                          p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId && p.PSZonePanchayatMasterId == boothMaster.PSZonePanchayatMasterId).ToListAsync();
 
 
-                        //if (assemblyActive)
-                        //{
-                        if (boothMaster.Male + boothMaster.Female + boothMaster.Transgender == boothMaster.TotalVoters)
-                        {
-                            boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
-                            _context.BoothMaster.Add(boothMaster);
-                            await _context.SaveChangesAsync();
-                            return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
-                        }
-                        else
-                        {
-                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "The total sum of voters does not match the individual counts of Male, Female, and Transgender categories." };
-                        }
-                        //}
-                        //else
-                        //{
-                        //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Assembly is not active for this booth. Kindly activate the Assembly in order to Add Booth." };
-                        //}
+                            //if (assemblyActive)
+                            //{
+                            if (boothMaster.Male + boothMaster.Female + boothMaster.Transgender == boothMaster.TotalVoters)
+                            {
+                                boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
+                                _context.BoothMaster.Add(boothMaster);
+                                await _context.SaveChangesAsync();
+                                return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
+                            }
+                            else
+                            {
+                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "The total sum of voters does not match the individual counts of Male, Female, and Transgender categories." };
+                            }
+                            //}
+                            //else
+                            //{
+                            //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Assembly is not active for this booth. Kindly activate the Assembly in order to Add Booth." };
+                            //}
 
                         }
                         else
@@ -2678,7 +2598,7 @@ namespace EAMS_DAL.Repository
                         }
                         else
                         {
-                           
+
                             if (boothMaster.Male + boothMaster.Female + boothMaster.Transgender == boothMaster.TotalVoters)
                             {
 
@@ -2691,7 +2611,7 @@ namespace EAMS_DAL.Repository
                             {
                                 return new Response { Status = RequestStatusEnum.BadRequest, Message = "The total sum of voters does not match the individual counts of Male, Female, and Transgender categories." };
                             }
-                           
+
                         }
 
                     }
@@ -2700,7 +2620,7 @@ namespace EAMS_DAL.Repository
                 {
                     return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please check the hierarchy; the record does not exist due to incorrect order." };
                 }
-                }
+            }
             catch (Exception ex)
             {
                 // Log the exception details for troubleshooting
@@ -2939,7 +2859,7 @@ namespace EAMS_DAL.Repository
                 }
                 else
                 {
-                  
+
                     if (boothMaster.Male + boothMaster.Female + boothMaster.Transgender == boothMaster.TotalVoters)
                     {
                         if (existingbooth != null)
@@ -3462,7 +3382,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                         return new Response { Status = RequestStatusEnum.BadRequest, Message = "Problem while Updating Booth" };
 
                                     }
-                                //}
+                                    //}
 
                                 }
                                 else
@@ -16441,7 +16361,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                           from pz in psZones.DefaultIfEmpty()
                           join gpWard in _context.GPPanchayatWards on k.GPPanchayatWardsMasterId equals gpWard.GPPanchayatWardsMasterId into gpWards
                           from gw in gpWards.DefaultIfEmpty()
-                          where 
+                          where
                                 k.StateMasterId == stateMasterId &&
                                 k.DistrictMasterId == districtMasterId &&
                                 k.AssemblyMasterId == assemblyMasterId
@@ -16470,10 +16390,12 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         public async Task<KycList> GetKycById(int kycMasterId)
         {
             var kyc = await _context.Kyc.FirstOrDefaultAsync(d => d.KycMasterId == kycMasterId);
+            var electionType = await _context.ElectionTypeMaster.FirstOrDefaultAsync(d=>d.ElectionTypeMasterId== kyc.ElectionTypeMasterId);
             if (kyc == null)
             {
                 return null; // or throw an exception, or handle the case appropriately
             }
+            var baseUrl = "https://lbpams.punjab.gov.in/LBPAMSDOC/";
             //PS Zone Panchayat
             if (kyc.PSZonePanchayatMasterId != 0)
             {
@@ -16489,26 +16411,28 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 {
                     return null; // or handle the case appropriately
                 }
-            
-            var result = new KycList
-            {
-                KycMasterId = kyc.KycMasterId,
-                ElectionTypeMasterId = kyc.ElectionTypeMasterId,
-                StateMasterId = panchayat.StateMasterId,
-                StateName = panchayat.StateMaster.StateName,
-                DistrictMasterId = panchayat.DistrictMasterId,
-                DistrictName = panchayat.DistrictMaster.DistrictName,
-                AssemblyMasterId = panchayat.AssemblyMasterId,
-                AssemblyName = panchayat.AssemblyMaster.AssemblyName,
-                FourthLevelHMasterId = panchayat.FourthLevelHMasterId,
-                FourthLevelName = panchayat.FourthLevelH.HierarchyName,
-                PSZonePanchayatMasterId = panchayat.PSZonePanchayatMasterId,
-                PSZonePanchayatName = panchayat.PSZonePanchayatName ,
-                CandidateName = kyc.CandidateName,
-                FatherName = kyc.FatherName,
-            };
 
-            return result;
+                var result = new KycList
+                {
+                    KycMasterId = kyc.KycMasterId,
+                    ElectionTypeMasterId = kyc.ElectionTypeMasterId,
+                    ElectionTypeName=electionType.ElectionType,
+                    StateMasterId = panchayat.StateMasterId,
+                    StateName = panchayat.StateMaster.StateName,
+                    DistrictMasterId = panchayat.DistrictMasterId,
+                    DistrictName = panchayat.DistrictMaster.DistrictName,
+                    AssemblyMasterId = panchayat.AssemblyMasterId,
+                    AssemblyName = panchayat.AssemblyMaster.AssemblyName,
+                    FourthLevelHMasterId = panchayat.FourthLevelHMasterId,
+                    FourthLevelName = panchayat.FourthLevelH.HierarchyName,
+                    PSZonePanchayatMasterId = panchayat.PSZonePanchayatMasterId,
+                    PSZonePanchayatName = panchayat.PSZonePanchayatName,
+                    CandidateName = kyc.CandidateName,
+                    FatherName = kyc.FatherName,
+                    NominationPdfPath= $"{baseUrl}{kyc.NominationPdfPath}"
+                };
+
+                return result;
             }
             //Gp Panchayat ward
             else if (kyc.GPPanchayatWardsMasterId != 0)
@@ -16530,6 +16454,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 {
                     KycMasterId = kyc.KycMasterId,
                     ElectionTypeMasterId = kyc.ElectionTypeMasterId,
+                    ElectionTypeName = electionType.ElectionType,
                     StateMasterId = gpWard.StateMasterId,
                     StateName = gpWard.StateMaster.StateName,
                     DistrictMasterId = gpWard.DistrictMasterId,
@@ -16538,23 +16463,24 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     AssemblyName = gpWard.AssemblyMaster.AssemblyName,
                     FourthLevelHMasterId = gpWard.FourthLevelHMasterId,
                     FourthLevelName = gpWard.FourthLevelH.HierarchyName,
-                    GPPanchayatWardsMasterId=gpWard.GPPanchayatWardsMasterId,
-                    GPPanchayatWardsName=gpWard.GPPanchayatWardsName,                
+                    GPPanchayatWardsMasterId = gpWard.GPPanchayatWardsMasterId,
+                    GPPanchayatWardsName = gpWard.GPPanchayatWardsName,
                     CandidateName = kyc.CandidateName,
                     FatherName = kyc.FatherName,
+                    NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}"
                 };
 
                 return result;
             }
-           //fourth level
-            else if(kyc.FourthLevelHMasterId != 0)
+            //fourth level
+            else if (kyc.FourthLevelHMasterId != 0)
             {
                 var fourthLevel = await _context.FourthLevelH
                   .Where(d => d.FourthLevelHMasterId == kyc.FourthLevelHMasterId)
                   .Include(d => d.StateMaster)
                   .Include(d => d.DistrictMaster)
                   .Include(d => d.AssemblyMaster)
-               
+
                   .FirstOrDefaultAsync();
 
                 if (fourthLevel == null)
@@ -16566,6 +16492,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 {
                     KycMasterId = kyc.KycMasterId,
                     ElectionTypeMasterId = kyc.ElectionTypeMasterId,
+                    ElectionTypeName = electionType.ElectionType,
                     StateMasterId = fourthLevel.StateMasterId,
                     StateName = fourthLevel.StateMaster.StateName,
                     DistrictMasterId = fourthLevel.DistrictMasterId,
@@ -16573,20 +16500,21 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     AssemblyMasterId = fourthLevel.AssemblyMasterId,
                     AssemblyName = fourthLevel.AssemblyMaster.AssemblyName,
                     FourthLevelHMasterId = fourthLevel.FourthLevelHMasterId,
-                    FourthLevelName = fourthLevel.HierarchyName, 
+                    FourthLevelName = fourthLevel.HierarchyName,
                     CandidateName = kyc.CandidateName,
                     FatherName = kyc.FatherName,
+                    NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}"
                 };
 
                 return result;
             }
-           //assembly level
+            //assembly level
             else
             {
                 var assemblyMaster = await _context.AssemblyMaster
                   .Where(d => d.AssemblyMasterId == kyc.AssemblyMasterId)
                   .Include(d => d.StateMaster)
-                  .Include(d => d.DistrictMaster) 
+                  .Include(d => d.DistrictMaster)
 
                   .FirstOrDefaultAsync();
 
@@ -16599,6 +16527,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 {
                     KycMasterId = kyc.KycMasterId,
                     ElectionTypeMasterId = kyc.ElectionTypeMasterId,
+                    ElectionTypeName = electionType.ElectionType,
                     StateMasterId = assemblyMaster.StateMasterId,
                     StateName = assemblyMaster.StateMaster.StateName,
                     DistrictMasterId = assemblyMaster.DistrictMasterId,
@@ -16607,6 +16536,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     AssemblyName = assemblyMaster.AssemblyName,
                     CandidateName = kyc.CandidateName,
                     FatherName = kyc.FatherName,
+                    NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}"
                 };
 
                 return result;
@@ -16634,64 +16564,102 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         #region UnOpposed Public Details
         public async Task<ServiceResponse> AddUnOpposedDetails(UnOpposed unOpposed)
         {
+            bool isExist;
 
+            // Check if ElectionTypeMasterId is not equal to 2
+            if (unOpposed.ElectionTypeMasterId != 2)
+            {
+                // panch
+                if (unOpposed.GPPanchayatWardsMasterId != 0)
+                {
+                    isExist = await _context.UnOpposed.AnyAsync(d =>
+                        d.StateMasterId == unOpposed.StateMasterId &&
+                        d.DistrictMasterId == unOpposed.DistrictMasterId &&
+                        d.AssemblyMasterId == unOpposed.AssemblyMasterId &&
+                        d.FourthLevelHMasterId == unOpposed.FourthLevelHMasterId &&
+                        d.GPPanchayatWardsMasterId == unOpposed.GPPanchayatWardsMasterId);
+                }
+                else //sarpanch and other
+                {
+                    isExist = await _context.UnOpposed.AnyAsync(d =>
+                        d.StateMasterId == unOpposed.StateMasterId &&
+                        d.DistrictMasterId == unOpposed.DistrictMasterId &&
+                        d.AssemblyMasterId == unOpposed.AssemblyMasterId &&
+                        d.FourthLevelHMasterId == unOpposed.FourthLevelHMasterId);
+                }
+            }
+            else // When ElectionTypeMasterId equals 2
+            {
+                isExist = await _context.UnOpposed.AnyAsync(d =>
+                    d.StateMasterId == unOpposed.StateMasterId &&
+                    d.DistrictMasterId == unOpposed.DistrictMasterId &&
+                    d.AssemblyMasterId == unOpposed.AssemblyMasterId);
+            }
+
+            // Return if the candidate already exists
+            if (isExist)
+            {
+                return new ServiceResponse() { IsSucceed = false, Message = "UnOpposed Candidate Already Exist" };
+            }
+
+            // Add the new UnOpposed record
             _context.UnOpposed.Add(unOpposed);
-            _context.SaveChanges();
-
+            await _context.SaveChangesAsync();
 
             return new ServiceResponse { IsSucceed = true, Message = "Successfully added" };
         }
+
         public async Task<List<UnOpposed>> GetUnOpposedDetails()
         {
             return await _context.UnOpposed.ToListAsync();
 
         }
-        public async Task<List<UnOpposedList>> GetUnOpposedDetailsByAssemblyId(int electionType,int stateMasterId, int districtMasterId, int assemblyMasterId)
+        public async Task<List<UnOpposedList>> GetUnOpposedDetailsByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
             var baseUrl = "https://lbpams.punjab.gov.in/LBPAMSDOC/";
-           
+
             // Execute the initial query that can be translated to SQL
             var unOpposedList = from un in _context.UnOpposed
-                          join state in _context.StateMaster on un.StateMasterId equals state.StateMasterId
-                          join district in _context.DistrictMaster on un.DistrictMasterId equals district.DistrictMasterId into districts
-                          from d in districts.DefaultIfEmpty()
-                          join assembly in _context.AssemblyMaster on un.AssemblyMasterId equals assembly.AssemblyMasterId into assemblies
-                          from a in assemblies.DefaultIfEmpty()
-                          join fourthLevel in _context.FourthLevelH on un.FourthLevelHMasterId equals fourthLevel.FourthLevelHMasterId into fourthLevels
-                          from fl in fourthLevels.DefaultIfEmpty()
-                          join psZone in _context.PSZonePanchayat on un.PSZonePanchayatMasterId equals psZone.PSZonePanchayatMasterId into psZones
-                          from pz in psZones.DefaultIfEmpty()
-                          join gpWard in _context.GPPanchayatWards on un.GPPanchayatWardsMasterId equals gpWard.GPPanchayatWardsMasterId into gpWards
-                          from gw in gpWards.DefaultIfEmpty()
-                          where 
-                                   un.StateMasterId == stateMasterId &&
-                                  un.DistrictMasterId == districtMasterId &&
-                                  un.AssemblyMasterId == assemblyMasterId
+                                join state in _context.StateMaster on un.StateMasterId equals state.StateMasterId
+                                join district in _context.DistrictMaster on un.DistrictMasterId equals district.DistrictMasterId into districts
+                                from d in districts.DefaultIfEmpty()
+                                join assembly in _context.AssemblyMaster on un.AssemblyMasterId equals assembly.AssemblyMasterId into assemblies
+                                from a in assemblies.DefaultIfEmpty()
+                                join fourthLevel in _context.FourthLevelH on un.FourthLevelHMasterId equals fourthLevel.FourthLevelHMasterId into fourthLevels
+                                from fl in fourthLevels.DefaultIfEmpty()
+                                join psZone in _context.PSZonePanchayat on un.PSZonePanchayatMasterId equals psZone.PSZonePanchayatMasterId into psZones
+                                from pz in psZones.DefaultIfEmpty()
+                                join gpWard in _context.GPPanchayatWards on un.GPPanchayatWardsMasterId equals gpWard.GPPanchayatWardsMasterId into gpWards
+                                from gw in gpWards.DefaultIfEmpty()
+                                where
+                                         un.StateMasterId == stateMasterId &&
+                                        un.DistrictMasterId == districtMasterId &&
+                                        un.AssemblyMasterId == assemblyMasterId
                                 select new UnOpposedList
-                          {
-                              UnOpposedMasterId = un.UnOpposedMasterId,
-                              StateName = state.StateName,
-                              StateMasterId = un.StateMasterId,
-                              DistrictName = d.DistrictName,
-                              DistrictMasterId = un.DistrictMasterId,
-                              AssemblyName = a.AssemblyName,
-                              AssemblyMasterId = un.AssemblyMasterId,
-                              FourthLevelName = fl.HierarchyName,
-                              FourthLevelHMasterId = un.FourthLevelHMasterId,
-                              GPPanchayatWardsName = gw.GPPanchayatWardsName,
-                              GPPanchayatWardsMasterId = un.GPPanchayatWardsMasterId,
-                              CandidateType = un.GPPanchayatWardsMasterId == 0 ? "Sarpanch" : "Panch",
-                              CandidateName = un.CandidateName,
-                              FatherName = un.FatherName,
-                              NominationPdfPath = $"{baseUrl}{un.NominationPdfPath}",
+                                {
+                                    UnOpposedMasterId = un.UnOpposedMasterId,
+                                    StateName = state.StateName,
+                                    StateMasterId = un.StateMasterId,
+                                    DistrictName = d.DistrictName,
+                                    DistrictMasterId = un.DistrictMasterId,
+                                    AssemblyName = a.AssemblyName,
+                                    AssemblyMasterId = un.AssemblyMasterId,
+                                    FourthLevelName = fl.HierarchyName,
+                                    FourthLevelHMasterId = un.FourthLevelHMasterId,
+                                    GPPanchayatWardsName = gw.GPPanchayatWardsName,
+                                    GPPanchayatWardsMasterId = un.GPPanchayatWardsMasterId,
+                                    CandidateType = un.GPPanchayatWardsMasterId == 0 ? "Sarpanch" : "Panch",
+                                    CandidateName = un.CandidateName,
+                                    FatherName = un.FatherName,
+                                    NominationPdfPath = $"{baseUrl}{un.NominationPdfPath}",
 
-                          };
+                                };
 
 
 
             return unOpposedList.ToList();
 
-            
+
         }
         public async Task<ServiceResponse> UpdateUnOpposedDetails(UnOpposed unOpposed)
         {
@@ -16724,10 +16692,12 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         public async Task<UnOpposedList> GetUnOpposedById(int unOpposedMasterId)
         {
             var unOpposed = await _context.UnOpposed.FirstOrDefaultAsync(d => d.UnOpposedMasterId == unOpposedMasterId);
+            var electionType = await _context.ElectionTypeMaster.FirstOrDefaultAsync(d => d.ElectionTypeMasterId == unOpposed.ElectionTypeMasterId);
             if (unOpposed == null)
             {
                 return null; // or throw an exception, or handle the case appropriately
             }
+            var baseUrl = "https://lbpams.punjab.gov.in/LBPAMSDOC/";
             if (unOpposed.PSZonePanchayatMasterId != 0)
             {
                 var panchayat = await _context.PSZonePanchayat
@@ -16747,6 +16717,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 {
                     UnOpposedMasterId = unOpposed.UnOpposedMasterId,
                     ElectionTypeMasterId = unOpposed.ElectionTypeMasterId,
+                    ElectionTypeName = electionType.ElectionType,
                     StateMasterId = panchayat.StateMasterId,
                     StateName = panchayat.StateMaster.StateName,
                     DistrictMasterId = panchayat.DistrictMasterId,
@@ -16759,6 +16730,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     PSZonePanchayatName = panchayat.PSZonePanchayatName,
                     CandidateName = unOpposed.CandidateName,
                     FatherName = unOpposed.FatherName,
+                    NominationPdfPath = $"{baseUrl}{unOpposed.NominationPdfPath}",
                 };
 
                 return result;
@@ -16782,6 +16754,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 {
                     UnOpposedMasterId = unOpposed.UnOpposedMasterId,
                     ElectionTypeMasterId = unOpposed.ElectionTypeMasterId,
+                    ElectionTypeName = electionType.ElectionType,
                     StateMasterId = gpWards.StateMasterId,
                     StateName = gpWards.StateMaster.StateName,
                     DistrictMasterId = gpWards.DistrictMasterId,
@@ -16794,6 +16767,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     GPPanchayatWardsName = gpWards.GPPanchayatWardsName,
                     CandidateName = unOpposed.CandidateName,
                     FatherName = unOpposed.FatherName,
+                    NominationPdfPath = $"{baseUrl}{unOpposed.NominationPdfPath}",
                 };
 
                 return result;
@@ -16818,6 +16792,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 {
                     UnOpposedMasterId = unOpposed.UnOpposedMasterId,
                     ElectionTypeMasterId = unOpposed.ElectionTypeMasterId,
+                    ElectionTypeName = electionType.ElectionType,
                     StateMasterId = fourthLevel.StateMasterId,
                     StateName = fourthLevel.StateMaster.StateName,
                     DistrictMasterId = fourthLevel.DistrictMasterId,
@@ -16828,6 +16803,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     FourthLevelName = fourthLevel.HierarchyName,
                     CandidateName = unOpposed.CandidateName,
                     FatherName = unOpposed.FatherName,
+                    NominationPdfPath = $"{baseUrl}{unOpposed.NominationPdfPath}",
                 };
 
                 return result;
@@ -16849,6 +16825,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 {
                     UnOpposedMasterId = unOpposed.UnOpposedMasterId,
                     ElectionTypeMasterId = unOpposed.ElectionTypeMasterId,
+                    ElectionTypeName = electionType.ElectionType,
                     StateMasterId = assembly.StateMasterId,
                     StateName = assembly.StateMaster.StateName,
                     DistrictMasterId = assembly.DistrictMasterId,
@@ -16858,6 +16835,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
                     CandidateName = unOpposed.CandidateName,
                     FatherName = unOpposed.FatherName,
+                    NominationPdfPath = $"{baseUrl}{unOpposed.NominationPdfPath}",
                 };
 
                 return result;
@@ -17016,13 +16994,13 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                             d.DistrictMasterId == districtMasterId &&
                             d.AssemblyMasterId == assemblyMasterId &&
                             d.FourthLevelHMasterId == fourthLevelHMasterId)
-                .Include(d => d.StateMaster)       
-                .Include(d => d.DistrictMaster)    
-                .Include(d => d.AssemblyMaster)    
+                .Include(d => d.StateMaster)
+                .Include(d => d.DistrictMaster)
+                .Include(d => d.AssemblyMaster)
                 .Include(d => d.ElectionTypeMaster)
-                .Include(d => d.BoothMaster)       
-                .Include(d => d.PSZonePanchayat)   
-                .Include(d => d.GPPanchayatWards)  
+                .Include(d => d.BoothMaster)
+                .Include(d => d.PSZonePanchayat)
+                .Include(d => d.GPPanchayatWards)
                 .FirstOrDefaultAsync();
 
             return fourthLevelH;
@@ -17303,7 +17281,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         public async Task<GPPanchayatWards> GetGPPanchayatWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId)
         {
-            var gpPanchayatWards = await _context.GPPanchayatWards.Include(d=>d.StateMaster).Include(d=>d.DistrictMaster).Include(d=>d.AssemblyMaster).Include(d=>d.FourthLevelH)
+            var gpPanchayatWards = await _context.GPPanchayatWards.Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH)
                 .Where(w => w.StateMasterId == stateMasterId &&
                             w.DistrictMasterId == districtMasterId &&
                             w.AssemblyMasterId == assemblyMasterId &&
@@ -17474,8 +17452,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                           StateName = j.StateMaster.StateName,
                           DistrictName = j.DistrictMaster.DistrictName,
                           AssemblyName = j.AssemblyMaster.AssemblyName,
-                          FourthLevelHMasterId = flh.FourthLevelHMasterId, 
-                          PanchayatName = flh.HierarchyName, 
+                          FourthLevelHMasterId = flh.FourthLevelHMasterId,
+                          PanchayatName = flh.HierarchyName,
                           GPVoterStatus = j.GPVoter.GPVoterStatus
                       })
                 .ToListAsync();

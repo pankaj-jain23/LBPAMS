@@ -178,9 +178,9 @@ namespace EAMS_BLL.Services
         #endregion
 
         #region  FO Master
-        public async Task<List<CombinedMaster>> GetSectorOfficersListById(string stateMasterId, string districtMasterId, string assemblyMasterId)
+        public async Task<List<FieldOfficerMaster>> GetFieldOfficersListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            return await _eamsRepository.GetSectorOfficersListById(stateMasterId, districtMasterId, assemblyMasterId);
+            return await _eamsRepository.GetFieldOfficersListById(stateMasterId, districtMasterId, assemblyMasterId);
         }
 
         public async Task<List<CombinedMaster>> AppNotDownload(string stateMasterId)

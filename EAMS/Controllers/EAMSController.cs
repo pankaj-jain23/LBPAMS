@@ -588,17 +588,17 @@ namespace EAMS.Controllers
 
         #region  FieldOfficer Master
         [HttpGet]
-        [Route("GetSectorOfficersListById")]
+        [Route("GetFieldOfficersListById")]
         [Authorize]
-        public async Task<IActionResult> SectorOfficersListById(string stateMasterId, string districtMasterId, string assemblyMasterId)
+        public async Task<IActionResult> GetFieldOfficersListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            var soList = await _EAMSService.GetSectorOfficersListById(stateMasterId, districtMasterId, assemblyMasterId);  // Corrected to await the asynchronous method
-            if (soList != null)
+            var foList = await _EAMSService.GetFieldOfficersListById(stateMasterId, districtMasterId, assemblyMasterId);  // Corrected to await the asynchronous method
+            if (foList != null)
             {
                 var data = new
                 {
-                    count = soList.Count,
-                    data = soList
+                    count = foList.Count,
+                    data = foList
                 };
                 return Ok(data);
             }
@@ -863,34 +863,34 @@ namespace EAMS.Controllers
             return Ok(data);
         }
 
-        [HttpGet]
-        [Route("GetSectorOfficersListforARO")]
-        [Authorize]
-        public async Task<IActionResult> GetSectorOfficersListforARO()
-        {
-            Claim stateMaster = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId");
-            Claim districtMaster = User.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId");
-            Claim assemblyMaster = User.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId");
-            string stateMasterId = stateMaster.Value;
-            string districtMasterId = districtMaster.Value;
-            string assemblyMasterId = assemblyMaster.Value;
+        //[HttpGet]
+        //[Route("GetSectorOfficersListforARO")]
+        //[Authorize]
+        //public async Task<IActionResult> GetSectorOfficersListforARO()
+        //{
+        //    Claim stateMaster = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId");
+        //    Claim districtMaster = User.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId");
+        //    Claim assemblyMaster = User.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId");
+        //    string stateMasterId = stateMaster.Value;
+        //    string districtMasterId = districtMaster.Value;
+        //    string assemblyMasterId = assemblyMaster.Value;
 
-            var soList = await _EAMSService.GetSectorOfficersListById(stateMasterId, districtMasterId, assemblyMasterId);  // Corrected to await the asynchronous method
-            if (soList != null)
-            {
-                var data = new
-                {
-                    count = soList.Count,
-                    data = soList
-                };
-                return Ok(data);
-            }
-            else
-            {
-                return BadRequest("No Record Found");
-            }
+        //    var soList = await _EAMSService.GetSectorOfficersListById(stateMasterId, districtMasterId, assemblyMasterId);  // Corrected to await the asynchronous method
+        //    if (soList != null)
+        //    {
+        //        var data = new
+        //        {
+        //            count = soList.Count,
+        //            data = soList
+        //        };
+        //        return Ok(data);
+        //    }
+        //    else
+        //    {
+        //        return BadRequest("No Record Found");
+        //    }
 
-        }
+        //}
 
         /// <summary>
         /// Insert Booth Under Assembly, District, State

@@ -268,7 +268,7 @@ namespace EAMS.Controllers
             }
             else
             {
-                return BadRequest("Failed to add UnOpposed data.");
+                return BadRequest(result.Message);
             }
         }
 
