@@ -16687,10 +16687,17 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             existing.GPPanchayatWardsMasterId = unOpposed.GPPanchayatWardsMasterId;
             existing.CandidateName = unOpposed.CandidateName;
             existing.FatherName = unOpposed.FatherName;
-            existing.NominationPdfPath = unOpposed.NominationPdfPath;
+            if (!string.IsNullOrEmpty(unOpposed.NominationPdfPath))
+            {
+                existing.NominationPdfPath = unOpposed.NominationPdfPath;
+            }
+            else
+            {
+                existing.NominationPdfPath = existing.NominationPdfPath;
+            }
             existing.Option1 = unOpposed.Option1;
             existing.Option2 = unOpposed.Option2;
-
+            _context.UnOpposed.Update(existing);
             await _context.SaveChangesAsync();
 
             return new ServiceResponse { IsSucceed = true, Message = "KYC updated successfully" };
@@ -17368,7 +17375,15 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             existing.DistrictMasterId = gpVoterPdf.DistrictMasterId;
             existing.AssemblyMasterId = gpVoterPdf.AssemblyMasterId;
             existing.FourthLevelHMasterId = gpVoterPdf.FourthLevelHMasterId;
-            existing.GPVoterPdfPath = gpVoterPdf.GPVoterPdfPath;
+            if (!string.IsNullOrEmpty(gpVoterPdf.GPVoterPdfPath))
+            {
+                existing.GPVoterPdfPath = gpVoterPdf.GPVoterPdfPath;
+            }
+            else
+            {
+                existing.GPVoterPdfPath = existing.GPVoterPdfPath;
+            }
+            _context.GPVoter.Update(existing);
             await _context.SaveChangesAsync();
 
             return new ServiceResponse { IsSucceed = true, Message = "GP Voter Pdf updated successfully" };
