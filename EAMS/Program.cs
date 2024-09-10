@@ -53,12 +53,12 @@ builder.Services
 // Config Identity
 builder.Services.Configure<IdentityOptions>(options =>
 {
-    options.Password.RequiredLength = 3;
-    options.Password.RequireDigit = false;
-    options.Password.RequireLowercase = false;
-    options.Password.RequireUppercase = false;
-    options.Password.RequireNonAlphanumeric = false;
-    options.SignIn.RequireConfirmedEmail = false;
+    options.Password.RequiredLength = 8;
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireNonAlphanumeric = true;
+    options.SignIn.RequireConfirmedEmail = true;
 });
 // Add Authentication and JwtBearer
 builder.Services
@@ -80,7 +80,7 @@ builder.Services
             ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
             ValidAudience = builder.Configuration["JWT:ValidAudience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"])),
-            ClockSkew = TimeSpan.Zero, // Set to zero or adjust according to your requirements
+            ClockSkew = TimeSpan.FromMinutes(5), // Set to zero or adjust according to your requirements
             RequireSignedTokens = true,
 
         };
@@ -88,9 +88,7 @@ builder.Services
         {
             OnMessageReceived = context =>
             {
-                var accessToken = context.Request.Query["access_token"];
-                var path = context.HttpContext.Request.Path;
-                // TODO just test empty token
+                var accessToken = context.Request.Query["access_token"]; 
                 if (!string.IsNullOrEmpty(accessToken))
                 {
                     context.Token = accessToken;

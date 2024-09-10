@@ -679,7 +679,7 @@ namespace EAMS_BLL.AuthServices
                 principal = await GetPrincipalFromExpiredToken(model.AccessToken);
             }
             var userId = principal.Claims.Where(d => d.Type == "UserId").FirstOrDefault().Value;
-            var getCurrentUser = _authRepository.GetUserById(userId);
+        //    var getCurrentUser = _authRepository.GetUserById(userId);
             return _Token;
         }
         private string GenerateToken(IEnumerable<Claim> claims)
@@ -881,6 +881,7 @@ namespace EAMS_BLL.AuthServices
             return await _authRepository.GetUserList(getUser);
         }
         #endregion
+
         #region UpdateUserDetail
         public async Task<ServiceResponse> UpdateUserDetail(string userId, string mobileNumber, string? otp)
         {

@@ -16584,7 +16584,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                         d.DistrictMasterId == unOpposed.DistrictMasterId &&
                         d.AssemblyMasterId == unOpposed.AssemblyMasterId &&
                         d.FourthLevelHMasterId == unOpposed.FourthLevelHMasterId &&
-                        d.GPPanchayatWardsMasterId == unOpposed.GPPanchayatWardsMasterId);
+                        d.GPPanchayatWardsMasterId == unOpposed.GPPanchayatWardsMasterId&&d.ElectionTypeMasterId==unOpposed.ElectionTypeMasterId);
                 }
                 else //sarpanch and other
                 {
@@ -16592,7 +16592,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                         d.StateMasterId == unOpposed.StateMasterId &&
                         d.DistrictMasterId == unOpposed.DistrictMasterId &&
                         d.AssemblyMasterId == unOpposed.AssemblyMasterId &&
-                        d.FourthLevelHMasterId == unOpposed.FourthLevelHMasterId);
+                        d.FourthLevelHMasterId == unOpposed.FourthLevelHMasterId&&d.GPPanchayatWardsMasterId==0 && d.ElectionTypeMasterId == unOpposed.ElectionTypeMasterId);
                 }
             }
             else // When ElectionTypeMasterId equals 2
@@ -16600,7 +16600,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 isExist = await _context.UnOpposed.AnyAsync(d =>
                     d.StateMasterId == unOpposed.StateMasterId &&
                     d.DistrictMasterId == unOpposed.DistrictMasterId &&
-                    d.AssemblyMasterId == unOpposed.AssemblyMasterId);
+                    d.AssemblyMasterId == unOpposed.AssemblyMasterId && d.ElectionTypeMasterId == unOpposed.ElectionTypeMasterId);
             }
 
             // Return if the candidate already exists
@@ -17204,7 +17204,11 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         {
             try
             {
-                var isgpPanchayatWardsExist = await _context.GPPanchayatWards.Where(p => p.GPPanchayatWardsCode == gpPanchayatWards.GPPanchayatWardsCode && p.StateMasterId == gpPanchayatWards.StateMasterId && p.DistrictMasterId == gpPanchayatWards.DistrictMasterId && p.AssemblyMasterId == gpPanchayatWards.AssemblyMasterId && p.ElectionTypeMasterId == gpPanchayatWards.ElectionTypeMasterId).FirstOrDefaultAsync();
+                var isgpPanchayatWardsExist = await _context.GPPanchayatWards.Where(p => p.GPPanchayatWardsCode == gpPanchayatWards.GPPanchayatWardsCode 
+                                                && p.StateMasterId == gpPanchayatWards.StateMasterId 
+                                                && p.DistrictMasterId == gpPanchayatWards.DistrictMasterId
+                                                && p.AssemblyMasterId == gpPanchayatWards.AssemblyMasterId
+                                                && p.ElectionTypeMasterId == gpPanchayatWards.ElectionTypeMasterId).FirstOrDefaultAsync();
 
                 if (isgpPanchayatWardsExist == null)
                 {
@@ -17220,7 +17224,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 }
                 else
                 {
-                    return new Response { Status = RequestStatusEnum.BadRequest, Message = isgpPanchayatWardsExist.GPPanchayatWardsName + "Same PS Zone Code Already Exists in the selected Election Type" };
+                    return new Response { Status = RequestStatusEnum.BadRequest, Message = isgpPanchayatWardsExist.GPPanchayatWardsName + "Same Ward Already Exists in the selected Election Type" };
 
                 }
 
