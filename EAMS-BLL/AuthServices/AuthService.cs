@@ -133,6 +133,7 @@ namespace EAMS_BLL.AuthServices
                     Message = _Token.Message,
                     AccessToken = _Token.AccessToken,
                     RefreshToken = _Token.RefreshToken,
+                    Is2FA = is2FA.IsSucceed,
                 };
             }
         }

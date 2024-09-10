@@ -681,7 +681,7 @@ namespace EAMS.Helper
 
 
             CreateMap<UpdateKycViewModel, Kyc>()
-                 .ForMember(dest => dest.NominationPdfPath, opt => opt.Ignore())
+                 .ForMember(dest => dest.NominationPdfPath, opt => opt.MapFrom(src => src.NominationPdf))
 
                 .ReverseMap();
             #endregion
@@ -692,7 +692,7 @@ namespace EAMS.Helper
 
             .ReverseMap();
             CreateMap<UpdateUnOpposedViewModel, UnOpposed>()
-                .ForMember(dest => dest.NominationPdfPath, opt => opt.Ignore())
+                .ForMember(dest => dest.NominationPdfPath, opt => opt.MapFrom(src => src.NominationPdf))
 
                .ReverseMap();
             #endregion
@@ -856,7 +856,7 @@ namespace EAMS.Helper
             .ReverseMap();
 
             CreateMap<UpdateGPVoterViewModel, GPVoter>()
-            .ForMember(dest => dest.GPVoterPdfPath, opt => opt.Ignore())
+            .ForMember(dest => dest.GPVoterPdfPath, opt => opt.MapFrom(src => src.GPVoterPdf))
 
            .ReverseMap();
             #endregion

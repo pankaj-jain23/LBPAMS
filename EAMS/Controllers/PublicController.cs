@@ -101,6 +101,7 @@ namespace EAMS.Controllers
             return Ok(kycResponses);
         }
 
+
         [HttpPut("UpdateKycDetails")]
         public async Task<IActionResult> UpdateKyc([FromForm] UpdateKycViewModel updateKycViewModel)
         {

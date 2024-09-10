@@ -16332,10 +16332,17 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             existingKyc.GPPanchayatWardsMasterId = kyc.GPPanchayatWardsMasterId;
             existingKyc.CandidateName = kyc.CandidateName;
             existingKyc.FatherName = kyc.FatherName;
-            existingKyc.NominationPdfPath = kyc.NominationPdfPath;
+            if (!string.IsNullOrEmpty(kyc.NominationPdfPath))
+            {
+                existingKyc.NominationPdfPath = kyc.NominationPdfPath;
+            }
+            else
+            {
+                existingKyc.NominationPdfPath = existingKyc.NominationPdfPath;
+            }
             existingKyc.Option1 = kyc.Option1;
             existingKyc.Option2 = kyc.Option2;
-
+            _context.Kyc.Update(existingKyc);
             await _context.SaveChangesAsync();
 
             return new ServiceResponse { IsSucceed = true, Message = "KYC updated successfully" };
