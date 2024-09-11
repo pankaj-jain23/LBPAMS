@@ -68,73 +68,68 @@ namespace EAMS_BLL.AuthServices
             var user = await _authRepository.CheckUserLogin(login);
             var is2FA = await _authRepository.LoginWithTwoFactorCheckAsync(login);
             if (user is null)
-            {
                 // Return an appropriate response when the user is not found
                 return new Token()
                 {
                     IsSucceed = false,
                     Message = "User Name or Password is Invalid"
                 };
-            }
-            else
+            if (user is not null)
             {
-                if (user is not null)
+
+                var userRoles = await _authRepository.GetRoleByUser(user);
+                var authClaims = await GenerateClaims(user);
+
+                // Add user roles to authClaims
+                foreach (var userRole in userRoles)
                 {
-
-                    var userRoles = await _authRepository.GetRoleByUser(user);
-                    var authClaims = await GenerateClaims(user);
-
-                    // Add user roles to authClaims
-                    foreach (var userRole in userRoles)
-                    {
-                        authClaims.Add(new Claim(ClaimTypes.Role, userRole.RoleName));
-                    }
-
-                    // Generate tokens
-                    var token = GenerateToken(authClaims);
-
-                    _Token.RefreshToken = GenerateRefreshToken();
-
-                    // Update user details with tokens
-                    if (user != null)
-                    {
-                        var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
-                        var _RefreshTokenValidityInDays = Convert.ToInt64(_configuration["JWTKey:RefreshTokenValidityInDays"]);
-                        user.RefreshToken = _Token.RefreshToken;
-                        user.RefreshTokenExpiryTime = expireRefreshToken;
-
-                        // Update user and handle any exceptions
-                        try
-                        {
-                            var updateUserResult = await _authRepository.UpdateUser(user);
-                        }
-                        catch (Exception ex)
-                        {
-                            // Log the exception or handle it appropriately
-                            // You may also want to return an error response
-                            return new Token()
-                            {
-                                IsSucceed = false,
-                                Message = "Error updating user: " + ex.Message,
-                                Is2FA = is2FA.IsSucceed
-                            };
-                        }
-                    }
-                    _Token.IsSucceed = true;
-                    _Token.AccessToken = token;
-                    _Token.Message = "Success";
-
-
+                    authClaims.Add(new Claim(ClaimTypes.Role, userRole.RoleName));
                 }
-                return new Token()
+
+                // Generate tokens
+                var token = GenerateToken(authClaims);
+
+                _Token.RefreshToken = GenerateRefreshToken();
+
+                // Update user details with tokens
+                if (user != null)
                 {
-                    IsSucceed = _Token.IsSucceed,
-                    Message = _Token.Message,
-                    AccessToken = _Token.AccessToken,
-                    RefreshToken = _Token.RefreshToken,
-                    Is2FA = is2FA.IsSucceed,
-                };
+                    var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
+                    var refreshTokenValidityInDays = Convert.ToInt64(_configuration["JWTKey:RefreshTokenValidityInDays"]);
+                    user.RefreshToken = _Token.RefreshToken;
+                    user.RefreshTokenExpiryTime = expireRefreshToken;
+
+                    // Update user and handle any exceptions
+                    try
+                    {
+                        var updateUserResult = await _authRepository.UpdateUser(user);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log the exception or handle it appropriately
+                        // You may also want to return an error response
+                        return new Token()
+                        {
+                            IsSucceed = false,
+                            Message = "Error updating user: " + ex.Message,
+                            Is2FA = is2FA.IsSucceed
+                        };
+                    }
+                }
+                _Token.IsSucceed = true;
+                _Token.AccessToken = token;
+                _Token.Message = "Success";
+
+
             }
+            return new Token()
+            {
+                IsSucceed = _Token.IsSucceed,
+                Message = _Token.Message,
+                AccessToken = _Token.AccessToken,
+                RefreshToken = _Token.RefreshToken,
+                Is2FA = is2FA.IsSucceed,
+            };
         }
 
         public async Task<ServiceResponse> DeleteUser(string userId)
