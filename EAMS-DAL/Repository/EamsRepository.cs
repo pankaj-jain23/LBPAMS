@@ -294,7 +294,7 @@ namespace EAMS_DAL.Repository
                         .FirstOrDefaultAsync();
                         if (electionInfoRecord == null)
                         {
-                            if (isBoothExist.AssignedTo == null || isBoothExist.AssignedTo == "")
+                            if (isBoothExist.AssignedTo == null || String.IsNullOrEmpty(isBoothExist.AssignedTo))
                             {
                                 // when updating False
                                 if (updateMasterStatus.IsStatus == false)
@@ -604,9 +604,9 @@ namespace EAMS_DAL.Repository
       .FirstOrDefaultAsync();
                         if (electionInfoRecord == null)
                         {
-                            if (isBoothExist.AssignedTo == null || isBoothExist.AssignedTo == "")
+                            if (String.IsNullOrEmpty(isBoothExist.AssignedTo))
                             {
-                                if (isBoothExist.AssignedToBLO == null || isBoothExist.AssignedToBLO == "")
+                                if (String.IsNullOrEmpty(isBoothExist.AssignedToBLO))
                                 {
 
 
@@ -1169,7 +1169,7 @@ namespace EAMS_DAL.Repository
             {
 
                 var stateExist = _context.StateMaster
-    .Where(p => (p.StateCode == stateMaster.StateCode || p.StateName == stateMaster.StateName)).FirstOrDefault();
+    .FirstOrDefault(p => (p.StateCode == stateMaster.StateCode || p.StateName == stateMaster.StateName));
 
 
                 if (stateExist == null)
@@ -1204,7 +1204,7 @@ namespace EAMS_DAL.Repository
         {
             try
             {
-                var isStateActive = _context.StateMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId)).FirstOrDefault();
+                var isStateActive = _context.StateMaster.FirstOrDefault(d => d.StateMasterId == Convert.ToInt32(stateMasterId));
                 if (isStateActive.StateStatus)
                 {
                     var stateData = await _context.DistrictMaster
@@ -1251,7 +1251,7 @@ namespace EAMS_DAL.Repository
 
                     if (isExistName.Count == 0)
                     {
-                        var districtMasterRecord = _context.DistrictMaster.Where(d => d.DistrictMasterId == districtMaster.DistrictMasterId).FirstOrDefault();
+                        var districtMasterRecord = _context.DistrictMaster.FirstOrDefault(d => d.DistrictMasterId == districtMaster.DistrictMasterId);
 
                         if (districtMaster.DistrictStatus == false)
                         {
@@ -1328,8 +1328,8 @@ namespace EAMS_DAL.Repository
         {
             try
             {
-                var isExist = _context.DistrictMaster.Where(p => (p.DistrictName == districtMaster.DistrictName && p.StateMasterId == districtMaster.StateMasterId)).FirstOrDefault();
-                var isStateActive = _context.StateMaster.Where(p => p.StateMasterId == districtMaster.StateMasterId).FirstOrDefault();
+                var isExist = _context.DistrictMaster.FirstOrDefault(p => (p.DistrictName == districtMaster.DistrictName && p.StateMasterId == districtMaster.StateMasterId));
+                var isStateActive = _context.StateMaster.FirstOrDefault(p => p.StateMasterId == districtMaster.StateMasterId);
                 if (isStateActive.StateStatus)
                     if (isExist == null)
                     {
@@ -16933,7 +16933,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         public async Task<List<FourthLevelH>> GetFourthLevelHListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            var getFourthLevelH = await _context.FourthLevelH.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.ElectionTypeMaster).ToListAsync();
+            var getFourthLevelH = await _context.FourthLevelH.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId 
+                && d.AssemblyMasterId == assemblyMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.ElectionTypeMaster).ToListAsync();
             if (getFourthLevelH != null)
             {
                 return getFourthLevelH;
@@ -17008,13 +17009,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                             d.DistrictMasterId == districtMasterId &&
                             d.AssemblyMasterId == assemblyMasterId &&
                             d.FourthLevelHMasterId == fourthLevelHMasterId)
-                .Include(d => d.StateMaster)
-                .Include(d => d.DistrictMaster)
-                .Include(d => d.AssemblyMaster)
-                .Include(d => d.ElectionTypeMaster)
-                .Include(d => d.BoothMaster)
-                .Include(d => d.PSZonePanchayat)
-                .Include(d => d.GPPanchayatWards)
+                .Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.ElectionTypeMaster)
                 .FirstOrDefaultAsync();
 
             return fourthLevelH;

@@ -460,7 +460,7 @@ namespace EAMS_DAL.AuthRepository
         #region CreateSO Pin
         public async Task<ServiceResponse> CreateSOPin(CreateSOPin createSOPin, string soId)
         {
-            var soRecord = _context.FieldOfficerMaster.Where(d => d.FieldOfficerMasterId == Convert.ToInt32(soId)).FirstOrDefault();
+            var soRecord = _context.FieldOfficerMaster.FirstOrDefault(d => d.FieldOfficerMasterId == Convert.ToInt32(soId));
             if (soRecord == null)
             {
                 return new ServiceResponse()
@@ -490,7 +490,7 @@ namespace EAMS_DAL.AuthRepository
 
         public async Task<BLOMaster> GetBLOById(int bloId)
         {
-            var bloRecord = _context.BLOMaster.Where(d => d.BLOMasterId == bloId).FirstOrDefault();
+            var bloRecord = _context.BLOMaster.FirstOrDefault(d => d.BLOMasterId == bloId);
             if (bloRecord is not null)
             {
                 return bloRecord;
@@ -532,7 +532,7 @@ namespace EAMS_DAL.AuthRepository
         #region GetSOByID
         public async Task<FieldOfficerMaster> GetSOById(int soId)
         {
-            var soRecord = _context.FieldOfficerMaster.Where(d => d.FieldOfficerMasterId == soId).FirstOrDefault();
+            var soRecord = _context.FieldOfficerMaster.FirstOrDefault(d => d.FieldOfficerMasterId == soId);
             if (soRecord is not null)
             {
                 return soRecord;

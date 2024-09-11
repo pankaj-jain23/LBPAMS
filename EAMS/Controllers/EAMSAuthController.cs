@@ -18,14 +18,13 @@ namespace EAMS.Controllers
     {
         private readonly IAuthService _authService;
         private readonly IMapper _mapper;
-        private readonly ILogger<EAMSAuthController> _logger;
-        private readonly IExternal _external;
-        public EAMSAuthController(IAuthService authService, IMapper mapper, ILogger<EAMSAuthController> logger, IExternal external)
+        private readonly ILogger<EAMSAuthController> _logger; 
+        public EAMSAuthController(IAuthService authService, IMapper mapper, ILogger<EAMSAuthController> logger )
         {
             _authService = authService;
             _mapper = mapper;
             _logger = logger;
-            _external = external;
+            
         }
 
         #region Register

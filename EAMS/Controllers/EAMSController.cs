@@ -422,7 +422,7 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetAssembliesListById")]
         //[Authorize]
-        public async Task<IActionResult> AssembliesListById(string stateId, string districtId, string electionTypeId)
+        public async Task<IActionResult> GetAssembliesListById(string stateId, string districtId, string electionTypeId)
         {
             if (stateId != null && districtId != null)
             {
@@ -1700,7 +1700,7 @@ namespace EAMS.Controllers
                 }
                 else
                 {
-                    return NotFound("Booth Not Found");
+                    return NotFound( );
 
                 }
             }

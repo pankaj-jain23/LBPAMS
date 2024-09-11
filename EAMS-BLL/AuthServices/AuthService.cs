@@ -6,7 +6,6 @@ using EAMS_ACore.IAuthRepository;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.IRepository;
 using EAMS_ACore.Models;
-using EAMS_ACore.Models.BLOModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -678,7 +677,7 @@ namespace EAMS_BLL.AuthServices
             {
                 principal = await GetPrincipalFromExpiredToken(model.AccessToken);
             }
-            var userId = principal.Claims.Where(d => d.Type == "UserId").FirstOrDefault().Value;
+            var userId = principal.Claims.FirstOrDefault(d => d.Type == "UserId").Value;
         //    var getCurrentUser = _authRepository.GetUserById(userId);
             return _Token;
         }
