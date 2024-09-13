@@ -426,11 +426,14 @@ namespace EAMS_DAL.AuthRepository
 
 
         #region ValidateMobile && Sector Officer Master && BLO Master
-        public async Task<List<FieldOfficerMaster>> ValidateMobile(ValidateMobile validateMobile)
+        public async Task<FieldOfficerMaster> ValidateMobile(ValidateMobile validateMobile)
         {
-            var soRecord = await _context.FieldOfficerMaster.Where(d => d.FieldOfficerMobile == validateMobile.MobileNumber && d.FieldOfficerStatus == true).OrderBy(d => d.ElectionTypeMasterId).ToListAsync();
-            return soRecord;
+            return await _context.FieldOfficerMaster
+                .FirstOrDefaultAsync(d => d.FieldOfficerMobile == validateMobile.MobileNumber && d.FieldOfficerStatus == true);
+
+             
         }
+
 
         public async Task<ServiceResponse> SectorOfficerMasterRecord(FieldOfficerMaster sectorOfficerMaster)
         {

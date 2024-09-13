@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace EAMS.ViewModels
+namespace LBPAMS.ViewModels
 {
     public class UpdateFieldOfficerViewModel
     {
@@ -19,7 +19,7 @@ namespace EAMS.ViewModels
             get;
             set;
         }
-       
+
         [Required(ErrorMessage = "Sector officer Name is required")]
         public string FieldOfficerName { get; set; }
 
@@ -27,10 +27,10 @@ namespace EAMS.ViewModels
         public string FieldOfficerDesignation { get; set; }
 
         [Required(ErrorMessage = "Sector Officer office Name is required")]
-        public string FieldOfficerOfficeName { get; set; } 
+        public string FieldOfficerOfficeName { get; set; }
 
         [Required(ErrorMessage = "Sector Officer Mobile Number is required")]
-        [StringLength(10, MinimumLength = 10)] 
+        [StringLength(10, MinimumLength = 10)]
         public string FieldOfficerMobile { get; set; }
         public bool IsStatus { get; set; }
         public int ElectionTypeMasterId { get; set; }

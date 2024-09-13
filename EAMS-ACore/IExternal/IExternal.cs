@@ -9,5 +9,6 @@ namespace EAMS_ACore.IExternal
 {
     public interface IExternal
     {
+        Task<ServiceResponse> SendOTP();
     }
 }

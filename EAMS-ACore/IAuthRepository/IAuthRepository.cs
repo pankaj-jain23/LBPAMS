@@ -15,7 +15,7 @@ namespace EAMS_ACore.IAuthRepository
         Task<ServiceResponse> AddDynamicRole(Role role);
         Task<List<Role>> GetRoles();
         Task<List<UserRegistration>> GetUsersByRoleId(string roleId);
-        Task<List<FieldOfficerMaster>> ValidateMobile(ValidateMobile validateMobile);
+        Task<FieldOfficerMaster> ValidateMobile(ValidateMobile validateMobile);
         Task<BLOMaster> GetBLO(ValidateMobile validateMobile);
         Task<ServiceResponse> AddUpdateBLOMaster(BLOMaster bloMaster);
         Task<BLOMaster> GetBLOById(int bloId);

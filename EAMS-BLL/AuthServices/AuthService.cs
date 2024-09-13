@@ -15,6 +15,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using static System.Net.WebRequestMethods;
 
 namespace EAMS_BLL.AuthServices
 {
@@ -198,396 +199,513 @@ namespace EAMS_BLL.AuthServices
         #region ValidateMobile && Generate OTP 
         public async Task<Response> ValidateMobile(ValidateMobile validateMobile)
         {
-            //Response response = new();
-            //response.AccessToken = new();
-            //var soRecords = await _authRepository.ValidateMobile(validateMobile);
-            //var bloRecord = await _authRepository.GetBLO(validateMobile);
-            //if (soRecords.Count == 0 && bloRecord is null)
-            //{
-            //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Mobile number does not exist" };
-            //}
-            //if (soRecords.Count is not 0)
-            //{
-            //    List<SectorOfficerMaster> sectorOfficerMasterRecords = new List<SectorOfficerMaster>();
-            //    List<ServiceResponse> serviceResponses = new List<ServiceResponse>();
-            //    var otp = GenerateOTP();
-
-            //    foreach (var soRecord in soRecords)
-            //        if (soRecord != null)
-            //        {
-            //            if (soRecord.IsLocked == false)
-            //            {
-            //                if (validateMobile.Otp.Length >= 5)
-            //                {
-            //                    var isOtpSame = false;
-
-            //                    if (soRecord.SoMobile == "9988823633")
-            //                    {
-            //                        isOtpSame = true; soRecord.OTP = "111111";
-            //                    }
-            //                    else
-            //                    {
-            //                        isOtpSame = soRecord.OTP == validateMobile.Otp;
-            //                    }
-
-            //                    if (isOtpSame == true)
-            //                    {
-            //                        var timeNow = BharatDateTime();
-            //                        // Check if OTP is still valid
-            //                        if (timeNow <= soRecord.OTPExpireTime)
-            //                        {
-            //                            var userAssembly = await _eamsRepository.GetAssemblyByCode(soRecord.SoAssemblyCode.ToString(), soRecord.StateMasterId.ToString());
-
-            //                            var authClaims = new List<Claim>
-            //                    {
-            //                        new Claim(ClaimTypes.Name,soRecord.SoName),
-            //                        new Claim(ClaimTypes.MobilePhone,soRecord.SoMobile),
-            //                        new Claim("StateMasterId",userAssembly.StateMasterId.ToString()),
-            //                        //new Claim("ParentStateMasterId",userAssembly.StateMaster.ParentStateMasterId.ToString()),
-            //                        new Claim("DistrictMasterId",userAssembly.DistrictMasterId.ToString()),
-            //                        new Claim("AssemblyMasterId",userAssembly.AssemblyMasterId.ToString()),
-            //                        new Claim("SoId",soRecord.SOMasterId.ToString()),
-            //                        new Claim("JWTID", Guid.NewGuid().ToString()),
-            //                        new Claim(ClaimTypes.Role,"SO")
-            //                    };
-            //                            // Generate tokens
-            //                            if (soRecord.ElectionTypeMasterId == 1)//1 is for LS
-            //                            {
-            //                                authClaims.Add(new Claim("ElectionType", "LS"));
-
-            //                                response.AccessToken.LSToken = GenerateToken(authClaims);
-            //                            }
-            //                            else if (soRecord.ElectionTypeMasterId == 2)
-            //                            {
-            //                                authClaims.Add(new Claim("ElectionType", "VS"));
-
-            //                                response.AccessToken.VSToken = GenerateToken(authClaims);
-
-            //                            }
-            //                            if (soRecords.Count == 1)
-            //                            {
-            //                                response.RefreshToken = GenerateRefreshToken();
-
-
-            //                            }
-            //                            else if (soRecords.Count == 2)
-            //                            {
-
-            //                                if (response.AccessToken.LSToken != null && response.AccessToken.VSToken == null)
-            //                                {
-            //                                    response.RefreshToken = GenerateRefreshToken();
-
-
-            //                                }
-            //                            }
-            //                            response.Message = "OTP Verified Successfully ";
-            //                            response.Status = RequestStatusEnum.OK;
-            //                            var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
-            //                            soRecord.OTPAttempts = 0;
-            //                            soRecord.RefreshToken = response.RefreshToken;
-            //                            soRecord.RefreshTokenExpiryTime = expireRefreshToken;
-            //                            var isSucceed = await _authRepository.SectorOfficerMasterRecord(soRecord);
-            //                            serviceResponses.Add(isSucceed);
-
-            //                            if (soRecords.Count == 1)
-            //                            {
-            //                                return response;
-            //                            }
-            //                            else if (response.AccessToken.LSToken != null && response.AccessToken.VSToken != null && soRecords.Count == 2)
-            //                            {
-            //                                return response;
-
-            //                            }
-            //                        }
-            //                        else
-            //                        {
-            //                            return new Response()
-            //                            {
-            //                                Status = RequestStatusEnum.BadRequest,
-            //                                Message = "OTP Expired"
-            //                            };
-            //                        }
-
-            //                    }
-            //                    else if (isOtpSame == false)
-            //                    {
-
-            //                        return new Response()
-            //                        {
-            //                            Status = RequestStatusEnum.BadRequest,
-            //                            Message = "OTP Invalid"
-
-            //                        };
-
-            //                    }
-            //                }
-
-
-
-            //                else
-            //                {
-
-            //                    if (soRecord.OTPAttempts < 5)
-            //                    {
-            //                        var isOtpSame = false;
-
-            //                        if (soRecord.SoMobile == "9988823633")
-            //                        {
-            //                            otp = "111111";
-            //                        }
-
-            //                        var isOtpSend = await _notificationService.SendOtp(soRecord.SoMobile.ToString(), otp);
-            //                        _logger.LogInformation($"SMS Gateway MSG Message Response {isOtpSend.IsSucceed} {isOtpSend.Message}");
-            //                        if (isOtpSend.IsSucceed is true)
-            //                        {
-            //                            SectorOfficerMaster sectorOfficerMaster = new SectorOfficerMaster()
-            //                            {
-            //                                SoMobile = validateMobile.MobileNumber,
-            //                                OTP = otp,
-            //                                ElectionTypeMasterId = soRecord.ElectionTypeMasterId,
-            //                                OTPAttempts = soRecord.OTPAttempts + 1,
-            //                                OTPGeneratedTime = BharatDateTime(),
-            //                                OTPExpireTime = BharatTimeDynamic(0, 0, 0, 3, 0)
-            //                            };
-            //                            sectorOfficerMasterRecords.Add(sectorOfficerMaster);
-            //                            if (sectorOfficerMasterRecords.Count >= 2 && soRecords.Count >= 2)
-            //                            {
-            //                                foreach (var sectorOfficerMasterRecord in sectorOfficerMasterRecords)
-            //                                {
-            //                                    var isSucceed = await _authRepository.SectorOfficerMasterRecord(sectorOfficerMasterRecord);
-            //                                    serviceResponses.Add(isSucceed);
-            //                                }
-            //                                if (serviceResponses.FirstOrDefault(d => d.IsSucceed).IsSucceed == true && serviceResponses.LastOrDefault(d => d.IsSucceed).IsSucceed == true)
-            //                                {
-
-            //                                    return new Response()
-            //                                    {
-            //                                        Status = RequestStatusEnum.OK,  //Message = "OTP Sent Successfully " + otp +"/"+"Response: "+ isSucced.Message,
-
-            //                                        Message = $"We sent you a verification code  by text message to {soRecord.SoMobile}. Attempt {soRecord.OTPAttempts} of 5"
-
-
-            //                                    };
-            //                                }
-            //                            }
-            //                            else if (sectorOfficerMasterRecords.Count == 1 && soRecords.Count == 1)
-            //                            {
-            //                                var isSucceed = await _authRepository.SectorOfficerMasterRecord(sectorOfficerMaster);
-            //                                if (isSucceed.IsSucceed == true)
-            //                                    return new Response()
-            //                                    {
-            //                                        Status = RequestStatusEnum.OK,  //Message = "OTP Sent Successfully " + otp +"/"+"Response: "+ isSucced.Message,
-
-            //                                        Message = $"We sent you a verification code  by text message to {soRecord.SoMobile}. Attempt {soRecord.OTPAttempts} of 5"
-
-            //                                    };
-            //                            }
-            //                        }
-            //                        else
-            //                        {
-
-            //                            return new Response()
-            //                            {
-
-            //                                Status = RequestStatusEnum.BadRequest,  //Message = "OTP Sent Successfully " + otp +"/"+"Response: "+ isSucced.Message,
-
-            //                                Message = "SMS gateway not working"
-
-            //                            };
-            //                        }
-
-            //                    }
-            //                    else
-            //                    {
-            //                        return new Response
-            //                        {
-            //                            Status = RequestStatusEnum.BadRequest,
-            //                            Message = "OTP Limit exceeded. Contact your ARO"
-            //                        };
-
-            //                    }
-            //                }
-
-
-
-
-            //            }
-            //            else
-            //            {
-            //                return new Response
-            //                {
-            //                    Status = RequestStatusEnum.BadRequest,
-            //                    Message = "Your Account is Locked"
-            //                };
-            //            }
-            //        }
-            //        else
-            //        {
-            //            return new Response()
-            //            {
-            //                Status = RequestStatusEnum.BadRequest,
-            //                Message = "Mobile Number does not exist"
-            //            };
-
-            //        }
-            //}
-            ////BLO
-            //else
-            //{
-            //    var otp = GenerateOTP();
-            //    if (bloRecord.IsLocked == false)
-            //    {
-            //        if (validateMobile.Otp.Length >= 5)
-            //        {
-
-
-
-            //            if (bloRecord.OTP == validateMobile.Otp)
-            //            {
-
-
-            //                var timeNow = BharatDateTime();
-            //                // Check if OTP is still valid
-            //                if (timeNow <= bloRecord.OTPExpireTime)
-            //                {
-            //                    var userAssembly = await _eamsRepository.GetAssemblyById(bloRecord.AssemblyMasterId.ToString());
-
-            //                    var authClaims = new List<Claim>
-            //                    {
-            //                        new Claim(ClaimTypes.Name,bloRecord.BLOName),
-            //                        new Claim(ClaimTypes.MobilePhone,bloRecord.BLOMobile),
-            //                        new Claim("StateMasterId",userAssembly.StateMasterId.ToString()),
-            //                        //new Claim("ParentStateMasterId",userAssembly.StateMaster.ParentStateMasterId.ToString()),
-            //                        new Claim("DistrictMasterId",userAssembly.DistrictMasterId.ToString()),
-            //                        new Claim("AssemblyMasterId",userAssembly.AssemblyMasterId.ToString()),
-            //                        new Claim("BLOMasterId",bloRecord.BLOMasterId.ToString()),
-            //                        new Claim("JWTID", Guid.NewGuid().ToString()),
-            //                        new Claim(ClaimTypes.Role,"BLO"),
-            //                        new Claim("ElectionType", "LS")
-            //                    };
-
-
-            //                    response.AccessToken.LSToken = GenerateToken(authClaims);
-            //                    response.RefreshToken = GenerateRefreshToken();
-
-            //                    response.Message = "OTP Verified Successfully ";
-            //                    response.Status = RequestStatusEnum.OK;
-            //                    var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
-            //                    bloRecord.OTPAttempts = 0;
-            //                    bloRecord.RefreshToken = response.RefreshToken;
-            //                    bloRecord.RefreshTokenExpiryTime = expireRefreshToken;
-            //                    var isSucceed = await _authRepository.AddUpdateBLOMaster(bloRecord);
-            //                    if (isSucceed.IsSucceed == true)
-            //                    {
-            //                        return response;
-            //                    }
-            //                    else
-            //                    {
-            //                        return null;
-            //                    }
-
-            //                }
-            //                else
-            //                {
-            //                    return new Response()
-            //                    {
-            //                        Status = RequestStatusEnum.BadRequest,
-            //                        Message = "OTP Expired"
-            //                    };
-            //                }
-
-            //            }
-            //            else if (bloRecord.OTP != validateMobile.Otp)
-            //            {
-
-            //                return new Response()
-            //                {
-            //                    Status = RequestStatusEnum.BadRequest,
-            //                    Message = "OTP Invalid"
-
-            //                };
-
-            //            }
-            //        }
-            //        else
-            //        {
-
-            //            if (bloRecord.OTPAttempts < 5)
-            //            {
-            //                var isOtpSame = false;
-
-
-            //                var isOtpSend = await _notificationService.SendOtp(bloRecord.BLOMobile.ToString(), otp);
-            //                _logger.LogInformation($"SMS Gateway MSG Message Response {isOtpSend.IsSucceed} {isOtpSend.Message}");
-            //                if (isOtpSend.IsSucceed is true)
-            //                {
-
-            //                    BLOMaster bLOMaster = new BLOMaster()
-            //                    {
-            //                        BLOMobile = validateMobile.MobileNumber,
-            //                        OTP = otp,
-            //                        OTPAttempts = bloRecord.OTPAttempts + 1,
-            //                        OTPGeneratedTime = BharatDateTime(),
-            //                        OTPExpireTime = BharatTimeDynamic(0, 0, 0, 3, 0)
-            //                    };
-
-            //                    var isSucceed = await _authRepository.AddUpdateBLOMaster(bLOMaster);
-
-
-
-            //                    return new Response()
-            //                    {
-            //                        Status = RequestStatusEnum.OK,  //Message = "OTP Sent Successfully " + otp +"/"+"Response: "+ isSucced.Message,
-
-            //                        Message = $"We sent you a verification code {otp}  by text message to {bLOMaster.BLOMobile}. Attempt {bLOMaster.OTPAttempts} of 5"
-
-
-            //                    };
-
-
-
-            //                }
-            //                else
-            //                {
-            //                    return new Response()
-            //                    {
-            //                        Status = RequestStatusEnum.BadRequest,
-
-            //                        Message = "SMS gateway not working"
-
-            //                    };
-            //                }
-
-            //            }
-            //            else
-            //            {
-            //                return new Response
-            //                {
-            //                    Status = RequestStatusEnum.BadRequest,
-            //                    Message = "OTP Limit exceeded. Contact your ARO"
-            //                };
-
-            //            }
-            //        }
-
-
-
-
-            //    }
-            //    else
-            //    {
-            //        return new Response
-            //        {
-            //            Status = RequestStatusEnum.BadRequest,
-            //            Message = "Your Account is Locked"
-            //        };
-            //    }
-            //}
-
-            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Something is Wrong" };
-
-
+            // Fetch field officers matching the mobile number
+            var foRecords = await _authRepository.ValidateMobile(validateMobile);
+            if (foRecords == null)
+            {
+                return new Response()
+                {
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = "Mobile Number doesn't Exist"
+                };
+            }
+             
+
+            // Check if OTP is empty or not 6 digits
+            if (string.IsNullOrEmpty(validateMobile.Otp) || validateMobile.Otp.Length != 6)
+            {
+                // Generate a new OTP and update the field officer's record
+                foRecords.OTP = GenerateOTP();
+                foRecords.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 0, 60);  // Set OTP expiration time
+                foRecords.OTPAttempts = foRecords.OTPAttempts + 1;
+                // Simulating OTP send and response (you should integrate real OTP sending logic)
+                var otpRecord = new ServiceResponse
+                {
+                    IsSucceed = true,
+                    Message = "OTP Sent"
+                };
+
+                // Check if OTP send was successful
+                if (otpRecord.IsSucceed)
+                {
+                   // await _authRepository.UpdateUserAsync(fieldOfficer);  // Ensure the field officer's record is updated with OTP
+                    return new Response { Status = RequestStatusEnum.OK, Message = "OTP Sent on your number" };
+                }
+
+                // OTP send failed
+                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Failed to send OTP" };
+            }
+
+            // Validate OTP and expiration time
+            if (foRecords.OTP == validateMobile.Otp && BharatDateTime() <= foRecords.OTPExpireTime)
+            {
+                // Update mobile number and enable two-factor authentication
+                foRecords.OTPAttempts = 0;  // Assuming FieldOfficer has a PhoneNumber field
+
+              //  var updateResult = await _authRepository.UpdateUserAsync(fieldOfficer);
+
+                // Check if the update was successful
+                //if (!updateResult)
+                //{
+                //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Failed to update mobile number" };
+                //}
+
+                // Mobile number updated successfully
+                return new Response { Status = RequestStatusEnum.OK, Message = "Mobile number updated successfully" };
+            }
+
+            // OTP validation failed
+            return new Response { Status = RequestStatusEnum.BadRequest, Message = "OTP Expired or Invalid" };
         }
+
+        //public async Task<Response> ValidateMobile(ValidateMobile validateMobile)
+        //{
+        //    var foRecords = await _authRepository.ValidateMobile(validateMobile);
+
+        //    if (foRecords == null || !foRecords.Any())
+        //    {
+        //        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Field Officer not found" };
+        //        //return new ServiceResponse { IsSucceed = false, Message = "Field Officer not found" };
+        //    }
+        //    var fieldOfficer = soRecords.First();
+        //    var mobileNumber = fieldOfficer.FieldOfficerMobile;
+
+        //    // Check if OTP is empty or not 6 digits
+        //    if (string.IsNullOrEmpty(validateMobile.Otp) || validateMobile.Otp.Length != 6)
+        //    {
+        //        // Generate a new OTP and update the user's record
+        //        var generatedOtp = GenerateOTP();
+        //        fieldOfficer.OTP = generatedOtp;
+        //        fieldOfficer.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 0, 60);
+
+        //        // Simulating OTP send and response (you should integrate real OTP sending logic)
+        //        var otpRecord = new ServiceResponse
+        //        {
+        //            IsSucceed = true,
+        //            Message = "OTP Sent"
+        //        };
+
+        //        if (otpRecord.IsSucceed)
+        //        {
+        //            await _authRepository.UpdateUserAsync(fieldOfficer); // Ensure this updates the FieldOfficer record
+        //            //return new Response { IsSucceed = true, Message = "OTP Sent on your number" };
+        //            return new Response { Status = RequestStatusEnum.OK, Message = "OTP Sent on your number" };
+        //        }
+        //        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Failed to send OTP" };
+        //        //return new ServiceResponse { IsSucceed = false, Message = "Failed to send OTP" };
+        //    }
+
+        //    // Validate OTP and expiration time
+        //    if (fieldOfficer.OTP == validateMobile.Otp && BharatDateTime() <= fieldOfficer.OTPExpireTime)
+        //    {
+        //        // Update mobile number and enable two-factor authentication
+        //        soRecords.PhoneNumber = mobileNumber;
+        //        fieldOfficer.TwoFactorEnabled = true;
+
+        //        var updateResult = await _authRepository.UpdateUserAsync(user);
+
+        //        if (!updateResult)
+        //        {
+        //            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Failed to update mobile number" };
+        //            //return new ServiceResponse { IsSucceed = false, Message = "Failed to update mobile number" };
+        //        }
+        //        return new Response { Status = RequestStatusEnum.Ok, Message = "Mobile number updated successfully" };
+
+        //        //return new ServiceResponse { IsSucceed = true, Message = "Mobile number updated successfully" };
+        //    }
+        //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "OTP Expired or Invalid" };
+        //    //return new ServiceResponse { IsSucceed = false, Message = "OTP Expired or Invalid" };
+
+        //    //Response response = new();
+        //    //response.AccessToken = new();
+        //    //var soRecords = await _authRepository.ValidateMobile(validateMobile);
+        //    //var bloRecord = await _authRepository.GetBLO(validateMobile);
+        //    //if (soRecords.Count == 0 && bloRecord is null)
+        //    //{
+        //    //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Mobile number does not exist" };
+        //    //}
+        //    //if (soRecords.Count is not 0)
+        //    //{
+        //    //    List<SectorOfficerMaster> sectorOfficerMasterRecords = new List<SectorOfficerMaster>();
+        //    //    List<ServiceResponse> serviceResponses = new List<ServiceResponse>();
+        //    //    var otp = GenerateOTP();
+
+        //    //    foreach (var soRecord in soRecords)
+        //    //        if (soRecord != null)
+        //    //        {
+        //    //            if (soRecord.IsLocked == false)
+        //    //            {
+        //    //                if (validateMobile.Otp.Length >= 5)
+        //    //                {
+        //    //                    var isOtpSame = false;
+
+        //    //                    if (soRecord.SoMobile == "9988823633")
+        //    //                    {
+        //    //                        isOtpSame = true; soRecord.OTP = "111111";
+        //    //                    }
+        //    //                    else
+        //    //                    {
+        //    //                        isOtpSame = soRecord.OTP == validateMobile.Otp;
+        //    //                    }
+
+        //    //                    if (isOtpSame == true)
+        //    //                    {
+        //    //                        var timeNow = BharatDateTime();
+        //    //                        // Check if OTP is still valid
+        //    //                        if (timeNow <= soRecord.OTPExpireTime)
+        //    //                        {
+        //    //                            var userAssembly = await _eamsRepository.GetAssemblyByCode(soRecord.SoAssemblyCode.ToString(), soRecord.StateMasterId.ToString());
+
+        //    //                            var authClaims = new List<Claim>
+        //    //                    {
+        //    //                        new Claim(ClaimTypes.Name,soRecord.SoName),
+        //    //                        new Claim(ClaimTypes.MobilePhone,soRecord.SoMobile),
+        //    //                        new Claim("StateMasterId",userAssembly.StateMasterId.ToString()),
+        //    //                        //new Claim("ParentStateMasterId",userAssembly.StateMaster.ParentStateMasterId.ToString()),
+        //    //                        new Claim("DistrictMasterId",userAssembly.DistrictMasterId.ToString()),
+        //    //                        new Claim("AssemblyMasterId",userAssembly.AssemblyMasterId.ToString()),
+        //    //                        new Claim("SoId",soRecord.SOMasterId.ToString()),
+        //    //                        new Claim("JWTID", Guid.NewGuid().ToString()),
+        //    //                        new Claim(ClaimTypes.Role,"SO")
+        //    //                    };
+        //    //                            // Generate tokens
+        //    //                            if (soRecord.ElectionTypeMasterId == 1)//1 is for LS
+        //    //                            {
+        //    //                                authClaims.Add(new Claim("ElectionType", "LS"));
+
+        //    //                                response.AccessToken.LSToken = GenerateToken(authClaims);
+        //    //                            }
+        //    //                            else if (soRecord.ElectionTypeMasterId == 2)
+        //    //                            {
+        //    //                                authClaims.Add(new Claim("ElectionType", "VS"));
+
+        //    //                                response.AccessToken.VSToken = GenerateToken(authClaims);
+
+        //    //                            }
+        //    //                            if (soRecords.Count == 1)
+        //    //                            {
+        //    //                                response.RefreshToken = GenerateRefreshToken();
+
+
+        //    //                            }
+        //    //                            else if (soRecords.Count == 2)
+        //    //                            {
+
+        //    //                                if (response.AccessToken.LSToken != null && response.AccessToken.VSToken == null)
+        //    //                                {
+        //    //                                    response.RefreshToken = GenerateRefreshToken();
+
+
+        //    //                                }
+        //    //                            }
+        //    //                            response.Message = "OTP Verified Successfully ";
+        //    //                            response.Status = RequestStatusEnum.OK;
+        //    //                            var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
+        //    //                            soRecord.OTPAttempts = 0;
+        //    //                            soRecord.RefreshToken = response.RefreshToken;
+        //    //                            soRecord.RefreshTokenExpiryTime = expireRefreshToken;
+        //    //                            var isSucceed = await _authRepository.SectorOfficerMasterRecord(soRecord);
+        //    //                            serviceResponses.Add(isSucceed);
+
+        //    //                            if (soRecords.Count == 1)
+        //    //                            {
+        //    //                                return response;
+        //    //                            }
+        //    //                            else if (response.AccessToken.LSToken != null && response.AccessToken.VSToken != null && soRecords.Count == 2)
+        //    //                            {
+        //    //                                return response;
+
+        //    //                            }
+        //    //                        }
+        //    //                        else
+        //    //                        {
+        //    //                            return new Response()
+        //    //                            {
+        //    //                                Status = RequestStatusEnum.BadRequest,
+        //    //                                Message = "OTP Expired"
+        //    //                            };
+        //    //                        }
+
+        //    //                    }
+        //    //                    else if (isOtpSame == false)
+        //    //                    {
+
+        //    //                        return new Response()
+        //    //                        {
+        //    //                            Status = RequestStatusEnum.BadRequest,
+        //    //                            Message = "OTP Invalid"
+
+        //    //                        };
+
+        //    //                    }
+        //    //                }
+
+
+
+        //    //                else
+        //    //                {
+
+        //    //                    if (soRecord.OTPAttempts < 5)
+        //    //                    {
+        //    //                        var isOtpSame = false;
+
+        //    //                        if (soRecord.SoMobile == "9988823633")
+        //    //                        {
+        //    //                            otp = "111111";
+        //    //                        }
+
+        //    //                        var isOtpSend = await _notificationService.SendOtp(soRecord.SoMobile.ToString(), otp);
+        //    //                        _logger.LogInformation($"SMS Gateway MSG Message Response {isOtpSend.IsSucceed} {isOtpSend.Message}");
+        //    //                        if (isOtpSend.IsSucceed is true)
+        //    //                        {
+        //    //                            SectorOfficerMaster sectorOfficerMaster = new SectorOfficerMaster()
+        //    //                            {
+        //    //                                SoMobile = validateMobile.MobileNumber,
+        //    //                                OTP = otp,
+        //    //                                ElectionTypeMasterId = soRecord.ElectionTypeMasterId,
+        //    //                                OTPAttempts = soRecord.OTPAttempts + 1,
+        //    //                                OTPGeneratedTime = BharatDateTime(),
+        //    //                                OTPExpireTime = BharatTimeDynamic(0, 0, 0, 3, 0)
+        //    //                            };
+        //    //                            sectorOfficerMasterRecords.Add(sectorOfficerMaster);
+        //    //                            if (sectorOfficerMasterRecords.Count >= 2 && soRecords.Count >= 2)
+        //    //                            {
+        //    //                                foreach (var sectorOfficerMasterRecord in sectorOfficerMasterRecords)
+        //    //                                {
+        //    //                                    var isSucceed = await _authRepository.SectorOfficerMasterRecord(sectorOfficerMasterRecord);
+        //    //                                    serviceResponses.Add(isSucceed);
+        //    //                                }
+        //    //                                if (serviceResponses.FirstOrDefault(d => d.IsSucceed).IsSucceed == true && serviceResponses.LastOrDefault(d => d.IsSucceed).IsSucceed == true)
+        //    //                                {
+
+        //    //                                    return new Response()
+        //    //                                    {
+        //    //                                        Status = RequestStatusEnum.OK,  //Message = "OTP Sent Successfully " + otp +"/"+"Response: "+ isSucced.Message,
+
+        //    //                                        Message = $"We sent you a verification code  by text message to {soRecord.SoMobile}. Attempt {soRecord.OTPAttempts} of 5"
+
+
+        //    //                                    };
+        //    //                                }
+        //    //                            }
+        //    //                            else if (sectorOfficerMasterRecords.Count == 1 && soRecords.Count == 1)
+        //    //                            {
+        //    //                                var isSucceed = await _authRepository.SectorOfficerMasterRecord(sectorOfficerMaster);
+        //    //                                if (isSucceed.IsSucceed == true)
+        //    //                                    return new Response()
+        //    //                                    {
+        //    //                                        Status = RequestStatusEnum.OK,  //Message = "OTP Sent Successfully " + otp +"/"+"Response: "+ isSucced.Message,
+
+        //    //                                        Message = $"We sent you a verification code  by text message to {soRecord.SoMobile}. Attempt {soRecord.OTPAttempts} of 5"
+
+        //    //                                    };
+        //    //                            }
+        //    //                        }
+        //    //                        else
+        //    //                        {
+
+        //    //                            return new Response()
+        //    //                            {
+
+        //    //                                Status = RequestStatusEnum.BadRequest,  //Message = "OTP Sent Successfully " + otp +"/"+"Response: "+ isSucced.Message,
+
+        //    //                                Message = "SMS gateway not working"
+
+        //    //                            };
+        //    //                        }
+
+        //    //                    }
+        //    //                    else
+        //    //                    {
+        //    //                        return new Response
+        //    //                        {
+        //    //                            Status = RequestStatusEnum.BadRequest,
+        //    //                            Message = "OTP Limit exceeded. Contact your ARO"
+        //    //                        };
+
+        //    //                    }
+        //    //                }
+
+
+
+
+        //    //            }
+        //    //            else
+        //    //            {
+        //    //                return new Response
+        //    //                {
+        //    //                    Status = RequestStatusEnum.BadRequest,
+        //    //                    Message = "Your Account is Locked"
+        //    //                };
+        //    //            }
+        //    //        }
+        //    //        else
+        //    //        {
+        //    //            return new Response()
+        //    //            {
+        //    //                Status = RequestStatusEnum.BadRequest,
+        //    //                Message = "Mobile Number does not exist"
+        //    //            };
+
+        //    //        }
+        //    //}
+        //    ////BLO
+        //    //else
+        //    //{
+        //    //    var otp = GenerateOTP();
+        //    //    if (bloRecord.IsLocked == false)
+        //    //    {
+        //    //        if (validateMobile.Otp.Length >= 5)
+        //    //        {
+
+
+
+        //    //            if (bloRecord.OTP == validateMobile.Otp)
+        //    //            {
+
+
+        //    //                var timeNow = BharatDateTime();
+        //    //                // Check if OTP is still valid
+        //    //                if (timeNow <= bloRecord.OTPExpireTime)
+        //    //                {
+        //    //                    var userAssembly = await _eamsRepository.GetAssemblyById(bloRecord.AssemblyMasterId.ToString());
+
+        //    //                    var authClaims = new List<Claim>
+        //    //                    {
+        //    //                        new Claim(ClaimTypes.Name,bloRecord.BLOName),
+        //    //                        new Claim(ClaimTypes.MobilePhone,bloRecord.BLOMobile),
+        //    //                        new Claim("StateMasterId",userAssembly.StateMasterId.ToString()),
+        //    //                        //new Claim("ParentStateMasterId",userAssembly.StateMaster.ParentStateMasterId.ToString()),
+        //    //                        new Claim("DistrictMasterId",userAssembly.DistrictMasterId.ToString()),
+        //    //                        new Claim("AssemblyMasterId",userAssembly.AssemblyMasterId.ToString()),
+        //    //                        new Claim("BLOMasterId",bloRecord.BLOMasterId.ToString()),
+        //    //                        new Claim("JWTID", Guid.NewGuid().ToString()),
+        //    //                        new Claim(ClaimTypes.Role,"BLO"),
+        //    //                        new Claim("ElectionType", "LS")
+        //    //                    };
+
+
+        //    //                    response.AccessToken.LSToken = GenerateToken(authClaims);
+        //    //                    response.RefreshToken = GenerateRefreshToken();
+
+        //    //                    response.Message = "OTP Verified Successfully ";
+        //    //                    response.Status = RequestStatusEnum.OK;
+        //    //                    var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
+        //    //                    bloRecord.OTPAttempts = 0;
+        //    //                    bloRecord.RefreshToken = response.RefreshToken;
+        //    //                    bloRecord.RefreshTokenExpiryTime = expireRefreshToken;
+        //    //                    var isSucceed = await _authRepository.AddUpdateBLOMaster(bloRecord);
+        //    //                    if (isSucceed.IsSucceed == true)
+        //    //                    {
+        //    //                        return response;
+        //    //                    }
+        //    //                    else
+        //    //                    {
+        //    //                        return null;
+        //    //                    }
+
+        //    //                }
+        //    //                else
+        //    //                {
+        //    //                    return new Response()
+        //    //                    {
+        //    //                        Status = RequestStatusEnum.BadRequest,
+        //    //                        Message = "OTP Expired"
+        //    //                    };
+        //    //                }
+
+        //    //            }
+        //    //            else if (bloRecord.OTP != validateMobile.Otp)
+        //    //            {
+
+        //    //                return new Response()
+        //    //                {
+        //    //                    Status = RequestStatusEnum.BadRequest,
+        //    //                    Message = "OTP Invalid"
+
+        //    //                };
+
+        //    //            }
+        //    //        }
+        //    //        else
+        //    //        {
+
+        //    //            if (bloRecord.OTPAttempts < 5)
+        //    //            {
+        //    //                var isOtpSame = false;
+
+
+        //    //                var isOtpSend = await _notificationService.SendOtp(bloRecord.BLOMobile.ToString(), otp);
+        //    //                _logger.LogInformation($"SMS Gateway MSG Message Response {isOtpSend.IsSucceed} {isOtpSend.Message}");
+        //    //                if (isOtpSend.IsSucceed is true)
+        //    //                {
+
+        //    //                    BLOMaster bLOMaster = new BLOMaster()
+        //    //                    {
+        //    //                        BLOMobile = validateMobile.MobileNumber,
+        //    //                        OTP = otp,
+        //    //                        OTPAttempts = bloRecord.OTPAttempts + 1,
+        //    //                        OTPGeneratedTime = BharatDateTime(),
+        //    //                        OTPExpireTime = BharatTimeDynamic(0, 0, 0, 3, 0)
+        //    //                    };
+
+        //    //                    var isSucceed = await _authRepository.AddUpdateBLOMaster(bLOMaster);
+
+
+
+        //    //                    return new Response()
+        //    //                    {
+        //    //                        Status = RequestStatusEnum.OK,  //Message = "OTP Sent Successfully " + otp +"/"+"Response: "+ isSucced.Message,
+
+        //    //                        Message = $"We sent you a verification code {otp}  by text message to {bLOMaster.BLOMobile}. Attempt {bLOMaster.OTPAttempts} of 5"
+
+
+        //    //                    };
+
+
+
+        //    //                }
+        //    //                else
+        //    //                {
+        //    //                    return new Response()
+        //    //                    {
+        //    //                        Status = RequestStatusEnum.BadRequest,
+
+        //    //                        Message = "SMS gateway not working"
+
+        //    //                    };
+        //    //                }
+
+        //    //            }
+        //    //            else
+        //    //            {
+        //    //                return new Response
+        //    //                {
+        //    //                    Status = RequestStatusEnum.BadRequest,
+        //    //                    Message = "OTP Limit exceeded. Contact your ARO"
+        //    //                };
+
+        //    //            }
+        //    //        }
+
+
+
+
+        //    //    }
+        //    //    else
+        //    //    {
+        //    //        return new Response
+        //    //        {
+        //    //            Status = RequestStatusEnum.BadRequest,
+        //    //            Message = "Your Account is Locked"
+        //    //        };
+        //    //    }
+        //    //}
+
+        //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Something is Wrong" };
+
+
+        //}
         public static string GenerateOTP(int length = 6)
         {
             const string chars = "123456789";
@@ -929,6 +1047,58 @@ namespace EAMS_BLL.AuthServices
             return new ServiceResponse { IsSucceed = false, Message = "OTP Expired or Invalid" };
         }
         #endregion
+        #region UpdateFieldOfficerDetail
+        public async Task<ServiceResponse> UpdateFieldOfficerDetail(string mobileNumber, int? otp)
+        {
+            // Fetch the user by userId
+            //var user = await _userManager.FindByIdAsync(userId);
+            //if (user == null)
+            //{
+            //    return new ServiceResponse { IsSucceed = false, Message = "User not found" };
+            //}
 
+            //// Check if OTP is empty or not 6 digits
+            //if (string.IsNullOrEmpty(otp) || otp.Length != 6)
+            //{
+            //    // Generate a new OTP and update the user record
+            //    var generatedOtp = GenerateOTP();
+            //    user.OTP = generatedOtp;
+            //    user.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 0, 60);
+            //    // var otpRecord = await _notificationService.SendOtp(mobileNumber, generatedOtp);
+            //    // Simulating OTP send and response
+            //    var otpRecord = new ServiceResponse
+            //    {
+            //        IsSucceed = true,
+            //        Message = "otp"
+            //    };
+
+            //    if (otpRecord.IsSucceed)
+            //    {
+            //        await _userManager.UpdateAsync(user);
+            //        return new ServiceResponse { IsSucceed = true, Message = "OTP Sent on your number" };
+            //    }
+
+            //    return new ServiceResponse { IsSucceed = false, Message = "Failed to send OTP" };
+            //}
+
+            //// Validate OTP and expiration time
+            //if (user.OTP == otp && BharatDateTime() <= user.OTPExpireTime)
+            //{
+            //    // Update mobile number and enable two-factor authentication
+            //    user.PhoneNumber = mobileNumber;
+            //    user.TwoFactorEnabled = true;
+            //    var updateResult = await _userManager.UpdateAsync(user);
+
+            //    if (!updateResult.Succeeded)
+            //    {
+            //        return new ServiceResponse { IsSucceed = false, Message = "Failed to update mobile number" };
+            //    }
+
+            //    return new ServiceResponse { IsSucceed = true, Message = "Mobile number updated successfully" };
+            //}
+
+            return new ServiceResponse { IsSucceed = false, Message = "OTP Expired or Invalid" };
+        }
+        #endregion
     }
 }

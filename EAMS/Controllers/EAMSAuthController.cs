@@ -6,6 +6,7 @@ using EAMS_ACore.AuthModels;
 using EAMS_ACore.HelperModels;
 using EAMS_ACore.IExternal;
 using LBPAMS.AuthViewModels;
+using LBPAMS.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -470,6 +471,41 @@ namespace EAMS.Controllers
             }
         }
         #endregion
+        #region UpdateFieldOfficerDetail
+        [HttpPost]
+        [Route("UpdateFieldOfficerDetail")]
+        [Authorize]
+        public async Task<IActionResult> UpdateFieldOfficerDetail([FromBody] ValidateMobileViewModel validateMobileViewModel)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
 
+                // Assuming you have a logged-in user, you can fetch their ID from the current context
+                //var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId").Value;
+
+                //if (string.IsNullOrEmpty(userId))
+                //{
+                //    return Unauthorized("Field Officer doesn't exist.");
+                //}
+
+                // Call the service to update the mobile number
+                var updateResult = await _authService.UpdateFieldOfficerDetail(validateMobileViewModel.MobileNumber, validateMobileViewModel.Otp);
+
+                if (!updateResult.IsSucceed)
+                {
+                    return BadRequest(updateResult.Message);
+                }
+
+                return Ok(updateResult.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"UpdateMobileNumber: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while updating the mobile number.");
+            }
+        }
+        #endregion
     }
 }
