@@ -364,6 +364,8 @@ namespace EAMS.Helper
                 .ForMember(dest => dest.AssemblyId, opt => opt.MapFrom(src => src.AssemblyMasterId))
                   .ForMember(dest => dest.soMasterId, opt => opt.MapFrom(src => src.SoId))
                  .ForMember(dest => dest.BoothName, opt => opt.MapFrom(src => src.BoothName))
+                 .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
+                 .ForMember(dest => dest.FourthLevelHName, opt => opt.MapFrom(src => src.FourthLevelHName))
                 .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
                 .ForMember(dest => dest.IsAssigned, opt => opt.MapFrom(src => src.IsAssigned))
                 .ForMember(dest => dest.BoothAuxy, opt => opt.MapFrom(src => src.BoothAuxy))
@@ -382,7 +384,8 @@ namespace EAMS.Helper
                 .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
                 .ForMember(dest => dest.IsAssigned, opt => opt.MapFrom(src => src.IsAssigned))
                 .ForMember(dest => dest.BoothAuxy, opt => opt.MapFrom(src => src.BoothAuxy))
-
+                .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
+                .ForMember(dest => dest.FourthLevelHName, opt => opt.MapFrom(src => src.FourthLevelHName))
                            .ForMember(dest => dest.SecondLanguage, opt => opt.MapFrom(src => src.SecondLanguage))
              .ReverseMap();
             #endregion

@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using BenchmarkDotNet.Attributes;
 
 namespace EAMS.Controllers
 {
@@ -714,10 +715,10 @@ namespace EAMS.Controllers
         }
 
         [HttpGet]
-        [Route("GetBoothListBySoId")]
-        public async Task<IActionResult> GetBoothListBySoId(string stateMasterId, string districtMasterId, string assemblyMasterId, string soId)
+        [Route("GetBoothListByFoId")]
+        public async Task<IActionResult> GetBoothListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
         {
-            var boothList = await _EAMSService.GetBoothListBySoId(stateMasterId, districtMasterId, assemblyMasterId, soId);  // Corrected to await the asynchronous method
+            var boothList = await _EAMSService.GetBoothListByFoId(stateMasterId, districtMasterId, assemblyMasterId, foId);  // Corrected to await the asynchronous method
             var mappedData = _mapper.Map<List<SectorOfficerBoothViewModel>>(boothList);
             var getUnassignedBoothList = await _EAMSService.GetUnassignedBoothListById(stateMasterId, districtMasterId, assemblyMasterId);  // Corrected to await the asynchronous method
             var unAssignedMappedData = _mapper.Map<List<CombinedMasterViewModel>>(getUnassignedBoothList);
@@ -1059,7 +1060,6 @@ namespace EAMS.Controllers
                             boothMasters.Add(boothMaster);
                         }
 
-                        // Assuming _EAMSService.BoothMapping is an asynchronous method returning Task<Response>
                         var result = await _EAMSService.BoothMapping(boothMasters);
                         switch (result.Status)
                         {
@@ -1898,6 +1898,7 @@ namespace EAMS.Controllers
         [HttpPost]
         [Route("AddGPPanchayatWards")]
         [Authorize]
+       
         public async Task<IActionResult> AddSarpanchWards(AddGPPanchayatWardsViewModel addSarpanchWardsViewModel)
         {
             if (ModelState.IsValid)

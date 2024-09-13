@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BenchmarkDotNet.Attributes;
 using EAMS.AuthViewModels;
 using EAMS.ViewModels;
 using EAMS_ACore.AuthInterfaces;
@@ -277,6 +278,7 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetDashboardProfile")]
         [Authorize]
+        [Benchmark]
         public async Task<IActionResult> GetDashboardProfile()
         {
             var soId = User.Claims.FirstOrDefault(c => c.Type == "UserId").Value;
@@ -435,6 +437,7 @@ namespace EAMS.Controllers
         }
 
         #endregion
+
         #region UpdateUserDetail
         [HttpPost]
         [Route("UpdateUserDetail")]

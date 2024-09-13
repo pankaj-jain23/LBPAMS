@@ -215,9 +215,9 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.UpdateBLOOfficer(bLOMaster);
         }
-        public async Task<List<CombinedMaster>> GetBoothListBySoId(string stateMasterId, string districtMasterId, string assemblyMasterId, string soId)
+        public async Task<List<CombinedMaster>> GetBoothListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
         {
-            return await _eamsRepository.GetBoothListBySoId(stateMasterId, districtMasterId, assemblyMasterId, soId);
+            return await _eamsRepository.GetBoothListByFoId(stateMasterId, districtMasterId, assemblyMasterId, foId);
         }
 
         public async Task<FieldOfficerMaster> GetFieldOfficerById(int FieldOfficerMasterId)
@@ -242,7 +242,7 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetBoothListByIdforPSO(stateMasterId, districtMasterId, assemblyMasterId);
         }
-        public async Task<List<CombinedMaster>> GetUnassignedBoothListById(string stateMasterId, string districtMasterId, string assemblyMasterId)
+        public async Task<List<CombinedMaster>> GetUnassignedBoothListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
             return await _eamsRepository.GetUnassignedBoothListById(stateMasterId, districtMasterId, assemblyMasterId);
         }

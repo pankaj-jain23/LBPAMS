@@ -29,7 +29,7 @@ namespace EAMS_ACore.IAuthRepository
         Task<List<Role>> GetRoleByUser(UserRegistration user);
      
         Task<ServiceResponse> CreateSOPin(CreateSOPin createSOPin, string soId);
-        Task<FieldOfficerMaster> GetSOById(int soId);
+        Task<FieldOfficerMaster> GetFOById(int foId);
         Task<DashBoardProfile> GetDashboardProfile(string userId, int? stateMasterId);
    
         Task<ServiceResponse> UpdateDashboardProfile(string userId, UpdateDashboardProfile updateDashboardProfile);
@@ -44,6 +44,7 @@ namespace EAMS_ACore.IAuthRepository
 
         Task<ElectionTypeMaster> GetElectionTypeById(int? electionTypeMasterId);
         Task<ServiceResponse> LoginWithTwoFactorCheckAsync(Login login);
+
         #region UpdateUserDetail
         Task<bool> UpdateUserDetail(string userId, string mobileNumber);
         #endregion

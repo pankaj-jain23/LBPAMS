@@ -59,7 +59,7 @@ namespace EAMS_ACore.Interfaces
         Task<Response> AddBLOOfficer(BLOMaster bLOMaster);
         Task<Response> UpdateFieldOfficer(FieldOfficerMaster fieldOfficerViewModel);
         Task<Response> UpdateBLOOfficer(BLOMaster bLOMaster);
-        Task<List<CombinedMaster>> GetBoothListBySoId(string stateMasterId, string districtMasterId, string assemblyMasterId, string soId);
+        Task<List<CombinedMaster>> GetBoothListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId);
         Task<FieldOfficerMaster> GetFieldOfficerById(int FieldOfficerMasterId);
         #endregion
 
@@ -67,7 +67,7 @@ namespace EAMS_ACore.Interfaces
         Task<List<CombinedMaster>> GetBoothListById(string stateMasterId, string districtMasterId, string assemblyMasterId);
         Task<List<CombinedMaster>> GetBoothListByIdwithPsZone(string stateMasterId, string districtMasterId, string assemblyMasterId, string fourthLevelHMasterId,string? BlockZonePanchayatMasterId);
         Task<List<CombinedMaster>> GetBoothListByIdforPSO(string stateMasterId, string districtMasterId, string assemblyMasterId);
-        Task<List<CombinedMaster>> GetUnassignedBoothListById(string stateMasterId, string districtMasterId, string assemblyMasterId);
+        Task<List<CombinedMaster>> GetUnassignedBoothListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
 
         Task<Response> AddBooth(BoothMaster boothMaster);
         Task<Response> UpdateBooth(BoothMaster boothMaster);

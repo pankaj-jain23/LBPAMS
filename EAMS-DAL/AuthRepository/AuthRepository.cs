@@ -533,12 +533,12 @@ namespace EAMS_DAL.AuthRepository
         #endregion
 
         #region GetSOByID
-        public async Task<FieldOfficerMaster> GetSOById(int soId)
+        public async Task<FieldOfficerMaster> GetFOById(int foId)
         {
-            var soRecord = _context.FieldOfficerMaster.FirstOrDefault(d => d.FieldOfficerMasterId == soId);
-            if (soRecord is not null)
+            var foRecord = _context.FieldOfficerMaster.FirstOrDefault(d => d.FieldOfficerMasterId == foId);
+            if (foRecord is not null)
             {
-                return soRecord;
+                return foRecord;
             }
             else
             {
@@ -600,11 +600,9 @@ namespace EAMS_DAL.AuthRepository
             }
             else if (roles.Contains("LocalBodiesAdmin"))
             {
-                var assembly = _context.AssemblyMaster
-                    .Include(a => a.DistrictMaster)
-                    .FirstOrDefault(a => a.StateMasterId == userRecord.StateMasterId &&
-                                         a.DistrictMasterId == userRecord.DistrictMasterId &&
-                                         a.AssemblyMasterId == userRecord.AssemblyMasterId);
+                var assembly =await _context.AssemblyMaster.Include(a => a.DistrictMaster).Where(a => a.StateMasterId == userRecord.StateMasterId &&
+                                                                           a.DistrictMasterId == userRecord.DistrictMasterId &&
+                                                                           a.AssemblyMasterId == userRecord.AssemblyMasterId).FirstOrDefaultAsync();
 
                 if (assembly != null)
                 {

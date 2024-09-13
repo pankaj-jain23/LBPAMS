@@ -1494,7 +1494,7 @@ namespace EAMS_DAL.Repository
                                 _context.AssemblyMaster.Update(assembliesMasterRecord);
                                 await _context.SaveChangesAsync();
 
-                                return new Response { Status = RequestStatusEnum.OK, Message = "Assembly Updated Successfully" + assemblyMaster.AssemblyName };
+                                return new Response { Status = RequestStatusEnum.OK, Message = "Assembly Updated Successfully " + assemblyMaster.AssemblyName };
                             }
                         }
                         else if (assemblyMaster.AssemblyStatus == true)
@@ -1521,7 +1521,7 @@ namespace EAMS_DAL.Repository
                                 _context.AssemblyMaster.Update(assembliesMasterRecord);
                                 await _context.SaveChangesAsync();
 
-                                return new Response { Status = RequestStatusEnum.OK, Message = "Assembly Updated Successfully" + assemblyMaster.AssemblyName };
+                                return new Response { Status = RequestStatusEnum.OK, Message = "Assembly Updated Successfully " + assemblyMaster.AssemblyName };
                             }
 
                         }
@@ -1966,10 +1966,58 @@ namespace EAMS_DAL.Repository
             };
         }
 
-        public async Task<List<CombinedMaster>> GetBoothListBySoId(string stateMasterId, string districtMasterId, string assemblyMasterId, string soId)
+        public async Task<Response> UpdateFieldOfficerValidate(FieldOfficerMaster updatedFieldOfficer)
+        {
+            // Check if the record exists based on the FieldOfficerMasterId
+            var existingOfficer = await _context.FieldOfficerMaster
+                                                .FirstOrDefaultAsync(d => d.FieldOfficerMasterId == updatedFieldOfficer.FieldOfficerMasterId);
+
+            if (existingOfficer == null)
+            {
+                // Return a response if the record is not found
+                return new Response
+                {
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = "No Record Found"
+                };
+            }
+              
+            // Map all fields from updatedFieldOfficer to existingOfficer
+            existingOfficer.StateMasterId = updatedFieldOfficer.StateMasterId;
+            existingOfficer.DistrictMasterId = updatedFieldOfficer.DistrictMasterId;
+            existingOfficer.AssemblyMasterId = updatedFieldOfficer.AssemblyMasterId;
+            existingOfficer.FieldOfficerName = updatedFieldOfficer.FieldOfficerName;
+            existingOfficer.FieldOfficerDesignation = updatedFieldOfficer.FieldOfficerDesignation;
+            existingOfficer.FieldOfficerOfficeName = updatedFieldOfficer.FieldOfficerOfficeName;
+            existingOfficer.FieldOfficerMobile = updatedFieldOfficer.FieldOfficerMobile;
+            existingOfficer.FieldOfficerUpdatedAt = BharatDateTime(); // Set the updated time to the current time
+            existingOfficer.FieldOfficerStatus = updatedFieldOfficer.FieldOfficerStatus;
+            existingOfficer.OTPGeneratedTime = updatedFieldOfficer.OTPGeneratedTime;
+            existingOfficer.OTP = updatedFieldOfficer.OTP;
+            existingOfficer.OTPExpireTime = updatedFieldOfficer.OTPExpireTime;
+            existingOfficer.OTPAttempts = updatedFieldOfficer.OTPAttempts;
+            existingOfficer.RefreshToken = updatedFieldOfficer.RefreshToken;
+            existingOfficer.RefreshTokenExpiryTime = updatedFieldOfficer.RefreshTokenExpiryTime;
+            existingOfficer.AppPin = updatedFieldOfficer.AppPin;
+            existingOfficer.IsLocked = updatedFieldOfficer.IsLocked;
+            existingOfficer.ElectionTypeMasterId = updatedFieldOfficer.ElectionTypeMasterId;
+
+            _context.FieldOfficerMaster.Update(existingOfficer);
+
+            _context.SaveChanges();
+
+            // Return a success response
+            return new Response
+            {
+                Status = RequestStatusEnum.OK,
+                Message = "Field Officer updated successfully"
+            };
+        }
+        public async Task<List<CombinedMaster>> GetBoothListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
         {
 
-            var boothlist = from bt in _context.BoothMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId) && d.AssignedTo == soId)
+            var boothlist = from bt in _context.BoothMaster.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.AssignedTo == foId.ToString())
+                            join fourthLevelH in _context.FourthLevelH on bt.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
                             join asem in _context.AssemblyMaster
                             on bt.AssemblyMasterId equals asem.AssemblyMasterId
                             join dist in _context.DistrictMaster
@@ -1979,7 +2027,7 @@ namespace EAMS_DAL.Repository
 
                             select new CombinedMaster
                             {
-                                StateId = Convert.ToInt32(stateMasterId),
+                                StateId = stateMasterId,
                                 StateName = state.StateName,
                                 DistrictId = dist.DistrictMasterId,
                                 DistrictName = dist.DistrictName,
@@ -1987,6 +2035,8 @@ namespace EAMS_DAL.Repository
                                 AssemblyId = asem.AssemblyMasterId,
                                 AssemblyName = asem.AssemblyName,
                                 AssemblyCode = asem.AssemblyCode,
+                                FourthLevelHMasterId = fourthLevelH.FourthLevelHMasterId,
+                                FourthLevelHName = fourthLevelH.HierarchyName,
                                 BoothMasterId = bt.BoothMasterId,
                                 BoothName = bt.BoothName,
                                 //BoothAuxy = bt.BoothNoAuxy,
@@ -1994,7 +2044,7 @@ namespace EAMS_DAL.Repository
                                 IsStatus = bt.BoothStatus,
                                 BoothCode_No = bt.BoothCode_No,
                                 IsAssigned = bt.IsAssigned,
-                                soMasterId = Convert.ToInt32(soId)
+                                soMasterId = foId
 
 
                             };
@@ -2238,17 +2288,18 @@ namespace EAMS_DAL.Repository
             }
         }
 
-        public async Task<List<CombinedMaster>> GetUnassignedBoothListById(string stateMasterId, string districtMasterId, string assemblyMasterId)
+        public async Task<List<CombinedMaster>> GetUnassignedBoothListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            var isStateActive = _context.StateMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId)).FirstOrDefault();
-            var isDistrictActive = _context.DistrictMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId)).FirstOrDefault();
-            var isAssemblyActive = _context.AssemblyMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId)).FirstOrDefault();
+            var isStateActive = await _context.StateMaster.FirstOrDefaultAsync(d => d.StateMasterId == stateMasterId);
+            var isDistrictActive = await _context.DistrictMaster.FirstOrDefaultAsync(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId);
+            var isAssemblyActive = await _context.AssemblyMaster.FirstOrDefaultAsync(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId);
             if (isStateActive.StateStatus && isDistrictActive.DistrictStatus && isAssemblyActive.AssemblyStatus)
             {
 
-                var boothlist = from bt in _context.BoothMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId) && d.IsAssigned == false && d.BoothStatus == true) // outer sequenc)
+                var boothlist = from bt in _context.BoothMaster.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.IsAssigned == false && d.BoothStatus == true) // outer sequenc)
+                                join fourthLevelH in _context.FourthLevelH on bt.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
                                 join asem in _context.AssemblyMaster
-                                on bt.AssemblyMasterId equals asem.AssemblyMasterId
+                                            on bt.AssemblyMasterId equals asem.AssemblyMasterId
                                 join dist in _context.DistrictMaster
                                 on asem.DistrictMasterId equals dist.DistrictMasterId
                                 join state in _context.StateMaster
@@ -2256,11 +2307,13 @@ namespace EAMS_DAL.Repository
                                 orderby bt.BoothNoAuxy
                                 select new CombinedMaster
                                 {
-                                    StateId = Convert.ToInt32(stateMasterId),
+                                    StateId = stateMasterId,
                                     DistrictId = dist.DistrictMasterId,
                                     AssemblyId = asem.AssemblyMasterId,
                                     AssemblyName = asem.AssemblyName,
                                     AssemblyCode = asem.AssemblyCode,
+                                    FourthLevelHMasterId = fourthLevelH.FourthLevelHMasterId,
+                                    FourthLevelHName = fourthLevelH.HierarchyName,
                                     BoothMasterId = bt.BoothMasterId,
                                     BoothName = bt.BoothName,
                                     //BoothAuxy = bt.BoothNoAuxy,
@@ -3433,139 +3486,106 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         public async Task<Response> BoothMapping(List<BoothMaster> boothMasters)
         {
-            string anyBoothLocationFalse = "";
-            foreach (var boothMaster in boothMasters)
-
+            // Get all the required booth data in one query
+            var boothMasterIds = boothMasters.Select(b => new
             {
-                var existingBooth = _context.BoothMaster.Where(d =>
-                        d.StateMasterId == boothMaster.StateMasterId &&
-                        d.DistrictMasterId == boothMaster.DistrictMasterId &&
-                        d.AssemblyMasterId == boothMaster.AssemblyMasterId && d.BoothMasterId == boothMaster.BoothMasterId && d.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId).FirstOrDefault();
-                if (existingBooth != null)
-                {
-                    //if (existingBooth.LocationMasterId > 0)
-                    //{
-                    // checking booth must b active and should have location
-                    if (existingBooth.BoothStatus == true)
-                    {
+                b.StateMasterId,
+                b.DistrictMasterId,
+                b.AssemblyMasterId,
+                b.BoothMasterId,
+                b.ElectionTypeMasterId
+            }).ToList();
 
-                        // now check location should eb active
-                        //var locationStatus = _context.PollingLocationMaster.Where(p => p.LocationMasterId == existingBooth.LocationMasterId).Select(p => p.Status).FirstOrDefault();
-                        //if (locationStatus == false)
-                        //{
-                        //    anyBoothLocationFalse += existingBooth.BoothCode_No + ",";
+            var existingBooths = await _context.BoothMaster
+                .Where(b => boothMasterIds.Any(bm =>
+                    bm.StateMasterId == b.StateMasterId &&
+                    bm.DistrictMasterId == b.DistrictMasterId &&
+                    bm.AssemblyMasterId == b.AssemblyMasterId &&
+                    bm.BoothMasterId == b.BoothMasterId &&
+                    bm.ElectionTypeMasterId == b.ElectionTypeMasterId))
+                .ToListAsync();
 
+            foreach (var boothMaster in boothMasters)
+            {
+                var existingBooth = existingBooths.FirstOrDefault(b =>
+                    b.StateMasterId == boothMaster.StateMasterId &&
+                    b.DistrictMasterId == boothMaster.DistrictMasterId &&
+                    b.AssemblyMasterId == boothMaster.AssemblyMasterId &&
+                    b.BoothMasterId == boothMaster.BoothMasterId &&
+                    b.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId);
 
-
-                        //}
-                        //else
-                        //{
-                        var soExists = _context.FieldOfficerMaster.Any(p => p.FieldOfficerMasterId == Convert.ToInt32(boothMaster.AssignedTo));
-                        if (soExists == true)
-                        {
-
-                            // check that booth i
-                            existingBooth.AssignedBy = boothMaster.AssignedBy;
-                            existingBooth.AssignedTo = boothMaster.AssignedTo;
-                            existingBooth.AssignedOnTime = DateTime.UtcNow;
-                            existingBooth.IsAssigned = boothMaster.IsAssigned;
-                            _context.BoothMaster.Update(existingBooth);
-                            _context.SaveChanges();
-                        }
-                        else
-                        {
-                            return new Response { Status = RequestStatusEnum.NotFound, Message = "Sector Officer Not Found" };
-                        }
-                        // }
-
-
-                    }
-                    else
-                    {
-                        return new Response { Status = RequestStatusEnum.NotFound, Message = "Booth is Not Active" };
-
-                    }
-                    //}
-                    //else
-
-                    //{
-                    //    return new Response { Status = RequestStatusEnum.NotFound, Message = "Kindly map your Booth Location" };
-
-                    //}
-                }
-                else
+                if (existingBooth == null)
                 {
                     return new Response { Status = RequestStatusEnum.NotFound, Message = "Booth Not Found" };
-
                 }
+
+                if (!existingBooth.BoothStatus)
+                {
+                    return new Response { Status = RequestStatusEnum.NotFound, Message = "Booth is Not Active" };
+                }
+
+                // Check for Field Officer asynchronously
+                var foExists = await _context.FieldOfficerMaster
+                    .AnyAsync(p => p.FieldOfficerMasterId == Convert.ToInt32(boothMaster.AssignedTo));
+
+                if (!foExists)
+                {
+                    return new Response { Status = RequestStatusEnum.NotFound, Message = "Field Officer Not Found" };
+                }
+
+                // Update booth assignment details
+                existingBooth.AssignedBy = boothMaster.AssignedBy;
+                existingBooth.AssignedTo = boothMaster.AssignedTo;
+                existingBooth.AssignedOnTime = DateTime.UtcNow;
+                existingBooth.IsAssigned = boothMaster.IsAssigned;
+
+                _context.BoothMaster.Update(existingBooth);
             }
-            if (anyBoothLocationFalse == string.Empty)
-            {
-                return new Response { Status = RequestStatusEnum.OK, Message = "Booths assigned successfully!" };
-            }
-            else
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Following Booth Number Locations is not active :" + anyBoothLocationFalse + " " + "Kindly Active this Booth's Location, or Add Location if not added." };
 
-                //if (boothMasters.Count > 1)
-                //{
+            await _context.SaveChangesAsync();
 
-                //    return new Response { Status = RequestStatusEnum.OK, Message = "Few Booths assigned successfully! Following Booth's Location is not active :" + anyBoothLocationFalse };
-                //}
-                //else
-                //{
-                //    return new Response { Status = RequestStatusEnum.OK, Message = "Following Booth Location is not active :" + anyBoothLocationFalse };
-
-                //}
-            }
-
-
+            return new Response { Status = RequestStatusEnum.OK, Message = "Booths successfully mapped" };
         }
+
         public async Task<Response> ReleaseBooth(BoothMaster boothMaster)
         {
-            if (boothMaster.BoothMasterId != null)
+            if (boothMaster.BoothMasterId != null || boothMaster.IsAssigned == false)
             {
-                if (boothMaster.IsAssigned == false)
+
+                var electionInfoRecord = await _context.ElectionInfoMaster.FirstOrDefaultAsync(e => e.BoothMasterId == boothMaster.BoothMasterId);
+                if (electionInfoRecord == null)
+
                 {
-                    var electionInfoRecord = await _context.ElectionInfoMaster.FirstOrDefaultAsync(e => e.BoothMasterId == boothMaster.BoothMasterId);
-                    if (electionInfoRecord == null)
-
+                    var existingbooth = await _context.BoothMaster.FirstOrDefaultAsync(so => so.BoothMasterId == boothMaster.BoothMasterId && so.StateMasterId == boothMaster.StateMasterId
+                                                && so.DistrictMasterId == so.DistrictMasterId && so.AssemblyMasterId == boothMaster.AssemblyMasterId);
+                    if (existingbooth == null)
                     {
-                        var existingbooth = await _context.BoothMaster.FirstOrDefaultAsync(so => so.BoothMasterId == boothMaster.BoothMasterId && so.StateMasterId == boothMaster.StateMasterId && so.DistrictMasterId == so.DistrictMasterId && so.AssemblyMasterId == boothMaster.AssemblyMasterId);
-                        if (existingbooth == null)
-                        {
-                            return new Response { Status = RequestStatusEnum.NotFound, Message = "Booth Record not found." };
-                        }
-                        else
-                        {
-                            if (existingbooth.IsAssigned == true)
-                            {
-                                existingbooth.AssignedBy = string.Empty;
-                                existingbooth.AssignedTo = string.Empty;
-                                existingbooth.IsAssigned = boothMaster.IsAssigned;
-                                _context.BoothMaster.Update(existingbooth);
-                                await _context.SaveChangesAsync();
-
-                                return new Response { Status = RequestStatusEnum.OK, Message = "Booth " + existingbooth.BoothName.Trim() + " Unassigned successfully!" };
-                            }
-                            else
-                            {
-                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Booth " + existingbooth.BoothName.Trim() + " already Unassigned!" };
-                            }
-                        }
-
+                        return new Response { Status = RequestStatusEnum.NotFound, Message = "Booth Record not found." };
                     }
                     else
                     {
-                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Cannot release booth as Event Activity has been performed on it." };
+                        if (existingbooth.IsAssigned == true)
+                        {
+                            existingbooth.AssignedBy = string.Empty;
+                            existingbooth.AssignedTo = string.Empty;
+                            existingbooth.IsAssigned = boothMaster.IsAssigned;
+                            _context.BoothMaster.Update(existingbooth);
+                            await _context.SaveChangesAsync();
+
+                            return new Response { Status = RequestStatusEnum.OK, Message = "Booth " + existingbooth.BoothName.Trim() + " Unassigned successfully!" };
+                        }
+                        else
+                        {
+                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Booth " + existingbooth.BoothName.Trim() + " already Unassigned!" };
+                        }
                     }
+
                 }
                 else
                 {
-                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please unassign first!" };
-
-
+                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Cannot release booth as Event Activity has been performed on it." };
                 }
+
             }
             else
             {
@@ -16397,7 +16417,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         public async Task<KycList> GetKycById(int kycMasterId)
         {
             var kyc = await _context.Kyc.FirstOrDefaultAsync(d => d.KycMasterId == kycMasterId);
-            var electionType = await _context.ElectionTypeMaster.FirstOrDefaultAsync(d=>d.ElectionTypeMasterId== kyc.ElectionTypeMasterId);
+            var electionType = await _context.ElectionTypeMaster.FirstOrDefaultAsync(d => d.ElectionTypeMasterId == kyc.ElectionTypeMasterId);
             if (kyc == null)
             {
                 return null; // or throw an exception, or handle the case appropriately
@@ -16423,7 +16443,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 {
                     KycMasterId = kyc.KycMasterId,
                     ElectionTypeMasterId = kyc.ElectionTypeMasterId,
-                    ElectionTypeName=electionType.ElectionType,
+                    ElectionTypeName = electionType.ElectionType,
                     StateMasterId = panchayat.StateMasterId,
                     StateName = panchayat.StateMaster.StateName,
                     DistrictMasterId = panchayat.DistrictMasterId,
@@ -16436,7 +16456,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     PSZonePanchayatName = panchayat.PSZonePanchayatName,
                     CandidateName = kyc.CandidateName,
                     FatherName = kyc.FatherName,
-                    NominationPdfPath= $"{baseUrl}{kyc.NominationPdfPath}"
+                    NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}"
                 };
 
                 return result;
@@ -16584,7 +16604,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                         d.DistrictMasterId == unOpposed.DistrictMasterId &&
                         d.AssemblyMasterId == unOpposed.AssemblyMasterId &&
                         d.FourthLevelHMasterId == unOpposed.FourthLevelHMasterId &&
-                        d.GPPanchayatWardsMasterId == unOpposed.GPPanchayatWardsMasterId&&d.ElectionTypeMasterId==unOpposed.ElectionTypeMasterId);
+                        d.GPPanchayatWardsMasterId == unOpposed.GPPanchayatWardsMasterId && d.ElectionTypeMasterId == unOpposed.ElectionTypeMasterId);
                 }
                 else //sarpanch and other
                 {
@@ -16592,7 +16612,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                         d.StateMasterId == unOpposed.StateMasterId &&
                         d.DistrictMasterId == unOpposed.DistrictMasterId &&
                         d.AssemblyMasterId == unOpposed.AssemblyMasterId &&
-                        d.FourthLevelHMasterId == unOpposed.FourthLevelHMasterId&&d.GPPanchayatWardsMasterId==0 && d.ElectionTypeMasterId == unOpposed.ElectionTypeMasterId);
+                        d.FourthLevelHMasterId == unOpposed.FourthLevelHMasterId && d.GPPanchayatWardsMasterId == 0 && d.ElectionTypeMasterId == unOpposed.ElectionTypeMasterId);
                 }
             }
             else // When ElectionTypeMasterId equals 2
@@ -16903,7 +16923,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         {
             try
             {
-                var isFourthLevelHExist = await _context.FourthLevelH.Where(p => p.HierarchyCode == fourthLevelH.HierarchyCode && p.StateMasterId == fourthLevelH.StateMasterId && p.DistrictMasterId == fourthLevelH.DistrictMasterId && p.AssemblyMasterId == fourthLevelH.AssemblyMasterId && p.ElectionTypeMasterId == fourthLevelH.ElectionTypeMasterId).FirstOrDefaultAsync();
+                var isFourthLevelHExist = await _context.FourthLevelH.Where(p => p.StateMasterId == fourthLevelH.StateMasterId && p.DistrictMasterId == fourthLevelH.DistrictMasterId && p.AssemblyMasterId == fourthLevelH.AssemblyMasterId && p.HierarchyCode == fourthLevelH.HierarchyCode && p.ElectionTypeMasterId == fourthLevelH.ElectionTypeMasterId).FirstOrDefaultAsync();
 
                 if (isFourthLevelHExist == null)
                 {
@@ -16933,7 +16953,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         public async Task<List<FourthLevelH>> GetFourthLevelHListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            var getFourthLevelH = await _context.FourthLevelH.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId 
+            var getFourthLevelH = await _context.FourthLevelH.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId
                 && d.AssemblyMasterId == assemblyMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.ElectionTypeMaster).ToListAsync();
             if (getFourthLevelH != null)
             {
@@ -17199,11 +17219,11 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         {
             try
             {
-                var isgpPanchayatWardsExist = await _context.GPPanchayatWards.Where(p => p.GPPanchayatWardsCode == gpPanchayatWards.GPPanchayatWardsCode 
-                                                && p.StateMasterId == gpPanchayatWards.StateMasterId 
+                var isgpPanchayatWardsExist = await _context.GPPanchayatWards.FirstOrDefaultAsync(p => p.GPPanchayatWardsCode == gpPanchayatWards.GPPanchayatWardsCode
+                                                && p.StateMasterId == gpPanchayatWards.StateMasterId
                                                 && p.DistrictMasterId == gpPanchayatWards.DistrictMasterId
                                                 && p.AssemblyMasterId == gpPanchayatWards.AssemblyMasterId
-                                                && p.ElectionTypeMasterId == gpPanchayatWards.ElectionTypeMasterId).FirstOrDefaultAsync();
+                                                && p.ElectionTypeMasterId == gpPanchayatWards.ElectionTypeMasterId && p.FourthLevelHMasterId == gpPanchayatWards.FourthLevelHMasterId);
 
                 if (isgpPanchayatWardsExist == null)
                 {
@@ -17295,7 +17315,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         public async Task<GPPanchayatWards> GetGPPanchayatWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId)
         {
             var gpPanchayatWards = await _context.GPPanchayatWards.Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH)
-                .Include(d=>d.ElectionTypeMaster)
+                .Include(d => d.ElectionTypeMaster)
                 .Where(w => w.StateMasterId == stateMasterId &&
                             w.DistrictMasterId == districtMasterId &&
                             w.AssemblyMasterId == assemblyMasterId &&
