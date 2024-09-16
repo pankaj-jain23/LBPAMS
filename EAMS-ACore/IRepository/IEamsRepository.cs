@@ -65,7 +65,7 @@ namespace EAMS_ACore.IRepository
         Task<Response> UpdateFieldOfficerValidate(FieldOfficerMaster fieldOfficerViewModel);
         Task<Response> UpdateBLOOfficer(BLOMaster bLOMaster);
         Task<List<CombinedMaster>> GetBoothListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId);
-        Task<FieldOfficerMaster> GetFieldOfficerById(int FieldOfficerMasterId);
+        Task<FieldOfficerMasterList> GetFieldOfficerById(int FieldOfficerMasterId);
         #endregion
 
         #region Booth Master

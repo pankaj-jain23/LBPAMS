@@ -220,7 +220,7 @@ namespace EAMS_BLL.Services
             return await _eamsRepository.GetBoothListByFoId(stateMasterId, districtMasterId, assemblyMasterId, foId);
         }
 
-        public async Task<FieldOfficerMaster> GetFieldOfficerById(int FieldOfficerMasterId)
+        public async Task<FieldOfficerMasterList> GetFieldOfficerById(int FieldOfficerMasterId)
         {
            return await _eamsRepository.GetFieldOfficerById(FieldOfficerMasterId);
         }

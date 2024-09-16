@@ -60,7 +60,7 @@ namespace EAMS_ACore.Interfaces
         Task<Response> UpdateFieldOfficer(FieldOfficerMaster fieldOfficerViewModel);
         Task<Response> UpdateBLOOfficer(BLOMaster bLOMaster);
         Task<List<CombinedMaster>> GetBoothListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId);
-        Task<FieldOfficerMaster> GetFieldOfficerById(int FieldOfficerMasterId);
+        Task<FieldOfficerMasterList> GetFieldOfficerById(int FieldOfficerMasterId);
         #endregion
 
         #region BoothMaster

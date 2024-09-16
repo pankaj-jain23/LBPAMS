@@ -1876,9 +1876,9 @@ namespace EAMS_DAL.Repository
                                                                          && d.ElectionTypeMasterId == fieldOfficerViewModel.ElectionTypeMasterId
                                                                          && d.StateMasterId == fieldOfficerViewModel.StateMasterId);
 
-          
+
             // If more than two officers already exist with the same mobile number for this election type, return an error response
-            if (existingOfficerMobile is not null) 
+            if (existingOfficerMobile is not null)
             {
                 return new Response
                 {
@@ -1898,29 +1898,11 @@ namespace EAMS_DAL.Repository
                 Message = "Field Officer added successfully"
             };
         }
-
-
         public async Task<Response> UpdateFieldOfficer(FieldOfficerMaster updatedFieldOfficer)
-        {// Check if FieldOfficer with the same mobile number, election type, and state already exists
-            var existingOfficerMobile = await _context.FieldOfficerMaster
-                .FirstOrDefaultAsync(d => d.FieldOfficerMobile == updatedFieldOfficer.FieldOfficerMobile
-                                          && d.ElectionTypeMasterId == updatedFieldOfficer.ElectionTypeMasterId
-                                          && d.StateMasterId == updatedFieldOfficer.StateMasterId);
-
-
-            // If more than two officers already exist with the same mobile number for this election type, return an error response
-            if (existingOfficerMobile is not null)
-            {
-                return new Response
-                {
-                    Status = RequestStatusEnum.BadRequest,
-                    Message = $"FO User {updatedFieldOfficer.FieldOfficerName} Already Exists in this election "
-                };
-            }
-
+        {
             // Check if the record exists based on the FieldOfficerMasterId
-                var existingOfficer = await _context.FieldOfficerMaster
-                                                .FirstOrDefaultAsync(d => d.FieldOfficerMasterId == updatedFieldOfficer.FieldOfficerMasterId);
+            var existingOfficer = await _context.FieldOfficerMaster
+                .FirstOrDefaultAsync(d => d.FieldOfficerMasterId == updatedFieldOfficer.FieldOfficerMasterId);
 
             if (existingOfficer == null)
             {
@@ -1932,18 +1914,25 @@ namespace EAMS_DAL.Repository
                 };
             }
 
-            // Check if the phone number already exists for another officer
-            var isUniquePhoneNumber = await _context.FieldOfficerMaster
-                                                    .AnyAsync(d => d.FieldOfficerMobile == updatedFieldOfficer.FieldOfficerMobile && d.ElectionTypeMasterId == updatedFieldOfficer.ElectionTypeMasterId);
+            // Determine if the mobile number is being updated
+            // bool isMobileNumberUpdated = updatedFieldOfficer.FieldOfficerMobile != existingOfficer.FieldOfficerMobile;
 
-            if (isUniquePhoneNumber)
+            if (updatedFieldOfficer.FieldOfficerMobile != existingOfficer.FieldOfficerMobile)
             {
-                // Return a response if the phone number is not unique
-                return new Response
+                // Check if the new mobile number already exists for another officer
+                bool isUniquePhoneNumber = await _context.FieldOfficerMaster
+                    .AnyAsync(d => d.FieldOfficerMobile == updatedFieldOfficer.FieldOfficerMobile
+                                   && d.FieldOfficerMasterId != existingOfficer.FieldOfficerMasterId);
+
+                if (isUniquePhoneNumber)
                 {
-                    Status = RequestStatusEnum.BadRequest,
-                    Message = "Mobile Number Already Exists"
-                };
+                    // Return a response if the phone number is not unique
+                    return new Response
+                    {
+                        Status = RequestStatusEnum.BadRequest,
+                        Message = "Mobile Number Already Exists"
+                    };
+                }
             }
 
             // Map all fields from updatedFieldOfficer to existingOfficer
@@ -1951,10 +1940,10 @@ namespace EAMS_DAL.Repository
             existingOfficer.DistrictMasterId = updatedFieldOfficer.DistrictMasterId;
             existingOfficer.AssemblyMasterId = updatedFieldOfficer.AssemblyMasterId;
             existingOfficer.FieldOfficerName = updatedFieldOfficer.FieldOfficerName;
+            existingOfficer.FieldOfficerMobile = updatedFieldOfficer.FieldOfficerMobile;
             existingOfficer.FieldOfficerDesignation = updatedFieldOfficer.FieldOfficerDesignation;
             existingOfficer.FieldOfficerOfficeName = updatedFieldOfficer.FieldOfficerOfficeName;
-            existingOfficer.FieldOfficerMobile = updatedFieldOfficer.FieldOfficerMobile;
-            existingOfficer.FieldOfficerUpdatedAt = BharatDateTime(); // Set the updated time to the current time
+            existingOfficer.FieldOfficerUpdatedAt = BharatDateTime();
             existingOfficer.FieldOfficerStatus = updatedFieldOfficer.FieldOfficerStatus;
             existingOfficer.OTPGeneratedTime = updatedFieldOfficer.OTPGeneratedTime;
             existingOfficer.OTP = updatedFieldOfficer.OTP;
@@ -1967,8 +1956,7 @@ namespace EAMS_DAL.Repository
             existingOfficer.ElectionTypeMasterId = updatedFieldOfficer.ElectionTypeMasterId;
 
             _context.FieldOfficerMaster.Update(existingOfficer);
-
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             // Return a success response
             return new Response
@@ -1977,7 +1965,6 @@ namespace EAMS_DAL.Repository
                 Message = "Field Officer updated successfully"
             };
         }
-
         public async Task<Response> UpdateFieldOfficerValidate(FieldOfficerMaster updatedFieldOfficer)
         {
             // Check if the record exists based on the FieldOfficerMasterId
@@ -2064,11 +2051,57 @@ namespace EAMS_DAL.Repository
             return await boothlist.ToListAsync();
         }
 
-        public async Task<FieldOfficerMaster> GetFieldOfficerById(int FieldOfficerMasterId)
+        public async Task<FieldOfficerMasterList> GetFieldOfficerById(int fieldOfficerMasterId)
         {
-            var soRecord = await _context.FieldOfficerMaster.Where(d => d.FieldOfficerMasterId == FieldOfficerMasterId).FirstOrDefaultAsync();
-            return soRecord;
+            var foRecord = await _context.FieldOfficerMaster
+                .Where(rd => rd.FieldOfficerMasterId == fieldOfficerMasterId)
+                .Join(_context.StateMaster,
+                      rd => rd.StateMasterId,
+                      sm => sm.StateMasterId,
+                      (rd, sm) => new { FieldOfficerMaster = rd, StateMaster = sm })
+                .Join(_context.DistrictMaster,
+                      joined => joined.FieldOfficerMaster.DistrictMasterId,
+                      dm => dm.DistrictMasterId,
+                      (joined, dm) => new { joined.FieldOfficerMaster, joined.StateMaster, DistrictMaster = dm })
+                .Join(_context.AssemblyMaster,
+                      joined => joined.FieldOfficerMaster.AssemblyMasterId,
+                      am => am.AssemblyMasterId,
+                      (joined, am) => new
+                      {
+                          joined.FieldOfficerMaster,
+                          joined.StateMaster,
+                          joined.DistrictMaster,
+                          AssemblyMaster = am
+                      })
+                .Join(_context.ElectionTypeMaster,
+                      joined => joined.FieldOfficerMaster.ElectionTypeMasterId,
+                      etm => etm.ElectionTypeMasterId,
+                      (joined, etm) => new FieldOfficerMasterList
+                      {
+                          FieldOfficerMasterId = joined.FieldOfficerMaster.FieldOfficerMasterId,
+                          StateMasterId = joined.StateMaster.StateMasterId,
+                          StateName = joined.StateMaster.StateName,
+                          DistrictMasterId = joined.DistrictMaster.DistrictMasterId,
+                          DistrictName = joined.DistrictMaster.DistrictName,
+                          AssemblyMasterId = joined.AssemblyMaster.AssemblyMasterId,
+                          AssemblyName = joined.AssemblyMaster.AssemblyName,
+                          FieldOfficerName = joined.FieldOfficerMaster.FieldOfficerName,
+                          FieldOfficerDesignation = joined.FieldOfficerMaster.FieldOfficerDesignation,
+                          FieldOfficerOfficeName = joined.FieldOfficerMaster.FieldOfficerOfficeName,
+                          FieldOfficerMobile = joined.FieldOfficerMaster.FieldOfficerMobile,
+                          FieldOfficerStatus = joined.FieldOfficerMaster.FieldOfficerStatus,
+                          OTPGeneratedTime = joined.FieldOfficerMaster.OTPGeneratedTime,
+                          OTP = joined.FieldOfficerMaster.OTP,
+                          OTPExpireTime = joined.FieldOfficerMaster.OTPExpireTime,
+                          OTPAttempts = joined.FieldOfficerMaster.OTPAttempts,
+                          IsLocked = joined.FieldOfficerMaster.IsLocked,
+                          ElectionTypeMasterId = joined.FieldOfficerMaster.ElectionTypeMasterId
+                      })
+                .FirstOrDefaultAsync(); // Use FirstOrDefaultAsync to return a single result
+
+            return foRecord;
         }
+
         #endregion
 
         #region Booth Master 
@@ -3497,15 +3530,15 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
 
         public async Task<Response> BoothMapping(List<BoothMaster> boothMasters)
-        { 
+        {
             foreach (var boothMaster in boothMasters)
             {
-                var existingBooth =await _context.BoothMaster.FirstOrDefaultAsync(b =>
+                var existingBooth = await _context.BoothMaster.FirstOrDefaultAsync(b =>
                     b.StateMasterId == boothMaster.StateMasterId &&
                     b.DistrictMasterId == boothMaster.DistrictMasterId &&
                     b.AssemblyMasterId == boothMaster.AssemblyMasterId &&
                     b.BoothMasterId == boothMaster.BoothMasterId &&
-                    b.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId&&b.BoothMasterId==boothMaster.BoothMasterId);
+                    b.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && b.BoothMasterId == boothMaster.BoothMasterId);
 
                 if (existingBooth == null)
                 {
@@ -3588,7 +3621,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         public async Task<BoothMaster> GetBoothById(string boothMasterId)
         {
-            var boothRecord = await _context.BoothMaster.Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d=>d.FourthLevelH).Include(d => d.ElectionTypeMaster).Where(d => d.BoothMasterId == Convert.ToInt32(boothMasterId)).FirstOrDefaultAsync();
+            var boothRecord = await _context.BoothMaster.Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).Where(d => d.BoothMasterId == Convert.ToInt32(boothMasterId)).FirstOrDefaultAsync();
 
             return boothRecord;
         }
@@ -16983,7 +17016,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                             && p.ElectionTypeMasterId == fourthLevelH.ElectionTypeMasterId) // Exclude current entity
                 .FirstOrDefaultAsync();
 
-            if (isFourthLevelHCodeExist != null&&existing.HierarchyCode!=isFourthLevelHCodeExist.HierarchyCode)
+            if (isFourthLevelHCodeExist != null && existing.HierarchyCode != isFourthLevelHCodeExist.HierarchyCode)
             {
                 return new Response
                 {
@@ -17311,7 +17344,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                             && p.AssemblyMasterId == gpPanchayatWards.AssemblyMasterId
                             && p.ElectionTypeMasterId == gpPanchayatWards.ElectionTypeMasterId
                             && p.FourthLevelHMasterId == gpPanchayatWards.FourthLevelHMasterId
-                           ) 
+                           )
                 .FirstOrDefaultAsync();
 
             if (isGPPanchayatWardsCodeExist != null && existingGPPanchayatWards.GPPanchayatWardsCode != isGPPanchayatWardsCodeExist.GPPanchayatWardsCode)
