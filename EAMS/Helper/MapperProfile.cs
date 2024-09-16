@@ -847,6 +847,8 @@ namespace EAMS.Helper
                    .ForMember(dest => dest.AssemblyName, opt => opt.MapFrom(src => src.AssemblyMaster.AssemblyName))
                    .ForMember(dest => dest.GPPanchayatWardsCategory, opt => opt.MapFrom(src => src.GPPanchayatWardsCategory))
                    .ForMember(dest => dest.IsStatus, opt => opt.MapFrom(src => src.GPPanchayatWardsStatus))
+                   .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
+                   .ForMember(dest => dest.FourthLevelHName, opt => opt.MapFrom(src => src.FourthLevelH.HierarchyName))
 
           .ReverseMap();
             #endregion

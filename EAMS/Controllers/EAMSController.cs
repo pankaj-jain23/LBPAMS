@@ -1153,6 +1153,8 @@ namespace EAMS.Controllers
                     AssemblyName = boothRecord.AssemblyMaster.AssemblyName,
                     AssemblyCode = boothRecord.AssemblyMaster.AssemblyCode,
                     AssemblyType = boothRecord.AssemblyMaster.AssemblyType,
+                    fourthLevelHMasterId= boothRecord.FourthLevelH.FourthLevelHMasterId,
+                    fourthLevelHName = boothRecord.FourthLevelH.HierarchyName,
                     BoothMasterId = boothRecord.BoothMasterId,
                     BoothName = boothRecord.BoothName,
                     BoothCode_No = boothRecord.BoothCode_No,
@@ -1897,8 +1899,7 @@ namespace EAMS.Controllers
         #region  GPPanchayatWards 
         [HttpPost]
         [Route("AddGPPanchayatWards")]
-        [Authorize]
-       
+        [Authorize] 
         public async Task<IActionResult> AddSarpanchWards(AddGPPanchayatWardsViewModel addSarpanchWardsViewModel)
         {
             if (ModelState.IsValid)

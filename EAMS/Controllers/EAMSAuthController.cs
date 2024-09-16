@@ -474,6 +474,7 @@ namespace EAMS.Controllers
             }
         }
         #endregion
+
         #region UpdateFieldOfficerDetail
         [HttpPost]
         [Route("UpdateFieldOfficerDetail")]

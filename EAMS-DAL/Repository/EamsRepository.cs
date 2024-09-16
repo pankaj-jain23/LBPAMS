@@ -1871,23 +1871,19 @@ namespace EAMS_DAL.Repository
         public async Task<Response> AddFieldOfficer(FieldOfficerMaster fieldOfficerViewModel)
         {
             // Check if FieldOfficer with the same mobile number, election type, and state already exists
-            var existingOfficer = await _context.FieldOfficerMaster
+            var existingOfficerMobile = await _context.FieldOfficerMaster
                                                 .FirstOrDefaultAsync(d => d.FieldOfficerMobile == fieldOfficerViewModel.FieldOfficerMobile
                                                                          && d.ElectionTypeMasterId == fieldOfficerViewModel.ElectionTypeMasterId
                                                                          && d.StateMasterId == fieldOfficerViewModel.StateMasterId);
 
-            // Check the count of FieldOfficers with the same mobile number and election type
-            var existingOfficerCount = await _context.FieldOfficerMaster
-                                                     .CountAsync(d => d.FieldOfficerMobile == fieldOfficerViewModel.FieldOfficerMobile
-                                                                    && d.ElectionTypeMasterId == fieldOfficerViewModel.ElectionTypeMasterId);
-
+          
             // If more than two officers already exist with the same mobile number for this election type, return an error response
-            if (existingOfficerCount > 2)
+            if (existingOfficerMobile is not null) 
             {
                 return new Response
                 {
                     Status = RequestStatusEnum.BadRequest,
-                    Message = $"FO User {fieldOfficerViewModel.FieldOfficerName} Already Exists more than 1 in this election type"
+                    Message = $"FO User {fieldOfficerViewModel.FieldOfficerName} Already Exists in this election "
                 };
             }
 
@@ -1905,9 +1901,25 @@ namespace EAMS_DAL.Repository
 
 
         public async Task<Response> UpdateFieldOfficer(FieldOfficerMaster updatedFieldOfficer)
-        {
+        {// Check if FieldOfficer with the same mobile number, election type, and state already exists
+            var existingOfficerMobile = await _context.FieldOfficerMaster
+                .FirstOrDefaultAsync(d => d.FieldOfficerMobile == updatedFieldOfficer.FieldOfficerMobile
+                                          && d.ElectionTypeMasterId == updatedFieldOfficer.ElectionTypeMasterId
+                                          && d.StateMasterId == updatedFieldOfficer.StateMasterId);
+
+
+            // If more than two officers already exist with the same mobile number for this election type, return an error response
+            if (existingOfficerMobile is not null)
+            {
+                return new Response
+                {
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = $"FO User {updatedFieldOfficer.FieldOfficerName} Already Exists in this election "
+                };
+            }
+
             // Check if the record exists based on the FieldOfficerMasterId
-            var existingOfficer = await _context.FieldOfficerMaster
+                var existingOfficer = await _context.FieldOfficerMaster
                                                 .FirstOrDefaultAsync(d => d.FieldOfficerMasterId == updatedFieldOfficer.FieldOfficerMasterId);
 
             if (existingOfficer == null)
@@ -1981,7 +1993,7 @@ namespace EAMS_DAL.Repository
                     Message = "No Record Found"
                 };
             }
-              
+
             // Map all fields from updatedFieldOfficer to existingOfficer
             existingOfficer.StateMasterId = updatedFieldOfficer.StateMasterId;
             existingOfficer.DistrictMasterId = updatedFieldOfficer.DistrictMasterId;
@@ -3485,34 +3497,15 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
 
         public async Task<Response> BoothMapping(List<BoothMaster> boothMasters)
-        {
-            // Get all the required booth data in one query
-            var boothMasterIds = boothMasters.Select(b => new
-            {
-                b.StateMasterId,
-                b.DistrictMasterId,
-                b.AssemblyMasterId,
-                b.BoothMasterId,
-                b.ElectionTypeMasterId
-            }).ToList();
-
-            var existingBooths = await _context.BoothMaster
-                .Where(b => boothMasterIds.Any(bm =>
-                    bm.StateMasterId == b.StateMasterId &&
-                    bm.DistrictMasterId == b.DistrictMasterId &&
-                    bm.AssemblyMasterId == b.AssemblyMasterId &&
-                    bm.BoothMasterId == b.BoothMasterId &&
-                    bm.ElectionTypeMasterId == b.ElectionTypeMasterId))
-                .ToListAsync();
-
+        { 
             foreach (var boothMaster in boothMasters)
             {
-                var existingBooth = existingBooths.FirstOrDefault(b =>
+                var existingBooth =await _context.BoothMaster.FirstOrDefaultAsync(b =>
                     b.StateMasterId == boothMaster.StateMasterId &&
                     b.DistrictMasterId == boothMaster.DistrictMasterId &&
                     b.AssemblyMasterId == boothMaster.AssemblyMasterId &&
                     b.BoothMasterId == boothMaster.BoothMasterId &&
-                    b.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId);
+                    b.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId&&b.BoothMasterId==boothMaster.BoothMasterId);
 
                 if (existingBooth == null)
                 {
@@ -3595,7 +3588,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         public async Task<BoothMaster> GetBoothById(string boothMasterId)
         {
-            var boothRecord = await _context.BoothMaster.Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.ElectionTypeMaster).Where(d => d.BoothMasterId == Convert.ToInt32(boothMasterId)).FirstOrDefaultAsync();
+            var boothRecord = await _context.BoothMaster.Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d=>d.FourthLevelH).Include(d => d.ElectionTypeMaster).Where(d => d.BoothMasterId == Convert.ToInt32(boothMasterId)).FirstOrDefaultAsync();
 
             return boothRecord;
         }
@@ -16401,7 +16394,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                               DistrictMasterId = k.DistrictMasterId,
                               AssemblyName = a.AssemblyName,
                               AssemblyMasterId = k.AssemblyMasterId,
-                              FourthLevelName = fl.HierarchyName,
+                              FourthLevelHName = fl.HierarchyName,
                               FourthLevelHMasterId = k.FourthLevelHMasterId,
                               GPPanchayatWardsName = gw.GPPanchayatWardsName,
                               GPPanchayatWardsMasterId = k.GPPanchayatWardsMasterId,
@@ -16451,7 +16444,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     AssemblyMasterId = panchayat.AssemblyMasterId,
                     AssemblyName = panchayat.AssemblyMaster.AssemblyName,
                     FourthLevelHMasterId = panchayat.FourthLevelHMasterId,
-                    FourthLevelName = panchayat.FourthLevelH.HierarchyName,
+                    FourthLevelHName = panchayat.FourthLevelH.HierarchyName,
                     PSZonePanchayatMasterId = panchayat.PSZonePanchayatMasterId,
                     PSZonePanchayatName = panchayat.PSZonePanchayatName,
                     CandidateName = kyc.CandidateName,
@@ -16489,7 +16482,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     AssemblyMasterId = gpWard.AssemblyMasterId,
                     AssemblyName = gpWard.AssemblyMaster.AssemblyName,
                     FourthLevelHMasterId = gpWard.FourthLevelHMasterId,
-                    FourthLevelName = gpWard.FourthLevelH.HierarchyName,
+                    FourthLevelHName = gpWard.FourthLevelH.HierarchyName,
                     GPPanchayatWardsMasterId = gpWard.GPPanchayatWardsMasterId,
                     GPPanchayatWardsName = gpWard.GPPanchayatWardsName,
                     CandidateName = kyc.CandidateName,
@@ -16527,7 +16520,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     AssemblyMasterId = fourthLevel.AssemblyMasterId,
                     AssemblyName = fourthLevel.AssemblyMaster.AssemblyName,
                     FourthLevelHMasterId = fourthLevel.FourthLevelHMasterId,
-                    FourthLevelName = fourthLevel.HierarchyName,
+                    FourthLevelHName = fourthLevel.HierarchyName,
                     CandidateName = kyc.CandidateName,
                     FatherName = kyc.FatherName,
                     NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}"
@@ -16671,7 +16664,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                     DistrictMasterId = un.DistrictMasterId,
                                     AssemblyName = a.AssemblyName,
                                     AssemblyMasterId = un.AssemblyMasterId,
-                                    FourthLevelName = fl.HierarchyName,
+                                    FourthLevelHName = fl.HierarchyName,
                                     FourthLevelHMasterId = un.FourthLevelHMasterId,
                                     GPPanchayatWardsName = gw.GPPanchayatWardsName,
                                     GPPanchayatWardsMasterId = un.GPPanchayatWardsMasterId,
@@ -16759,7 +16752,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     AssemblyMasterId = panchayat.AssemblyMasterId,
                     AssemblyName = panchayat.AssemblyMaster.AssemblyName,
                     FourthLevelHMasterId = panchayat.FourthLevelHMasterId,
-                    FourthLevelName = panchayat.FourthLevelH.HierarchyName,
+                    FourthLevelHName = panchayat.FourthLevelH.HierarchyName,
                     PSZonePanchayatMasterId = panchayat.PSZonePanchayatMasterId,
                     PSZonePanchayatName = panchayat.PSZonePanchayatName,
                     CandidateName = unOpposed.CandidateName,
@@ -16796,7 +16789,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     AssemblyMasterId = gpWards.AssemblyMasterId,
                     AssemblyName = gpWards.AssemblyMaster.AssemblyName,
                     FourthLevelHMasterId = gpWards.FourthLevelHMasterId,
-                    FourthLevelName = gpWards.FourthLevelH.HierarchyName,
+                    FourthLevelHName = gpWards.FourthLevelH.HierarchyName,
                     GPPanchayatWardsMasterId = gpWards.GPPanchayatWardsMasterId,
                     GPPanchayatWardsName = gpWards.GPPanchayatWardsName,
                     CandidateName = unOpposed.CandidateName,
@@ -16834,7 +16827,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     AssemblyMasterId = fourthLevel.AssemblyMasterId,
                     AssemblyName = fourthLevel.AssemblyMaster.AssemblyName,
                     FourthLevelHMasterId = fourthLevel.FourthLevelHMasterId,
-                    FourthLevelName = fourthLevel.HierarchyName,
+                    FourthLevelHName = fourthLevel.HierarchyName,
                     CandidateName = unOpposed.CandidateName,
                     FatherName = unOpposed.FatherName,
                     NominationPdfPath = $"{baseUrl}{unOpposed.NominationPdfPath}",
@@ -16967,7 +16960,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         public async Task<Response> UpdateFourthLevelH(FourthLevelH fourthLevelH)
         {
-            // Check if the PSZone entity exists in the database
+            // Retrieve the existing entity
             var existing = await _context.FourthLevelH
                 .Where(d => d.FourthLevelHMasterId == fourthLevelH.FourthLevelHMasterId)
                 .FirstOrDefaultAsync();
@@ -16981,8 +16974,26 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 };
             }
 
-            var issFourthLeveCodeExist = await _context.FourthLevelH.Where(p => p.HierarchyCode == fourthLevelH.HierarchyCode && p.StateMasterId == fourthLevelH.StateMasterId && p.ElectionTypeMasterId == fourthLevelH.ElectionTypeMasterId && p.AssemblyMasterId != fourthLevelH.AssemblyMasterId && p.DistrictMasterId == fourthLevelH.DistrictMasterId).ToListAsync();
-            if (issFourthLeveCodeExist.Count == 0)
+            // Check if the HierarchyCode exists in other records
+            var isFourthLevelHCodeExist = await _context.FourthLevelH
+                .Where(p => p.StateMasterId == fourthLevelH.StateMasterId
+                            && p.DistrictMasterId == fourthLevelH.DistrictMasterId
+                            && p.AssemblyMasterId == fourthLevelH.AssemblyMasterId
+                            && p.HierarchyCode == fourthLevelH.HierarchyCode
+                            && p.ElectionTypeMasterId == fourthLevelH.ElectionTypeMasterId) // Exclude current entity
+                .FirstOrDefaultAsync();
+
+            if (isFourthLevelHCodeExist != null&&existing.HierarchyCode!=isFourthLevelHCodeExist.HierarchyCode)
+            {
+                return new Response
+                {
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = "Hierarchy code already exists for this combination."
+                };
+            }
+
+            // Allow update if code is the same as existing record or new
+            if (isFourthLevelHCodeExist == null || isFourthLevelHCodeExist.HierarchyCode == existing.HierarchyCode)
             {
                 // Update the properties of the existing entity
                 existing.HierarchyName = fourthLevelH.HierarchyName;
@@ -17003,7 +17014,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     return new Response
                     {
                         Status = RequestStatusEnum.OK,
-                        Message = "updated successfully."
+                        Message = "Updated successfully."
                     };
                 }
                 catch (Exception ex)
@@ -17016,12 +17027,14 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     };
                 }
             }
-            else
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = fourthLevelH.HierarchyName + " Same Hierarchy  Code Already Exists in the selected Election Type" };
 
-            }
+            return new Response
+            {
+                Status = RequestStatusEnum.BadRequest,
+                Message = "Already exists for this code."
+            };
         }
+
         public async Task<FourthLevelH> GetFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
             var fourthLevelH = await _context.FourthLevelH
@@ -17091,46 +17104,42 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         {
             try
             {
+                var existingPanchayat = await _context.PSZonePanchayat
+                    .FirstOrDefaultAsync(p => p.PSZonePanchayatCode == psZonePanchayat.PSZonePanchayatCode
+                                              && p.StateMasterId == psZonePanchayat.StateMasterId
+                                              && p.DistrictMasterId == psZonePanchayat.DistrictMasterId
+                                              && p.AssemblyMasterId == psZonePanchayat.AssemblyMasterId
+                                              && p.ElectionTypeMasterId == psZonePanchayat.ElectionTypeMasterId
+                                              && p.FourthLevelHMasterId == psZonePanchayat.FourthLevelHMasterId);
 
-                PSZonePanchayat? ispsZoneExist = null;
-                if (psZonePanchayat.ElectionTypeMasterId == 1)// for gram panchyat only check fourth level
+                if (existingPanchayat != null)
                 {
-                    ispsZoneExist = await _context.PSZonePanchayat.Where(p => p.PSZonePanchayatCode == psZonePanchayat.PSZonePanchayatCode && p.StateMasterId == psZonePanchayat.StateMasterId && p.DistrictMasterId == psZonePanchayat.DistrictMasterId && p.AssemblyMasterId == psZonePanchayat.AssemblyMasterId && p.ElectionTypeMasterId == psZonePanchayat.ElectionTypeMasterId && p.FourthLevelHMasterId == psZonePanchayat.FourthLevelHMasterId).FirstOrDefaultAsync();
-
-                }
-                else
-                {
-                    ispsZoneExist = await _context.PSZonePanchayat.Where(p => p.PSZonePanchayatCode == psZonePanchayat.PSZonePanchayatCode && p.StateMasterId == psZonePanchayat.StateMasterId && p.DistrictMasterId == psZonePanchayat.DistrictMasterId && p.AssemblyMasterId == psZonePanchayat.AssemblyMasterId && p.ElectionTypeMasterId == psZonePanchayat.ElectionTypeMasterId).FirstOrDefaultAsync();
-
-                }
-
-
-
-                if (ispsZoneExist == null)
-                {
-
-                    psZonePanchayat.PSZonePanchayatCreatedAt = BharatDateTime();
-                    _context.PSZonePanchayat.Add(psZonePanchayat);
-                    _context.SaveChanges();
-
-                    return new Response { Status = RequestStatusEnum.OK, Message = psZonePanchayat.PSZonePanchayatName + "Added Successfully" };
-
-
-
-                }
-                else
-                {
-                    return new Response { Status = RequestStatusEnum.BadRequest, Message = ispsZoneExist.PSZonePanchayatName + "Same Panchayat  Code Already Exists in the selected Election Type" };
-
+                    return new Response
+                    {
+                        Status = RequestStatusEnum.BadRequest,
+                        Message = "PS Zone Panchayat already exists for this code"
+                    };
                 }
 
+                psZonePanchayat.PSZonePanchayatCreatedAt = BharatDateTime();
+                _context.PSZonePanchayat.Add(psZonePanchayat);
+                await _context.SaveChangesAsync();
+
+                return new Response
+                {
+                    Status = RequestStatusEnum.OK,
+                    Message = $"{psZonePanchayat.PSZonePanchayatName} added successfully"
+                };
             }
-
             catch (Exception ex)
             {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
+                // Log the exception if needed
+                return new Response
+                {
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = ex.Message
+                };
             }
-            return null;
         }
 
         public async Task<List<PSZonePanchayat>> GetPSZonePanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
@@ -17149,11 +17158,27 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         {
             try
             {
+                var existingPanchayat = await _context.PSZonePanchayat
+                    .FirstOrDefaultAsync(p => p.PSZonePanchayatCode == updatedPSZonePanchayat.PSZonePanchayatCode
+                                              && p.StateMasterId == updatedPSZonePanchayat.StateMasterId
+                                              && p.DistrictMasterId == updatedPSZonePanchayat.DistrictMasterId
+                                              && p.AssemblyMasterId == updatedPSZonePanchayat.AssemblyMasterId
+                                              && p.ElectionTypeMasterId == updatedPSZonePanchayat.ElectionTypeMasterId
+                                              && p.FourthLevelHMasterId == updatedPSZonePanchayat.FourthLevelHMasterId);
+
+                if (existingPanchayat != null)
+                {
+                    return new Response
+                    {
+                        Status = RequestStatusEnum.BadRequest,
+                        Message = "PS Zone Panchayat already exists for this code"
+                    };
+                }
                 var existingPSZonePanchayat = await _context.PSZonePanchayat.FirstOrDefaultAsync(p => p.PSZonePanchayatMasterId == updatedPSZonePanchayat.PSZonePanchayatMasterId);
 
                 if (existingPSZonePanchayat == null)
                 {
-                    return new Response { Status = RequestStatusEnum.NotFound, Message = "Block Panchayat not found" };
+                    return new Response { Status = RequestStatusEnum.NotFound, Message = "PS Zone Panchayat not found" };
                 }
 
                 existingPSZonePanchayat.PSZonePanchayatName = updatedPSZonePanchayat.PSZonePanchayatName;
@@ -17264,7 +17289,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         public async Task<Response> UpdateGPPanchayatWards(GPPanchayatWards gpPanchayatWards)
         {
-            // Check if the SarpanchWards entity exists in the database
+            // Retrieve the existing entity
             var existingGPPanchayatWards = await _context.GPPanchayatWards
                 .Where(d => d.GPPanchayatWardsMasterId == gpPanchayatWards.GPPanchayatWardsMasterId)
                 .FirstOrDefaultAsync();
@@ -17278,40 +17303,68 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 };
             }
 
-            // Update the properties of the existing entity
-            existingGPPanchayatWards.GPPanchayatWardsName = gpPanchayatWards.GPPanchayatWardsName;
-            existingGPPanchayatWards.GPPanchayatWardsCode = gpPanchayatWards.GPPanchayatWardsCode;
-            existingGPPanchayatWards.GPPanchayatWardsType = gpPanchayatWards.GPPanchayatWardsType;
-            existingGPPanchayatWards.ElectionTypeMasterId = gpPanchayatWards.ElectionTypeMasterId;
-            existingGPPanchayatWards.StateMasterId = gpPanchayatWards.StateMasterId;
-            existingGPPanchayatWards.DistrictMasterId = gpPanchayatWards.DistrictMasterId;
-            existingGPPanchayatWards.AssemblyMasterId = gpPanchayatWards.AssemblyMasterId;
-            existingGPPanchayatWards.GPPanchayatWardsCategory = gpPanchayatWards.GPPanchayatWardsCategory;
-            existingGPPanchayatWards.GPPanchayatWardsUpdatedAt = DateTime.UtcNow;
-            existingGPPanchayatWards.GPPanchayatWardsDeletedAt = gpPanchayatWards.GPPanchayatWardsDeletedAt;
-            existingGPPanchayatWards.GPPanchayatWardsStatus = gpPanchayatWards.GPPanchayatWardsStatus;
+            // Check if the GPPanchayatWardsCode exists in other records, excluding the current entity
+            var isGPPanchayatWardsCodeExist = await _context.GPPanchayatWards
+                .Where(p => p.GPPanchayatWardsCode == gpPanchayatWards.GPPanchayatWardsCode
+                            && p.StateMasterId == gpPanchayatWards.StateMasterId
+                            && p.DistrictMasterId == gpPanchayatWards.DistrictMasterId
+                            && p.AssemblyMasterId == gpPanchayatWards.AssemblyMasterId
+                            && p.ElectionTypeMasterId == gpPanchayatWards.ElectionTypeMasterId
+                            && p.FourthLevelHMasterId == gpPanchayatWards.FourthLevelHMasterId
+                           ) 
+                .FirstOrDefaultAsync();
 
-
-            // Save changes to the database
-            try
+            if (isGPPanchayatWardsCodeExist != null && existingGPPanchayatWards.GPPanchayatWardsCode != isGPPanchayatWardsCodeExist.GPPanchayatWardsCode)
             {
-                await _context.SaveChangesAsync();
-                return new Response
-                {
-                    Status = RequestStatusEnum.OK,
-                    Message = "Sarpanch Wards updated successfully."
-                };
-            }
-            catch (Exception ex)
-            {
-                // Handle any errors that may have occurred
                 return new Response
                 {
                     Status = RequestStatusEnum.BadRequest,
-                    Message = $"An error occurred: {ex.Message}"
+                    Message = "Wards Code already exists for this combination."
                 };
             }
+            // Allow update if code is the same as existing record or new
+            if (isGPPanchayatWardsCodeExist == null || isGPPanchayatWardsCodeExist.GPPanchayatWardsCode == existingGPPanchayatWards.GPPanchayatWardsCode)
+            {
+                // Update the properties of the existing entity
+                existingGPPanchayatWards.GPPanchayatWardsName = gpPanchayatWards.GPPanchayatWardsName;
+                existingGPPanchayatWards.GPPanchayatWardsCode = gpPanchayatWards.GPPanchayatWardsCode;
+                existingGPPanchayatWards.GPPanchayatWardsType = gpPanchayatWards.GPPanchayatWardsType;
+                existingGPPanchayatWards.ElectionTypeMasterId = gpPanchayatWards.ElectionTypeMasterId;
+                existingGPPanchayatWards.StateMasterId = gpPanchayatWards.StateMasterId;
+                existingGPPanchayatWards.DistrictMasterId = gpPanchayatWards.DistrictMasterId;
+                existingGPPanchayatWards.AssemblyMasterId = gpPanchayatWards.AssemblyMasterId;
+                existingGPPanchayatWards.GPPanchayatWardsCategory = gpPanchayatWards.GPPanchayatWardsCategory;
+                existingGPPanchayatWards.GPPanchayatWardsUpdatedAt = DateTime.UtcNow;
+                existingGPPanchayatWards.GPPanchayatWardsDeletedAt = gpPanchayatWards.GPPanchayatWardsDeletedAt;
+                existingGPPanchayatWards.GPPanchayatWardsStatus = gpPanchayatWards.GPPanchayatWardsStatus;
+
+                // Save changes to the database
+                try
+                {
+                    await _context.SaveChangesAsync();
+                    return new Response
+                    {
+                        Status = RequestStatusEnum.OK,
+                        Message = "Wards updated successfully."
+                    };
+                }
+                catch (Exception ex)
+                {
+                    // Handle any errors that may have occurred
+                    return new Response
+                    {
+                        Status = RequestStatusEnum.BadRequest,
+                        Message = $"An error occurred: {ex.Message}"
+                    };
+                }
+            }
+            return new Response
+            {
+                Status = RequestStatusEnum.BadRequest,
+                Message = "Already exists for this code."
+            };
         }
+
         public async Task<GPPanchayatWards> GetGPPanchayatWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId)
         {
             var gpPanchayatWards = await _context.GPPanchayatWards.Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH)
@@ -17452,7 +17505,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                           DistrictName = j.DistrictMaster.DistrictName,
                           AssemblyName = j.AssemblyMaster.AssemblyName,
                           FourthLevelHMasterId = flh.FourthLevelHMasterId,
-                          PanchayatName = flh.HierarchyName,
+                          FourthLevelHName = flh.HierarchyName,
                           GPVoterStatus = j.GPVoter.GPVoterStatus
                       })
                 .FirstOrDefaultAsync(); // Return a single GPVoterList object
@@ -17495,7 +17548,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                           DistrictName = j.DistrictMaster.DistrictName,
                           AssemblyName = j.AssemblyMaster.AssemblyName,
                           FourthLevelHMasterId = flh.FourthLevelHMasterId,
-                          PanchayatName = flh.HierarchyName,
+                          FourthLevelHName = flh.HierarchyName,
                           GPVoterStatus = j.GPVoter.GPVoterStatus
                       })
                 .ToListAsync();
