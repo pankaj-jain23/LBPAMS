@@ -1,16 +1,12 @@
 ﻿using AutoMapper;
-using BenchmarkDotNet.Attributes;
 using EAMS.AuthViewModels;
 using EAMS.ViewModels;
 using EAMS_ACore.AuthInterfaces;
 using EAMS_ACore.AuthModels;
 using EAMS_ACore.HelperModels;
-using EAMS_ACore.IExternal;
 using LBPAMS.AuthViewModels;
-using LBPAMS.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace EAMS.Controllers
 {
@@ -277,8 +273,7 @@ namespace EAMS.Controllers
         #region DashBoardProfile
         [HttpGet]
         [Route("GetDashboardProfile")]
-        [Authorize]
-        [Benchmark]
+        [Authorize] 
         public async Task<IActionResult> GetDashboardProfile()
         {
             var soId = User.Claims.FirstOrDefault(c => c.Type == "UserId").Value;

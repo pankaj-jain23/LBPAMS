@@ -16,15 +16,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using BenchmarkDotNet.Attributes;
 
 namespace EAMS.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
-    [MemoryDiagnoser]
-    [HideColumns(BenchmarkDotNet.Columns.Column.Job, BenchmarkDotNet.Columns.Column.RatioSD, BenchmarkDotNet.Columns.Column.StdDev, BenchmarkDotNet.Columns.Column.AllocRatio)]
-
+    [ApiController] 
     public class EAMSController : ControllerBase
     {
         private readonly ILogger<EAMSController> _logger;
@@ -158,8 +154,7 @@ namespace EAMS.Controllers
         #region State master
         [HttpGet]
         [Route("StateList")]
-        //[Authorize]
-        [Benchmark]
+        //[Authorize] 
         public async Task<IActionResult> StateList()
         {
             try
