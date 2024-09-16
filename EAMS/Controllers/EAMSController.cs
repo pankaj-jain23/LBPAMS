@@ -22,6 +22,9 @@ namespace EAMS.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [MemoryDiagnoser]
+    [HideColumns(BenchmarkDotNet.Columns.Column.Job, BenchmarkDotNet.Columns.Column.RatioSD, BenchmarkDotNet.Columns.Column.StdDev, BenchmarkDotNet.Columns.Column.AllocRatio)]
+
     public class EAMSController : ControllerBase
     {
         private readonly ILogger<EAMSController> _logger;
@@ -156,6 +159,7 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("StateList")]
         //[Authorize]
+        [Benchmark]
         public async Task<IActionResult> StateList()
         {
             try

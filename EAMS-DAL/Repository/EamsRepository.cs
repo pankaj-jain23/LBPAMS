@@ -1,4 +1,5 @@
-﻿using EAMS.Helper;
+﻿using BenchmarkDotNet.Attributes;
+using EAMS.Helper;
 using EAMS.ViewModels.PSFormViewModel;
 using EAMS_ACore;
 using EAMS_ACore.HelperModels;
@@ -27,6 +28,7 @@ using System.Security.Claims;
 
 namespace EAMS_DAL.Repository
 {
+    
     public class EamsRepository : IEamsRepository
     {
         private readonly EamsContext _context;
@@ -1006,7 +1008,7 @@ namespace EAMS_DAL.Repository
 
 
         #region State Master
-
+      
         public async Task<List<StateMaster>> GetState()
         {
             var stateList = await _context.StateMaster.Select(d => new StateMaster
@@ -1899,7 +1901,24 @@ namespace EAMS_DAL.Repository
             };
         }
         public async Task<Response> UpdateFieldOfficer(FieldOfficerMaster updatedFieldOfficer)
-        {
+        { 
+            // Check if FieldOfficer with the same mobile number, election type, and state already exists
+            var existingOfficerMobile = await _context.FieldOfficerMaster
+                .FirstOrDefaultAsync(d => d.FieldOfficerMobile == updatedFieldOfficer.FieldOfficerMobile
+                                          && d.ElectionTypeMasterId == updatedFieldOfficer.ElectionTypeMasterId
+                                          && d.StateMasterId == updatedFieldOfficer.StateMasterId);
+
+
+            // If more than two officers already exist with the same mobile number for this election type, return an error response
+            if (existingOfficerMobile is not null)
+            {
+                return new Response
+                {
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = $"FO User {updatedFieldOfficer.FieldOfficerName} Already Exists in this election "
+                };
+            }
+             
             // Check if the record exists based on the FieldOfficerMasterId
             var existingOfficer = await _context.FieldOfficerMaster
                 .FirstOrDefaultAsync(d => d.FieldOfficerMasterId == updatedFieldOfficer.FieldOfficerMasterId);

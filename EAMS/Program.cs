@@ -1,3 +1,5 @@
+using BenchmarkDotNet.Running;
+using EAMS.Controllers;
 using EAMS.Helper;
 using EAMS.Hubs;
 using EAMS.Middleware;
@@ -24,7 +26,7 @@ using Serilog;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-
+ 
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -173,7 +175,9 @@ var logger = new LoggerConfiguration()
 
 
 builder.Logging.AddSerilog(logger);
-
+ 
+   // BenchmarkRunner.Run<EAMSController>();
+  
 var app = builder.Build();
 app.Use(async (context, next) =>
 {
