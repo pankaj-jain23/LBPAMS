@@ -1904,7 +1904,8 @@ namespace EAMS_DAL.Repository
             var existingOfficerMobile = await _context.FieldOfficerMaster
                 .FirstOrDefaultAsync(d => d.FieldOfficerMobile == updatedFieldOfficer.FieldOfficerMobile
                                           && d.ElectionTypeMasterId == updatedFieldOfficer.ElectionTypeMasterId
-                                          && d.StateMasterId == updatedFieldOfficer.StateMasterId);
+                                          && d.StateMasterId == updatedFieldOfficer.StateMasterId
+                                          && d.DistrictMasterId == updatedFieldOfficer.DistrictMasterId);
 
 
             // If more than two officers already exist with the same mobile number for this election type, return an error response
