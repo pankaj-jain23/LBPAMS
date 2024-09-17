@@ -8,9 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="BenchmarkDotNet.Artifacts\**" />
     <Compile Remove="wwwroot\**" />
+    <Content Remove="BenchmarkDotNet.Artifacts\**" />
     <Content Remove="wwwroot\**" />
+    <EmbeddedResource Remove="BenchmarkDotNet.Artifacts\**" />
     <EmbeddedResource Remove="wwwroot\**" />
+    <None Remove="BenchmarkDotNet.Artifacts\**" />
     <None Remove="wwwroot\**" />
   </ItemGroup>
 

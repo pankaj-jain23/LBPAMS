@@ -763,36 +763,62 @@ namespace EAMS.Controllers
         /// </summary>
         [HttpGet]
         [Route("GetBoothListById")]
-        //[Authorize]
-        public async Task<IActionResult> BoothListById(string stateMasterId, string districtMasterId, string assemblyMasterId, string fourthLevelHMasterId, string? BlockZonePanchayatMasterId)
+        public async Task<IActionResult> GetBoothListById(
+                                                         string stateMasterId,
+                                                         string districtMasterId,
+                                                         string assemblyMasterId,
+                                                         string fourthLevelHMasterId,
+                                                         string? psZonePanchayatMasterId)
         {
-            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && BlockZonePanchayatMasterId != null)
+            // Convert string parameters to integers
+            if (!int.TryParse(stateMasterId, out int stateId) ||
+                !int.TryParse(districtMasterId, out int districtId) ||
+                !int.TryParse(assemblyMasterId, out int assemblyId) ||
+                !int.TryParse(fourthLevelHMasterId, out int fourthLevelId))
             {
-                //  var boothList = await _EAMSService.GetBoothListById(stateMasterId, districtMasterId, assemblyMasterId, pSZoneMasterId);  // Corrected to await the asynchronous method
-                var boothList = await _EAMSService.GetBoothListByIdwithPsZone(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, BlockZonePanchayatMasterId);  // Corrected to await the asynchronous method
-                if (boothList != null)
-                {
-                    var data = new
-                    {
-                        count = boothList.Count,
-                        data = boothList.ToList(),
-                        //data = boothList.OrderBy(p => Int32.Parse(p.BoothCode_No)).ToList(),
+                return BadRequest("Invalid State, District, Assembly, or Fourth Level Master Id.");
+            }
 
-                    };
-                    return Ok(data);
+            // Check if psZonePanchayatMasterId is null or empty and parse it if needed
+            int? psZonePanchayatId = string.IsNullOrEmpty(psZonePanchayatMasterId) ? (int?)null : (int?)int.Parse(psZonePanchayatMasterId);
 
-                }
-                else
-                {
-                    return NotFound("Booth Not Found");
-
-                }
+            // Fetch the booth list based on the presence of psZonePanchayatMasterId
+            List<CombinedMaster> boothList;
+            if (psZonePanchayatId == null||psZonePanchayatId==0)
+            {
+                // Call GetBoothListByFourthLevelId when psZonePanchayatMasterId is null
+                boothList = await _EAMSService.GetBoothListByFourthLevelId(
+                    stateId,
+                    districtId,
+                    assemblyId,
+                    fourthLevelId);
             }
             else
             {
-
-                return BadRequest("State, District and Assembly Master Id's cannot be null");
+                // Call GetBoothListByPSZonePanchayatId when psZonePanchayatMasterId is provided
+                boothList = await _EAMSService.GetBoothListByPSZonePanchayatId(
+                    stateId,
+                    districtId,
+                    assemblyId,
+                    fourthLevelId,
+                    psZonePanchayatId.Value);
             }
+
+            // Check if boothList is null or empty
+            if (boothList == null || boothList.Count == 0)
+            {
+                return NotFound("Booth not found.");
+            }
+
+            // Prepare the response data
+            var responseData = new
+            {
+                count = boothList.Count,
+                data = boothList
+            };
+
+            // Return the booth list in a successful response
+            return Ok(responseData);
         }
 
         [HttpGet]

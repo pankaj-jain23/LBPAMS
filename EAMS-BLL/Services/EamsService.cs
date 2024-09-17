@@ -233,11 +233,14 @@ namespace EAMS_BLL.Services
             return await _eamsRepository.GetBoothListById(stateMasterId, districtMasterId, assemblyMasterId);
         }
 
-        public async Task<List<CombinedMaster>> GetBoothListByIdwithPsZone(string stateMasterId, string districtMasterId, string assemblyMasterId, string fourthLevelHMasterId,string? BlockZonePanchayatMasterId)
+        public async Task<List<CombinedMaster>> GetBoothListByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
-            return await _eamsRepository.GetBoothListByIdwithPsZone(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, BlockZonePanchayatMasterId);
+            return await _eamsRepository.GetBoothListByFourthLevelId(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);
         }
-
+        public async Task<List<CombinedMaster>> GetBoothListByPSZonePanchayatId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId)
+        {
+            return await _eamsRepository.GetBoothListByPSZonePanchayatId(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId,psZonePanchayatMasterId);
+        }
         public async Task<List<CombinedMaster>> GetBoothListByIdforPSO(string stateMasterId, string districtMasterId, string assemblyMasterId)
         {
             return await _eamsRepository.GetBoothListByIdforPSO(stateMasterId, districtMasterId, assemblyMasterId);
