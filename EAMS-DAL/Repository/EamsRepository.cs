@@ -2071,11 +2071,11 @@ namespace EAMS_DAL.Repository
         public async Task<FieldOfficerMasterList> GetFieldOfficerById(int fieldOfficerMasterId)
         {
             var foRecord = await _context.FieldOfficerMaster
-                .Where(rd => rd.FieldOfficerMasterId == fieldOfficerMasterId)
+                .Where(fo => fo.FieldOfficerMasterId == fieldOfficerMasterId)
                 .Join(_context.StateMaster,
-                      rd => rd.StateMasterId,
+                      fo => fo.StateMasterId,
                       sm => sm.StateMasterId,
-                      (rd, sm) => new { FieldOfficerMaster = rd, StateMaster = sm })
+                      (fo, sm) => new { FieldOfficerMaster = fo, StateMaster = sm })
                 .Join(_context.DistrictMaster,
                       joined => joined.FieldOfficerMaster.DistrictMasterId,
                       dm => dm.DistrictMasterId,
@@ -2083,13 +2083,7 @@ namespace EAMS_DAL.Repository
                 .Join(_context.AssemblyMaster,
                       joined => joined.FieldOfficerMaster.AssemblyMasterId,
                       am => am.AssemblyMasterId,
-                      (joined, am) => new
-                      {
-                          joined.FieldOfficerMaster,
-                          joined.StateMaster,
-                          joined.DistrictMaster,
-                          AssemblyMaster = am
-                      })
+                      (joined, am) => new { joined.FieldOfficerMaster, joined.StateMaster, joined.DistrictMaster, AssemblyMaster = am })
                 .Join(_context.ElectionTypeMaster,
                       joined => joined.FieldOfficerMaster.ElectionTypeMasterId,
                       etm => etm.ElectionTypeMasterId,
@@ -2101,6 +2095,7 @@ namespace EAMS_DAL.Repository
                           DistrictMasterId = joined.DistrictMaster.DistrictMasterId,
                           DistrictName = joined.DistrictMaster.DistrictName,
                           AssemblyMasterId = joined.AssemblyMaster.AssemblyMasterId,
+                          AssemblyCode = joined.AssemblyMaster.AssemblyCode,
                           AssemblyName = joined.AssemblyMaster.AssemblyName,
                           FieldOfficerName = joined.FieldOfficerMaster.FieldOfficerName,
                           FieldOfficerDesignation = joined.FieldOfficerMaster.FieldOfficerDesignation,
@@ -2112,12 +2107,14 @@ namespace EAMS_DAL.Repository
                           OTPExpireTime = joined.FieldOfficerMaster.OTPExpireTime,
                           OTPAttempts = joined.FieldOfficerMaster.OTPAttempts,
                           IsLocked = joined.FieldOfficerMaster.IsLocked,
-                          ElectionTypeMasterId = joined.FieldOfficerMaster.ElectionTypeMasterId
+                          ElectionTypeMasterId = joined.FieldOfficerMaster.ElectionTypeMasterId,
+                          ElectionTypeName = etm.ElectionType
                       })
-                .FirstOrDefaultAsync(); // Use FirstOrDefaultAsync to return a single result
+                .FirstOrDefaultAsync();
 
             return foRecord;
         }
+
 
         #endregion
 
@@ -17121,6 +17118,23 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 {
                     Status = RequestStatusEnum.BadRequest,
                     Message = "Hierarchy not found."
+                };
+            }
+
+            // Check if there are any related records in the BoothMaster table
+            var boothExists = await _context.BoothMaster
+                .CountAsync(b => b.FourthLevelHMasterId == fourthLevelHMasterId &&
+                               b.StateMasterId == stateMasterId &&
+                               b.DistrictMasterId == districtMasterId &&
+                               b.AssemblyMasterId == assemblyMasterId &&
+                               b.ElectionTypeMasterId == fourthLevelH.ElectionTypeMasterId);
+
+            if (boothExists > 0)
+            {
+                return new Response
+                {
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = $"Cannot delete this hierarchy. There are {boothExists} related booths. Please delete them first."
                 };
             }
 

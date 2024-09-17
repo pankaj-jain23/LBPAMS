@@ -39,6 +39,7 @@ namespace EAMS_ACore.Models
             get;
             set;
         }
+        public int AssemblyCode { get; set; }
         public string FieldOfficerName { get; set; }
         public string FieldOfficerDesignation { get; set; }
         public string FieldOfficerOfficeName { get; set; }
@@ -50,5 +51,6 @@ namespace EAMS_ACore.Models
         public int OTPAttempts { get; set; }
         public bool IsLocked { get; set; }
         public int ElectionTypeMasterId { get; set; }
+        public string ElectionTypeName { get; set; }
     }
 }
