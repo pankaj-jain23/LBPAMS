@@ -64,7 +64,12 @@ namespace EAMS_ACore.IRepository
         Task<Response> UpdateFieldOfficer(FieldOfficerMaster fieldOfficerViewModel);
         Task<Response> UpdateFieldOfficerValidate(FieldOfficerMaster fieldOfficerViewModel);
         Task<Response> UpdateBLOOfficer(BLOMaster bLOMaster);
+        /// <summary this api for Portal>
         Task<List<CombinedMaster>> GetBoothListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId);
+        /// </summary>
+         /// <summary this api for Portal>
+        Task<List<CombinedMaster>> GetBoothListForFo(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId);
+        /// </summary>
         Task<FieldOfficerMasterList> GetFieldOfficerById(int FieldOfficerMasterId);
         #endregion
 

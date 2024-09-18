@@ -713,7 +713,7 @@ namespace EAMS.Controllers
                 return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
             }
         }
-
+        /// <summary this api for portal>
         [HttpGet]
         [Route("GetBoothListByFoId")]
         public async Task<IActionResult> GetBoothListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
@@ -731,6 +731,32 @@ namespace EAMS.Controllers
             };
             return Ok(data);
         }
+        /// </summary>
+        
+        /// <summary this api for Mobile App>
+        [HttpGet]
+        [Route("GetBoothListForFo")]
+        [Authorize]
+        public async Task<IActionResult> GetBoothListForFo()
+        {
+            int foId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "FieldOfficerMasterId")?.Value);
+            int stateMasterId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value);
+            int districtMasterId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value);
+            int assemblyMasterId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId")?.Value);
+
+            var boothList = await _EAMSService.GetBoothListForFo(stateMasterId, districtMasterId, assemblyMasterId, foId);
+
+            var mappedData = _mapper.Map<List<SectorOfficerBoothViewModel>>(boothList); 
+            var data = new
+            {
+                count = mappedData.Count, 
+                data = mappedData.OrderBy(p => Int32.Parse(p.BoothCode_No)), 
+            };
+            return Ok(data);
+        }
+        /// </summary>
+
+
 
         [HttpGet]
         [Route("GetFieldOfficerById")]

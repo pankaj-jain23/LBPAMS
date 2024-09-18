@@ -34,32 +34,31 @@ namespace EAMS.Controllers
                 var mappedData = _mapper.Map<BoothReportModel>(boothReportViewModel);
 
                 //State
-                if (mappedData.StateMasterId is not 0 && mappedData.DistrictMasterId is 0 && mappedData.PCMasterId is 0 && mappedData.AssemblyMasterId is 0)
-                {
+               
                     var records = await _EAMSService.GetConsolidateBoothReports(mappedData);
                     return Ok(records);
-                }
-                //District
-                else if (mappedData.StateMasterId is not 0 && mappedData.DistrictMasterId is not 0 && mappedData.PCMasterId is 0 && mappedData.AssemblyMasterId is 0)
-                {
-                    var records = await _EAMSService.GetConsolidateBoothReports(mappedData);
-                    return Ok(records);
-                }
-                //PC
-                else if (mappedData.StateMasterId is not 0 && mappedData.DistrictMasterId is 0 && mappedData.PCMasterId is not 0 && mappedData.AssemblyMasterId is 0)
-                {
-                    var records = await _EAMSService.GetConsolidateBoothReports(mappedData);
-                    return Ok(records);
+                //}
+                ////District
+                //else if (mappedData.StateMasterId is not 0 && mappedData.DistrictMasterId is not 0 && mappedData.AssemblyMasterId is 0 && mappedData.FourthLevelHMasterId is 0 && mappedData.PSZonePanchayatMasterId is 0)
+                //{
+                //    var records = await _EAMSService.GetConsolidateBoothReports(mappedData);
+                //    return Ok(records);
+                //}
+                ////ElectionType
+                //else if (mappedData.StateMasterId is not 0 && mappedData.DistrictMasterId is 0 && mappedData.AssemblyMasterId is 0 && mappedData.FourthLevelHMasterId is 0 && mappedData.PSZonePanchayatMasterId is 0)
+                //{
+                //    var records = await _EAMSService.GetConsolidateBoothReports(mappedData);
+                //    return Ok(records);
 
-                }
-                //Assembly
-                else if (mappedData.AssemblyMasterId is not 0)
-                {
-                    var records = await _EAMSService.GetConsolidateBoothReports(mappedData);
+                //}
+                ////Assembly
+                //else if (mappedData.AssemblyMasterId is not 0)
+                //{
+                //    var records = await _EAMSService.GetConsolidateBoothReports(mappedData);
 
-                    return Ok(records);
+                //    return Ok(records);
 
-                }
+                //}
 
 
 
@@ -156,31 +155,31 @@ namespace EAMS.Controllers
             {
                 var mappedData = _mapper.Map<BoothReportModel>(boothReportViewModel);
 
-                if (mappedData.StateMasterId is not 0 && mappedData.DistrictMasterId is 0 && mappedData.PCMasterId is 0 && mappedData.AssemblyMasterId is 0)
-                {
-                    var records = await _EAMSService.GetVoterTurnOutPollingStationReports(mappedData);
-                    return Ok(records);
-                }
-                //District
-                else if (mappedData.StateMasterId is not 0 && mappedData.DistrictMasterId is not 0 && mappedData.PCMasterId is 0 && mappedData.AssemblyMasterId is 0)
-                {
-                    var records = await _EAMSService.GetVoterTurnOutPollingStationReports(mappedData);
-                    return Ok(records);
-                }
-                //PC
-                else if (mappedData.StateMasterId is not 0 && mappedData.DistrictMasterId is 0 && mappedData.PCMasterId is not 0 && mappedData.AssemblyMasterId is 0)
-                {
+                //if (mappedData.StateMasterId is not 0 && mappedData.DistrictMasterId is 0 && mappedData.PCMasterId is 0 && mappedData.AssemblyMasterId is 0)
+                //{
+                //    var records = await _EAMSService.GetVoterTurnOutPollingStationReports(mappedData);
+                //    return Ok(records);
+                //}
+                ////District
+                //else if (mappedData.StateMasterId is not 0 && mappedData.DistrictMasterId is not 0 && mappedData.PCMasterId is 0 && mappedData.AssemblyMasterId is 0)
+                //{
+                //    var records = await _EAMSService.GetVoterTurnOutPollingStationReports(mappedData);
+                //    return Ok(records);
+                //}
+                ////PC
+                //else if (mappedData.StateMasterId is not 0 && mappedData.DistrictMasterId is 0 && mappedData.PCMasterId is not 0 && mappedData.AssemblyMasterId is 0)
+                //{
+                //    var records = await _EAMSService.GetVoterTurnOutPollingStationReports(mappedData);
+                //    return Ok(records);
+
+                //}
+                ////Assembly
+                //else if (mappedData.AssemblyMasterId is not 0)
+                //{
                     var records = await _EAMSService.GetVoterTurnOutPollingStationReports(mappedData);
                     return Ok(records);
 
-                }
-                //Assembly
-                else if (mappedData.AssemblyMasterId is not 0)
-                {
-                    var records = await _EAMSService.GetVoterTurnOutPollingStationReports(mappedData);
-                    return Ok(records);
-
-                }
+               // }
 
 
 

@@ -215,11 +215,18 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.UpdateBLOOfficer(bLOMaster);
         }
+        /// <summary this api for Portal>
         public async Task<List<CombinedMaster>> GetBoothListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
         {
             return await _eamsRepository.GetBoothListByFoId(stateMasterId, districtMasterId, assemblyMasterId, foId);
         }
-
+        /// </summary>
+        /// <summary this api for Mpbile App>
+        public async Task<List<CombinedMaster>> GetBoothListForFo(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
+        {
+            return await _eamsRepository.GetBoothListForFo(stateMasterId, districtMasterId, assemblyMasterId, foId);
+        }
+        /// </summary>
         public async Task<FieldOfficerMasterList> GetFieldOfficerById(int FieldOfficerMasterId)
         {
             return await _eamsRepository.GetFieldOfficerById(FieldOfficerMasterId);

@@ -540,10 +540,12 @@ namespace EAMS.Helper
 
             #region BoothReportViewModel BoothReportModel
             CreateMap<BoothReportViewModel, BoothReportModel>()
-                .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => !string.IsNullOrWhiteSpace(src.StateMasterId) ? int.Parse(src.StateMasterId) : 0))
-                .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => !string.IsNullOrWhiteSpace(src.DistrictMasterId) ? int.Parse(src.DistrictMasterId) : 0))
-                .ForMember(dest => dest.PCMasterId, opt => opt.MapFrom(src => !string.IsNullOrWhiteSpace(src.PCMasterId) ? int.Parse(src.PCMasterId) : 0))
-                .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => !string.IsNullOrWhiteSpace(src.AssemblyMasterId) ? int.Parse(src.AssemblyMasterId) : 0))
+                .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+                .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+                .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+                .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+                .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
+                .ForMember(dest => dest.PSZonePanchayatMasterId, opt => opt.MapFrom(src => src.PSZonePanchayatMasterId))
                 .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type));
 
 

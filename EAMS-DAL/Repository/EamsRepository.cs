@@ -1933,7 +1933,6 @@ namespace EAMS_DAL.Repository
             }
 
             // Determine if the mobile number is being updated
-            // bool isMobileNumberUpdated = updatedFieldOfficer.FieldOfficerMobile != existingOfficer.FieldOfficerMobile;
 
             if (updatedFieldOfficer.FieldOfficerMobile != existingOfficer.FieldOfficerMobile)
             {
@@ -1944,7 +1943,6 @@ namespace EAMS_DAL.Repository
 
                 if (isUniquePhoneNumber)
                 {
-                    // Return a response if the phone number is not unique
                     return new Response
                     {
                         Status = RequestStatusEnum.BadRequest,
@@ -2030,6 +2028,7 @@ namespace EAMS_DAL.Repository
                 Message = "Field Officer updated successfully"
             };
         }
+        /// <summary this api for Portal>
         public async Task<List<CombinedMaster>> GetBoothListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
         {
 
@@ -2068,7 +2067,45 @@ namespace EAMS_DAL.Repository
             var count = boothlist.Count();
             return await boothlist.ToListAsync();
         }
+        /// </summary>
+        /// <summary this api for Mobile App>
+        public async Task<List<CombinedMaster>> GetBoothListForFo(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
+        {
 
+            var boothlist = from bt in _context.BoothMaster.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.AssignedTo == foId.ToString())
+                            join fourthLevelH in _context.FourthLevelH on bt.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
+                            join asem in _context.AssemblyMaster
+                            on bt.AssemblyMasterId equals asem.AssemblyMasterId
+                            join dist in _context.DistrictMaster
+                            on asem.DistrictMasterId equals dist.DistrictMasterId
+                            join state in _context.StateMaster
+                             on dist.StateMasterId equals state.StateMasterId
+
+                            select new CombinedMaster
+                            {
+                                StateId = stateMasterId,
+                                StateName = state.StateName,
+                                DistrictId = dist.DistrictMasterId,
+                                DistrictName = dist.DistrictName,
+                                DistrictCode = dist.DistrictCode,
+                                AssemblyId = asem.AssemblyMasterId,
+                                AssemblyName = asem.AssemblyName,
+                                AssemblyCode = asem.AssemblyCode,
+                                FourthLevelHMasterId = fourthLevelH.FourthLevelHMasterId,
+                                FourthLevelHName = fourthLevelH.HierarchyName,
+                                BoothMasterId = bt.BoothMasterId,
+                                BoothName = bt.BoothName, 
+                                BoothAuxy = (bt.BoothNoAuxy == "0") ? string.Empty : bt.BoothNoAuxy,
+                                IsStatus = bt.BoothStatus,
+                                BoothCode_No = bt.BoothCode_No,
+                                IsAssigned = bt.IsAssigned,
+                                soMasterId = foId
+
+
+                            }; 
+            return await boothlist.ToListAsync();
+        }
+        /// </summary>
         public async Task<FieldOfficerMasterList> GetFieldOfficerById(int fieldOfficerMasterId)
         {
             var foRecord = await _context.FieldOfficerMaster
@@ -8731,124 +8768,125 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             var isAssemblyActive = _context.AssemblyMaster.Where(d => d.StateMasterId == model.StateMasterId && d.DistrictMasterId == model.DistrictMasterId && d.AssemblyMasterId == model.AssemblyMasterId).FirstOrDefault();
             // dist sts, asem
-            if (model.StateMasterId is not 0 && model.DistrictMasterId is not 0 && model.AssemblyMasterId is not 0 && model.PCMasterId is 0)
-            {
-                var isDistrictActive = _context.DistrictMaster.Where(d => d.StateMasterId == model.StateMasterId && d.DistrictMasterId == model.DistrictMasterId).FirstOrDefault();
-                if (isStateActive.StateStatus && isDistrictActive.DistrictStatus && isAssemblyActive.AssemblyStatus)
-                {
-                    List<LocationModelList> locationModelLists = new List<LocationModelList>();
-                    var locations = from lc in _context.PollingLocationMaster.Where(d => d.AssemblyMasterId == model.AssemblyMasterId && d.StateMasterId == d.StateMasterId && d.DistrictMasterId == d.DistrictMasterId)
-                                    join asem in _context.AssemblyMaster
-                                     on lc.AssemblyMasterId equals asem.AssemblyMasterId
-                                    join dist in _context.DistrictMaster
-                                    on asem.DistrictMasterId equals dist.DistrictMasterId
-                                    join state in _context.StateMaster
-                                     on dist.StateMasterId equals state.StateMasterId
-                                    join pc in _context.ParliamentConstituencyMaster
-                                    //on lc.PCMasterId equals pc.PCMasterId
-                                    on asem.PCMasterId equals pc.PCMasterId
+            //    if (model.StateMasterId is not 0 && model.DistrictMasterId is not 0 && model.AssemblyMasterId is not 0 && model.PCMasterId is 0)
+            //    {
+            //        var isDistrictActive = _context.DistrictMaster.Where(d => d.StateMasterId == model.StateMasterId && d.DistrictMasterId == model.DistrictMasterId).FirstOrDefault();
+            //        if (isStateActive.StateStatus && isDistrictActive.DistrictStatus && isAssemblyActive.AssemblyStatus)
+            //        {
+            //            List<LocationModelList> locationModelLists = new List<LocationModelList>();
+            //            var locations = from lc in _context.PollingLocationMaster.Where(d => d.AssemblyMasterId == model.AssemblyMasterId && d.StateMasterId == d.StateMasterId && d.DistrictMasterId == d.DistrictMasterId)
+            //                            join asem in _context.AssemblyMaster
+            //                             on lc.AssemblyMasterId equals asem.AssemblyMasterId
+            //                            join dist in _context.DistrictMaster
+            //                            on asem.DistrictMasterId equals dist.DistrictMasterId
+            //                            join state in _context.StateMaster
+            //                             on dist.StateMasterId equals state.StateMasterId
+            //                            join pc in _context.ParliamentConstituencyMaster
+            //                            //on lc.PCMasterId equals pc.PCMasterId
+            //                            on asem.PCMasterId equals pc.PCMasterId
 
-                                    select new LocationModelList
-                                    {
-                                        StateMasterId = state.StateMasterId,
-                                        PCMasterId = pc.PCMasterId,
-                                        PCName = pc.PcName,
-                                        DistrictMasterId = dist.DistrictMasterId,
-                                        AssemblyMasterId = asem.AssemblyMasterId,
-                                        StateName = state.StateName,
-                                        DistrictName = dist.DistrictName,
-                                        AssemblyName = asem.AssemblyName,
-                                        LocationMasterId = lc.LocationMasterId,
-                                        LocationName = lc.LocationName,
-                                        LocationCode = lc.LocationCode,
-                                        LocationLatitude = lc.LocationLatitude,
-                                        LocationLongitude = lc.LocationLongitude,
-                                        IsStatus = lc.Status,
-                                        CreatedOn = lc.CreatedOn,
+            //                            select new LocationModelList
+            //                            {
+            //                                StateMasterId = state.StateMasterId,
+            //                                PCMasterId = pc.PCMasterId,
+            //                                PCName = pc.PcName,
+            //                                DistrictMasterId = dist.DistrictMasterId,
+            //                                AssemblyMasterId = asem.AssemblyMasterId,
+            //                                StateName = state.StateName,
+            //                                DistrictName = dist.DistrictName,
+            //                                AssemblyName = asem.AssemblyName,
+            //                                LocationMasterId = lc.LocationMasterId,
+            //                                LocationName = lc.LocationName,
+            //                                LocationCode = lc.LocationCode,
+            //                                LocationLatitude = lc.LocationLatitude,
+            //                                LocationLongitude = lc.LocationLongitude,
+            //                                IsStatus = lc.Status,
+            //                                CreatedOn = lc.CreatedOn,
 
-                                    };
+            //                            };
 
-                    foreach (var location in locations)
-                    {
-                        var boothNumbers = _context.BoothMaster
-        .Where(d => d.LocationMasterId == location.LocationMasterId)
-        .Select(d => int.Parse(d.BoothCode_No))
-        .ToList();
-
-
-                        location.BoothNumbers = string.Join(", ", boothNumbers);
-                        locationModelLists.Add(location);
-                    }
-                    //var sortedlocationList = await locationModelLists.ToListAsync();
-                    return locationModelLists;
-                }
-                else
-                {
-                    return null;
-
-                }
-            }
-            //state,pc,ase.m
-            else if (model.StateMasterId is not 0 && model.DistrictMasterId is 0 && model.AssemblyMasterId is not 0 && model.PCMasterId is not 0)
-            {
-                var isPCRecord = _context.ParliamentConstituencyMaster.Where(d => d.StateMasterId == model.StateMasterId && d.PCMasterId == model.PCMasterId).FirstOrDefault();
-                if (isPCRecord != null)
-                {
-                    List<LocationModelList> locationModelLists = new List<LocationModelList>();
-                    var locations = from lc in _context.PollingLocationMaster.Where(d => d.AssemblyMasterId == model.AssemblyMasterId && d.StateMasterId == d.StateMasterId && d.DistrictMasterId == d.DistrictMasterId)
-                                    join asem in _context.AssemblyMaster
-                                     on lc.AssemblyMasterId equals asem.AssemblyMasterId
-                                    join dist in _context.DistrictMaster
-                                    on asem.DistrictMasterId equals dist.DistrictMasterId
-                                    join state in _context.StateMaster
-                                     on dist.StateMasterId equals state.StateMasterId
-                                    join pc in _context.ParliamentConstituencyMaster
-                                    on asem.PCMasterId equals pc.PCMasterId
-                                    // on lc.PCMasterId equals pc.PCMasterId
-
-                                    select new LocationModelList
-                                    {
-                                        StateMasterId = state.StateMasterId,
-                                        PCMasterId = pc.PCMasterId,
-                                        PCName = pc.PcName,
-                                        DistrictMasterId = dist.DistrictMasterId,
-                                        AssemblyMasterId = asem.AssemblyMasterId,
-                                        StateName = state.StateName,
-                                        DistrictName = dist.DistrictName,
-                                        AssemblyName = asem.AssemblyName,
-                                        LocationMasterId = lc.LocationMasterId,
-                                        LocationName = lc.LocationName,
-                                        LocationCode = lc.LocationCode,
-                                        LocationLatitude = lc.LocationLatitude,
-                                        LocationLongitude = lc.LocationLongitude,
-                                        IsStatus = lc.Status,
-                                        CreatedOn = lc.CreatedOn,
-
-                                    };
-
-                    foreach (var location in locations)
-                    {
-                        var boothNumbers = _context.BoothMaster
-        .Where(d => d.LocationMasterId == location.LocationMasterId)
-        .Select(d => int.Parse(d.BoothCode_No))
-        .ToList();
+            //            foreach (var location in locations)
+            //            {
+            //                var boothNumbers = _context.BoothMaster
+            //.Where(d => d.LocationMasterId == location.LocationMasterId)
+            //.Select(d => int.Parse(d.BoothCode_No))
+            //.ToList();
 
 
-                        location.BoothNumbers = string.Join(", ", boothNumbers);
-                        locationModelLists.Add(location);
-                    }
-                    //var sortedlocationList = await locationModelLists.ToListAsync();
-                    return locationModelLists;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            else
-            {
-                return null;
-            }
+            //                location.BoothNumbers = string.Join(", ", boothNumbers);
+            //                locationModelLists.Add(location);
+            //            }
+            //            //var sortedlocationList = await locationModelLists.ToListAsync();
+            //            return locationModelLists;
+            //        }
+            //        else
+            //        {
+            //            return null;
+
+            //        }
+            //    }
+            //    //state,pc,ase.m
+            //    else if (model.StateMasterId is not 0 && model.DistrictMasterId is 0 && model.AssemblyMasterId is not 0 && model.PCMasterId is not 0)
+            //    {
+            //        var isPCRecord = _context.ParliamentConstituencyMaster.Where(d => d.StateMasterId == model.StateMasterId && d.PCMasterId == model.PCMasterId).FirstOrDefault();
+            //        if (isPCRecord != null)
+            //        {
+            //            List<LocationModelList> locationModelLists = new List<LocationModelList>();
+            //            var locations = from lc in _context.PollingLocationMaster.Where(d => d.AssemblyMasterId == model.AssemblyMasterId && d.StateMasterId == d.StateMasterId && d.DistrictMasterId == d.DistrictMasterId)
+            //                            join asem in _context.AssemblyMaster
+            //                             on lc.AssemblyMasterId equals asem.AssemblyMasterId
+            //                            join dist in _context.DistrictMaster
+            //                            on asem.DistrictMasterId equals dist.DistrictMasterId
+            //                            join state in _context.StateMaster
+            //                             on dist.StateMasterId equals state.StateMasterId
+            //                            join pc in _context.ParliamentConstituencyMaster
+            //                            on asem.PCMasterId equals pc.PCMasterId
+            //                            // on lc.PCMasterId equals pc.PCMasterId
+
+            //                            select new LocationModelList
+            //                            {
+            //                                StateMasterId = state.StateMasterId,
+            //                                PCMasterId = pc.PCMasterId,
+            //                                PCName = pc.PcName,
+            //                                DistrictMasterId = dist.DistrictMasterId,
+            //                                AssemblyMasterId = asem.AssemblyMasterId,
+            //                                StateName = state.StateName,
+            //                                DistrictName = dist.DistrictName,
+            //                                AssemblyName = asem.AssemblyName,
+            //                                LocationMasterId = lc.LocationMasterId,
+            //                                LocationName = lc.LocationName,
+            //                                LocationCode = lc.LocationCode,
+            //                                LocationLatitude = lc.LocationLatitude,
+            //                                LocationLongitude = lc.LocationLongitude,
+            //                                IsStatus = lc.Status,
+            //                                CreatedOn = lc.CreatedOn,
+
+            //                            };
+
+            //            foreach (var location in locations)
+            //            {
+            //                var boothNumbers = _context.BoothMaster
+            //.Where(d => d.LocationMasterId == location.LocationMasterId)
+            //.Select(d => int.Parse(d.BoothCode_No))
+            //.ToList();
+
+
+            //                location.BoothNumbers = string.Join(", ", boothNumbers);
+            //                locationModelLists.Add(location);
+            //            }
+            //            //var sortedlocationList = await locationModelLists.ToListAsync();
+            //            return locationModelLists;
+            //        }
+            //        else
+            //        {
+            //            return null;
+            //        }
+            //    }
+            //    else
+            //    {
+            //        return null;
+            //    }
+            return null;
 
         }
         /*public async Task<List<LocationModelList>> GetLocationMasterforARO(string stateMasterId, string districtMasterId, string assemblyMasterId)
@@ -9662,184 +9700,65 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         #region Reports Booths,Sector Officer
         public async Task<List<ConsolidateBoothReport>> GetConsolidateBoothReports(BoothReportModel boothReportModel)
         {
-            List<ConsolidateBoothReport> consolidateBoothReports = new List<ConsolidateBoothReport>();
-            var state = _context.StateMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.StateStatus == true).Select(d => new { d.StateName, d.StateCode }).FirstOrDefault();
-            var district = new { DistrictName = "", DistrictCode = "" };
-            var pcMaster = new { PcName = "", PcCodeNo = "" };
-
-            if (boothReportModel.DistrictMasterId is not 0)
-            {
-                district = _context.DistrictMaster
-                    .Where(d => d.DistrictMasterId == boothReportModel.DistrictMasterId && d.StateMasterId == boothReportModel.StateMasterId && d.DistrictStatus == true)
-                    .Select(d => new { d.DistrictName, d.DistrictCode })
-                    .FirstOrDefault();
-            }
-
-            if (boothReportModel.PCMasterId is not 0)
-            {
-                pcMaster = _context.ParliamentConstituencyMaster
-                    .Where(d => d.PCMasterId == boothReportModel.PCMasterId && d.PcStatus == true)
-                    .Select(d => new { d.PcName, d.PcCodeNo })
-                    .FirstOrDefault();
-            }
+            var query = _context.BoothMaster
+                .Include(d => d.StateMaster)
+                .Include(d => d.DistrictMaster)
+                .Include(d => d.AssemblyMaster)
+                .Include(d => d.FourthLevelH)
+                .Include(d => d.PsZonePanchayat)
+                .AsQueryable();
+            string reportType = "";
             //State
-            if (boothReportModel.StateMasterId is not 0 && boothReportModel.DistrictMasterId is 0 && boothReportModel.AssemblyMasterId is 0 && boothReportModel.PCMasterId is 0)
+            if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId == 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0 && boothReportModel.PSZonePanchayatMasterId == 0)
             {
-
-                var assemblyList = _context.AssemblyMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyStatus == true).Include(d => d.BoothMaster).ToList();
-
-                foreach (var assembly in assemblyList)
-                {
-
-                    ConsolidateBoothReport report = new ConsolidateBoothReport
-                    {
-                        // Populate your ConsolidateBoothReport properties here based on assembly data
-                        Header = $"{state.StateName}({state.StateCode})",
-                        Title = $"{state.StateName}",
-                        Type = "State",
-                        Code = assembly.AssemblyCode.ToString(),
-                        Name = assembly.AssemblyName,
-                        DistrictName = _context.DistrictMaster.Where(d => d.DistrictMasterId == assembly.DistrictMasterId && d.DistrictStatus == true).Select(d => d.DistrictName).FirstOrDefault(),
-                        TotalNumberOfBooths = assembly.TotalBooths,
-                        TotalNumberOfBoothsEntered = assembly.BoothMaster.Count,
-                        Male = assembly.BoothMaster.Select(d => d.Male).Sum(),
-                        Female = assembly.BoothMaster.Select(d => d.Female).Sum(),
-                        Trans = assembly.BoothMaster.Select(d => d.Transgender).Sum(),
-                        Total = assembly.BoothMaster.Select(d => d.TotalVoters).Sum(),
-                        IsStatus = assembly.AssemblyStatus
-
-                    };
-                    consolidateBoothReports.Add(report);
-                }
-                return consolidateBoothReports;
+                query = query.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
+                reportType = "State";
             }
             //District
-            else if (boothReportModel.StateMasterId is not 0 && boothReportModel.DistrictMasterId is not 0 && boothReportModel.AssemblyMasterId is 0 && boothReportModel.PCMasterId is 0)
+            if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0 && boothReportModel.PSZonePanchayatMasterId == 0)
             {
-                var assemblyList = _context.AssemblyMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId && d.AssemblyStatus == true).Include(d => d.BoothMaster).ToList();
-                foreach (var assembly in assemblyList)
-                {
-                    ConsolidateBoothReport report = new ConsolidateBoothReport
-                    {
-                        // Populate your ConsolidateBoothReport properties here based on assembly data
-                        Header = $"{state.StateName}({state.StateCode}),{district.DistrictName}({district.DistrictCode})",
-                        Title = $"{district.DistrictName}",
-                        Type = "District",
-                        Code = assembly.AssemblyCode.ToString(),
-                        Name = assembly.AssemblyName,
-                        DistrictName = _context.DistrictMaster.Where(d => d.DistrictMasterId == assembly.DistrictMasterId && d.DistrictStatus == true).Select(d => d.DistrictName).FirstOrDefault(),
-                        TotalNumberOfBooths = assembly.TotalBooths,
-                        TotalNumberOfBoothsEntered = assembly.BoothMaster.Count,
-                        Male = assembly.BoothMaster.Select(d => d.Male).Sum(),
-                        Female = assembly.BoothMaster.Select(d => d.Female).Sum(),
-                        Trans = assembly.BoothMaster.Select(d => d.Transgender).Sum(),
-                        Total = assembly.BoothMaster.Select(d => d.TotalVoters).Sum(),
-                        IsStatus = assembly.AssemblyStatus
-
-                    };
-                    consolidateBoothReports.Add(report);
-                }
-                return consolidateBoothReports;
-            }
-            //PC
-            else if (boothReportModel.StateMasterId is not 0 && boothReportModel.DistrictMasterId is 0 && boothReportModel.PCMasterId is not 0 && boothReportModel.AssemblyMasterId is 0)
-            {
-                var assemblyList = _context.AssemblyMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PCMasterId == boothReportModel.PCMasterId && d.AssemblyStatus == true).Include(d => d.BoothMaster).ToList();
-                foreach (var assembly in assemblyList)
-                {
-                    ConsolidateBoothReport report = new ConsolidateBoothReport
-                    {
-                        // Populate your ConsolidateBoothReport properties here based on assembly data
-                        Header = $"{state.StateName}({state.StateCode}),{pcMaster.PcName}({pcMaster.PcCodeNo})",
-                        Title = $"{pcMaster.PcName}",
-                        Type = "PC",
-                        Code = assembly.AssemblyCode.ToString(),
-                        Name = assembly.AssemblyName,
-                        DistrictName = _context.DistrictMaster.Where(d => d.DistrictMasterId == assembly.DistrictMasterId && d.DistrictStatus == true).Select(d => d.DistrictName).FirstOrDefault(),
-
-                        TotalNumberOfBooths = assembly.TotalBooths,
-                        TotalNumberOfBoothsEntered = assembly.BoothMaster.Count,
-                        Male = assembly.BoothMaster.Select(d => d.Male).Sum(),
-                        Female = assembly.BoothMaster.Select(d => d.Female).Sum(),
-                        Trans = assembly.BoothMaster.Select(d => d.Transgender).Sum(),
-                        Total = assembly.BoothMaster.Select(d => d.TotalVoters).Sum(),
-                        IsStatus = assembly.AssemblyStatus
-
-                    };
-                    consolidateBoothReports.Add(report);
-                }
-                return consolidateBoothReports;
+                query = query.Where(d => d.DistrictMasterId == boothReportModel.DistrictMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
+                reportType = "District";
             }
             //Assembly
-            else if (boothReportModel.AssemblyMasterId is not 0)
+            if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId != 0 && boothReportModel.FourthLevelHMasterId == 0 && boothReportModel.PSZonePanchayatMasterId == 0)
             {
-
-                if (boothReportModel.DistrictMasterId is not 0)
-                {
-                    var assembly = _context.AssemblyMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId && d.AssemblyMasterId == boothReportModel.AssemblyMasterId && d.AssemblyStatus == true).Include(d => d.BoothMaster).FirstOrDefault();
-                    foreach (var booth in assembly.BoothMaster)
-                    {
-                        ConsolidateBoothReport report = new ConsolidateBoothReport
-                        {
-                            // Populate your ConsolidateBoothReport properties here based on assembly data
-                            Header = $"{state.StateName}({state.StateCode}),{district.DistrictName}({district.DistrictCode}),{assembly.AssemblyName}({assembly.AssemblyCode})",
-                            Title = $"{assembly.AssemblyName}",
-                            Type = "Assembly",
-                            Code = booth.BoothCode_No,
-                            Name = booth.BoothName,
-                            TotalNumberOfBooths = assembly.TotalBooths,
-                            TotalNumberOfBoothsEntered = assembly.BoothMaster.Count,
-                            DistrictName = _context.DistrictMaster.Where(d => d.DistrictMasterId == assembly.DistrictMasterId && d.DistrictStatus == true).Select(d => d.DistrictName).FirstOrDefault(),
-                            LocationName = _context.PollingLocationMaster.Where(d => d.LocationMasterId == booth.LocationMasterId && d.Status == true).Select(d => d.LocationName).FirstOrDefault(),
-                            Male = booth.Male,
-                            Female = booth.Female,
-                            Trans = booth.Transgender,
-                            Total = booth.TotalVoters,
-                            IsStatus = booth.BoothStatus
-
-                        };
-                        consolidateBoothReports.Add(report);
-                    }
-                    // Assuming consolidateBoothReports is a List<ConsolidateBoothReport>
-                    var orderedReports = consolidateBoothReports.OrderBy(r => int.Parse(r.Code)).ToList();
-                    return orderedReports;
-                }
-                else
-                {
-                    var assembly = _context.AssemblyMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PCMasterId == boothReportModel.PCMasterId && d.AssemblyMasterId == boothReportModel.AssemblyMasterId && d.AssemblyStatus == true).Include(d => d.BoothMaster).FirstOrDefault();
-                    foreach (var booth in assembly.BoothMaster)
-                    {
-                        ConsolidateBoothReport report = new ConsolidateBoothReport
-                        {
-                            // Populate your ConsolidateBoothReport properties here based on assembly data
-                            Header = $"{state.StateName}({state.StateCode}),{pcMaster.PcName}({pcMaster.PcCodeNo}),{assembly.AssemblyName}({assembly.AssemblyCode})",
-                            Title = $"{assembly.AssemblyName}",
-                            Type = "Assembly",
-                            Code = booth.BoothCode_No,
-                            Name = booth.BoothName,
-                            TotalNumberOfBooths = assembly.TotalBooths,
-                            TotalNumberOfBoothsEntered = assembly.BoothMaster.Count,
-                            DistrictName = _context.DistrictMaster.Where(d => d.DistrictMasterId == assembly.DistrictMasterId && d.DistrictStatus == true).Select(d => d.DistrictName).FirstOrDefault(),
-                            Male = booth.Male,
-                            Female = booth.Female,
-                            Trans = booth.Transgender,
-                            Total = booth.TotalVoters,
-                            IsStatus = booth.BoothStatus
-
-                        };
-                        consolidateBoothReports.Add(report);
-                    }
-                    //return consolidateBoothReports;
-                    var orderedReports = consolidateBoothReports.OrderBy(r => int.Parse(r.Code)).ToList();
-                    return orderedReports;
-                }
-
-
+                query = query.Where(d => d.AssemblyMasterId == boothReportModel.AssemblyMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
+                reportType = "Assembly";
+            }
+            //FourthLevel
+            if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId != 0 && boothReportModel.FourthLevelHMasterId != 0 && boothReportModel.PSZonePanchayatMasterId == 0)
+            {
+                query = query.Where(d => d.FourthLevelHMasterId == boothReportModel.FourthLevelHMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
+                reportType = "FourthLevel";
+            }
+            //PSZonePanchayat
+            if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId != 0 && boothReportModel.FourthLevelHMasterId != 0 && boothReportModel.PSZonePanchayatMasterId != 0)
+            {
+                query = query.Where(d => d.PSZonePanchayatMasterId == boothReportModel.PSZonePanchayatMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
+                reportType = "PSZonePanchayat";
             }
 
-
-            return null;
+            return await query.Select(d => new ConsolidateBoothReport
+            {
+                Header = $"{d.StateMaster.StateName} ({d.StateMaster.StateCode})",
+                Title = d.StateMaster.StateName,
+                Type = reportType,
+                Code = d.AssemblyMaster.AssemblyCode.ToString(),
+                Name = d.AssemblyMaster.AssemblyName,
+                DistrictName = d.DistrictMaster.DistrictName,
+                TotalNumberOfBooths = d.AssemblyMaster.TotalBooths,
+                TotalNumberOfBoothsEntered = d.AssemblyMaster.BoothMaster.Count,
+                Male = d.AssemblyMaster.BoothMaster.Sum(b => b.Male),
+                Female = d.AssemblyMaster.BoothMaster.Sum(b => b.Female),
+                Trans = d.AssemblyMaster.BoothMaster.Sum(b => b.Transgender),
+                Total = d.AssemblyMaster.BoothMaster.Sum(b => b.TotalVoters),
+                IsStatus = d.AssemblyMaster.AssemblyStatus
+            }).ToListAsync();
         }
+
+
+
         public async Task<List<SoReport>> GetSOReport(BoothReportModel boothReportModel)
         {
 
@@ -10372,275 +10291,275 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             var district = new { DistrictName = "", DistrictCode = "" };
             var pcMaster = new { PcName = "", PcCodeNo = "" };
 
-            if (boothReportModel.DistrictMasterId is not 0)
-            {
-                district = _context.DistrictMaster.Where(d => d.DistrictMasterId == boothReportModel.DistrictMasterId && d.StateMasterId == boothReportModel.StateMasterId && d.DistrictStatus == true).Select(d => new { d.DistrictName, d.DistrictCode }).FirstOrDefault();
-            }
+            //if (boothReportModel.DistrictMasterId is not 0)
+            //{
+            //    district = _context.DistrictMaster.Where(d => d.DistrictMasterId == boothReportModel.DistrictMasterId && d.StateMasterId == boothReportModel.StateMasterId && d.DistrictStatus == true).Select(d => new { d.DistrictName, d.DistrictCode }).FirstOrDefault();
+            //}
 
-            if (boothReportModel.PCMasterId is not 0)
-            {
-                pcMaster = _context.ParliamentConstituencyMaster.Where(d => d.PCMasterId == boothReportModel.PCMasterId && d.PcStatus == true).Select(d => new { d.PcName, d.PcCodeNo }).FirstOrDefault();
-            }
+            //if (boothReportModel.PCMasterId is not 0)
+            //{
+            //    pcMaster = _context.ParliamentConstituencyMaster.Where(d => d.PCMasterId == boothReportModel.PCMasterId && d.PcStatus == true).Select(d => new { d.PcName, d.PcCodeNo }).FirstOrDefault();
+            //}
 
-            //State 
-            if (boothReportModel.StateMasterId is not 0 && boothReportModel.DistrictMasterId is 0 && boothReportModel.AssemblyMasterId is 0 && boothReportModel.PCMasterId is 0)
-            {
+            ////State 
+            //if (boothReportModel.StateMasterId is not 0 && boothReportModel.DistrictMasterId is 0 && boothReportModel.AssemblyMasterId is 0 && boothReportModel.PCMasterId is 0)
+            //{
 
-                var assemblyList = _context.AssemblyMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyStatus == true).ToList();
+            //    var assemblyList = _context.AssemblyMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyStatus == true).ToList();
 
-                foreach (var assembly in assemblyList)
-                {
-                    var pollingStationData = _context.PollingStationMaster.Include(psm => psm.PollingStationGender).Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).ToList();
-                    VTPSReportReportModel report = new VTPSReportReportModel
-                    {
-                        // Populate your ConsolidateBoothReport properties here based on assembly data
-                        Header = $"{state.StateName}({state.StateCode})",
-                        Title = $"{state.StateName}",
-                        Type = "State",
-                        DistrictName = district.DistrictName,
-                        DistrictCode = district.DistrictCode,
-                        AssemblyName = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).Select(p => p.AssemblyName).FirstOrDefault(),
-                        AssemblyCode = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).Select(p => p.AssemblyCode.ToString()).FirstOrDefault(),
+            //    foreach (var assembly in assemblyList)
+            //    {
+            //        var pollingStationData = _context.PollingStationMaster.Include(psm => psm.PollingStationGender).Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).ToList();
+            //        VTPSReportReportModel report = new VTPSReportReportModel
+            //        {
+            //            // Populate your ConsolidateBoothReport properties here based on assembly data
+            //            Header = $"{state.StateName}({state.StateCode})",
+            //            Title = $"{state.StateName}",
+            //            Type = "State",
+            //            DistrictName = district.DistrictName,
+            //            DistrictCode = district.DistrictCode,
+            //            AssemblyName = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).Select(p => p.AssemblyName).FirstOrDefault(),
+            //            AssemblyCode = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).Select(p => p.AssemblyCode.ToString()).FirstOrDefault(),
 
-                        //AssemblyCode= _context.PollingStationMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId && d.AssemblyMasterId == boothReportModel.AssemblyMasterId).Select(p=>p.AssemblySegmentNo).FirstOrDefault(),
-                        EPIC = pollingStationData.Sum(psm => psm.VotePolledEPIC),
-                        TotalEVMS = _context.PollingStationMaster.Where(d => d.AssemblyMasterId == boothReportModel.AssemblyMasterId && d.EVMReplaced).Count(),
-                        Male = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Male)),
-                        Female = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Female)),
-                        ThirdGender = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.ThirdGender)),
-                        Total = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Total)),
-                        OverseasElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 4).Sum(gender => gender.Total)), //overseas
-                        YoungElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 3).Sum(gender => gender.Total)), // young electrl
-                        PWdEelectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1).Sum(gender => gender.Total)), // no of electrl pwd
-                                                                                                                                                                                                    //VotePolledOtherDocument= pollingStationData.Sum(psm =>Convert.ToInt16(psm.VotePolledOtherDocument)),
-                        VotePolledOtherDocument = pollingStationData.Sum(psm =>
-                        {
-                            if (int.TryParse(psm.VotePolledOtherDocument, out int result))
-                            {
-                                return result;
-                            }
-                            else
-                            {
-                                return 0;
-                            }
-                        }),
-                        TenderedVotes = pollingStationData.Sum(psm => psm.TenderedVote),
-                    };
-                    consolidateBoothReports.Add(report);
-                }
-                return consolidateBoothReports;
-            }
+            //            //AssemblyCode= _context.PollingStationMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId && d.AssemblyMasterId == boothReportModel.AssemblyMasterId).Select(p=>p.AssemblySegmentNo).FirstOrDefault(),
+            //            EPIC = pollingStationData.Sum(psm => psm.VotePolledEPIC),
+            //            TotalEVMS = _context.PollingStationMaster.Where(d => d.AssemblyMasterId == boothReportModel.AssemblyMasterId && d.EVMReplaced).Count(),
+            //            Male = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Male)),
+            //            Female = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Female)),
+            //            ThirdGender = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.ThirdGender)),
+            //            Total = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Total)),
+            //            OverseasElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 4).Sum(gender => gender.Total)), //overseas
+            //            YoungElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 3).Sum(gender => gender.Total)), // young electrl
+            //            PWdEelectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1).Sum(gender => gender.Total)), // no of electrl pwd
+            //                                                                                                                                                                                        //VotePolledOtherDocument= pollingStationData.Sum(psm =>Convert.ToInt16(psm.VotePolledOtherDocument)),
+            //            VotePolledOtherDocument = pollingStationData.Sum(psm =>
+            //            {
+            //                if (int.TryParse(psm.VotePolledOtherDocument, out int result))
+            //                {
+            //                    return result;
+            //                }
+            //                else
+            //                {
+            //                    return 0;
+            //                }
+            //            }),
+            //            TenderedVotes = pollingStationData.Sum(psm => psm.TenderedVote),
+            //        };
+            //        consolidateBoothReports.Add(report);
+            //    }
+            //    return consolidateBoothReports;
+            //}
 
-            //District
-            else if (boothReportModel.StateMasterId is not 0 && boothReportModel.DistrictMasterId is not 0 && boothReportModel.AssemblyMasterId is 0 && boothReportModel.PCMasterId is 0)
-            {
-                var assemblyList = _context.AssemblyMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId && d.AssemblyStatus == true).ToList();
-                foreach (var assembly in assemblyList)
-                {
-                    var pollingStationData = _context.PollingStationMaster.Include(psm => psm.PollingStationGender).Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId
-                     && d.AssemblyMasterId == assembly.AssemblyMasterId)
-            .ToList();
-                    VTPSReportReportModel report = new VTPSReportReportModel
-                    {
-                        // Populate your ConsolidateBoothReport properties here based on assembly data
-                        Header = $"{state.StateName}({state.StateCode})",
-                        Title = $"{state.StateName}",
-                        Type = "District",
-                        DistrictName = district.DistrictName,
-                        DistrictCode = district.DistrictCode,
-                        AssemblyName = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).Select(p => p.AssemblyName).FirstOrDefault(),
-                        AssemblyCode = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).Select(p => p.AssemblyCode.ToString()).FirstOrDefault(),
+            ////District
+            //else if (boothReportModel.StateMasterId is not 0 && boothReportModel.DistrictMasterId is not 0 && boothReportModel.AssemblyMasterId is 0 && boothReportModel.PCMasterId is 0)
+            //{
+            //    var assemblyList = _context.AssemblyMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId && d.AssemblyStatus == true).ToList();
+            //    foreach (var assembly in assemblyList)
+            //    {
+            //        var pollingStationData = _context.PollingStationMaster.Include(psm => psm.PollingStationGender).Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId
+            //         && d.AssemblyMasterId == assembly.AssemblyMasterId)
+            //.ToList();
+            //        VTPSReportReportModel report = new VTPSReportReportModel
+            //        {
+            //            // Populate your ConsolidateBoothReport properties here based on assembly data
+            //            Header = $"{state.StateName}({state.StateCode})",
+            //            Title = $"{state.StateName}",
+            //            Type = "District",
+            //            DistrictName = district.DistrictName,
+            //            DistrictCode = district.DistrictCode,
+            //            AssemblyName = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).Select(p => p.AssemblyName).FirstOrDefault(),
+            //            AssemblyCode = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).Select(p => p.AssemblyCode.ToString()).FirstOrDefault(),
 
-                        //AssemblyCode= _context.PollingStationMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId && d.AssemblyMasterId == boothReportModel.AssemblyMasterId).Select(p=>p.AssemblySegmentNo).FirstOrDefault(),
-                        EPIC = pollingStationData.Sum(psm => psm.VotePolledEPIC),
-                        TotalEVMS = _context.PollingStationMaster.Where(d => d.AssemblyMasterId == boothReportModel.AssemblyMasterId && d.EVMReplaced).Count(),
-                        Male = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Male)),
-                        Female = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Female)),
-                        ThirdGender = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.ThirdGender)),
-                        Total = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Total)),
-                        OverseasElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 4).Sum(gender => gender.Total)), //overseas
-                        YoungElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 3).Sum(gender => gender.Total)), // young electrl
-                        PWdEelectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1).Sum(gender => gender.Total)), // no of electrl pwd
-                                                                                                                                                                                                    //VotePolledOtherDocument= pollingStationData.Sum(psm =>Convert.ToInt16(psm.VotePolledOtherDocument)),
-                        VotePolledOtherDocument = pollingStationData.Sum(psm =>
-                        {
-                            if (int.TryParse(psm.VotePolledOtherDocument, out int result))
-                            {
-                                return result;
-                            }
-                            else
-                            {
-                                // Handle non-numeric values, for example, you can log or set a default value
-                                // In this case, I'll set it to 0, but you can adjust based on your requirements
-                                return 0;
-                            }
-                        }),
-                        TenderedVotes = pollingStationData.Sum(psm => psm.TenderedVote),
+            //            //AssemblyCode= _context.PollingStationMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId && d.AssemblyMasterId == boothReportModel.AssemblyMasterId).Select(p=>p.AssemblySegmentNo).FirstOrDefault(),
+            //            EPIC = pollingStationData.Sum(psm => psm.VotePolledEPIC),
+            //            TotalEVMS = _context.PollingStationMaster.Where(d => d.AssemblyMasterId == boothReportModel.AssemblyMasterId && d.EVMReplaced).Count(),
+            //            Male = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Male)),
+            //            Female = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Female)),
+            //            ThirdGender = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.ThirdGender)),
+            //            Total = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Total)),
+            //            OverseasElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 4).Sum(gender => gender.Total)), //overseas
+            //            YoungElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 3).Sum(gender => gender.Total)), // young electrl
+            //            PWdEelectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1).Sum(gender => gender.Total)), // no of electrl pwd
+            //                                                                                                                                                                                        //VotePolledOtherDocument= pollingStationData.Sum(psm =>Convert.ToInt16(psm.VotePolledOtherDocument)),
+            //            VotePolledOtherDocument = pollingStationData.Sum(psm =>
+            //            {
+            //                if (int.TryParse(psm.VotePolledOtherDocument, out int result))
+            //                {
+            //                    return result;
+            //                }
+            //                else
+            //                {
+            //                    // Handle non-numeric values, for example, you can log or set a default value
+            //                    // In this case, I'll set it to 0, but you can adjust based on your requirements
+            //                    return 0;
+            //                }
+            //            }),
+            //            TenderedVotes = pollingStationData.Sum(psm => psm.TenderedVote),
 
-                    };
-                    consolidateBoothReports.Add(report);
-                }
-                return consolidateBoothReports;
-            }
+            //        };
+            //        consolidateBoothReports.Add(report);
+            //    }
+            //    return consolidateBoothReports;
+            //}
 
-            //PC
-            else if (boothReportModel.StateMasterId is not 0 && boothReportModel.DistrictMasterId is 0 && boothReportModel.PCMasterId is not 0 && boothReportModel.AssemblyMasterId is 0)
-            {
-                var assemblyList = _context.AssemblyMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PCMasterId == boothReportModel.PCMasterId && d.AssemblyStatus == true).ToList();
-                foreach (var assembly in assemblyList)
-                {
-                    var pollingStationData = await _context.PollingStationMaster
-            .Include(psm => psm.PollingStationGender)
-            .Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).ToListAsync();
-                    VTPSReportReportModel report = new VTPSReportReportModel
-                    {
-                        // Populate your ConsolidateBoothReport properties here based on assembly data
-                        Header = $"{state.StateName}({state.StateCode}),{pcMaster.PcName}({pcMaster.PcCodeNo})",
-                        Title = $"{pcMaster.PcName}",
-                        Type = "PC",
-                        Code = assembly.AssemblyCode.ToString(),
-                        Name = assembly.AssemblyName,
-                        PCCode = pcMaster.PcCodeNo,
-                        PCName = pcMaster.PcName,
-                        AssemblyName = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PCMasterId == boothReportModel.PCMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).Select(p => p.AssemblyName).FirstOrDefault(),
-                        AssemblyCode = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PCMasterId == boothReportModel.PCMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).Select(p => p.AssemblyCode.ToString()).FirstOrDefault(),
+            ////PC
+            //else if (boothReportModel.StateMasterId is not 0 && boothReportModel.DistrictMasterId is 0 && boothReportModel.PCMasterId is not 0 && boothReportModel.AssemblyMasterId is 0)
+            //{
+            //    var assemblyList = _context.AssemblyMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PCMasterId == boothReportModel.PCMasterId && d.AssemblyStatus == true).ToList();
+            //    foreach (var assembly in assemblyList)
+            //    {
+            //        var pollingStationData = await _context.PollingStationMaster
+            //.Include(psm => psm.PollingStationGender)
+            //.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).ToListAsync();
+            //        VTPSReportReportModel report = new VTPSReportReportModel
+            //        {
+            //            // Populate your ConsolidateBoothReport properties here based on assembly data
+            //            Header = $"{state.StateName}({state.StateCode}),{pcMaster.PcName}({pcMaster.PcCodeNo})",
+            //            Title = $"{pcMaster.PcName}",
+            //            Type = "PC",
+            //            Code = assembly.AssemblyCode.ToString(),
+            //            Name = assembly.AssemblyName,
+            //            PCCode = pcMaster.PcCodeNo,
+            //            PCName = pcMaster.PcName,
+            //            AssemblyName = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PCMasterId == boothReportModel.PCMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).Select(p => p.AssemblyName).FirstOrDefault(),
+            //            AssemblyCode = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PCMasterId == boothReportModel.PCMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).Select(p => p.AssemblyCode.ToString()).FirstOrDefault(),
 
-                        EPIC = pollingStationData.Sum(psm => psm.VotePolledEPIC),
-                        TotalEVMS = _context.PollingStationMaster.Where(d => d.AssemblyMasterId == boothReportModel.AssemblyMasterId && d.EVMReplaced).Count(),
-                        Male = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Male)),
-                        Female = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Female)),
-                        ThirdGender = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.ThirdGender)),
-                        Total = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Total)),
-                        OverseasElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 4).Sum(gender => gender.Total)), //overseas
-                        YoungElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 3).Sum(gender => gender.Total)), // young electrl
-                        PWdEelectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1).Sum(gender => gender.Total)), // no of electrl pwd
-                        VotePolledOtherDocument = pollingStationData.Sum(psm =>
-                        {
-                            if (int.TryParse(psm.VotePolledOtherDocument, out int result))
-                            {
-                                return result;
-                            }
-                            else
-                            {
-                                // Handle non-numeric values, for example, you can log or set a default value
-                                // In this case, I'll set it to 0, but you can adjust based on your requirements
-                                return 0;
-                            }
-                        }),
-                        TenderedVotes = pollingStationData.Sum(psm => psm.TenderedVote),
+            //            EPIC = pollingStationData.Sum(psm => psm.VotePolledEPIC),
+            //            TotalEVMS = _context.PollingStationMaster.Where(d => d.AssemblyMasterId == boothReportModel.AssemblyMasterId && d.EVMReplaced).Count(),
+            //            Male = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Male)),
+            //            Female = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Female)),
+            //            ThirdGender = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.ThirdGender)),
+            //            Total = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Total)),
+            //            OverseasElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 4).Sum(gender => gender.Total)), //overseas
+            //            YoungElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 3).Sum(gender => gender.Total)), // young electrl
+            //            PWdEelectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1).Sum(gender => gender.Total)), // no of electrl pwd
+            //            VotePolledOtherDocument = pollingStationData.Sum(psm =>
+            //            {
+            //                if (int.TryParse(psm.VotePolledOtherDocument, out int result))
+            //                {
+            //                    return result;
+            //                }
+            //                else
+            //                {
+            //                    // Handle non-numeric values, for example, you can log or set a default value
+            //                    // In this case, I'll set it to 0, but you can adjust based on your requirements
+            //                    return 0;
+            //                }
+            //            }),
+            //            TenderedVotes = pollingStationData.Sum(psm => psm.TenderedVote),
 
-                    };
-                    consolidateBoothReports.Add(report);
-                }
-                return consolidateBoothReports;
-            }
+            //        };
+            //        consolidateBoothReports.Add(report);
+            //    }
+            //    return consolidateBoothReports;
+            //}
 
-            //Assembly
-            else if (boothReportModel.AssemblyMasterId is not 0)
-            {
+            ////Assembly
+            //else if (boothReportModel.AssemblyMasterId is not 0)
+            //{
 
-                if (boothReportModel.DistrictMasterId is not 0)
-                {
-                    var assemblyList = _context.AssemblyMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId && d.AssemblyStatus == true).ToList();
-                    foreach (var assembly in assemblyList)
-                    {
-                        var pollingStationData = _context.PollingStationMaster.Include(psm => psm.PollingStationGender).Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId
-                         && d.AssemblyMasterId == assembly.AssemblyMasterId)
-                .ToList();
-                        VTPSReportReportModel report = new VTPSReportReportModel
-                        {
-                            Header = $"{state.StateName}({state.StateCode}),{district.DistrictName}({district.DistrictCode}),{assembly.AssemblyName}({assembly.AssemblyCode})",
-                            Title = $"{assembly.AssemblyName}",
-                            Type = "Assembly",
-                            DistrictName = district.DistrictName,
-                            DistrictCode = district.DistrictCode,
-                            AssemblyName = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).Select(p => p.AssemblyName).FirstOrDefault(),
-                            AssemblyCode = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).Select(p => p.AssemblyCode.ToString()).FirstOrDefault(),
+            //    if (boothReportModel.DistrictMasterId is not 0)
+            //    {
+            //        var assemblyList = _context.AssemblyMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId && d.AssemblyStatus == true).ToList();
+            //        foreach (var assembly in assemblyList)
+            //        {
+            //            var pollingStationData = _context.PollingStationMaster.Include(psm => psm.PollingStationGender).Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId
+            //             && d.AssemblyMasterId == assembly.AssemblyMasterId)
+            //    .ToList();
+            //            VTPSReportReportModel report = new VTPSReportReportModel
+            //            {
+            //                Header = $"{state.StateName}({state.StateCode}),{district.DistrictName}({district.DistrictCode}),{assembly.AssemblyName}({assembly.AssemblyCode})",
+            //                Title = $"{assembly.AssemblyName}",
+            //                Type = "Assembly",
+            //                DistrictName = district.DistrictName,
+            //                DistrictCode = district.DistrictCode,
+            //                AssemblyName = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).Select(p => p.AssemblyName).FirstOrDefault(),
+            //                AssemblyCode = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).Select(p => p.AssemblyCode.ToString()).FirstOrDefault(),
 
-                            //AssemblyCode= _context.PollingStationMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId && d.AssemblyMasterId == boothReportModel.AssemblyMasterId).Select(p=>p.AssemblySegmentNo).FirstOrDefault(),
-                            EPIC = pollingStationData.Sum(psm => psm.VotePolledEPIC),
-                            TotalEVMS = _context.PollingStationMaster.Where(d => d.AssemblyMasterId == boothReportModel.AssemblyMasterId && d.EVMReplaced).Count(),
-                            Male = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Male)),
-                            Female = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Female)),
-                            ThirdGender = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.ThirdGender)),
-                            Total = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Total)),
-                            OverseasElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 4).Sum(gender => gender.Total)), //overseas
-                            YoungElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 3).Sum(gender => gender.Total)), // young electrl
-                            PWdEelectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1).Sum(gender => gender.Total)), // no of electrl pwd
-                                                                                                                                                                                                        //VotePolledOtherDocument= pollingStationData.Sum(psm =>Convert.ToInt16(psm.VotePolledOtherDocument)),
-                            VotePolledOtherDocument = pollingStationData.Sum(psm =>
-                            {
-                                if (int.TryParse(psm.VotePolledOtherDocument, out int result))
-                                {
-                                    return result;
-                                }
-                                else
-                                {
+            //                //AssemblyCode= _context.PollingStationMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId && d.AssemblyMasterId == boothReportModel.AssemblyMasterId).Select(p=>p.AssemblySegmentNo).FirstOrDefault(),
+            //                EPIC = pollingStationData.Sum(psm => psm.VotePolledEPIC),
+            //                TotalEVMS = _context.PollingStationMaster.Where(d => d.AssemblyMasterId == boothReportModel.AssemblyMasterId && d.EVMReplaced).Count(),
+            //                Male = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Male)),
+            //                Female = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Female)),
+            //                ThirdGender = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.ThirdGender)),
+            //                Total = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Total)),
+            //                OverseasElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 4).Sum(gender => gender.Total)), //overseas
+            //                YoungElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 3).Sum(gender => gender.Total)), // young electrl
+            //                PWdEelectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1).Sum(gender => gender.Total)), // no of electrl pwd
+            //                                                                                                                                                                                            //VotePolledOtherDocument= pollingStationData.Sum(psm =>Convert.ToInt16(psm.VotePolledOtherDocument)),
+            //                VotePolledOtherDocument = pollingStationData.Sum(psm =>
+            //                {
+            //                    if (int.TryParse(psm.VotePolledOtherDocument, out int result))
+            //                    {
+            //                        return result;
+            //                    }
+            //                    else
+            //                    {
 
-                                    return 0;
-                                }
-                            }),
-                            TenderedVotes = pollingStationData.Sum(psm => psm.TenderedVote),
+            //                        return 0;
+            //                    }
+            //                }),
+            //                TenderedVotes = pollingStationData.Sum(psm => psm.TenderedVote),
 
-                        };
-                        consolidateBoothReports.Add(report);
-                    }
-                    return consolidateBoothReports;
-                }
-                else
-                {
-                    var assemblyList = _context.AssemblyMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PCMasterId == boothReportModel.PCMasterId && d.AssemblyStatus == true).ToList();
-                    foreach (var assembly in assemblyList)
-                    {
-                        var pollingStationData = await _context.PollingStationMaster
-                .Include(psm => psm.PollingStationGender)
-                .Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId)
-                .ToListAsync();
-                        VTPSReportReportModel report = new VTPSReportReportModel
-                        {
-                            // Populate your ConsolidateBoothReport properties here based on assembly data
+            //            };
+            //            consolidateBoothReports.Add(report);
+            //        }
+            //        return consolidateBoothReports;
+            //    }
+            //    else
+            //    {
+            //        var assemblyList = _context.AssemblyMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PCMasterId == boothReportModel.PCMasterId && d.AssemblyStatus == true).ToList();
+            //        foreach (var assembly in assemblyList)
+            //        {
+            //            var pollingStationData = await _context.PollingStationMaster
+            //    .Include(psm => psm.PollingStationGender)
+            //    .Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId)
+            //    .ToListAsync();
+            //            VTPSReportReportModel report = new VTPSReportReportModel
+            //            {
+            //                // Populate your ConsolidateBoothReport properties here based on assembly data
 
-                            Header = $"{state.StateName}({state.StateCode}),{pcMaster.PcName}({pcMaster.PcCodeNo}),{assembly.AssemblyName}({assembly.AssemblyCode})",
-                            Title = $"{assembly.AssemblyName}",
-                            Type = "Assembly",
-                            Code = assembly.AssemblyCode.ToString(),
-                            Name = assembly.AssemblyName,
-                            PCCode = pcMaster.PcCodeNo,
-                            PCName = pcMaster.PcName,
-                            AssemblyName = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PCMasterId == boothReportModel.PCMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).Select(p => p.AssemblyName).FirstOrDefault(),
-                            AssemblyCode = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PCMasterId == boothReportModel.PCMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).Select(p => p.AssemblyCode.ToString()).FirstOrDefault(),
+            //                Header = $"{state.StateName}({state.StateCode}),{pcMaster.PcName}({pcMaster.PcCodeNo}),{assembly.AssemblyName}({assembly.AssemblyCode})",
+            //                Title = $"{assembly.AssemblyName}",
+            //                Type = "Assembly",
+            //                Code = assembly.AssemblyCode.ToString(),
+            //                Name = assembly.AssemblyName,
+            //                PCCode = pcMaster.PcCodeNo,
+            //                PCName = pcMaster.PcName,
+            //                AssemblyName = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PCMasterId == boothReportModel.PCMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).Select(p => p.AssemblyName).FirstOrDefault(),
+            //                AssemblyCode = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PCMasterId == boothReportModel.PCMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).Select(p => p.AssemblyCode.ToString()).FirstOrDefault(),
 
-                            EPIC = pollingStationData.Sum(psm => psm.VotePolledEPIC),
-                            TotalEVMS = _context.PollingStationMaster.Where(d => d.AssemblyMasterId == boothReportModel.AssemblyMasterId && d.EVMReplaced).Count(),
-                            Male = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Male)),
-                            Female = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Female)),
-                            ThirdGender = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.ThirdGender)),
-                            Total = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Total)),
-                            OverseasElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 4).Sum(gender => gender.Total)), //overseas
-                            YoungElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 3).Sum(gender => gender.Total)), // young electrl
-                            PWdEelectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1).Sum(gender => gender.Total)), // no of electrl pwd
-                            VotePolledOtherDocument = pollingStationData.Sum(psm =>
-                            {
-                                if (int.TryParse(psm.VotePolledOtherDocument, out int result))
-                                {
-                                    return result;
-                                }
-                                else
-                                {
+            //                EPIC = pollingStationData.Sum(psm => psm.VotePolledEPIC),
+            //                TotalEVMS = _context.PollingStationMaster.Where(d => d.AssemblyMasterId == boothReportModel.AssemblyMasterId && d.EVMReplaced).Count(),
+            //                Male = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Male)),
+            //                Female = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Female)),
+            //                ThirdGender = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.ThirdGender)),
+            //                Total = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2).Sum(gender => gender.Total)),
+            //                OverseasElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 4).Sum(gender => gender.Total)), //overseas
+            //                YoungElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 3).Sum(gender => gender.Total)), // young electrl
+            //                PWdEelectoral = pollingStationData.Where(psm => psm.PollingStationGender != null).Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1).Sum(gender => gender.Total)), // no of electrl pwd
+            //                VotePolledOtherDocument = pollingStationData.Sum(psm =>
+            //                {
+            //                    if (int.TryParse(psm.VotePolledOtherDocument, out int result))
+            //                    {
+            //                        return result;
+            //                    }
+            //                    else
+            //                    {
 
-                                    return 0;
-                                }
-                            }),
-                            TenderedVotes = pollingStationData.Sum(psm => psm.TenderedVote),
+            //                        return 0;
+            //                    }
+            //                }),
+            //                TenderedVotes = pollingStationData.Sum(psm => psm.TenderedVote),
 
-                        };
-                        consolidateBoothReports.Add(report);
-                    }
-                    return consolidateBoothReports;
-                }
+            //            };
+            //            consolidateBoothReports.Add(report);
+            //        }
+            //        return consolidateBoothReports;
+            //    }
 
 
-            }
+            //}
 
 
 
@@ -11503,10 +11422,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 district = _context.DistrictMaster.Where(d => d.DistrictMasterId == boothReportModel.DistrictMasterId && d.StateMasterId == boothReportModel.StateMasterId && d.DistrictStatus == true).Select(d => new { d.DistrictName, d.DistrictCode }).FirstOrDefault();
             }
 
-            if (boothReportModel.PCMasterId is not 0)
-            {
-                pcMaster = _context.ParliamentConstituencyMaster.Where(d => d.PCMasterId == boothReportModel.PCMasterId && d.PcStatus == true).Select(d => new { d.PcName, d.PcCodeNo }).FirstOrDefault();
-            }
+            //if (boothReportModel.PCMasterId is not 0)
+            //{
+            //    pcMaster = _context.ParliamentConstituencyMaster.Where(d => d.PCMasterId == boothReportModel.PCMasterId && d.PcStatus == true).Select(d => new { d.PcName, d.PcCodeNo }).FirstOrDefault();
+            //}
 
             //Type : DistrictACWise
             if (boothReportModel.StateMasterId is not 0 && boothReportModel.Type == "DistrictACWise")
@@ -12343,688 +12262,688 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
 
             //PCACWise
-            else if (boothReportModel.StateMasterId is not 0 && boothReportModel.Type == "PCACWise")
-
-            {
-                if (boothReportModel.PCMasterId is not 0 && boothReportModel.AssemblyMasterId is 0)
-                {
-                    var pcList = _context.ParliamentConstituencyMaster
-     .Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PcStatus == true && d.PCMasterId == boothReportModel.PCMasterId)
-     .AsEnumerable().FirstOrDefault();
-
-                    int assemblyCount = 0; List<VTReportModel> assemblylistReport = new List<VTReportModel>();
-                    var assemblyList = _context.AssemblyMaster
-                          .Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PCMasterId == boothReportModel.PCMasterId && d.AssemblyStatus == true)
-                          .OrderBy(d => d.AssemblyCode)
-                          .ToList();
-                    if (assemblyList.Count > 0)
-                    {
-                        foreach (var assembly in assemblyList)
-                        {
-                            VTReportModel report = new VTReportModel();
-                            report.Header = $"{state.StateName}({state.StateCode})";
-                            report.Title = $"{state.StateName}";
-                            report.Type = "PCACWise";
-                            report.PCCode = pcList.PcCodeNo;
-                            report.PCName = pcList.PcName;
-                            report.AssemblyName = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId)
-                                                               .Select(p => p.AssemblyName).FirstOrDefault();
-                            report.AssemblyCode = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId)
-                                                               .Select(p => p.AssemblyCode.ToString()).FirstOrDefault();
-                            var pollingStationData = _context.PollingStationMaster.Include(psm => psm.PollingStationGender).Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).ToList();
-                            if (pollingStationData != null && pollingStationData.Count > 0)
-                            {
-                                //type 1: Electorals
-                                report.MaleElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null)
-                                                                          .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1)
-                                                                          .Sum(gender => gender.Male));
-                                report.FemaleElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null)
-                                                                            .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1)
-                                                                            .Sum(gender => gender.Female));
-                                report.ThirdGenderElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null)
-                                                                                .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1)
-                                                                                .Sum(gender => gender.ThirdGender));
-                                report.TotalElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null)
-                                                                           .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1)
-                                                                           .Sum(gender => gender.Total));
-
-                                //type 2: Votes polled
-                                report.MaleVoters = pollingStationData.Where(psm => psm.PollingStationGender != null)
-                                                                       .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2)
-                                                                       .Sum(gender => gender.Male));
-                                report.FemaleVoters = pollingStationData.Where(psm => psm.PollingStationGender != null)
-                                                                         .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2)
-                                                                         .Sum(gender => gender.Female));
-                                report.ThirdGenderVoters = pollingStationData.Where(psm => psm.PollingStationGender != null)
-                                                                             .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2)
-                                                                             .Sum(gender => gender.ThirdGender));
-                                report.TotalVoters = pollingStationData.Where(psm => psm.PollingStationGender != null)
-                                                                        .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2)
-                                                                        .Sum(gender => gender.Total));
-
-                                report.EPIC = pollingStationData.Sum(psm => psm.VotePolledEPIC);
-                                report.VotePolledOtherDocument = pollingStationData.Sum(psm =>
-                                {
-                                    if (int.TryParse(psm.VotePolledOtherDocument, out int result))
-                                    {
-                                        return result;
-                                    }
-                                    else
-                                    {
-                                        return 0;
-                                    }
-                                });
-                                report.MalePercentage = report.MaleVoters == 0 ? 0 : (double)report.MaleVoters / (double)report.MaleElectoral * 100;
-                                if (double.IsInfinity(report.MalePercentage))
-                                {
-                                    report.MalePercentage = 0;
-                                }
-
-                                report.FemalePercentage = report.FemaleVoters == 0 ? 0 : (double)report.FemaleVoters / (double)report.FemaleElectoral * 100;
-                                if (double.IsInfinity(report.FemalePercentage))
-                                {
-                                    report.FemalePercentage = 0;
-                                }
-                                report.ThirdGenderPercentage = report.ThirdGenderVoters == 0 ? 0 : (double)report.ThirdGenderVoters / (double)report.ThirdGenderElectoral * 100;
-                                if (double.IsInfinity(report.ThirdGenderPercentage))
-                                {
-                                    report.ThirdGenderPercentage = 0;
-                                }
-                                report.TotalPercentage = report.TotalVoters == 0 ? 0 : (double)report.TotalVoters / (double)report.TotalElectoral * 100;
-                                if (double.IsInfinity(report.TotalPercentage))
-                                {
-                                    report.TotalPercentage = 0;
-                                }
-                                consolidateBoothReports.Add(report); assemblylistReport.Add(report);
-                                assemblyCount++;
-
-
-                            }
-                            else
-                            {  //type 1: Electorals
-                                report.MaleElectoral = 0;
-                                report.FemaleElectoral = 0;
-                                report.ThirdGenderElectoral = 0;
-                                report.TotalElectoral = 0;
-
-                                //type 2: Votes polled
-                                report.MaleVoters = 0;
-                                report.FemaleVoters = 0;
-                                report.ThirdGenderVoters = 0;
-                                report.TotalVoters = 0;
-                                report.EPIC = 0;
-                                report.VotePolledOtherDocument = 0;
-                                report.MalePercentage = 0;
-                                report.FemalePercentage = 0;
-                                report.ThirdGenderPercentage = 0;
-                                report.TotalPercentage = 0;
-
-                                consolidateBoothReports.Add(report); assemblylistReport.Add(report);
-                                assemblyCount++;
-
-
-                            }
-
-
-                        }
-
-                    }
-                    else
-                    {
-                        VTReportModel report = new VTReportModel();
-                        report.Header = $"{state.StateName}({state.StateCode})";
-                        report.Title = $"{state.StateName}";
-                        report.Type = "PCACWise";
-                        report.PCCode = pcList.PcCodeNo;
-                        report.PCName = pcList.PcName;
-                        report.AssemblyName = "N/A";
-                        report.AssemblyCode = "N/A";
-                        report.MaleElectoral = 0;
-                        report.FemaleElectoral = 0;
-                        report.ThirdGenderElectoral = 0;
-                        report.TotalElectoral = 0;
-
-                        //type 2: Votes polled
-                        report.MaleVoters = 0;
-                        report.FemaleVoters = 0;
-                        report.ThirdGenderVoters = 0;
-                        report.TotalVoters = 0;
-                        report.EPIC = 0;
-                        report.VotePolledOtherDocument = 0;
-                        report.MalePercentage = 0;
-                        report.FemalePercentage = 0;
-                        report.ThirdGenderPercentage = 0;
-                        report.TotalPercentage = 0;
-                        consolidateBoothReports.Add(report);
-
-                    }
-                    if (assemblyList.Count == assemblyCount)
-                    {
-                        // add Grand Total Row
-
-                        VTReportModel reportTotal = new VTReportModel();
-                        reportTotal.Header = "";
-                        reportTotal.Title = "";
-                        reportTotal.Type = "";
-                        reportTotal.DistrictName = "";
-                        reportTotal.DistrictCode = "";
-                        reportTotal.AssemblyName = "Total";
-                        reportTotal.AssemblyCode = "";
-                        reportTotal.MaleElectoral = assemblylistReport.Sum(report => report.MaleElectoral);
-                        reportTotal.FemaleElectoral = assemblylistReport.Sum(report => report.FemaleElectoral);
-                        reportTotal.ThirdGenderElectoral = assemblylistReport.Sum(report => report.ThirdGenderElectoral);
-                        reportTotal.TotalElectoral = assemblylistReport.Sum(report => report.TotalElectoral);
-                        reportTotal.MaleVoters = assemblylistReport.Sum(report => report.MaleVoters);
-                        reportTotal.FemaleVoters = assemblylistReport.Sum(report => report.FemaleVoters);
-                        reportTotal.ThirdGenderVoters = assemblylistReport.Sum(report => report.ThirdGenderVoters);
-                        reportTotal.TotalVoters = assemblylistReport.Sum(report => report.TotalVoters);
-                        reportTotal.EPIC = assemblylistReport.Sum(report => report.EPIC);
-                        reportTotal.VotePolledOtherDocument = assemblylistReport.Sum(report => report.VotePolledOtherDocument);
-                        //   reportGrandTotal.MalePercentage = (double)reportGrandTotal.MaleVoters / (double)reportGrandTotal.MaleElectoral * 100;
-                        reportTotal.MalePercentage = (reportTotal.MaleVoters != 0 && reportTotal.MaleElectoral != 0)
-    ? ((double)reportTotal.MaleVoters / (double)reportTotal.MaleElectoral) * 100
-    : 0;
-
-                        //reportGrandTotal.FemalePercentage = (double)reportGrandTotal.FemaleVoters / (double)reportGrandTotal.FemaleElectoral * 100;
-                        reportTotal.FemalePercentage = (reportTotal.FemaleVoters != 0 && reportTotal.FemaleElectoral != 0)
-         ? ((double)reportTotal.FemaleVoters / (double)reportTotal.FemaleElectoral) * 100 : 0;
-
-                        reportTotal.ThirdGenderPercentage = (reportTotal.ThirdGenderVoters != 0 && reportTotal.ThirdGenderElectoral != 0)
-        ? ((double)reportTotal.ThirdGenderVoters / (double)reportTotal.ThirdGenderElectoral) * 100
-        : 0;
-
-                        //reportGrandTotal.TotalPercentage = (double)reportGrandTotal.TotalVoters / (double)reportGrandTotal.TotalElectoral * 100;
-
-
-                        reportTotal.TotalPercentage = (reportTotal.TotalVoters != 0 && reportTotal.TotalElectoral != 0)
-       ? ((double)reportTotal.TotalVoters / (double)reportTotal.TotalElectoral) * 100
-       : 0;
-                        assemblylistTotal.Add(reportTotal);
-                        consolidateBoothReports.Add(reportTotal);
-
-                    }
-
-
-                    return consolidateBoothReports;
-                }
-                else if (boothReportModel.PCMasterId is not 0 && boothReportModel.AssemblyMasterId is not 0)
-                {
-                    var pcList = _context.ParliamentConstituencyMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PcStatus == true && d.PCMasterId == boothReportModel.PCMasterId).AsEnumerable().FirstOrDefault();
-
-                    var assemblyList = _context.AssemblyMaster
-                        .Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PCMasterId == boothReportModel.PCMasterId && d.AssemblyStatus == true && d.AssemblyMasterId == boothReportModel.AssemblyMasterId)
-                        .OrderBy(d => d.AssemblyCode)
-                        .FirstOrDefault();
-
-                    var boothList = _context.BoothMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.BoothStatus && d.AssemblyMasterId == boothReportModel.AssemblyMasterId && d.AssemblyMasterId == assemblyList.AssemblyMasterId).ToList();
-
-                    if (boothList.Count > 0)
-                    {
-                        foreach (var booth in boothList)
-                        {
-                            VTReportModel report = new VTReportModel();
-                            report.Header = $"{state.StateName}({state.StateCode})";
-                            report.Title = $"{state.StateName},({pcList.PcName})";
-                            report.Type = "PCACWise";
-                            report.PCCode = pcList.PcCodeNo;
-                            report.PCName = pcList.PcName;
-                            report.AssemblyName = assemblyList.AssemblyName;
-                            report.AssemblyCode = assemblyList.AssemblyCode.ToString();
-                            var BoothRecord = _context.BoothMaster.Where(d => d.BoothMasterId == booth.BoothMasterId).FirstOrDefault();
-                            report.BoothName = BoothRecord.BoothName + " " + BoothRecord.BoothCode_No.ToString();
-
-                            var pollingStationData = _context.PollingStationMaster.Include(psm => psm.PollingStationGender).Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PCasterId == boothReportModel.PCMasterId && d.BoothMasterId == booth.BoothMasterId).ToList();
-                            if (pollingStationData != null && pollingStationData.Count > 0)
-                            {
-                                //type 1: Electorals
-
-                                report.MaleElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null)
-                                                                          .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1)
-                                                                          .Sum(gender => gender.Male));
-                                report.FemaleElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null)
-                                                                            .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1)
-                                                                            .Sum(gender => gender.Female));
-                                report.ThirdGenderElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null)
-                                                                                .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1)
-                                                                                .Sum(gender => gender.ThirdGender));
-                                report.TotalElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null)
-                                                                           .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1)
-                                                                           .Sum(gender => gender.Total));
-
-                                //type 2: Votes polled
-                                report.MaleVoters = pollingStationData.Where(psm => psm.PollingStationGender != null)
-                                                                       .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2)
-                                                                       .Sum(gender => gender.Male));
-                                report.FemaleVoters = pollingStationData.Where(psm => psm.PollingStationGender != null)
-                                                                         .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2)
-                                                                         .Sum(gender => gender.Female));
-                                report.ThirdGenderVoters = pollingStationData.Where(psm => psm.PollingStationGender != null)
-                                                                             .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2)
-                                                                             .Sum(gender => gender.ThirdGender));
-                                report.TotalVoters = pollingStationData.Where(psm => psm.PollingStationGender != null)
-                                                                        .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2)
-                                                                        .Sum(gender => gender.Total));
-
-                                report.EPIC = pollingStationData.Sum(psm => psm.VotePolledEPIC);
-                                report.VotePolledOtherDocument = pollingStationData.Sum(psm =>
-                                {
-                                    if (int.TryParse(psm.VotePolledOtherDocument, out int result))
-                                    {
-                                        return result;
-                                    }
-                                    else
-                                    {
-                                        return 0;
-                                    }
-                                });
-                                report.MalePercentage = report.MaleVoters == 0 ? 0 : (double)report.MaleVoters / (double)report.MaleElectoral * 100;
-                                if (double.IsInfinity(report.MalePercentage))
-                                {
-                                    report.MalePercentage = 0;
-                                }
-
-                                report.FemalePercentage = report.FemaleVoters == 0 ? 0 : (double)report.FemaleVoters / (double)report.FemaleElectoral * 100;
-                                if (double.IsInfinity(report.FemalePercentage))
-                                {
-                                    report.FemalePercentage = 0;
-                                }
-                                report.ThirdGenderPercentage = report.ThirdGenderVoters == 0 ? 0 : (double)report.ThirdGenderVoters / (double)report.ThirdGenderElectoral * 100;
-                                if (double.IsInfinity(report.ThirdGenderPercentage))
-                                {
-                                    report.ThirdGenderPercentage = 0;
-                                }
-                                report.TotalPercentage = report.TotalVoters == 0 ? 0 : (double)report.TotalVoters / (double)report.TotalElectoral * 100;
-                                if (double.IsInfinity(report.TotalPercentage))
-                                {
-                                    report.TotalPercentage = 0;
-                                }
-                                consolidateBoothReports.Add(report);
-
-
-
-                            }
-                            else
-                            {  //type 1: Electorals
-                                report.MaleElectoral = 0;
-                                report.FemaleElectoral = 0;
-                                report.ThirdGenderElectoral = 0;
-                                report.TotalElectoral = 0;
-
-                                //type 2: Votes polled
-                                report.MaleVoters = 0;
-                                report.FemaleVoters = 0;
-                                report.ThirdGenderVoters = 0;
-                                report.TotalVoters = 0;
-                                report.EPIC = 0;
-                                report.VotePolledOtherDocument = 0;
-                                report.MalePercentage = 0;
-                                report.FemalePercentage = 0;
-                                report.ThirdGenderPercentage = 0;
-                                report.TotalPercentage = 0;
-                                consolidateBoothReports.Add(report);
-
-
-
-                            }
-
-                        }
-
-                    }
-                    else
-
-                    {
-                        VTReportModel report = new VTReportModel();
-                        report.Header = $"{state.StateName}({state.StateCode})";
-                        report.Title = $"{state.StateName},({pcList.PcName})";
-                        report.Type = "PCACWise";
-                        report.AssemblyName = "N/A";
-                        report.AssemblyCode = "N/A";
-                        report.MaleElectoral = 0;
-                        report.FemaleElectoral = 0;
-                        report.ThirdGenderElectoral = 0;
-                        report.TotalElectoral = 0;
-
-                        //type 2: Votes polled
-                        report.MaleVoters = 0;
-                        report.FemaleVoters = 0;
-                        report.ThirdGenderVoters = 0;
-                        report.TotalVoters = 0;
-                        report.EPIC = 0;
-                        report.VotePolledOtherDocument = 0;
-                        report.MalePercentage = 0;
-                        report.FemalePercentage = 0;
-                        report.ThirdGenderPercentage = 0;
-                        report.TotalPercentage = 0;
-                        consolidateBoothReports.Add(report);
-                    }
-                    // add Grand Total Row
-
-                    VTReportModel reportTotal = new VTReportModel();
-                    reportTotal.Header = "";
-                    reportTotal.Title = "";
-                    reportTotal.Type = "";
-                    reportTotal.DistrictName = "";
-                    reportTotal.DistrictCode = "";
-                    reportTotal.AssemblyName = "Total";
-                    reportTotal.AssemblyCode = "";
-                    reportTotal.MaleElectoral = consolidateBoothReports.Sum(report => report.MaleElectoral);
-                    reportTotal.FemaleElectoral = consolidateBoothReports.Sum(report => report.FemaleElectoral);
-                    reportTotal.ThirdGenderElectoral = consolidateBoothReports.Sum(report => report.ThirdGenderElectoral);
-                    reportTotal.TotalElectoral = consolidateBoothReports.Sum(report => report.TotalElectoral);
-                    reportTotal.MaleVoters = consolidateBoothReports.Sum(report => report.MaleVoters);
-                    reportTotal.FemaleVoters = consolidateBoothReports.Sum(report => report.FemaleVoters);
-                    reportTotal.ThirdGenderVoters = consolidateBoothReports.Sum(report => report.ThirdGenderVoters);
-                    reportTotal.TotalVoters = consolidateBoothReports.Sum(report => report.TotalVoters);
-                    reportTotal.EPIC = consolidateBoothReports.Sum(report => report.EPIC);
-                    reportTotal.VotePolledOtherDocument = consolidateBoothReports.Sum(report => report.VotePolledOtherDocument);
-
-
-                    reportTotal.MalePercentage = (reportTotal.MaleVoters != 0 && reportTotal.MaleElectoral != 0)
-  ? ((double)reportTotal.MaleVoters / (double)reportTotal.MaleElectoral) * 100
-  : 0;
-
-                    //reportGrandTotal.FemalePercentage = (double)reportGrandTotal.FemaleVoters / (double)reportGrandTotal.FemaleElectoral * 100;
-                    reportTotal.FemalePercentage = (reportTotal.FemaleVoters != 0 && reportTotal.FemaleElectoral != 0)
-     ? ((double)reportTotal.FemaleVoters / (double)reportTotal.FemaleElectoral) * 100 : 0;
-
-                    reportTotal.ThirdGenderPercentage = (reportTotal.ThirdGenderVoters != 0 && reportTotal.ThirdGenderElectoral != 0)
-    ? ((double)reportTotal.ThirdGenderVoters / (double)reportTotal.ThirdGenderElectoral) * 100
-    : 0;
-
-                    //reportGrandTotal.TotalPercentage = (double)reportGrandTotal.TotalVoters / (double)reportGrandTotal.TotalElectoral * 100;
-
-
-                    reportTotal.TotalPercentage = (reportTotal.TotalVoters != 0 && reportTotal.TotalElectoral != 0)
-   ? ((double)reportTotal.TotalVoters / (double)reportTotal.TotalElectoral) * 100
-   : 0;
-
-
-
-                    consolidateBoothReports.Add(reportTotal);
-
-
-
-                    return consolidateBoothReports;
-
-
-
-                }
-                else
-
-                {
-
-                    var pcList = _context.ParliamentConstituencyMaster
-    .Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PcStatus == true)
-    .AsEnumerable() // Switch to client-side evaluation
-    .OrderBy(p => int.Parse(p.PcCodeNo))
-    .ToList();
-
-
-                    foreach (var pc in pcList)
-                    {
-                        int assemblyCount = 0; List<VTReportModel> assemblylistReport = new List<VTReportModel>();
-                        var assemblyList = _context.AssemblyMaster
-                           .Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PCMasterId == pc.PCMasterId && d.AssemblyStatus == true)
-                           .OrderBy(d => d.AssemblyCode)
-                           .ToList();
-
-                        if (assemblyList.Count > 0)
-                        {
-                            foreach (var assembly in assemblyList)
-                            {
-                                VTReportModel report = new VTReportModel();
-                                report.Header = $"{state.StateName}({state.StateCode}),{pc.PcName}({pc.PcCodeNo})";
-                                report.Title = $"{pc.PcName}";
-                                report.Type = "PCACWise";
-                                report.PCCode = pc.PcCodeNo;
-                                report.PCName = pc.PcName;
-                                report.AssemblyName = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId)
-                                                                   .Select(p => p.AssemblyName).FirstOrDefault();
-                                report.AssemblyCode = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId)
-                                                                   .Select(p => p.AssemblyCode.ToString()).FirstOrDefault();
-                                var pollingStationData = _context.PollingStationMaster.Include(psm => psm.PollingStationGender).Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).ToList();
-                                if (pollingStationData != null && pollingStationData.Count > 0)
-                                {
-                                    //type 1: Electorals
-                                    report.MaleElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null)
-                                                                              .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1)
-                                                                              .Sum(gender => gender.Male));
-                                    report.FemaleElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null)
-                                                                                .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1)
-                                                                                .Sum(gender => gender.Female));
-                                    report.ThirdGenderElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null)
-                                                                                    .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1)
-                                                                                    .Sum(gender => gender.ThirdGender));
-                                    report.TotalElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null)
-                                                                               .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1)
-                                                                               .Sum(gender => gender.Total));
-
-                                    //type 2: Votes polled
-                                    report.MaleVoters = pollingStationData.Where(psm => psm.PollingStationGender != null)
-                                                                           .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2)
-                                                                           .Sum(gender => gender.Male));
-                                    report.FemaleVoters = pollingStationData.Where(psm => psm.PollingStationGender != null)
-                                                                             .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2)
-                                                                             .Sum(gender => gender.Female));
-                                    report.ThirdGenderVoters = pollingStationData.Where(psm => psm.PollingStationGender != null)
-                                                                                 .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2)
-                                                                                 .Sum(gender => gender.ThirdGender));
-                                    report.TotalVoters = pollingStationData.Where(psm => psm.PollingStationGender != null)
-                                                                            .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2)
-                                                                            .Sum(gender => gender.Total));
-
-                                    report.EPIC = pollingStationData.Sum(psm => psm.VotePolledEPIC);
-                                    report.VotePolledOtherDocument = pollingStationData.Sum(psm =>
-                                    {
-                                        if (int.TryParse(psm.VotePolledOtherDocument, out int result))
-                                        {
-                                            return result;
-                                        }
-                                        else
-                                        {
-                                            return 0;
-                                        }
-                                    });
-                                    report.MalePercentage = report.MaleVoters == 0 ? 0 : (double)report.MaleVoters / (double)report.MaleElectoral * 100;
-                                    if (double.IsInfinity(report.MalePercentage))
-                                    {
-                                        report.MalePercentage = 0;
-                                    }
-
-                                    report.FemalePercentage = report.FemaleVoters == 0 ? 0 : (double)report.FemaleVoters / (double)report.FemaleElectoral * 100;
-                                    if (double.IsInfinity(report.FemalePercentage))
-                                    {
-                                        report.FemalePercentage = 0;
-                                    }
-                                    report.ThirdGenderPercentage = report.ThirdGenderVoters == 0 ? 0 : (double)report.ThirdGenderVoters / (double)report.ThirdGenderElectoral * 100;
-                                    if (double.IsInfinity(report.ThirdGenderPercentage))
-                                    {
-                                        report.ThirdGenderPercentage = 0;
-                                    }
-                                    report.TotalPercentage = report.TotalVoters == 0 ? 0 : (double)report.TotalVoters / (double)report.TotalElectoral * 100;
-                                    if (double.IsInfinity(report.TotalPercentage))
-                                    {
-                                        report.TotalPercentage = 0;
-                                    }
-
-
-                                    consolidateBoothReports.Add(report); assemblylistReport.Add(report);
-                                    assemblyCount++;
-
-
-                                }
-                                else
-                                {  //type 1: Electorals
-                                    report.MaleElectoral = 0;
-                                    report.FemaleElectoral = 0;
-                                    report.ThirdGenderElectoral = 0;
-                                    report.TotalElectoral = 0;
-
-                                    //type 2: Votes polled
-                                    report.MaleVoters = 0;
-                                    report.FemaleVoters = 0;
-                                    report.ThirdGenderVoters = 0;
-                                    report.TotalVoters = 0;
-                                    report.EPIC = 0;
-                                    report.VotePolledOtherDocument = 0;
-                                    report.MalePercentage = 0;
-                                    report.FemalePercentage = 0;
-                                    report.ThirdGenderPercentage = 0;
-                                    report.TotalPercentage = 0;
-                                    consolidateBoothReports.Add(report); assemblylistReport.Add(report);
-                                    assemblyCount++;
-
-
-                                }
-
-
-                            }
-
-                        }
-                        else
-                        {
-                            VTReportModel report = new VTReportModel();
-                            report.Header = $"{state.StateName}({state.StateCode})";
-                            report.Title = $"{state.StateName}";
-                            report.Type = "PCACWise";
-                            report.PCCode = pc.PcCodeNo;
-                            report.PCName = pc.PcName;
-                            report.AssemblyName = "N/A";
-                            report.AssemblyCode = "N/A";
-                            report.MaleElectoral = 0;
-                            report.FemaleElectoral = 0;
-                            report.ThirdGenderElectoral = 0;
-                            report.TotalElectoral = 0;
-
-                            //type 2: Votes polled
-                            report.MaleVoters = 0;
-                            report.FemaleVoters = 0;
-                            report.ThirdGenderVoters = 0;
-                            report.TotalVoters = 0;
-                            report.EPIC = 0;
-                            report.MalePercentage = 0;
-                            report.FemalePercentage = 0;
-                            report.ThirdGenderPercentage = 0;
-                            report.TotalPercentage = 0;
-                            report.VotePolledOtherDocument = 0;
-                            consolidateBoothReports.Add(report);
-
-                        }
-                        if (assemblyList.Count == assemblyCount)
-                        {
-                            // add Total Row
-                            VTReportModel reportTotal = new VTReportModel();
-                            reportTotal.Header = "";
-                            reportTotal.Title = "";
-                            reportTotal.Type = "";
-                            reportTotal.DistrictName = "";
-                            reportTotal.DistrictCode = "";
-
-                            reportTotal.AssemblyName = "Total";
-                            reportTotal.AssemblyCode = "";
-                            reportTotal.MaleElectoral = assemblylistReport.Sum(report => report.MaleElectoral);
-                            reportTotal.FemaleElectoral = assemblylistReport.Sum(report => report.FemaleElectoral);
-                            reportTotal.ThirdGenderElectoral = assemblylistReport.Sum(report => report.ThirdGenderElectoral);
-                            reportTotal.TotalElectoral = assemblylistReport.Sum(report => report.TotalElectoral);
-                            reportTotal.MaleVoters = assemblylistReport.Sum(report => report.MaleVoters);
-                            reportTotal.FemaleVoters = assemblylistReport.Sum(report => report.FemaleVoters);
-                            reportTotal.ThirdGenderVoters = assemblylistReport.Sum(report => report.ThirdGenderVoters);
-                            reportTotal.TotalVoters = assemblylistReport.Sum(report => report.TotalVoters);
-                            reportTotal.EPIC = assemblylistReport.Sum(report => report.EPIC);
-                            reportTotal.VotePolledOtherDocument = assemblylistReport.Sum(report => report.VotePolledOtherDocument);
-
-                            if (assemblylistReport.Any())
-                            {
-                                reportTotal.MalePercentage = reportTotal.MaleVoters == 0 ? 0 : (double)reportTotal.MaleVoters / (double)reportTotal.MaleElectoral * 100;
-                                if (double.IsInfinity(reportTotal.MalePercentage))
-                                {
-                                    reportTotal.MalePercentage = 0;
-                                }
-                                reportTotal.FemalePercentage = reportTotal.FemaleVoters == 0 ? 0 : (double)reportTotal.FemaleVoters / (double)reportTotal.FemaleElectoral * 100;
-                                if (double.IsInfinity(reportTotal.FemalePercentage))
-                                {
-                                    reportTotal.FemalePercentage = 0;
-                                }
-                                reportTotal.ThirdGenderPercentage = reportTotal.ThirdGenderVoters == 0 ? 0 : (double)reportTotal.ThirdGenderVoters / (double)reportTotal.ThirdGenderElectoral * 100;
-                                if (double.IsInfinity(reportTotal.ThirdGenderPercentage))
-                                {
-                                    reportTotal.ThirdGenderPercentage = 0;
-                                }
-                                reportTotal.TotalPercentage = reportTotal.TotalVoters == 0 ? 0 : (double)reportTotal.TotalVoters / (double)reportTotal.TotalElectoral * 100;
-                                if (double.IsInfinity(reportTotal.TotalPercentage))
-                                {
-                                    reportTotal.TotalPercentage = 0;
-                                }
-                            }
-                            else
-                            {
-                                // Handle the case when assemblylistReport is empty, for example, set averages to 0
-                                reportTotal.MalePercentage = 0;
-                                reportTotal.FemalePercentage = 0;
-                                reportTotal.ThirdGenderPercentage = 0;
-                                reportTotal.TotalPercentage = 0;
-                            }
-
-
-
-
-                            assemblylistTotal.Add(reportTotal);
-                            consolidateBoothReports.Add(reportTotal);
-
-                        }
-
-                    }
-                    if (consolidateBoothReports.Count > 0)
-                    {
-                        // add grand Total after iterations
-                        VTReportModel reportGrandTotal = new VTReportModel();
-                        reportGrandTotal.Header = "";
-                        reportGrandTotal.Title = "";
-                        reportGrandTotal.Type = "";
-                        reportGrandTotal.DistrictName = "";
-                        reportGrandTotal.DistrictCode = "";
-                        reportGrandTotal.AssemblyName = "Grand Total";
-                        reportGrandTotal.AssemblyCode = "";
-                        reportGrandTotal.MaleElectoral = assemblylistTotal.Sum(report => report.MaleElectoral);
-                        reportGrandTotal.FemaleElectoral = assemblylistTotal.Sum(report => report.FemaleElectoral);
-                        reportGrandTotal.ThirdGenderElectoral = assemblylistTotal.Sum(report => report.ThirdGenderElectoral);
-                        reportGrandTotal.TotalElectoral = assemblylistTotal.Sum(report => report.TotalElectoral);
-                        reportGrandTotal.MaleVoters = assemblylistTotal.Sum(report => report.MaleVoters);
-                        reportGrandTotal.FemaleVoters = assemblylistTotal.Sum(report => report.FemaleVoters);
-                        reportGrandTotal.ThirdGenderVoters = assemblylistTotal.Sum(report => report.ThirdGenderVoters);
-                        reportGrandTotal.TotalVoters = assemblylistTotal.Sum(report => report.TotalVoters);
-                        reportGrandTotal.EPIC = assemblylistTotal.Sum(report => report.EPIC);
-                        reportGrandTotal.VotePolledOtherDocument = assemblylistTotal.Sum(report => report.VotePolledOtherDocument);
-
-
-                        //   reportGrandTotal.MalePercentage = (double)reportGrandTotal.MaleVoters / (double)reportGrandTotal.MaleElectoral * 100;
-                        reportGrandTotal.MalePercentage = (reportGrandTotal.MaleVoters != 0 && reportGrandTotal.MaleElectoral != 0)
-    ? ((double)reportGrandTotal.MaleVoters / (double)reportGrandTotal.MaleElectoral) * 100
-    : 0;
-
-                        //reportGrandTotal.FemalePercentage = (double)reportGrandTotal.FemaleVoters / (double)reportGrandTotal.FemaleElectoral * 100;
-                        reportGrandTotal.FemalePercentage = (reportGrandTotal.FemaleVoters != 0 && reportGrandTotal.FemaleElectoral != 0)
-         ? ((double)reportGrandTotal.FemaleVoters / (double)reportGrandTotal.FemaleElectoral) * 100 : 0;
-
-                        reportGrandTotal.ThirdGenderPercentage = (reportGrandTotal.ThirdGenderVoters != 0 && reportGrandTotal.ThirdGenderElectoral != 0)
-        ? ((double)reportGrandTotal.ThirdGenderVoters / (double)reportGrandTotal.ThirdGenderElectoral) * 100
-        : 0;
-
-                        //reportGrandTotal.TotalPercentage = (double)reportGrandTotal.TotalVoters / (double)reportGrandTotal.TotalElectoral * 100;
-
-
-                        reportGrandTotal.TotalPercentage = (reportGrandTotal.TotalVoters != 0 && reportGrandTotal.TotalElectoral != 0)
-       ? ((double)reportGrandTotal.TotalVoters / (double)reportGrandTotal.TotalElectoral) * 100
-       : 0;
-
-                        consolidateBoothReports.Add(reportGrandTotal);
-                    }
-
-                    return consolidateBoothReports;
-
-                    return consolidateBoothReports;
-                }
-            }
+            //          else if (boothReportModel.StateMasterId is not 0 && boothReportModel.Type == "PCACWise")
+
+            //          {
+            //              if (boothReportModel.PCMasterId is not 0 && boothReportModel.AssemblyMasterId is 0)
+            //              {
+            //                  var pcList = _context.ParliamentConstituencyMaster
+            //   .Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PcStatus == true && d.PCMasterId == boothReportModel.PCMasterId)
+            //   .AsEnumerable().FirstOrDefault();
+
+            //                  int assemblyCount = 0; List<VTReportModel> assemblylistReport = new List<VTReportModel>();
+            //                  var assemblyList = _context.AssemblyMaster
+            //                        .Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PCMasterId == boothReportModel.PCMasterId && d.AssemblyStatus == true)
+            //                        .OrderBy(d => d.AssemblyCode)
+            //                        .ToList();
+            //                  if (assemblyList.Count > 0)
+            //                  {
+            //                      foreach (var assembly in assemblyList)
+            //                      {
+            //                          VTReportModel report = new VTReportModel();
+            //                          report.Header = $"{state.StateName}({state.StateCode})";
+            //                          report.Title = $"{state.StateName}";
+            //                          report.Type = "PCACWise";
+            //                          report.PCCode = pcList.PcCodeNo;
+            //                          report.PCName = pcList.PcName;
+            //                          report.AssemblyName = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId)
+            //                                                             .Select(p => p.AssemblyName).FirstOrDefault();
+            //                          report.AssemblyCode = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId)
+            //                                                             .Select(p => p.AssemblyCode.ToString()).FirstOrDefault();
+            //                          var pollingStationData = _context.PollingStationMaster.Include(psm => psm.PollingStationGender).Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).ToList();
+            //                          if (pollingStationData != null && pollingStationData.Count > 0)
+            //                          {
+            //                              //type 1: Electorals
+            //                              report.MaleElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null)
+            //                                                                        .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1)
+            //                                                                        .Sum(gender => gender.Male));
+            //                              report.FemaleElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null)
+            //                                                                          .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1)
+            //                                                                          .Sum(gender => gender.Female));
+            //                              report.ThirdGenderElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null)
+            //                                                                              .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1)
+            //                                                                              .Sum(gender => gender.ThirdGender));
+            //                              report.TotalElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null)
+            //                                                                         .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1)
+            //                                                                         .Sum(gender => gender.Total));
+
+            //                              //type 2: Votes polled
+            //                              report.MaleVoters = pollingStationData.Where(psm => psm.PollingStationGender != null)
+            //                                                                     .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2)
+            //                                                                     .Sum(gender => gender.Male));
+            //                              report.FemaleVoters = pollingStationData.Where(psm => psm.PollingStationGender != null)
+            //                                                                       .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2)
+            //                                                                       .Sum(gender => gender.Female));
+            //                              report.ThirdGenderVoters = pollingStationData.Where(psm => psm.PollingStationGender != null)
+            //                                                                           .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2)
+            //                                                                           .Sum(gender => gender.ThirdGender));
+            //                              report.TotalVoters = pollingStationData.Where(psm => psm.PollingStationGender != null)
+            //                                                                      .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2)
+            //                                                                      .Sum(gender => gender.Total));
+
+            //                              report.EPIC = pollingStationData.Sum(psm => psm.VotePolledEPIC);
+            //                              report.VotePolledOtherDocument = pollingStationData.Sum(psm =>
+            //                              {
+            //                                  if (int.TryParse(psm.VotePolledOtherDocument, out int result))
+            //                                  {
+            //                                      return result;
+            //                                  }
+            //                                  else
+            //                                  {
+            //                                      return 0;
+            //                                  }
+            //                              });
+            //                              report.MalePercentage = report.MaleVoters == 0 ? 0 : (double)report.MaleVoters / (double)report.MaleElectoral * 100;
+            //                              if (double.IsInfinity(report.MalePercentage))
+            //                              {
+            //                                  report.MalePercentage = 0;
+            //                              }
+
+            //                              report.FemalePercentage = report.FemaleVoters == 0 ? 0 : (double)report.FemaleVoters / (double)report.FemaleElectoral * 100;
+            //                              if (double.IsInfinity(report.FemalePercentage))
+            //                              {
+            //                                  report.FemalePercentage = 0;
+            //                              }
+            //                              report.ThirdGenderPercentage = report.ThirdGenderVoters == 0 ? 0 : (double)report.ThirdGenderVoters / (double)report.ThirdGenderElectoral * 100;
+            //                              if (double.IsInfinity(report.ThirdGenderPercentage))
+            //                              {
+            //                                  report.ThirdGenderPercentage = 0;
+            //                              }
+            //                              report.TotalPercentage = report.TotalVoters == 0 ? 0 : (double)report.TotalVoters / (double)report.TotalElectoral * 100;
+            //                              if (double.IsInfinity(report.TotalPercentage))
+            //                              {
+            //                                  report.TotalPercentage = 0;
+            //                              }
+            //                              consolidateBoothReports.Add(report); assemblylistReport.Add(report);
+            //                              assemblyCount++;
+
+
+            //                          }
+            //                          else
+            //                          {  //type 1: Electorals
+            //                              report.MaleElectoral = 0;
+            //                              report.FemaleElectoral = 0;
+            //                              report.ThirdGenderElectoral = 0;
+            //                              report.TotalElectoral = 0;
+
+            //                              //type 2: Votes polled
+            //                              report.MaleVoters = 0;
+            //                              report.FemaleVoters = 0;
+            //                              report.ThirdGenderVoters = 0;
+            //                              report.TotalVoters = 0;
+            //                              report.EPIC = 0;
+            //                              report.VotePolledOtherDocument = 0;
+            //                              report.MalePercentage = 0;
+            //                              report.FemalePercentage = 0;
+            //                              report.ThirdGenderPercentage = 0;
+            //                              report.TotalPercentage = 0;
+
+            //                              consolidateBoothReports.Add(report); assemblylistReport.Add(report);
+            //                              assemblyCount++;
+
+
+            //                          }
+
+
+            //                      }
+
+            //                  }
+            //                  else
+            //                  {
+            //                      VTReportModel report = new VTReportModel();
+            //                      report.Header = $"{state.StateName}({state.StateCode})";
+            //                      report.Title = $"{state.StateName}";
+            //                      report.Type = "PCACWise";
+            //                      report.PCCode = pcList.PcCodeNo;
+            //                      report.PCName = pcList.PcName;
+            //                      report.AssemblyName = "N/A";
+            //                      report.AssemblyCode = "N/A";
+            //                      report.MaleElectoral = 0;
+            //                      report.FemaleElectoral = 0;
+            //                      report.ThirdGenderElectoral = 0;
+            //                      report.TotalElectoral = 0;
+
+            //                      //type 2: Votes polled
+            //                      report.MaleVoters = 0;
+            //                      report.FemaleVoters = 0;
+            //                      report.ThirdGenderVoters = 0;
+            //                      report.TotalVoters = 0;
+            //                      report.EPIC = 0;
+            //                      report.VotePolledOtherDocument = 0;
+            //                      report.MalePercentage = 0;
+            //                      report.FemalePercentage = 0;
+            //                      report.ThirdGenderPercentage = 0;
+            //                      report.TotalPercentage = 0;
+            //                      consolidateBoothReports.Add(report);
+
+            //                  }
+            //                  if (assemblyList.Count == assemblyCount)
+            //                  {
+            //                      // add Grand Total Row
+
+            //                      VTReportModel reportTotal = new VTReportModel();
+            //                      reportTotal.Header = "";
+            //                      reportTotal.Title = "";
+            //                      reportTotal.Type = "";
+            //                      reportTotal.DistrictName = "";
+            //                      reportTotal.DistrictCode = "";
+            //                      reportTotal.AssemblyName = "Total";
+            //                      reportTotal.AssemblyCode = "";
+            //                      reportTotal.MaleElectoral = assemblylistReport.Sum(report => report.MaleElectoral);
+            //                      reportTotal.FemaleElectoral = assemblylistReport.Sum(report => report.FemaleElectoral);
+            //                      reportTotal.ThirdGenderElectoral = assemblylistReport.Sum(report => report.ThirdGenderElectoral);
+            //                      reportTotal.TotalElectoral = assemblylistReport.Sum(report => report.TotalElectoral);
+            //                      reportTotal.MaleVoters = assemblylistReport.Sum(report => report.MaleVoters);
+            //                      reportTotal.FemaleVoters = assemblylistReport.Sum(report => report.FemaleVoters);
+            //                      reportTotal.ThirdGenderVoters = assemblylistReport.Sum(report => report.ThirdGenderVoters);
+            //                      reportTotal.TotalVoters = assemblylistReport.Sum(report => report.TotalVoters);
+            //                      reportTotal.EPIC = assemblylistReport.Sum(report => report.EPIC);
+            //                      reportTotal.VotePolledOtherDocument = assemblylistReport.Sum(report => report.VotePolledOtherDocument);
+            //                      //   reportGrandTotal.MalePercentage = (double)reportGrandTotal.MaleVoters / (double)reportGrandTotal.MaleElectoral * 100;
+            //                      reportTotal.MalePercentage = (reportTotal.MaleVoters != 0 && reportTotal.MaleElectoral != 0)
+            //  ? ((double)reportTotal.MaleVoters / (double)reportTotal.MaleElectoral) * 100
+            //  : 0;
+
+            //                      //reportGrandTotal.FemalePercentage = (double)reportGrandTotal.FemaleVoters / (double)reportGrandTotal.FemaleElectoral * 100;
+            //                      reportTotal.FemalePercentage = (reportTotal.FemaleVoters != 0 && reportTotal.FemaleElectoral != 0)
+            //       ? ((double)reportTotal.FemaleVoters / (double)reportTotal.FemaleElectoral) * 100 : 0;
+
+            //                      reportTotal.ThirdGenderPercentage = (reportTotal.ThirdGenderVoters != 0 && reportTotal.ThirdGenderElectoral != 0)
+            //      ? ((double)reportTotal.ThirdGenderVoters / (double)reportTotal.ThirdGenderElectoral) * 100
+            //      : 0;
+
+            //                      //reportGrandTotal.TotalPercentage = (double)reportGrandTotal.TotalVoters / (double)reportGrandTotal.TotalElectoral * 100;
+
+
+            //                      reportTotal.TotalPercentage = (reportTotal.TotalVoters != 0 && reportTotal.TotalElectoral != 0)
+            //     ? ((double)reportTotal.TotalVoters / (double)reportTotal.TotalElectoral) * 100
+            //     : 0;
+            //                      assemblylistTotal.Add(reportTotal);
+            //                      consolidateBoothReports.Add(reportTotal);
+
+            //                  }
+
+
+            //                  return consolidateBoothReports;
+            //              }
+            //              else if (boothReportModel.PCMasterId is not 0 && boothReportModel.AssemblyMasterId is not 0)
+            //              {
+            //                  var pcList = _context.ParliamentConstituencyMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PcStatus == true && d.PCMasterId == boothReportModel.PCMasterId).AsEnumerable().FirstOrDefault();
+
+            //                  var assemblyList = _context.AssemblyMaster
+            //                      .Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PCMasterId == boothReportModel.PCMasterId && d.AssemblyStatus == true && d.AssemblyMasterId == boothReportModel.AssemblyMasterId)
+            //                      .OrderBy(d => d.AssemblyCode)
+            //                      .FirstOrDefault();
+
+            //                  var boothList = _context.BoothMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.BoothStatus && d.AssemblyMasterId == boothReportModel.AssemblyMasterId && d.AssemblyMasterId == assemblyList.AssemblyMasterId).ToList();
+
+            //                  if (boothList.Count > 0)
+            //                  {
+            //                      foreach (var booth in boothList)
+            //                      {
+            //                          VTReportModel report = new VTReportModel();
+            //                          report.Header = $"{state.StateName}({state.StateCode})";
+            //                          report.Title = $"{state.StateName},({pcList.PcName})";
+            //                          report.Type = "PCACWise";
+            //                          report.PCCode = pcList.PcCodeNo;
+            //                          report.PCName = pcList.PcName;
+            //                          report.AssemblyName = assemblyList.AssemblyName;
+            //                          report.AssemblyCode = assemblyList.AssemblyCode.ToString();
+            //                          var BoothRecord = _context.BoothMaster.Where(d => d.BoothMasterId == booth.BoothMasterId).FirstOrDefault();
+            //                          report.BoothName = BoothRecord.BoothName + " " + BoothRecord.BoothCode_No.ToString();
+
+            //                          var pollingStationData = _context.PollingStationMaster.Include(psm => psm.PollingStationGender).Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PCasterId == boothReportModel.PCMasterId && d.BoothMasterId == booth.BoothMasterId).ToList();
+            //                          if (pollingStationData != null && pollingStationData.Count > 0)
+            //                          {
+            //                              //type 1: Electorals
+
+            //                              report.MaleElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null)
+            //                                                                        .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1)
+            //                                                                        .Sum(gender => gender.Male));
+            //                              report.FemaleElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null)
+            //                                                                          .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1)
+            //                                                                          .Sum(gender => gender.Female));
+            //                              report.ThirdGenderElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null)
+            //                                                                              .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1)
+            //                                                                              .Sum(gender => gender.ThirdGender));
+            //                              report.TotalElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null)
+            //                                                                         .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1)
+            //                                                                         .Sum(gender => gender.Total));
+
+            //                              //type 2: Votes polled
+            //                              report.MaleVoters = pollingStationData.Where(psm => psm.PollingStationGender != null)
+            //                                                                     .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2)
+            //                                                                     .Sum(gender => gender.Male));
+            //                              report.FemaleVoters = pollingStationData.Where(psm => psm.PollingStationGender != null)
+            //                                                                       .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2)
+            //                                                                       .Sum(gender => gender.Female));
+            //                              report.ThirdGenderVoters = pollingStationData.Where(psm => psm.PollingStationGender != null)
+            //                                                                           .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2)
+            //                                                                           .Sum(gender => gender.ThirdGender));
+            //                              report.TotalVoters = pollingStationData.Where(psm => psm.PollingStationGender != null)
+            //                                                                      .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2)
+            //                                                                      .Sum(gender => gender.Total));
+
+            //                              report.EPIC = pollingStationData.Sum(psm => psm.VotePolledEPIC);
+            //                              report.VotePolledOtherDocument = pollingStationData.Sum(psm =>
+            //                              {
+            //                                  if (int.TryParse(psm.VotePolledOtherDocument, out int result))
+            //                                  {
+            //                                      return result;
+            //                                  }
+            //                                  else
+            //                                  {
+            //                                      return 0;
+            //                                  }
+            //                              });
+            //                              report.MalePercentage = report.MaleVoters == 0 ? 0 : (double)report.MaleVoters / (double)report.MaleElectoral * 100;
+            //                              if (double.IsInfinity(report.MalePercentage))
+            //                              {
+            //                                  report.MalePercentage = 0;
+            //                              }
+
+            //                              report.FemalePercentage = report.FemaleVoters == 0 ? 0 : (double)report.FemaleVoters / (double)report.FemaleElectoral * 100;
+            //                              if (double.IsInfinity(report.FemalePercentage))
+            //                              {
+            //                                  report.FemalePercentage = 0;
+            //                              }
+            //                              report.ThirdGenderPercentage = report.ThirdGenderVoters == 0 ? 0 : (double)report.ThirdGenderVoters / (double)report.ThirdGenderElectoral * 100;
+            //                              if (double.IsInfinity(report.ThirdGenderPercentage))
+            //                              {
+            //                                  report.ThirdGenderPercentage = 0;
+            //                              }
+            //                              report.TotalPercentage = report.TotalVoters == 0 ? 0 : (double)report.TotalVoters / (double)report.TotalElectoral * 100;
+            //                              if (double.IsInfinity(report.TotalPercentage))
+            //                              {
+            //                                  report.TotalPercentage = 0;
+            //                              }
+            //                              consolidateBoothReports.Add(report);
+
+
+
+            //                          }
+            //                          else
+            //                          {  //type 1: Electorals
+            //                              report.MaleElectoral = 0;
+            //                              report.FemaleElectoral = 0;
+            //                              report.ThirdGenderElectoral = 0;
+            //                              report.TotalElectoral = 0;
+
+            //                              //type 2: Votes polled
+            //                              report.MaleVoters = 0;
+            //                              report.FemaleVoters = 0;
+            //                              report.ThirdGenderVoters = 0;
+            //                              report.TotalVoters = 0;
+            //                              report.EPIC = 0;
+            //                              report.VotePolledOtherDocument = 0;
+            //                              report.MalePercentage = 0;
+            //                              report.FemalePercentage = 0;
+            //                              report.ThirdGenderPercentage = 0;
+            //                              report.TotalPercentage = 0;
+            //                              consolidateBoothReports.Add(report);
+
+
+
+            //                          }
+
+            //                      }
+
+            //                  }
+            //                  else
+
+            //                  {
+            //                      VTReportModel report = new VTReportModel();
+            //                      report.Header = $"{state.StateName}({state.StateCode})";
+            //                      report.Title = $"{state.StateName},({pcList.PcName})";
+            //                      report.Type = "PCACWise";
+            //                      report.AssemblyName = "N/A";
+            //                      report.AssemblyCode = "N/A";
+            //                      report.MaleElectoral = 0;
+            //                      report.FemaleElectoral = 0;
+            //                      report.ThirdGenderElectoral = 0;
+            //                      report.TotalElectoral = 0;
+
+            //                      //type 2: Votes polled
+            //                      report.MaleVoters = 0;
+            //                      report.FemaleVoters = 0;
+            //                      report.ThirdGenderVoters = 0;
+            //                      report.TotalVoters = 0;
+            //                      report.EPIC = 0;
+            //                      report.VotePolledOtherDocument = 0;
+            //                      report.MalePercentage = 0;
+            //                      report.FemalePercentage = 0;
+            //                      report.ThirdGenderPercentage = 0;
+            //                      report.TotalPercentage = 0;
+            //                      consolidateBoothReports.Add(report);
+            //                  }
+            //                  // add Grand Total Row
+
+            //                  VTReportModel reportTotal = new VTReportModel();
+            //                  reportTotal.Header = "";
+            //                  reportTotal.Title = "";
+            //                  reportTotal.Type = "";
+            //                  reportTotal.DistrictName = "";
+            //                  reportTotal.DistrictCode = "";
+            //                  reportTotal.AssemblyName = "Total";
+            //                  reportTotal.AssemblyCode = "";
+            //                  reportTotal.MaleElectoral = consolidateBoothReports.Sum(report => report.MaleElectoral);
+            //                  reportTotal.FemaleElectoral = consolidateBoothReports.Sum(report => report.FemaleElectoral);
+            //                  reportTotal.ThirdGenderElectoral = consolidateBoothReports.Sum(report => report.ThirdGenderElectoral);
+            //                  reportTotal.TotalElectoral = consolidateBoothReports.Sum(report => report.TotalElectoral);
+            //                  reportTotal.MaleVoters = consolidateBoothReports.Sum(report => report.MaleVoters);
+            //                  reportTotal.FemaleVoters = consolidateBoothReports.Sum(report => report.FemaleVoters);
+            //                  reportTotal.ThirdGenderVoters = consolidateBoothReports.Sum(report => report.ThirdGenderVoters);
+            //                  reportTotal.TotalVoters = consolidateBoothReports.Sum(report => report.TotalVoters);
+            //                  reportTotal.EPIC = consolidateBoothReports.Sum(report => report.EPIC);
+            //                  reportTotal.VotePolledOtherDocument = consolidateBoothReports.Sum(report => report.VotePolledOtherDocument);
+
+
+            //                  reportTotal.MalePercentage = (reportTotal.MaleVoters != 0 && reportTotal.MaleElectoral != 0)
+            //? ((double)reportTotal.MaleVoters / (double)reportTotal.MaleElectoral) * 100
+            //: 0;
+
+            //                  //reportGrandTotal.FemalePercentage = (double)reportGrandTotal.FemaleVoters / (double)reportGrandTotal.FemaleElectoral * 100;
+            //                  reportTotal.FemalePercentage = (reportTotal.FemaleVoters != 0 && reportTotal.FemaleElectoral != 0)
+            //   ? ((double)reportTotal.FemaleVoters / (double)reportTotal.FemaleElectoral) * 100 : 0;
+
+            //                  reportTotal.ThirdGenderPercentage = (reportTotal.ThirdGenderVoters != 0 && reportTotal.ThirdGenderElectoral != 0)
+            //  ? ((double)reportTotal.ThirdGenderVoters / (double)reportTotal.ThirdGenderElectoral) * 100
+            //  : 0;
+
+            //                  //reportGrandTotal.TotalPercentage = (double)reportGrandTotal.TotalVoters / (double)reportGrandTotal.TotalElectoral * 100;
+
+
+            //                  reportTotal.TotalPercentage = (reportTotal.TotalVoters != 0 && reportTotal.TotalElectoral != 0)
+            // ? ((double)reportTotal.TotalVoters / (double)reportTotal.TotalElectoral) * 100
+            // : 0;
+
+
+
+            //                  consolidateBoothReports.Add(reportTotal);
+
+
+
+            //                  return consolidateBoothReports;
+
+
+
+            //              }
+            //              else
+
+            //              {
+
+            //                  var pcList = _context.ParliamentConstituencyMaster
+            //  .Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PcStatus == true)
+            //  .AsEnumerable() // Switch to client-side evaluation
+            //  .OrderBy(p => int.Parse(p.PcCodeNo))
+            //  .ToList();
+
+
+            //                  foreach (var pc in pcList)
+            //                  {
+            //                      int assemblyCount = 0; List<VTReportModel> assemblylistReport = new List<VTReportModel>();
+            //                      var assemblyList = _context.AssemblyMaster
+            //                         .Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PCMasterId == pc.PCMasterId && d.AssemblyStatus == true)
+            //                         .OrderBy(d => d.AssemblyCode)
+            //                         .ToList();
+
+            //                      if (assemblyList.Count > 0)
+            //                      {
+            //                          foreach (var assembly in assemblyList)
+            //                          {
+            //                              VTReportModel report = new VTReportModel();
+            //                              report.Header = $"{state.StateName}({state.StateCode}),{pc.PcName}({pc.PcCodeNo})";
+            //                              report.Title = $"{pc.PcName}";
+            //                              report.Type = "PCACWise";
+            //                              report.PCCode = pc.PcCodeNo;
+            //                              report.PCName = pc.PcName;
+            //                              report.AssemblyName = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId)
+            //                                                                 .Select(p => p.AssemblyName).FirstOrDefault();
+            //                              report.AssemblyCode = assemblyList.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId)
+            //                                                                 .Select(p => p.AssemblyCode.ToString()).FirstOrDefault();
+            //                              var pollingStationData = _context.PollingStationMaster.Include(psm => psm.PollingStationGender).Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId).ToList();
+            //                              if (pollingStationData != null && pollingStationData.Count > 0)
+            //                              {
+            //                                  //type 1: Electorals
+            //                                  report.MaleElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null)
+            //                                                                            .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1)
+            //                                                                            .Sum(gender => gender.Male));
+            //                                  report.FemaleElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null)
+            //                                                                              .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1)
+            //                                                                              .Sum(gender => gender.Female));
+            //                                  report.ThirdGenderElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null)
+            //                                                                                  .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1)
+            //                                                                                  .Sum(gender => gender.ThirdGender));
+            //                                  report.TotalElectoral = pollingStationData.Where(psm => psm.PollingStationGender != null)
+            //                                                                             .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 1)
+            //                                                                             .Sum(gender => gender.Total));
+
+            //                                  //type 2: Votes polled
+            //                                  report.MaleVoters = pollingStationData.Where(psm => psm.PollingStationGender != null)
+            //                                                                         .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2)
+            //                                                                         .Sum(gender => gender.Male));
+            //                                  report.FemaleVoters = pollingStationData.Where(psm => psm.PollingStationGender != null)
+            //                                                                           .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2)
+            //                                                                           .Sum(gender => gender.Female));
+            //                                  report.ThirdGenderVoters = pollingStationData.Where(psm => psm.PollingStationGender != null)
+            //                                                                               .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2)
+            //                                                                               .Sum(gender => gender.ThirdGender));
+            //                                  report.TotalVoters = pollingStationData.Where(psm => psm.PollingStationGender != null)
+            //                                                                          .Sum(psm => psm.PollingStationGender.Where(p => p.Type == 2)
+            //                                                                          .Sum(gender => gender.Total));
+
+            //                                  report.EPIC = pollingStationData.Sum(psm => psm.VotePolledEPIC);
+            //                                  report.VotePolledOtherDocument = pollingStationData.Sum(psm =>
+            //                                  {
+            //                                      if (int.TryParse(psm.VotePolledOtherDocument, out int result))
+            //                                      {
+            //                                          return result;
+            //                                      }
+            //                                      else
+            //                                      {
+            //                                          return 0;
+            //                                      }
+            //                                  });
+            //                                  report.MalePercentage = report.MaleVoters == 0 ? 0 : (double)report.MaleVoters / (double)report.MaleElectoral * 100;
+            //                                  if (double.IsInfinity(report.MalePercentage))
+            //                                  {
+            //                                      report.MalePercentage = 0;
+            //                                  }
+
+            //                                  report.FemalePercentage = report.FemaleVoters == 0 ? 0 : (double)report.FemaleVoters / (double)report.FemaleElectoral * 100;
+            //                                  if (double.IsInfinity(report.FemalePercentage))
+            //                                  {
+            //                                      report.FemalePercentage = 0;
+            //                                  }
+            //                                  report.ThirdGenderPercentage = report.ThirdGenderVoters == 0 ? 0 : (double)report.ThirdGenderVoters / (double)report.ThirdGenderElectoral * 100;
+            //                                  if (double.IsInfinity(report.ThirdGenderPercentage))
+            //                                  {
+            //                                      report.ThirdGenderPercentage = 0;
+            //                                  }
+            //                                  report.TotalPercentage = report.TotalVoters == 0 ? 0 : (double)report.TotalVoters / (double)report.TotalElectoral * 100;
+            //                                  if (double.IsInfinity(report.TotalPercentage))
+            //                                  {
+            //                                      report.TotalPercentage = 0;
+            //                                  }
+
+
+            //                                  consolidateBoothReports.Add(report); assemblylistReport.Add(report);
+            //                                  assemblyCount++;
+
+
+            //                              }
+            //                              else
+            //                              {  //type 1: Electorals
+            //                                  report.MaleElectoral = 0;
+            //                                  report.FemaleElectoral = 0;
+            //                                  report.ThirdGenderElectoral = 0;
+            //                                  report.TotalElectoral = 0;
+
+            //                                  //type 2: Votes polled
+            //                                  report.MaleVoters = 0;
+            //                                  report.FemaleVoters = 0;
+            //                                  report.ThirdGenderVoters = 0;
+            //                                  report.TotalVoters = 0;
+            //                                  report.EPIC = 0;
+            //                                  report.VotePolledOtherDocument = 0;
+            //                                  report.MalePercentage = 0;
+            //                                  report.FemalePercentage = 0;
+            //                                  report.ThirdGenderPercentage = 0;
+            //                                  report.TotalPercentage = 0;
+            //                                  consolidateBoothReports.Add(report); assemblylistReport.Add(report);
+            //                                  assemblyCount++;
+
+
+            //                              }
+
+
+            //                          }
+
+            //                      }
+            //                      else
+            //                      {
+            //                          VTReportModel report = new VTReportModel();
+            //                          report.Header = $"{state.StateName}({state.StateCode})";
+            //                          report.Title = $"{state.StateName}";
+            //                          report.Type = "PCACWise";
+            //                          report.PCCode = pc.PcCodeNo;
+            //                          report.PCName = pc.PcName;
+            //                          report.AssemblyName = "N/A";
+            //                          report.AssemblyCode = "N/A";
+            //                          report.MaleElectoral = 0;
+            //                          report.FemaleElectoral = 0;
+            //                          report.ThirdGenderElectoral = 0;
+            //                          report.TotalElectoral = 0;
+
+            //                          //type 2: Votes polled
+            //                          report.MaleVoters = 0;
+            //                          report.FemaleVoters = 0;
+            //                          report.ThirdGenderVoters = 0;
+            //                          report.TotalVoters = 0;
+            //                          report.EPIC = 0;
+            //                          report.MalePercentage = 0;
+            //                          report.FemalePercentage = 0;
+            //                          report.ThirdGenderPercentage = 0;
+            //                          report.TotalPercentage = 0;
+            //                          report.VotePolledOtherDocument = 0;
+            //                          consolidateBoothReports.Add(report);
+
+            //                      }
+            //                      if (assemblyList.Count == assemblyCount)
+            //                      {
+            //                          // add Total Row
+            //                          VTReportModel reportTotal = new VTReportModel();
+            //                          reportTotal.Header = "";
+            //                          reportTotal.Title = "";
+            //                          reportTotal.Type = "";
+            //                          reportTotal.DistrictName = "";
+            //                          reportTotal.DistrictCode = "";
+
+            //                          reportTotal.AssemblyName = "Total";
+            //                          reportTotal.AssemblyCode = "";
+            //                          reportTotal.MaleElectoral = assemblylistReport.Sum(report => report.MaleElectoral);
+            //                          reportTotal.FemaleElectoral = assemblylistReport.Sum(report => report.FemaleElectoral);
+            //                          reportTotal.ThirdGenderElectoral = assemblylistReport.Sum(report => report.ThirdGenderElectoral);
+            //                          reportTotal.TotalElectoral = assemblylistReport.Sum(report => report.TotalElectoral);
+            //                          reportTotal.MaleVoters = assemblylistReport.Sum(report => report.MaleVoters);
+            //                          reportTotal.FemaleVoters = assemblylistReport.Sum(report => report.FemaleVoters);
+            //                          reportTotal.ThirdGenderVoters = assemblylistReport.Sum(report => report.ThirdGenderVoters);
+            //                          reportTotal.TotalVoters = assemblylistReport.Sum(report => report.TotalVoters);
+            //                          reportTotal.EPIC = assemblylistReport.Sum(report => report.EPIC);
+            //                          reportTotal.VotePolledOtherDocument = assemblylistReport.Sum(report => report.VotePolledOtherDocument);
+
+            //                          if (assemblylistReport.Any())
+            //                          {
+            //                              reportTotal.MalePercentage = reportTotal.MaleVoters == 0 ? 0 : (double)reportTotal.MaleVoters / (double)reportTotal.MaleElectoral * 100;
+            //                              if (double.IsInfinity(reportTotal.MalePercentage))
+            //                              {
+            //                                  reportTotal.MalePercentage = 0;
+            //                              }
+            //                              reportTotal.FemalePercentage = reportTotal.FemaleVoters == 0 ? 0 : (double)reportTotal.FemaleVoters / (double)reportTotal.FemaleElectoral * 100;
+            //                              if (double.IsInfinity(reportTotal.FemalePercentage))
+            //                              {
+            //                                  reportTotal.FemalePercentage = 0;
+            //                              }
+            //                              reportTotal.ThirdGenderPercentage = reportTotal.ThirdGenderVoters == 0 ? 0 : (double)reportTotal.ThirdGenderVoters / (double)reportTotal.ThirdGenderElectoral * 100;
+            //                              if (double.IsInfinity(reportTotal.ThirdGenderPercentage))
+            //                              {
+            //                                  reportTotal.ThirdGenderPercentage = 0;
+            //                              }
+            //                              reportTotal.TotalPercentage = reportTotal.TotalVoters == 0 ? 0 : (double)reportTotal.TotalVoters / (double)reportTotal.TotalElectoral * 100;
+            //                              if (double.IsInfinity(reportTotal.TotalPercentage))
+            //                              {
+            //                                  reportTotal.TotalPercentage = 0;
+            //                              }
+            //                          }
+            //                          else
+            //                          {
+            //                              // Handle the case when assemblylistReport is empty, for example, set averages to 0
+            //                              reportTotal.MalePercentage = 0;
+            //                              reportTotal.FemalePercentage = 0;
+            //                              reportTotal.ThirdGenderPercentage = 0;
+            //                              reportTotal.TotalPercentage = 0;
+            //                          }
+
+
+
+
+            //                          assemblylistTotal.Add(reportTotal);
+            //                          consolidateBoothReports.Add(reportTotal);
+
+            //                      }
+
+            //                  }
+            //                  if (consolidateBoothReports.Count > 0)
+            //                  {
+            //                      // add grand Total after iterations
+            //                      VTReportModel reportGrandTotal = new VTReportModel();
+            //                      reportGrandTotal.Header = "";
+            //                      reportGrandTotal.Title = "";
+            //                      reportGrandTotal.Type = "";
+            //                      reportGrandTotal.DistrictName = "";
+            //                      reportGrandTotal.DistrictCode = "";
+            //                      reportGrandTotal.AssemblyName = "Grand Total";
+            //                      reportGrandTotal.AssemblyCode = "";
+            //                      reportGrandTotal.MaleElectoral = assemblylistTotal.Sum(report => report.MaleElectoral);
+            //                      reportGrandTotal.FemaleElectoral = assemblylistTotal.Sum(report => report.FemaleElectoral);
+            //                      reportGrandTotal.ThirdGenderElectoral = assemblylistTotal.Sum(report => report.ThirdGenderElectoral);
+            //                      reportGrandTotal.TotalElectoral = assemblylistTotal.Sum(report => report.TotalElectoral);
+            //                      reportGrandTotal.MaleVoters = assemblylistTotal.Sum(report => report.MaleVoters);
+            //                      reportGrandTotal.FemaleVoters = assemblylistTotal.Sum(report => report.FemaleVoters);
+            //                      reportGrandTotal.ThirdGenderVoters = assemblylistTotal.Sum(report => report.ThirdGenderVoters);
+            //                      reportGrandTotal.TotalVoters = assemblylistTotal.Sum(report => report.TotalVoters);
+            //                      reportGrandTotal.EPIC = assemblylistTotal.Sum(report => report.EPIC);
+            //                      reportGrandTotal.VotePolledOtherDocument = assemblylistTotal.Sum(report => report.VotePolledOtherDocument);
+
+
+            //                      //   reportGrandTotal.MalePercentage = (double)reportGrandTotal.MaleVoters / (double)reportGrandTotal.MaleElectoral * 100;
+            //                      reportGrandTotal.MalePercentage = (reportGrandTotal.MaleVoters != 0 && reportGrandTotal.MaleElectoral != 0)
+            //  ? ((double)reportGrandTotal.MaleVoters / (double)reportGrandTotal.MaleElectoral) * 100
+            //  : 0;
+
+            //                      //reportGrandTotal.FemalePercentage = (double)reportGrandTotal.FemaleVoters / (double)reportGrandTotal.FemaleElectoral * 100;
+            //                      reportGrandTotal.FemalePercentage = (reportGrandTotal.FemaleVoters != 0 && reportGrandTotal.FemaleElectoral != 0)
+            //       ? ((double)reportGrandTotal.FemaleVoters / (double)reportGrandTotal.FemaleElectoral) * 100 : 0;
+
+            //                      reportGrandTotal.ThirdGenderPercentage = (reportGrandTotal.ThirdGenderVoters != 0 && reportGrandTotal.ThirdGenderElectoral != 0)
+            //      ? ((double)reportGrandTotal.ThirdGenderVoters / (double)reportGrandTotal.ThirdGenderElectoral) * 100
+            //      : 0;
+
+            //                      //reportGrandTotal.TotalPercentage = (double)reportGrandTotal.TotalVoters / (double)reportGrandTotal.TotalElectoral * 100;
+
+
+            //                      reportGrandTotal.TotalPercentage = (reportGrandTotal.TotalVoters != 0 && reportGrandTotal.TotalElectoral != 0)
+            //     ? ((double)reportGrandTotal.TotalVoters / (double)reportGrandTotal.TotalElectoral) * 100
+            //     : 0;
+
+            //                      consolidateBoothReports.Add(reportGrandTotal);
+            //                  }
+
+            //                  return consolidateBoothReports;
+
+            //                  return consolidateBoothReports;
+            //              }
+            //          }
 
             //DetailedDistrictACWise
             if (boothReportModel.StateMasterId is not 0 && boothReportModel.Type == "DetailedDistrictACWise")
