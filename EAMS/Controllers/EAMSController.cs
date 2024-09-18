@@ -9,6 +9,7 @@ using EAMS_ACore.HelperModels;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
+using EAMS_ACore.Models.ElectionType;
 using EAMS_ACore.Models.PollingStationFormModels;
 using EAMS_ACore.Models.QueueModel;
 using LBPAMS.ViewModels;
@@ -20,7 +21,7 @@ using System.Security.Claims;
 namespace EAMS.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController] 
+    [ApiController]
     public class EAMSController : ControllerBase
     {
         private readonly ILogger<EAMSController> _logger;
@@ -517,28 +518,28 @@ namespace EAMS.Controllers
             {
                 var mappedData = _mapper.Map<AddAssemblyMasterViewModel, AssemblyMaster>(addAssemblyMasterViewModel);
 
-                
-                    if (addAssemblyMasterViewModel.TotalBooths > 0)
-                    {
-                        var result = await _EAMSService.AddAssemblies(mappedData);
-                        switch (result.Status)
-                        {
-                            case RequestStatusEnum.OK:
-                                return Ok(result.Message);
-                            case RequestStatusEnum.BadRequest:
-                                return BadRequest(result.Message);
-                            case RequestStatusEnum.NotFound:
-                                return NotFound(result.Message);
 
-                            default:
-                                return StatusCode(500, "Internal Server Error");
-                        }
-                    }
-                    else
+                if (addAssemblyMasterViewModel.TotalBooths > 0)
+                {
+                    var result = await _EAMSService.AddAssemblies(mappedData);
+                    switch (result.Status)
                     {
-                        return BadRequest("For a Gram Panchayat, entering the total number of booths is not allowed.");
+                        case RequestStatusEnum.OK:
+                            return Ok(result.Message);
+                        case RequestStatusEnum.BadRequest:
+                            return BadRequest(result.Message);
+                        case RequestStatusEnum.NotFound:
+                            return NotFound(result.Message);
+
+                        default:
+                            return StatusCode(500, "Internal Server Error");
                     }
-             
+                }
+                else
+                {
+                    return BadRequest("For a Gram Panchayat, entering the total number of booths is not allowed.");
+                }
+
 
             }
             else
@@ -784,7 +785,7 @@ namespace EAMS.Controllers
 
             // Fetch the booth list based on the presence of psZonePanchayatMasterId
             List<CombinedMaster> boothList;
-            if (psZonePanchayatId == null||psZonePanchayatId==0)
+            if (psZonePanchayatId == null || psZonePanchayatId == 0)
             {
                 // Call GetBoothListByFourthLevelId when psZonePanchayatMasterId is null
                 boothList = await _EAMSService.GetBoothListByFourthLevelId(
@@ -1001,7 +1002,7 @@ namespace EAMS.Controllers
                     }
                     else
                     {
-                        
+
                         return StatusCode(500, "The total sum of voters does not match the individual counts of Male, Female, and Transgender categories.");
 
 
@@ -1178,7 +1179,7 @@ namespace EAMS.Controllers
                     AssemblyName = boothRecord.AssemblyMaster.AssemblyName,
                     AssemblyCode = boothRecord.AssemblyMaster.AssemblyCode,
                     AssemblyType = boothRecord.AssemblyMaster.AssemblyType,
-                    fourthLevelHMasterId= boothRecord.FourthLevelH.FourthLevelHMasterId,
+                    fourthLevelHMasterId = boothRecord.FourthLevelH.FourthLevelHMasterId,
                     fourthLevelHName = boothRecord.FourthLevelH.HierarchyName,
                     BoothMasterId = boothRecord.BoothMasterId,
                     BoothName = boothRecord.BoothName,
@@ -1192,7 +1193,7 @@ namespace EAMS.Controllers
                     LocationMasterId = boothRecord.LocationMasterId,
                     ElectionTypeMasterId = boothRecord.ElectionTypeMaster.ElectionTypeMasterId,
                     ElectionTypeName = boothRecord.ElectionTypeMaster.ElectionType,
-                    IsPrimaryBooth=boothRecord.IsPrimaryBooth,
+                    IsPrimaryBooth = boothRecord.IsPrimaryBooth,
 
 
                 };
@@ -1208,12 +1209,31 @@ namespace EAMS.Controllers
         #endregion
 
         #region Event Master
+
         [HttpGet]
-        [Route("GetEventList")]
+        [Route("GetEventAbbrList")]
         [Authorize]
-        public async Task<IActionResult> GetEventList()
+        public async Task<IActionResult> GetEventAbbrList()
         {
-            var eventList = await _EAMSService.GetEventList();
+            var eventAbbrList = await _EAMSService.GetEventAbbrList();
+            if (eventAbbrList != null)
+            {
+
+                return Ok(eventAbbrList);
+
+            }
+            else
+            {
+                return BadRequest("No Record Found");
+            }
+
+        }
+        [HttpGet]
+        [Route("GetEventListById")]
+        [Authorize]
+        public async Task<IActionResult> GetEventListById(int stateMasterId, int electionTypeMasterId)
+        {
+            var eventList = await _EAMSService.GetEventListById(stateMasterId, electionTypeMasterId);
             if (eventList != null)
             {
                 var mappedEvent = _mapper.Map<List<EventMasterViewModel>>(eventList);
@@ -1237,10 +1257,74 @@ namespace EAMS.Controllers
             }
         }
 
-        [HttpPut]
-        [Route("UpdateEventStaus")]
+        [HttpPost]
+        [Route("AddEvent")]
         [Authorize]
-        public async Task<IActionResult> UpdateEventStaus(UpdateEventStatusViewModel updateEventStatusViewModel)
+        public async Task<IActionResult> AddEvent(EventMasterViewModel eventMasterViewModel)
+        {
+            // Check if the model state is valid
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState); // Return bad request if the model state is invalid
+            }
+
+            // Map ViewModel to the EventMaster model
+            var eventMaster = _mapper.Map<EventMasterViewModel, EventMaster>(eventMasterViewModel);
+
+            // Ensure mapping succeeded
+            if (eventMaster == null)
+            {
+                return BadRequest("Mapping failed. Invalid data."); // Return bad request with a specific message if mapping fails
+            }
+
+            // Add the event using the service
+            var result = await _EAMSService.AddEvent(eventMaster);
+
+            // Return the result with a status code based on the service response
+            if (result.IsSucceed)
+            {
+                return Ok(result); // Return a 200 OK with the result on success
+            }
+
+            return BadRequest(result.Message); // Return a 400 BadRequest with the error message if the service fails
+        }
+
+        [HttpPut]
+        [Route("UpdateEvent")]
+        [Authorize]
+        public async Task<IActionResult> UpdateEvent(UpdateEventMasterViewModel eventMasterViewModel)
+        {
+            // Check if the model state is valid
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState); // Return bad request if the model state is invalid
+            }
+
+            // Map ViewModel to the EventMaster model
+            var eventMaster = _mapper.Map<UpdateEventMasterViewModel, EventMaster>(eventMasterViewModel);
+
+            // Ensure mapping succeeded
+            if (eventMaster == null)
+            {
+                return BadRequest("Mapping failed. Invalid data."); // Return bad request with a specific message if mapping fails
+            }
+
+            // Add the event using the service
+            var result = await _EAMSService.UpdateEvent(eventMaster);
+
+            // Return the result with a status code based on the service response
+            if (result.IsSucceed)
+            {
+                return Ok(result); // Return a 200 OK with the result on success
+            }
+
+            return BadRequest(result.Message); // Return a 400 BadRequest with the error message if the service fails
+
+        }
+        [HttpPut]
+        [Route("UpdateEventStatus")]
+        [Authorize]
+        public async Task<IActionResult> UpdateEventStatus(UpdateEventStatusViewModel updateEventStatusViewModel)
         {
             if (ModelState.IsValid)
             {
@@ -1262,33 +1346,60 @@ namespace EAMS.Controllers
             }
         }
 
-        [HttpPut]
-        [Route("UpdateEventById")]
+        [HttpGet]
+        [Route("GetEventById")]
         [Authorize]
-        public async Task<IActionResult> UpdateEventById(EventMasterViewModel eventMaster)
+        public async Task<IActionResult> GetEventById(int eventMasterId)
         {
-            if (ModelState.IsValid)
+            // Check if the model state is valid
+            if (!ModelState.IsValid)
             {
-                var mappedeventData = _mapper.Map<EventMasterViewModel, EventMaster>(eventMaster);
-                var result = await _EAMSService.UpdateEventById(mappedeventData);
-
-                switch (result.Status)
-                {
-                    case RequestStatusEnum.OK:
-                        return Ok(result.Message);
-                    case RequestStatusEnum.BadRequest:
-                        return BadRequest(result.Message);
-                    case RequestStatusEnum.NotFound:
-                        return NotFound(result.Message);
-
-                    default:
-                        return StatusCode(500, "Internal Server Error");
-                }
+                // Return the first validation error message
+                var errorMessage = ModelState.Values.SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .FirstOrDefault();
+                return BadRequest(errorMessage);
             }
-            else
+
+            // Fetch the event by ID
+            var result = await _EAMSService.GetEventById(eventMasterId);
+
+            // Check if the event was found
+            if (result == null)
             {
-                return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
+                return NotFound($"Event with ID {eventMasterId} not found.");
             }
+
+            // Return the event
+            return Ok(result);
+        }
+
+        [HttpDelete]
+        [Route("DeleteEventById")]
+        [Authorize]
+        public async Task<IActionResult> DeleteEventById(int eventMasterId)
+        {
+            // Check if the model state is valid
+            if (!ModelState.IsValid)
+            {
+                // Return the first validation error message
+                var errorMessage = ModelState.Values.SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .FirstOrDefault();
+                return BadRequest(errorMessage);
+            }
+
+            // Fetch the event by ID
+            var result = await _EAMSService.DeleteEventById(eventMasterId);
+
+            // Check if the event was found
+            if (result == null)
+            {
+                return NotFound($"Event with ID {eventMasterId} not found.");
+            }
+
+            // Return the event
+            return Ok(result);
         }
 
         [HttpGet]
@@ -1727,7 +1838,7 @@ namespace EAMS.Controllers
                 }
                 else
                 {
-                    return NotFound( );
+                    return NotFound();
 
                 }
             }
@@ -1894,7 +2005,7 @@ namespace EAMS.Controllers
 
         [HttpDelete("DeletePSZonePanchayatById")]
         [Authorize]
-        public async Task<IActionResult> DeletePSZonePanchayatById( int psZonePanchayatMasterId)
+        public async Task<IActionResult> DeletePSZonePanchayatById(int psZonePanchayatMasterId)
         {
             if (psZonePanchayatMasterId != null)
             {
@@ -1924,7 +2035,7 @@ namespace EAMS.Controllers
         #region  GPPanchayatWards 
         [HttpPost]
         [Route("AddGPPanchayatWards")]
-        [Authorize] 
+        [Authorize]
         public async Task<IActionResult> AddSarpanchWards(AddGPPanchayatWardsViewModel addSarpanchWardsViewModel)
         {
             if (ModelState.IsValid)

@@ -310,13 +310,24 @@ namespace EAMS.Helper
 
             #region EventMasterViewModel and EventMaster
 
-            CreateMap<EventMasterViewModel, EventMaster>()
-                .ForMember(dest => dest.EventMasterId, opt => opt.MapFrom(src => src.EventMasterId))
+            CreateMap<EventMasterViewModel, EventMaster>() 
+                .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+                .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
                 .ForMember(dest => dest.EventName, opt => opt.MapFrom(src => src.EventName))
                 .ForMember(dest => dest.EventSequence, opt => opt.MapFrom(src => src.EventSequence))
+                .ForMember(dest => dest.EventABBR, opt => opt.MapFrom(src => src.EventABBR))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.IsStatus))
                 .ReverseMap();
+            CreateMap<UpdateEventMasterViewModel, EventMaster>()
 
+                .ForMember(dest => dest.EventMasterId, opt => opt.MapFrom(src => src.EventMasterId))
+                .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+                .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+                .ForMember(dest => dest.EventName, opt => opt.MapFrom(src => src.EventName))
+                .ForMember(dest => dest.EventSequence, opt => opt.MapFrom(src => src.EventSequence))
+                .ForMember(dest => dest.EventABBR, opt => opt.MapFrom(src => src.EventABBR))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.IsStatus))
+                .ReverseMap();
             #endregion
 
             #region UpdateEventStatusViewModel and EventMaster

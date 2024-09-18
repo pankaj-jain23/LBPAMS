@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using EAMS_ACore.Models.ElectionType;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EAMS_ACore
 {
@@ -6,10 +8,33 @@ namespace EAMS_ACore
     {
         [Key]
         public int EventMasterId { get; set; }
-
+        public int StateMasterId
+        {
+            get;
+            set;
+        }
+        [ForeignKey("StateMasterId")]
+        public virtual StateMaster StateMaster
+        {
+            get;
+            set;
+        }
+        public int ElectionTypeMasterId
+        {
+            get;
+            set;
+        }
+        [ForeignKey("ElectionTypeMasterId")]
+        public virtual ElectionTypeMaster? ElectionTypeMaster
+        {
+            get;
+            set;
+        }
         public string EventName { get; set; }
 
         public int EventSequence { get; set; }
+        public string EventABBR { get; set; }
+        
 
         public DateTime? StartDateTime { get; set; }
 

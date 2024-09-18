@@ -3,6 +3,7 @@ using System;
 using EAMS_DAL.DBContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EAMS_DAL.Migrations
 {
     [DbContext(typeof(EamsContext))]
-    partial class EamsContextModelSnapshot : ModelSnapshot
+    [Migration("20240918053905_addedElectionTypeInEventMaster")]
+    partial class addedElectionTypeInEventMaster
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -354,10 +357,6 @@ namespace EAMS_DAL.Migrations
                     b.Property<DateTime?>("EndDateTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("EventABBR")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("EventName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -368,9 +367,6 @@ namespace EAMS_DAL.Migrations
                     b.Property<DateTime?>("StartDateTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("StateMasterId")
-                        .HasColumnType("integer");
-
                     b.Property<bool>("Status")
                         .HasColumnType("boolean");
 
@@ -380,8 +376,6 @@ namespace EAMS_DAL.Migrations
                     b.HasKey("EventMasterId");
 
                     b.HasIndex("ElectionTypeMasterId");
-
-                    b.HasIndex("StateMasterId");
 
                     b.ToTable("EventMaster");
                 });
@@ -787,27 +781,6 @@ namespace EAMS_DAL.Migrations
                     b.HasKey("ElectionTypeMasterId");
 
                     b.ToTable("ElectionTypeMaster");
-                });
-
-            modelBuilder.Entity("EAMS_ACore.Models.EventAbbr", b =>
-                {
-                    b.Property<int>("EventAbbrId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("EventAbbrId"));
-
-                    b.Property<string>("EventAbbrName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("EventDescription")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("EventAbbrId");
-
-                    b.ToTable("EventAbbr");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.FieldOfficerMaster", b =>
@@ -2410,15 +2383,7 @@ namespace EAMS_DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("EAMS_ACore.StateMaster", "StateMaster")
-                        .WithMany()
-                        .HasForeignKey("StateMasterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("ElectionTypeMaster");
-
-                    b.Navigation("StateMaster");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.CountingDayModels.CountingBasicInfoMaster", b =>

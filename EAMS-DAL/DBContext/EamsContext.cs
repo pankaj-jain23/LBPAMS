@@ -27,9 +27,9 @@ public partial class EamsContext : IdentityDbContext<UserRegistration>
     {
     }
 
- 
-
+   
     public virtual DbSet<EventMaster> EventMaster { get; set; }
+    public virtual DbSet<EventAbbr> EventAbbr { get; set; }
     public virtual DbSet<StateMaster> StateMaster { get; set; }
     public virtual DbSet<DistrictMaster> DistrictMaster { get; set; }
     public virtual DbSet<AssemblyMaster> AssemblyMaster { get; set; }

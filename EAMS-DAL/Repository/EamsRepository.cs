@@ -2179,7 +2179,7 @@ namespace EAMS_DAL.Repository
             int assemblyMasterId,
             int fourthLevelHMasterId)
         {
-           
+
 
             // Fetch the relevant FourthLevelH entity along with necessary relations
             var isActive = await _context.FourthLevelH
@@ -2256,13 +2256,13 @@ namespace EAMS_DAL.Repository
             int fourthLevelHMasterId,
             int psZonePanchayatMasterId)
         {
-            
+
 
             var isActive = await _context.PSZonePanchayat
                 .Include(f => f.StateMaster)
                 .Include(f => f.DistrictMaster)
                 .Include(f => f.AssemblyMaster)
-                .Include(d=>d.FourthLevelH)
+                .Include(d => d.FourthLevelH)
                 .FirstOrDefaultAsync(f => f.StateMasterId == stateMasterId
                                           && f.DistrictMasterId == districtMasterId
                                           && f.AssemblyMasterId == assemblyMasterId
@@ -2273,7 +2273,7 @@ namespace EAMS_DAL.Repository
                 !isActive.StateMaster.StateStatus ||
                 !isActive.DistrictMaster.DistrictStatus ||
                 !isActive.AssemblyMaster.AssemblyStatus ||
-                !isActive.FourthLevelH.HierarchyStatus|| !isActive.PSZonePanchayatStatus)
+                !isActive.FourthLevelH.HierarchyStatus || !isActive.PSZonePanchayatStatus)
             {
                 return null; // Return null if any status check fails
             }
@@ -2284,7 +2284,7 @@ namespace EAMS_DAL.Repository
                              && bt.DistrictMasterId == districtMasterId
                              && bt.AssemblyMasterId == assemblyMasterId
                              && bt.FourthLevelHMasterId == fourthLevelHMasterId
-                             &&  bt.PSZonePanchayatMasterId == psZonePanchayatMasterId)
+                             && bt.PSZonePanchayatMasterId == psZonePanchayatMasterId)
                                                         join asem in _context.AssemblyMaster on bt.AssemblyMasterId equals asem.AssemblyMasterId
                                                         join dist in _context.DistrictMaster on asem.DistrictMasterId equals dist.DistrictMasterId
                                                         join state in _context.StateMaster on dist.StateMasterId equals state.StateMasterId
@@ -3681,22 +3681,97 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         #endregion
 
         #region Event Master
-
-        public async Task<List<EventMaster>> GetEventList()
+        public async Task<ServiceResponse> AddEvent(EventMaster eventMaster)
         {
-            //var eventData = await _context.EventMaster.Where(d => d.EventMasterId != 14)
-            var eventData = await _context.EventMaster.Where(d => d.EventName != null)
-            .OrderBy(d => d.EventSequence) // Add this line for ordering
-            .Select(d => new EventMaster
+            // Check if the event already exists
+            var isExist = await _context.EventMaster.AnyAsync(d =>
+                d.StateMasterId == eventMaster.StateMasterId
+                && d.ElectionTypeMasterId == eventMaster.ElectionTypeMasterId
+                && d.EventSequence == eventMaster.EventSequence
+                && d.EventABBR.Contains(eventMaster.EventABBR));
+
+            // Return a failure response if the event already exists
+            if (isExist)
             {
-                EventMasterId = d.EventMasterId,
-                EventName = d.EventName,
-                EventSequence = d.EventSequence,
-                Status = d.Status
-            })
+                return new ServiceResponse
+                {
+                    IsSucceed = false,
+                    Message = "Event already exists."
+                };
+            }
+
+            // Add the new event to the context and save changes
+            _context.EventMaster.Add(eventMaster);
+            await _context.SaveChangesAsync();
+
+            // Return success response
+            return new ServiceResponse
+            {
+                IsSucceed = true,
+                Message = "Successfully added."
+            };
+        }
+
+
+        public async Task<ServiceResponse> UpdateEvent(EventMaster eventMaster)
+        {
+            // Check if any other event has the same EventABBR and EventSequence
+            var duplicateEvent = await _context.EventMaster
+                .AnyAsync(d => d.StateMasterId == eventMaster.StateMasterId
+                              && d.ElectionTypeMasterId == eventMaster.ElectionTypeMasterId
+                              && d.EventABBR == eventMaster.EventABBR
+                               && d.EventSequence == eventMaster.EventSequence);
+
+            // If a duplicate is found, return a failure response
+            if (duplicateEvent)
+            {
+                return new ServiceResponse
+                {
+                    IsSucceed = false,
+                    Message = "An event with the same abbreviation and sequence already exists."
+                };
+            }
+
+            // Check if the event to be updated exists
+            var existingEvent = await _context.EventMaster.FirstOrDefaultAsync(d => d.EventMasterId == eventMaster.EventMasterId);
+
+            // If the event does not exist, return a failure response
+            if (existingEvent == null)
+            {
+                return new ServiceResponse
+                {
+                    IsSucceed = false,
+                    Message = "Event not found."
+                };
+            }
+             
+            existingEvent.EventName = eventMaster.EventName;
+            existingEvent.StateMasterId = eventMaster.StateMasterId;
+            existingEvent.EventSequence = eventMaster.EventSequence;
+            existingEvent.EventABBR = eventMaster.EventABBR;
+            existingEvent.ElectionTypeMasterId = eventMaster.ElectionTypeMasterId;
+            _context.EventMaster.Update(existingEvent);
+            await _context.SaveChangesAsync();
+
+            // Return a success response
+            return new ServiceResponse
+            {
+                IsSucceed = true,
+                Message = "Event updated successfully."
+            };
+        }
+
+        public async Task<List<EventMaster>> GetEventListById(int stateMasterId ,int electionTypeMasterId)
+        {
+            return await _context.EventMaster.Where(d => d.StateMasterId == stateMasterId && d.ElectionTypeMasterId== electionTypeMasterId) 
             .ToListAsync();
 
-            return eventData;
+             
+        }
+        public async Task<List<EventAbbr>> GetEventAbbrList()
+        {
+            return await _context.EventAbbr.ToListAsync();
+
         }
         public async Task<ServiceResponse> UpdateEventStaus(EventMaster eventMaster)
         {
@@ -3720,36 +3795,36 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 };
             }
         }
-        public async Task<Response> UpdateEventById(EventMaster eventMaster)
+        public async Task<EventMaster> GetEventById(int eventMasterId)
         {
-            if (eventMaster.EventName != null && eventMaster.EventSequence != null)
-            {
-
-                var eventExist = _context.EventMaster.Where(d => d.EventMasterId == eventMaster.EventMasterId).FirstOrDefault();
-                if (eventExist != null)
-                {
-                    eventExist.EventName = eventMaster.EventName;
-                    eventExist.Status = eventMaster.Status;
-                    eventExist.EventSequence = eventMaster.EventSequence;
-                    eventExist.UpdatedAt = BharatDateTime();
-                    _context.EventMaster.Update(eventExist);
-                    _context.SaveChanges();
-                    return new Response { Status = RequestStatusEnum.OK, Message = "Event+" + eventMaster.EventName + " " + "added successfully" };
-                }
-                else
-                {
-                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Record not Found" };
-                }
-
-            }
-
-            else
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Event Name & Sequence cannot Be Empty" };
-
-            }
-
+            return await _context.EventMaster.FirstOrDefaultAsync(d => d.EventMasterId == eventMasterId);
         }
+        public async Task<ServiceResponse> DeleteEventById(int eventMasterId)
+        {
+            // Check if the event exists
+            var eventToDelete = await _context.EventMaster.FirstOrDefaultAsync(d => d.EventMasterId == eventMasterId);
+
+            // If the event does not exist, return a failure response
+            if (eventToDelete == null)
+            {
+                return new ServiceResponse
+                {
+                    IsSucceed = false,
+                    Message = $"Event with ID {eventMasterId} not found."
+                };
+            }
+             
+            _context.EventMaster.Remove(eventToDelete); 
+            await _context.SaveChangesAsync();
+
+            // Return a success response
+            return new ServiceResponse
+            {
+                IsSucceed = true,
+                Message = "Event deleted successfully."
+            };
+        }
+
         public async Task<List<EventWiseBooth>> GetBoothListByEventId(string eventId, string soId)
         {
             var soTotalBooths = _context.BoothMaster.Where(p => p.AssignedTo == soId).ToList();

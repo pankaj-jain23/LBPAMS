@@ -90,7 +90,7 @@ namespace EAMS_BLL.Services
 
 
         #region State Master
-        
+
         public async Task<List<StateMaster>> GetState()
         {
             return await _eamsRepository.GetState();
@@ -222,7 +222,7 @@ namespace EAMS_BLL.Services
 
         public async Task<FieldOfficerMasterList> GetFieldOfficerById(int FieldOfficerMasterId)
         {
-           return await _eamsRepository.GetFieldOfficerById(FieldOfficerMasterId);
+            return await _eamsRepository.GetFieldOfficerById(FieldOfficerMasterId);
         }
         #endregion
 
@@ -239,7 +239,7 @@ namespace EAMS_BLL.Services
         }
         public async Task<List<CombinedMaster>> GetBoothListByPSZonePanchayatId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId)
         {
-            return await _eamsRepository.GetBoothListByPSZonePanchayatId(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId,psZonePanchayatMasterId);
+            return await _eamsRepository.GetBoothListByPSZonePanchayatId(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, psZonePanchayatMasterId);
         }
         public async Task<List<CombinedMaster>> GetBoothListByIdforPSO(string stateMasterId, string districtMasterId, string assemblyMasterId)
         {
@@ -279,11 +279,22 @@ namespace EAMS_BLL.Services
         #endregion
 
         #region Event Master
-        public async Task<List<EventMaster>> GetEventList()
+        public async Task<List<EventMaster>> GetEventListById(int stateMasterId, int electionTypeMasterId)
         {
-            return await _eamsRepository.GetEventList();
+            return await _eamsRepository.GetEventListById(stateMasterId, electionTypeMasterId);
         }
-
+        public async Task<List<EventAbbr>> GetEventAbbrList()
+        {
+            return await _eamsRepository.GetEventAbbrList();
+        }
+        public async Task<ServiceResponse> AddEvent(EventMaster eventMaster)
+        {
+            return await _eamsRepository.AddEvent(eventMaster);
+        }
+        public async Task<ServiceResponse> UpdateEvent(EventMaster eventMaster)
+        {
+            return await _eamsRepository.UpdateEvent(eventMaster);
+        }
         public async Task<ServiceResponse> UpdateEventStaus(EventMaster eventMaster)
         {
             var isSucced = await _eamsRepository.UpdateEventStaus(eventMaster);
@@ -305,9 +316,13 @@ namespace EAMS_BLL.Services
                 };
             }
         }
-        public async Task<Response> UpdateEventById(EventMaster eventMaster)
+        public async Task<EventMaster> GetEventById(int eventMasterId)
         {
-            return await _eamsRepository.UpdateEventById(eventMaster);
+            return await _eamsRepository.GetEventById(eventMasterId);
+        }
+        public async Task<ServiceResponse> DeleteEventById(int eventMasterId)
+        {
+            return await _eamsRepository.DeleteEventById(eventMasterId);
         }
         public async Task<List<EventWiseBooth>> GetBoothListByEventId(string eventId, string soId)
         {
@@ -3303,7 +3318,7 @@ namespace EAMS_BLL.Services
         }
         public async Task<List<KycList>> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            return await _eamsRepository.GetKYCDetailByAssemblyId(electionType,stateMasterId, districtMasterId, assemblyMasterId);
+            return await _eamsRepository.GetKYCDetailByAssemblyId(electionType, stateMasterId, districtMasterId, assemblyMasterId);
         }
         public async Task<ServiceResponse> DeleteKycById(int kycMasterId)
         {
@@ -3321,9 +3336,9 @@ namespace EAMS_BLL.Services
             return await _eamsRepository.GetUnOpposedDetails();
 
         }
-        public async Task<List<UnOpposedList>> GetUnOpposedDetailsByAssemblyId(int electionType,int stateMasterId, int districtMasterId, int assemblyMasterId )
+        public async Task<List<UnOpposedList>> GetUnOpposedDetailsByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            return await _eamsRepository.GetUnOpposedDetailsByAssemblyId(electionType,stateMasterId, districtMasterId, assemblyMasterId);
+            return await _eamsRepository.GetUnOpposedDetailsByAssemblyId(electionType, stateMasterId, districtMasterId, assemblyMasterId);
         }
         public async Task<ServiceResponse> UpdateUnOpposedDetails(UnOpposed unOpposed)
         {
@@ -3389,7 +3404,7 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.UpdatePSZonePanchayat(psZonePanchayat);
         }
-        public async Task<Response> DeletePSZonePanchayatById( int psZonePanchayatMasterId)
+        public async Task<Response> DeletePSZonePanchayatById(int psZonePanchayatMasterId)
         {
             return await _eamsRepository.DeletePSZonePanchayatById(psZonePanchayatMasterId);
         }
@@ -3417,7 +3432,7 @@ namespace EAMS_BLL.Services
 
         public async Task<Response> DeleteGPPanchayatWardsById(int gpPanchayatWardsMasterId)
         {
-            return await _eamsRepository.DeleteGPPanchayatWardsById( gpPanchayatWardsMasterId);
+            return await _eamsRepository.DeleteGPPanchayatWardsById(gpPanchayatWardsMasterId);
         }
 
         #endregion

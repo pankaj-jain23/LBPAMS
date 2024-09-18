@@ -81,9 +81,14 @@ namespace EAMS_ACore.Interfaces
         #endregion
 
         #region EventMaster
-        Task<List<EventMaster>> GetEventList();
+
+        Task<List<EventMaster>> GetEventListById(int stateMasterId, int electionTypeMasterId);
+        Task<List<EventAbbr>> GetEventAbbrList( );
+        Task<ServiceResponse> AddEvent(EventMaster eventMaster);
+        Task<ServiceResponse> UpdateEvent(EventMaster eventMaster);
         Task<ServiceResponse> UpdateEventStaus(EventMaster eventMaster);
-        Task<Response> UpdateEventById(EventMaster eventMaster);
+        Task<EventMaster> GetEventById(int eventMasterId);
+        Task<ServiceResponse> DeleteEventById(int eventMasterId);
         Task<List<EventWiseBooth>> GetBoothListByEventId(string eventId, string soId);
         Task<List<EventActivityWiseBooth>> GetBoothEventActivityById(string soId);
         Task<List<TurnOutBoothListStatus>> GetBoothInfoinPollDetail(string eventId, string soId);
