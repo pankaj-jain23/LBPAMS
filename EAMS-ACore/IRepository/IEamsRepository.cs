@@ -113,7 +113,7 @@ namespace EAMS_ACore.IRepository
         #endregion
 
         #region Event Activity
-        Task<Response> EventActivity(ElectionInfoMaster electionInfoMaster);
+       
 
 
         Task<bool> CanPollStart(int boothMasterId, int eventid);

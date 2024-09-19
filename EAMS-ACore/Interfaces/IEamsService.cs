@@ -112,7 +112,7 @@ namespace EAMS_ACore.Interfaces
         #endregion
 
         #region Event Activity
-        Task<Response> EventActivity(ElectionInfoMaster electionInfoMaster);
+   
 
         Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(string boothMasterId, int eventid);
         Task<Models.Queue> GetVoterInQueue(string boothMasterId);
