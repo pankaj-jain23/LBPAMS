@@ -312,8 +312,8 @@ namespace EAMS.Controllers
                 var data = new
                 {
                     count = result.Count,
-                    Sarpacnh = result.Where(k => k.GPPanchayatWardsMasterId == null).ToList(),
-                    Panch = result.Where(k => k.GPPanchayatWardsMasterId != null).ToList()
+                    Sarpacnh = result.Where(k => k.GPPanchayatWardsMasterId == 0).ToList(),
+                    Panch = result.Where(k => k.GPPanchayatWardsMasterId != 0).ToList()
 
                 };
                 return Ok(data);

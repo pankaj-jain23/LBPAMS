@@ -1900,31 +1900,25 @@ namespace EAMS_DAL.Repository
         }
         public async Task<Response> UpdateFieldOfficer(FieldOfficerMaster updatedFieldOfficer)
         {
-            // Check if FieldOfficer with the same mobile number, election type, and state already exists
-            var existingOfficerMobile = await _context.FieldOfficerMaster
-                .FirstOrDefaultAsync(d => d.FieldOfficerMobile == updatedFieldOfficer.FieldOfficerMobile
-                                          && d.ElectionTypeMasterId == updatedFieldOfficer.ElectionTypeMasterId
-                                          && d.StateMasterId == updatedFieldOfficer.StateMasterId
-                                          && d.DistrictMasterId == updatedFieldOfficer.DistrictMasterId);
-
-
-            // If more than two officers already exist with the same mobile number for this election type, return an error response
-            if (existingOfficerMobile is not null)
-            {
-                return new Response
-                {
-                    Status = RequestStatusEnum.BadRequest,
-                    Message = $"FO User {updatedFieldOfficer.FieldOfficerName} Already Exists in this election "
-                };
-            }
-
-            // Check if the record exists based on the FieldOfficerMasterId
+            // Fetch the existing officer and check for uniqueness of the mobile number in one query
             var existingOfficer = await _context.FieldOfficerMaster
-                .FirstOrDefaultAsync(d => d.FieldOfficerMasterId == updatedFieldOfficer.FieldOfficerMasterId);
+                .Where(d => d.FieldOfficerMasterId == updatedFieldOfficer.FieldOfficerMasterId)
+                .Select(d => new
+                {
+                    Officer = d,
+                    IsMobileDuplicate = _context.FieldOfficerMaster.Any(m =>
+                        m.FieldOfficerMobile == updatedFieldOfficer.FieldOfficerMobile
+                        && m.FieldOfficerMasterId != d.FieldOfficerMasterId && m.ElectionTypeMasterId == updatedFieldOfficer.ElectionTypeMasterId),
+                    ExistingOfficerWithSameMobile = _context.FieldOfficerMaster.FirstOrDefault(m =>
+                        m.FieldOfficerMobile == updatedFieldOfficer.FieldOfficerMobile
+                        && m.ElectionTypeMasterId == updatedFieldOfficer.ElectionTypeMasterId
+                        && m.StateMasterId == updatedFieldOfficer.StateMasterId
+                        && m.DistrictMasterId == updatedFieldOfficer.DistrictMasterId &&m.ElectionTypeMasterId==updatedFieldOfficer.ElectionTypeMasterId)
+                })
+                .FirstOrDefaultAsync();
 
             if (existingOfficer == null)
             {
-                // Return a response if the record is not found
                 return new Response
                 {
                     Status = RequestStatusEnum.BadRequest,
@@ -1932,55 +1926,48 @@ namespace EAMS_DAL.Repository
                 };
             }
 
-            // Determine if the mobile number is being updated
+             
 
-            if (updatedFieldOfficer.FieldOfficerMobile != existingOfficer.FieldOfficerMobile)
+            if (updatedFieldOfficer.FieldOfficerMobile != existingOfficer.Officer.FieldOfficerMobile
+                && existingOfficer.IsMobileDuplicate)
             {
-                // Check if the new mobile number already exists for another officer
-                bool isUniquePhoneNumber = await _context.FieldOfficerMaster
-                    .AnyAsync(d => d.FieldOfficerMobile == updatedFieldOfficer.FieldOfficerMobile
-                                   && d.FieldOfficerMasterId != existingOfficer.FieldOfficerMasterId);
-
-                if (isUniquePhoneNumber)
+                return new Response
                 {
-                    return new Response
-                    {
-                        Status = RequestStatusEnum.BadRequest,
-                        Message = "Mobile Number Already Exists"
-                    };
-                }
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = "Mobile Number Already Exists"
+                };
             }
 
-            // Map all fields from updatedFieldOfficer to existingOfficer
-            existingOfficer.StateMasterId = updatedFieldOfficer.StateMasterId;
-            existingOfficer.DistrictMasterId = updatedFieldOfficer.DistrictMasterId;
-            existingOfficer.AssemblyMasterId = updatedFieldOfficer.AssemblyMasterId;
-            existingOfficer.FieldOfficerName = updatedFieldOfficer.FieldOfficerName;
-            existingOfficer.FieldOfficerMobile = updatedFieldOfficer.FieldOfficerMobile;
-            existingOfficer.FieldOfficerDesignation = updatedFieldOfficer.FieldOfficerDesignation;
-            existingOfficer.FieldOfficerOfficeName = updatedFieldOfficer.FieldOfficerOfficeName;
-            existingOfficer.FieldOfficerUpdatedAt = BharatDateTime();
-            existingOfficer.FieldOfficerStatus = updatedFieldOfficer.FieldOfficerStatus;
-            existingOfficer.OTPGeneratedTime = updatedFieldOfficer.OTPGeneratedTime;
-            existingOfficer.OTP = updatedFieldOfficer.OTP;
-            existingOfficer.OTPExpireTime = updatedFieldOfficer.OTPExpireTime;
-            existingOfficer.OTPAttempts = updatedFieldOfficer.OTPAttempts;
-            existingOfficer.RefreshToken = updatedFieldOfficer.RefreshToken;
-            existingOfficer.RefreshTokenExpiryTime = updatedFieldOfficer.RefreshTokenExpiryTime;
-            existingOfficer.AppPin = updatedFieldOfficer.AppPin;
-            existingOfficer.IsLocked = updatedFieldOfficer.IsLocked;
-            existingOfficer.ElectionTypeMasterId = updatedFieldOfficer.ElectionTypeMasterId;
+            // Map updated fields from updatedFieldOfficer to the existing officer
+            existingOfficer.Officer.StateMasterId = updatedFieldOfficer.StateMasterId;
+            existingOfficer.Officer.DistrictMasterId = updatedFieldOfficer.DistrictMasterId;
+            existingOfficer.Officer.AssemblyMasterId = updatedFieldOfficer.AssemblyMasterId;
+            existingOfficer.Officer.FieldOfficerName = updatedFieldOfficer.FieldOfficerName;
+            existingOfficer.Officer.FieldOfficerMobile = updatedFieldOfficer.FieldOfficerMobile;
+            existingOfficer.Officer.FieldOfficerDesignation = updatedFieldOfficer.FieldOfficerDesignation;
+            existingOfficer.Officer.FieldOfficerOfficeName = updatedFieldOfficer.FieldOfficerOfficeName;
+            existingOfficer.Officer.FieldOfficerUpdatedAt = BharatDateTime();
+            existingOfficer.Officer.FieldOfficerStatus = updatedFieldOfficer.FieldOfficerStatus;
+            existingOfficer.Officer.OTPGeneratedTime = updatedFieldOfficer.OTPGeneratedTime;
+            existingOfficer.Officer.OTP = updatedFieldOfficer.OTP;
+            existingOfficer.Officer.OTPExpireTime = updatedFieldOfficer.OTPExpireTime;
+            existingOfficer.Officer.OTPAttempts = updatedFieldOfficer.OTPAttempts;
+            existingOfficer.Officer.RefreshToken = updatedFieldOfficer.RefreshToken;
+            existingOfficer.Officer.RefreshTokenExpiryTime = updatedFieldOfficer.RefreshTokenExpiryTime;
+            existingOfficer.Officer.AppPin = updatedFieldOfficer.AppPin;
+            existingOfficer.Officer.IsLocked = updatedFieldOfficer.IsLocked;
+            existingOfficer.Officer.ElectionTypeMasterId = updatedFieldOfficer.ElectionTypeMasterId;
 
-            _context.FieldOfficerMaster.Update(existingOfficer);
+            _context.FieldOfficerMaster.Update(existingOfficer.Officer);
             await _context.SaveChangesAsync();
 
-            // Return a success response
             return new Response
             {
                 Status = RequestStatusEnum.OK,
                 Message = "Field Officer updated successfully"
             };
         }
+
         public async Task<Response> UpdateFieldOfficerValidate(FieldOfficerMaster updatedFieldOfficer)
         {
             // Check if the record exists based on the FieldOfficerMasterId
@@ -2060,7 +2047,7 @@ namespace EAMS_DAL.Repository
                                 IsStatus = bt.BoothStatus,
                                 BoothCode_No = bt.BoothCode_No,
                                 IsAssigned = bt.IsAssigned,
-                                soMasterId = foId
+                                FieldOfficerMasterId = foId
 
 
                             };
@@ -2099,7 +2086,7 @@ namespace EAMS_DAL.Repository
                                 IsStatus = bt.BoothStatus,
                                 BoothCode_No = bt.BoothCode_No,
                                 IsAssigned = bt.IsAssigned,
-                                soMasterId = foId
+                                FieldOfficerMasterId = foId
 
 
                             }; 
@@ -15355,7 +15342,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                  AssemblyCode = asem.AssemblyCode,
                                  soName = so.BLOName,
                                  soMobile = so.BLOMobile,
-                                 soMasterId = so.BLOMasterId,
+                                 FieldOfficerMasterId = so.BLOMasterId,
                                  RecentOTP = so.OTP,
                                  OTPExpireTime = so.OTPExpireTime,
                                  OTPAttempts = so.OTPAttempts,
@@ -15386,7 +15373,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                  AssemblyCode = asem.AssemblyCode,
                                  soName = so.BLOName,
                                  soMobile = so.BLOMobile,
-                                 soMasterId = so.BLOMasterId,
+                                 FieldOfficerMasterId = so.BLOMasterId,
                                  RecentOTP = so.OTP,
                                  OTPExpireTime = so.OTPExpireTime,
                                  OTPAttempts = so.OTPAttempts,
@@ -15629,7 +15616,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                            BoothCode_No = bt.BoothCode_No,
 
                                            //IsAssigned = bt.IsAssigned,
-                                           soMasterId = Convert.ToInt32(bloId)
+                                           FieldOfficerMasterId = Convert.ToInt32(bloId)
 
 
                                        };
@@ -17128,14 +17115,14 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             return fourthLevelH;
         }
 
-        public async Task<Response> DeleteFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        public async Task<ServiceResponse> DeleteFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
             // Validate the input ID
             if (fourthLevelHMasterId <= 0)
             {
-                return new Response
+                return new ServiceResponse
                 {
-                    Status = RequestStatusEnum.BadRequest,
+                    IsSucceed =false,
                     Message = "Invalid fourthLevelHMasterId provided."
                 };
             }
@@ -17147,9 +17134,9 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             if (fourthLevelH == null)
             {
-                return new Response
+                return new ServiceResponse
                 {
-                    Status = RequestStatusEnum.BadRequest,
+                    IsSucceed = false,
                     Message = "Hierarchy not found."
                 };
             }
@@ -17164,9 +17151,9 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             if (boothExists > 0)
             {
-                return new Response
+                return new ServiceResponse
                 {
-                    Status = RequestStatusEnum.BadRequest,
+                    IsSucceed = false,
                     Message = $"Cannot delete this hierarchy. There are {boothExists} related booths. Please delete them first."
                 };
             }
@@ -17177,18 +17164,18 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 _context.FourthLevelH.Remove(fourthLevelH);
                 await _context.SaveChangesAsync();
 
-                return new Response
+                return new ServiceResponse
                 {
-                    Status = RequestStatusEnum.OK,
+                    IsSucceed = true,
                     Message = "Hierarchy deleted successfully."
                 };
             }
             catch (Exception ex)
             {
                 // Handle any errors that may have occurred during deletion
-                return new Response
+                return new ServiceResponse
                 {
-                    Status = RequestStatusEnum.BadRequest,
+                    IsSucceed = false,
                     Message = $"An error occurred: {ex.Message}"
                 };
             }
@@ -17308,30 +17295,30 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return blockPanchayat ?? new PSZonePanchayat(); // Return a default instance if null
         }
-        public async Task<Response> DeletePSZonePanchayatById(int psZonePanchayatMasterId)
+        public async Task<ServiceResponse> DeletePSZonePanchayatById(int psZonePanchayatMasterId)
         {
             try
             {
                 var isBoothExist = await _context.BoothMaster.Where(d => d.PSZonePanchayatMasterId == psZonePanchayatMasterId).CountAsync();
                 if (isBoothExist != 0)
                 {
-                    return new Response { Status = RequestStatusEnum.BadRequest, Message = $"Booths exist under this Panchayat, kindly delete them first." };
+                    return new ServiceResponse { IsSucceed = false, Message = $"Booths exist under this Panchayat, kindly delete them first." };
                 }
                 var blockPanchayat = await _context.PSZonePanchayat
                     .FirstOrDefaultAsync(p => p.PSZonePanchayatMasterId == psZonePanchayatMasterId);
                 if (blockPanchayat == null)
                 {
-                    return new Response { Status = RequestStatusEnum.NotFound, Message = "Block Panchayat not found" };
+                    return new ServiceResponse { IsSucceed = false, Message = "Block Panchayat not found" };
                 }
 
                 _context.PSZonePanchayat.Remove(blockPanchayat);
                 await _context.SaveChangesAsync();
 
-                return new Response { Status = RequestStatusEnum.OK, Message = "Block Panchayat deleted successfully" };
+                return new ServiceResponse { IsSucceed = true, Message = "Block Panchayat deleted successfully" };
             }
             catch (Exception ex)
             {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
+                return new ServiceResponse { IsSucceed = false, Message = ex.Message };
             }
         }
         #endregion

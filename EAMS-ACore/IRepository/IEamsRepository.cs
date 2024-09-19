@@ -310,7 +310,7 @@ namespace EAMS_ACore.IRepository
         Task<List<FourthLevelH>> GetFourthLevelHListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
         Task<FourthLevelH> GetFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
         Task<Response> UpdateFourthLevelH(FourthLevelH fourthLevelH);
-        Task<Response> DeleteFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
+        Task<ServiceResponse> DeleteFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
         #endregion
 
         #region SarpanchWards
@@ -328,7 +328,7 @@ namespace EAMS_ACore.IRepository
         Task<List<PSZonePanchayat>> GetPSZonePanchayatListById(int stateMasterId, int districtMasterId, int fourthLevelHMasterId, int assemblyMasterId);
         Task<PSZonePanchayat> GetPSZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId);
         Task<Response> UpdatePSZonePanchayat(PSZonePanchayat psZonePanchayat);
-        Task<Response> DeletePSZonePanchayatById(int psZonePanchayatMasterId);
+        Task<ServiceResponse> DeletePSZonePanchayatById(int psZonePanchayatMasterId);
 
         #endregion
 

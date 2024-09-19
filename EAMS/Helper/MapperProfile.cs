@@ -369,11 +369,11 @@ namespace EAMS.Helper
             #endregion
 
             #region SectorOfficerBoothViewModel CombinedMaster
-            CreateMap<SectorOfficerBoothViewModel, CombinedMaster>()
+            CreateMap<FieldOfficerBoothViewModel, CombinedMaster>()
                 .ForMember(dest => dest.StateId, opt => opt.MapFrom(src => src.StateMasterId))
                 .ForMember(dest => dest.DistrictId, opt => opt.MapFrom(src => src.DistrictMasterId))
                 .ForMember(dest => dest.AssemblyId, opt => opt.MapFrom(src => src.AssemblyMasterId))
-                  .ForMember(dest => dest.soMasterId, opt => opt.MapFrom(src => src.SoId))
+                  .ForMember(dest => dest.FieldOfficerMasterId, opt => opt.MapFrom(src => src.FieldOfficerMasterId))
                  .ForMember(dest => dest.BoothName, opt => opt.MapFrom(src => src.BoothName))
                  .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
                  .ForMember(dest => dest.FourthLevelHName, opt => opt.MapFrom(src => src.FourthLevelHName))

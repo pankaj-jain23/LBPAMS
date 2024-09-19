@@ -17,7 +17,7 @@ namespace EAMS_ACore.Interfaces
 {
     public interface IEamsService
     {
-        #region UpdateMasterStatus
+        #region Update && Delete MasterStatus
         Task<ServiceResponse> UpdateMasterStatus(UpdateMasterStatus updateMasterStatus);
         Task<ServiceResponse> DeleteMasterStatus(DeleteMasterStatus updateMasterStatus);
         #endregion
@@ -300,7 +300,7 @@ namespace EAMS_ACore.Interfaces
         Task<List<FourthLevelH>> GetFourthLevelHListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
         Task<FourthLevelH> GetFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
         Task<Response> UpdateFourthLevelH(FourthLevelH fourthLevelH);
-        Task<Response> DeleteFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
+        Task<ServiceResponse> DeleteFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
         #endregion
 
         #region  PSZonePanchayat
@@ -308,7 +308,7 @@ namespace EAMS_ACore.Interfaces
         Task<List<PSZonePanchayat>> GetPSZonePanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
         Task<PSZonePanchayat> GetPSZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId);
         Task<Response> UpdatePSZonePanchayat(PSZonePanchayat psZonePanchayat);
-        Task<Response> DeletePSZonePanchayatById( int psZonePanchayatMasterId);
+        Task<ServiceResponse> DeletePSZonePanchayatById( int psZonePanchayatMasterId);
         #endregion
 
         #region GPPanchayatWards

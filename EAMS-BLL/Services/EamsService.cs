@@ -3387,7 +3387,7 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.UpdateFourthLevelH(fourthLevelH);
         }
-        public async Task<Response> DeleteFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        public async Task<ServiceResponse> DeleteFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
             return await _eamsRepository.DeleteFourthLevelHById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);
         }
@@ -3411,7 +3411,7 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.UpdatePSZonePanchayat(psZonePanchayat);
         }
-        public async Task<Response> DeletePSZonePanchayatById(int psZonePanchayatMasterId)
+        public async Task<ServiceResponse> DeletePSZonePanchayatById(int psZonePanchayatMasterId)
         {
             return await _eamsRepository.DeletePSZonePanchayatById(psZonePanchayatMasterId);
         }

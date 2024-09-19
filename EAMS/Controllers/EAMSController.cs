@@ -719,7 +719,7 @@ namespace EAMS.Controllers
         public async Task<IActionResult> GetBoothListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
         {
             var boothList = await _EAMSService.GetBoothListByFoId(stateMasterId, districtMasterId, assemblyMasterId, foId);  // Corrected to await the asynchronous method
-            var mappedData = _mapper.Map<List<SectorOfficerBoothViewModel>>(boothList);
+            var mappedData = _mapper.Map<List<FieldOfficerBoothViewModel>>(boothList);
             var getUnassignedBoothList = await _EAMSService.GetUnassignedBoothListById(stateMasterId, districtMasterId, assemblyMasterId);  // Corrected to await the asynchronous method
             var unAssignedMappedData = _mapper.Map<List<CombinedMasterViewModel>>(getUnassignedBoothList);
             var data = new
@@ -746,7 +746,7 @@ namespace EAMS.Controllers
 
             var boothList = await _EAMSService.GetBoothListForFo(stateMasterId, districtMasterId, assemblyMasterId, foId);
 
-            var mappedData = _mapper.Map<List<SectorOfficerBoothViewModel>>(boothList); 
+            var mappedData = _mapper.Map<List<FieldOfficerBoothViewModel>>(boothList); 
             var data = new
             {
                 count = mappedData.Count, 
@@ -1882,17 +1882,16 @@ namespace EAMS.Controllers
         {
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && fourthLevelHMasterId != null)
             {
-                var psZoneList = await _EAMSService.DeleteFourthLevelHById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);  // Corrected to await the asynchronous method
-                if (psZoneList != null)
+                var isSucceed = await _EAMSService.DeleteFourthLevelHById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);  // Corrected to await the asynchronous method
+                if (isSucceed.IsSucceed)
                 {
-
-                    return Ok(psZoneList);
-
+                    //_logger.LogInformation("Master status updated successfully.");
+                    return Ok(isSucceed);
                 }
                 else
                 {
-                    return NotFound("Not Found");
-
+                    // _logger.LogError($"Failed to update master status. Error: {isSucceed.Message}");
+                    return BadRequest(isSucceed);
                 }
             }
             else
@@ -2035,17 +2034,16 @@ namespace EAMS.Controllers
         {
             if (psZonePanchayatMasterId != null)
             {
-                var psZoneList = await _EAMSService.DeletePSZonePanchayatById(psZonePanchayatMasterId);  // Corrected to await the asynchronous method
-                if (psZoneList != null)
+                var isSucceed = await _EAMSService.DeletePSZonePanchayatById(psZonePanchayatMasterId);  // Corrected to await the asynchronous method
+                if (isSucceed.IsSucceed)
                 {
-
-                    return Ok(psZoneList);
-
+                    //_logger.LogInformation("Master status updated successfully.");
+                    return Ok(isSucceed);
                 }
                 else
                 {
-                    return NotFound("Not Found");
-
+                    // _logger.LogError($"Failed to update master status. Error: {isSucceed.Message}");
+                    return BadRequest(isSucceed);
                 }
             }
             else
@@ -4281,7 +4279,7 @@ namespace EAMS.Controllers
         public async Task<IActionResult> GetBoothListByBLO(string stateMasterId, string districtMasterId, string assemblyMasterId, string bloId)
         {
             var boothList = await _EAMSService.GetAssignedBoothListByBLOId(stateMasterId, districtMasterId, assemblyMasterId, bloId);  // Corrected to await the asynchronous method
-            var mappedData = _mapper.Map<List<SectorOfficerBoothViewModel>>(boothList);
+            var mappedData = _mapper.Map<List<FieldOfficerBoothViewModel>>(boothList);
             var getUnassignedBoothList = await _EAMSService.GetUnassignedBLOBoothListById(stateMasterId, districtMasterId, assemblyMasterId);  // Corrected to await the asynchronous method
             var unAssignedMappedData = _mapper.Map<List<CombinedMasterViewModel>>(getUnassignedBoothList);
             var data = new

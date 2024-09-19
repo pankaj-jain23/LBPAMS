@@ -13,7 +13,7 @@
         public string AssemblyName { get; set; }
         public int AssemblyCode { get; set; }
 
-        public int soMasterId { get; set; }
+        public int FieldOfficerMasterId { get; set; }
         public string soName { get; set; }
         public string soMobile { get; set; }
         public string soDesignation { get; set; }

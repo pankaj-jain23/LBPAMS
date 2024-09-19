@@ -1,12 +1,12 @@
 ﻿namespace EAMS.ViewModels
 {
-    public class SectorOfficerBoothViewModel
+    public class FieldOfficerBoothViewModel
     {
 
         public int StateMasterId { get; set; }
         public int DistrictMasterId { get; set; }
         public int AssemblyMasterId { get; set; }
-        public int SoId { get; set; }
+        public int FieldOfficerMasterId { get; set; }
         public int? FourthLevelHMasterId
         {
             get;
