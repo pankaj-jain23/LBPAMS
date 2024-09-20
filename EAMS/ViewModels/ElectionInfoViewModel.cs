@@ -4,20 +4,23 @@ namespace EAMS.ViewModels
 {
     public class ElectionInfoViewModel
     {
-        [Required(ErrorMessage = "State Master Id is required")]
+        
         public int StateMasterId { get; set; }
-        [Required(ErrorMessage = "District Master Id is required")]
+       
         public int DistrictMasterId { get; set; }
-        [Required(ErrorMessage = "Assembly Master Id is required")]
+        public int ElectionTypeMasterId { get; set; }
         public int AssemblyMasterId { get; set; }
 
-        [Required(ErrorMessage = "Booth Master Id is required")]
-        public int BoothMasterId { get; set; }
-        public int? PCMasterId { get; set; }
-        [Required(ErrorMessage = "Event Master Id is required")]
-        public int EventMasterId { get; set; }
+        public int? FourthLevelMasterId { get; set; }
+        public int? PSZoneMasterId { get; set; }
 
-        [Required(ErrorMessage = "Event Status is required")]
+        public int BoothMasterId { get; set; }
+       
+        public int EventMasterId { get; set; }
+        public int? EventSequence { get; set; }
+        public int? EventABBR { get; set; }
+        public string? FOUserId { get; set; }
+        public string? AROUserId { get; set; }
         public bool EventStatus { get; set; }
         /*** for MockPoll Polling Agents**/
         public int? NoOfPollingAgents { get; set; }
@@ -25,9 +28,7 @@ namespace EAMS.ViewModels
         public string? FinalVotes { get; set; }
 
         /*** for Voter Turn Out**/
-        public int VoterValue { get; set; }
-        //public string? SOUserId { get; set; }
-        //public string? AROUserId { get; set; }
+        public int VoterValue { get; set; } 
 
         /**Male,Female,Transgender**/
         public string? Male { get; set; }
@@ -36,11 +37,6 @@ namespace EAMS.ViewModels
 
         public bool? IsQueueUndo { get; set; }
         public string? EDC { get; set; }
-        public int ElectionTypeMasterId
-        {
-            get;
-            set;
-        }
-        //public string? UserType { get;set; }
+       
     }
 }

@@ -8,6 +8,9 @@
         public string Code { get; set; }
         public string Name { get; set; }
         public string DistrictName { get; set; }
+        public string AssemblyName { get; set; }
+        public string HierarchyName { get; set; }
+        public string PSZonePanchayatName { get; set; }
         public string LocationName { get; set; }
         public int? TotalNumberOfBooths { get; set; }
         public int? TotalNumberOfBoothsEntered { get; set; }

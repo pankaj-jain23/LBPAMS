@@ -44,6 +44,12 @@ builder.Services.AddDbContextPool<EamsContext>(options =>
            
         });
 });
+builder.Services.AddStackExchangeRedisCache(options => {
+    var redisString = builder.Configuration.GetConnectionString("RedisCacheUrl");
+
+    options.Configuration = redisString; 
+});
+
 builder.Services
     .AddIdentity<UserRegistration, IdentityRole>()
     .AddEntityFrameworkStores<EamsContext>()

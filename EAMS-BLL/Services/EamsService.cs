@@ -8,6 +8,7 @@ using EAMS_ACore.IRepository;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
 using EAMS_ACore.Models.ElectionType;
+using EAMS_ACore.Models.EventActivityModels;
 using EAMS_ACore.Models.Polling_Personal_Randomisation_Models;
 using EAMS_ACore.Models.Polling_Personal_Randomization_Models;
 using EAMS_ACore.Models.PollingStationFormModels;
@@ -375,8 +376,21 @@ namespace EAMS_BLL.Services
         #endregion
 
         #region EventActivity
-     
+        public async Task<ServiceResponse> UpdateEventActivity(UpdateEventActivity updateEventActivity)
+        {
+            return new ServiceResponse
+            {
+                IsSucceed = false
+            };
 
+        }
+        public async Task<ServiceResponse> EventActivity(ElectionInfoMaster electionInfoMaster)
+        {
+            return new ServiceResponse
+            {
+                IsSucceed = false
+            };
+        }
         public async Task<List<EventWiseBoothStatus>> EventWiseBoothStatus(string soId)
         {
             return await _eamsRepository.EventWiseBoothStatus(soId);
@@ -1870,7 +1884,11 @@ namespace EAMS_BLL.Services
 
             return await _eamsRepository.GetConsolidateBoothReports(boothReportModel);
         }
+        public async Task<List<ConsolidateBoothReport>> GetConsolidateGPWardReports(BoothReportModel boothReportModel)
+        {
 
+            return await _eamsRepository.GetConsolidateGPWardReports(boothReportModel);
+        }
         public async Task<List<SoReport>> GetSOReport(BoothReportModel boothReportModel)
         {
 
@@ -1934,13 +1952,7 @@ namespace EAMS_BLL.Services
         #endregion
 
 
-        #region
-        public async Task<List<ChartConsolidatedReport>> GetChartConsolidatedReport(ChartReportModel chartReportModel)
-        {
-
-            return await _eamsRepository.GetChartConsolidatedReport(chartReportModel);
-        }
-        #endregion
+     
 
         #region HelpDesk
         public async Task<Response> AddHelpDeskInfo(HelpDeskDetail helpDeskDetail)

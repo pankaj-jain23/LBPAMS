@@ -13,6 +13,7 @@ using EAMS_ACore.AuthModels;
 using EAMS_ACore.HelperModels;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
+using EAMS_ACore.Models.EventActivityModels;
 using EAMS_ACore.Models.Polling_Personal_Randomisation_Models;
 using EAMS_ACore.Models.Polling_Personal_Randomization_Models;
 using EAMS_ACore.Models.PollingStationFormModels;
@@ -21,7 +22,9 @@ using EAMS_ACore.Models.QueueModel;
 using EAMS_ACore.NotificationModels;
 using EAMS_ACore.ReportModels;
 using LBPAMS.ViewModels;
+using LBPAMS.ViewModels.EventActivityViewModels;
 using LBPAMS.ViewModels.PublicModels;
+using LBPAMS.ViewModels.ReportViewModel;
 
 namespace EAMS.Helper
 {
@@ -427,21 +430,13 @@ namespace EAMS.Helper
 
             #region Event Activity
 
-            CreateMap<ElectionInfoViewModel, ElectionInfoMaster>()
-         .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
-         .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
-         .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+            CreateMap<UpdateEventActivityViewModel, UpdateEventActivity>() 
          .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
-         .ForMember(dest => dest.IsPartyDispatched, opt => opt.MapFrom(src => src.EventStatus))
-         .ForMember(dest => dest.IsPartyReached, opt => opt.MapFrom(src => src.EventStatus))
-         .ForMember(dest => dest.FinalTVoteStatus, opt => opt.MapFrom(src => src.EventStatus))
-         .ForMember(dest => dest.NoOfPollingAgents, opt => opt.MapFrom(src => src.NoOfPollingAgents))
-         .ForMember(dest => dest.Male, opt => opt.MapFrom(src => src.Male))
-         .ForMember(dest => dest.Female, opt => opt.MapFrom(src => src.Female))
-        .ForMember(dest => dest.Transgender, opt => opt.MapFrom(src => src.Transgender))
-        .ForMember(dest => dest.EDC, opt => opt.MapFrom(src => src.EDC))
-        .ForMember(dest => dest.IsQueueUndo, opt => opt.MapFrom(src => src.IsQueueUndo))
-        .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+         .ForMember(dest => dest.BoothCode, opt => opt.MapFrom(src => src.BoothCode)) 
+         .ForMember(dest => dest.EventMasterId, opt => opt.MapFrom(src => src.EventMasterId))
+         .ForMember(dest => dest.EventABBR, opt => opt.MapFrom(src => src.EventABBR))
+         .ForMember(dest => dest.EventSequence, opt => opt.MapFrom(src => src.EventSequence))
+         .ForMember(dest => dest.EventStatus, opt => opt.MapFrom(src => src.EventStatus))
 
          .ReverseMap();
             #endregion
@@ -547,6 +542,17 @@ namespace EAMS.Helper
                 .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
                 .ForMember(dest => dest.PSZonePanchayatMasterId, opt => opt.MapFrom(src => src.PSZonePanchayatMasterId))
                 .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type));
+
+
+            #endregion
+
+            #region GPWardReportViewModel BoothReportModel
+            CreateMap<GPWardReportViewModel, BoothReportModel>()
+                .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+                .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+                .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+                .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+                .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId));
 
 
             #endregion

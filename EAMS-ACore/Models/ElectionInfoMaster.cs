@@ -7,16 +7,21 @@ namespace EAMS_ACore.Models
         [Key]
         public int ElectionInfoMasterId { get; set; }
         public int StateMasterId { get; set; }
+
         public int DistrictMasterId { get; set; }
+        public int ElectionTypeMasterId { get; set; }
         public int AssemblyMasterId { get; set; }
+
+        public int? FourthLevelMasterId { get; set; }
+        public int? PSZoneMasterId { get; set; }
+
         public int BoothMasterId { get; set; }
-        public int? PCMasterId { get; set; }
+
         public int EventMasterId { get; set; }
-        public DateTime? ElectionInfoCreatedAt { get; set; }
-        public DateTime? ElectionInfoUpdatedAt { get; set; }
-        public DateTime? ElectionInfoDeletedAt { get; set; }
+        public int? EventSequence { get; set; }
+        public int? EventABBR { get; set; }
         public bool? ElectionInfoStatus { get; set; }
-        public string? SOUserId { get; set; }
+        public string? FOUserId { get; set; }
         public string? AROUserId { get; set; }
         public bool? IsPartyDispatched { get; set; }
         public DateTime? PartyDispatchedLastUpdate { get; set; }
@@ -66,12 +71,8 @@ namespace EAMS_ACore.Models
         public int? EDC { get; set; }
 
         public bool? IsQueueUndo { get; set; }
-        public int ElectionTypeMasterId
-        {
-            get;
-            set;
-        }
-        //public string? UserType { get; set; }
+       
+        
     }
 
 }

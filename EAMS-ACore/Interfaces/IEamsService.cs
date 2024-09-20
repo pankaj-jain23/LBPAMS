@@ -4,6 +4,7 @@ using EAMS_ACore.HelperModels;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
 using EAMS_ACore.Models.ElectionType;
+using EAMS_ACore.Models.EventActivityModels;
 using EAMS_ACore.Models.Polling_Personal_Randomisation_Models;
 using EAMS_ACore.Models.Polling_Personal_Randomization_Models;
 using EAMS_ACore.Models.PollingStationFormModels;
@@ -112,7 +113,8 @@ namespace EAMS_ACore.Interfaces
         #endregion
 
         #region Event Activity
-   
+        Task<ServiceResponse> EventActivity(ElectionInfoMaster electionInfoMaster);
+        Task<ServiceResponse> UpdateEventActivity(UpdateEventActivity updateEventActivity);
 
         Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(string boothMasterId, int eventid);
         Task<Models.Queue> GetVoterInQueue(string boothMasterId);
@@ -188,6 +190,7 @@ namespace EAMS_ACore.Interfaces
 
         #region Reports
         Task<List<ConsolidateBoothReport>> GetConsolidateBoothReports(BoothReportModel boothReportModel);
+        Task<List<ConsolidateBoothReport>> GetConsolidateGPWardReports(BoothReportModel boothReportModel);
         Task<List<SoReport>> GetSOReport(BoothReportModel boothReportModel);
         Task<List<SoReport>> GetPendingSOReport(BoothReportModel boothReportModel);
 
@@ -197,12 +200,7 @@ namespace EAMS_ACore.Interfaces
         Task<List<VTReportModel>> GetVoterTurnOutConsolidatedReports(BoothReportModel boothReportModel);
         //Task<List<VTReportModel>> GetSlotBasedVoterTurnOutReport(SlotVTReportModel boothReportModel);
 
-        #region GetChartConsolidatedReport
-
-
-        Task<List<ChartConsolidatedReport>> GetChartConsolidatedReport(ChartReportModel boothReportModel);
-        #endregion
-
+       
         #region HelpDesk
         Task<Response> AddHelpDeskInfo(HelpDeskDetail helpDeskDetail);
         Task<List<HelpDeskDetail>> GetHelpDeskDetail(string assemblyMasterId);

@@ -3,6 +3,7 @@ using EAMS.ViewModels.ChartViewModel;
 using EAMS.ViewModels.ReportViewModel;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.ReportModels;
+using LBPAMS.ViewModels.ReportViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,50 +28,58 @@ namespace EAMS.Controllers
         [HttpPost]
         [Route("GetConsolidatedBoothReport")]
         [Authorize]
-        public async Task<IActionResult> GetConsolidatedBoothReport(BoothReportViewModel boothReportViewModel)
+        public async Task<IActionResult> GetConsolidatedBoothReport([FromBody] BoothReportViewModel boothReportViewModel)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var mappedData = _mapper.Map<BoothReportModel>(boothReportViewModel);
-
-                //State
-               
-                    var records = await _EAMSService.GetConsolidateBoothReports(mappedData);
-                    return Ok(records);
-                //}
-                ////District
-                //else if (mappedData.StateMasterId is not 0 && mappedData.DistrictMasterId is not 0 && mappedData.AssemblyMasterId is 0 && mappedData.FourthLevelHMasterId is 0 && mappedData.PSZonePanchayatMasterId is 0)
-                //{
-                //    var records = await _EAMSService.GetConsolidateBoothReports(mappedData);
-                //    return Ok(records);
-                //}
-                ////ElectionType
-                //else if (mappedData.StateMasterId is not 0 && mappedData.DistrictMasterId is 0 && mappedData.AssemblyMasterId is 0 && mappedData.FourthLevelHMasterId is 0 && mappedData.PSZonePanchayatMasterId is 0)
-                //{
-                //    var records = await _EAMSService.GetConsolidateBoothReports(mappedData);
-                //    return Ok(records);
-
-                //}
-                ////Assembly
-                //else if (mappedData.AssemblyMasterId is not 0)
-                //{
-                //    var records = await _EAMSService.GetConsolidateBoothReports(mappedData);
-
-                //    return Ok(records);
-
-                //}
-
-
-
-            }
-            else
-            {
-
+                // Return BadRequest with validation errors
+                return BadRequest(ModelState);
             }
 
-            return Ok();
+            // Map the incoming view model to the data model
+            var mappedData = _mapper.Map<BoothReportModel>(boothReportViewModel);
+
+            // Get the consolidated report
+            var records = await _EAMSService.GetConsolidateBoothReports(mappedData);
+
+            // Check if records were found
+            if (records == null || !records.Any())
+            {
+                // Return NoContent if there are no records
+                return NoContent();
+            }
+
+            // Return Ok with the result
+            return Ok(records);
         }
 
+        [HttpPost]
+        [Route("GetConsolidatedGPWardReport")]
+        [Authorize]
+        public async Task<IActionResult> GetConsolidatedGPWardReport([FromBody] GPWardReportViewModel gPWardReportViewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                // Return BadRequest with validation errors
+                return BadRequest(ModelState);
+            }
+
+            // Map the incoming view model to the data model
+            var mappedData = _mapper.Map<BoothReportModel>(gPWardReportViewModel);
+
+            // Get the consolidated report
+            var records = await _EAMSService.GetConsolidateGPWardReports(mappedData);
+
+            // Check if records were found
+            if (records == null || !records.Any())
+            {
+                // Return NoContent if there are no records
+                return NoContent();
+            }
+
+            // Return Ok with the result
+            return Ok(records);
+        }
 
         [HttpPost]
         [Route("GetSOReport")]
@@ -257,62 +266,7 @@ namespace EAMS.Controllers
 
         #endregion
 
-        #region Charts
-        [HttpPost]
-        [Route("GetEventChart")]
-        //[Authorize]
-        public async Task<IActionResult> GetEventChart(ChartReportViewModel chartReportViewModel)
-        {
-            if (ModelState.IsValid)
-            {
-                var mappedData = _mapper.Map<ChartReportModel>(chartReportViewModel);
-
-                //State
-                if (mappedData.StateMasterId is not 0 && mappedData.DistrictMasterId is 0 && mappedData.PCMasterId is 0 && mappedData.AssemblyMasterId is 0)
-                {
-                    var records = await _EAMSService.GetChartConsolidatedReport(mappedData);
-                    return Ok(records);
-                }
-                //District
-                else if (mappedData.StateMasterId is not 0 && mappedData.DistrictMasterId is not 0 && mappedData.PCMasterId is 0 && mappedData.AssemblyMasterId is 0)
-                {
-                    var records = await _EAMSService.GetChartConsolidatedReport(mappedData);
-                    return Ok(records);
-                }
-                //PC
-                else if (mappedData.StateMasterId is not 0 && mappedData.DistrictMasterId is 0 && mappedData.PCMasterId is not 0 && mappedData.AssemblyMasterId is 0)
-                {
-                    var records = await _EAMSService.GetChartConsolidatedReport(mappedData);
-                    return Ok(records);
-
-                }
-                //Assembly for District
-                else if (mappedData.StateMasterId is not 0 && mappedData.DistrictMasterId is not 0 && mappedData.PCMasterId is 0 && mappedData.AssemblyMasterId is not 0)
-                {
-                    var records = await _EAMSService.GetChartConsolidatedReport(mappedData);
-
-                    return Ok(records);
-
-                }
-                //Assembly for PC
-                else if (mappedData.StateMasterId is not 0 && mappedData.DistrictMasterId is 0 && mappedData.PCMasterId is not 0 && mappedData.AssemblyMasterId is not 0)
-                {
-                    var records = await _EAMSService.GetChartConsolidatedReport(mappedData);
-
-                    return Ok(records);
-
-                }
-
-
-            }
-            else
-            {
-
-            }
-
-            return Ok();
-        }
-        #endregion
+        
 
 
         #region Voter Turn Out Consolidated

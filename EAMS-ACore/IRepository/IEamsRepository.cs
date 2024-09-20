@@ -113,9 +113,7 @@ namespace EAMS_ACore.IRepository
         #endregion
 
         #region Event Activity
-       
-
-
+        
         Task<bool> CanPollStart(int boothMasterId, int eventid);
         Task<bool> CanQueueStart(int boothMasterId);
         Task<bool> QueueTime(int boothMasterId);
@@ -195,6 +193,7 @@ namespace EAMS_ACore.IRepository
 
         #region Reports
         Task<List<ConsolidateBoothReport>> GetConsolidateBoothReports(BoothReportModel boothReportModel);
+        Task<List<ConsolidateBoothReport>> GetConsolidateGPWardReports(BoothReportModel boothReportModel);
         Task<List<SoReport>> GetSOReport(BoothReportModel boothReportModel);
         Task<List<SoReport>> GetPendingSOReport(BoothReportModel boothReportModel);
         Task<List<AssemblyWisePendingBooth>> GetAssemblyWisePendingReports(string stateMasterId);
@@ -205,9 +204,7 @@ namespace EAMS_ACore.IRepository
         Task<List<VTReportModel>> GetSlotBasedVoterTurnOutReport(SlotVTReportModel boothReportModel);
 
 
-        #region
-        Task<List<ChartConsolidatedReport>> GetChartConsolidatedReport(ChartReportModel boothReportModel);
-        #endregion
+       
 
 
         #region
@@ -225,6 +222,7 @@ namespace EAMS_ACore.IRepository
         Task<List<SectorOfficerPendencybySoNames>> GetSONamesEventWiseCount(string stateMasterId, string districtMasterId, string assemblyMasterid);
 
         #endregion
+
         Task<List<CombinedMaster>> AppNotDownload(string stateMasterId);
         Task<List<VoterTurnOutSlotWise>> GetVoterTurnOutSlotBasedReport(string stateMasterId);
         Task<List<AssemblyVoterTurnOutSlotWise>> GetSlotVTReporttAssemblyWise(string stateMasterId, string districtMasterId);

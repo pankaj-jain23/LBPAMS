@@ -10,12 +10,15 @@ using EAMS_ACore.Interfaces;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
 using EAMS_ACore.Models.ElectionType;
+using EAMS_ACore.Models.EventActivityModels;
 using EAMS_ACore.Models.PollingStationFormModels;
 using EAMS_ACore.Models.QueueModel;
 using LBPAMS.ViewModels;
+using LBPAMS.ViewModels.EventActivityViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Mono.TextTemplating;
 using System.Security.Claims;
 
 namespace EAMS.Controllers
@@ -916,34 +919,7 @@ namespace EAMS.Controllers
             return Ok(data);
         }
 
-        //[HttpGet]
-        //[Route("GetSectorOfficersListforARO")]
-        //[Authorize]
-        //public async Task<IActionResult> GetSectorOfficersListforARO()
-        //{
-        //    Claim stateMaster = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId");
-        //    Claim districtMaster = User.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId");
-        //    Claim assemblyMaster = User.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId");
-        //    string stateMasterId = stateMaster.Value;
-        //    string districtMasterId = districtMaster.Value;
-        //    string assemblyMasterId = assemblyMaster.Value;
-
-        //    var soList = await _EAMSService.GetSectorOfficersListById(stateMasterId, districtMasterId, assemblyMasterId);  // Corrected to await the asynchronous method
-        //    if (soList != null)
-        //    {
-        //        var data = new
-        //        {
-        //            count = soList.Count,
-        //            data = soList
-        //        };
-        //        return Ok(data);
-        //    }
-        //    else
-        //    {
-        //        return BadRequest("No Record Found");
-        //    }
-
-        //}
+        
 
         /// <summary>
         /// Insert Booth Under Assembly, District, State
@@ -2213,16 +2189,46 @@ namespace EAMS.Controllers
 
         #region Event Activity
 
-      
-
-        [HttpPost]
-        [Route("EventActivity")]
+        [HttpPut]
+        [Route("UpdateEventActivity")]
         [Authorize]
-        public async Task<IActionResult> EventActivity(ElectionInfoViewModel electionInfoViewModel)
+        public async Task<IActionResult> UpdateEventActivity(UpdateEventActivityViewModel updateEventActivityViewModel)
         {
-            return Ok();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Invalid model state.");
+            }
 
+            // Extract the required claims
+            if (!TryGetClaimValue(User, "StateMasterId", out int stateMasterId) ||
+                !TryGetClaimValue(User, "DistrictMasterId", out int districtMasterId) ||
+                !TryGetClaimValue(User, "AssemblyMasterId", out int assemblyMasterId) ||
+                !TryGetClaimValue(User, "ElectionTypeMasterId", out int electionTypeMasterId))
+            {
+                return BadRequest("Missing or invalid claims.");
+            }
+
+            // Map view model to entity
+            var mappedData = _mapper.Map<UpdateEventActivity>(updateEventActivityViewModel);
+
+            // Set IDs from claims
+            mappedData.StateMasterId = stateMasterId;
+            mappedData.DistrictMasterId = districtMasterId;
+            mappedData.AssemblyMasterId = assemblyMasterId;
+            mappedData.ElectionTypeMasterId = electionTypeMasterId;
+
+            // Further processing (e.g., saving to database) here...
+
+            return Ok(mappedData);
         }
+
+        private bool TryGetClaimValue(ClaimsPrincipal user, string claimType, out int result)
+        {
+            result = 0;
+            var claimValue = user.Claims.FirstOrDefault(c => c.Type == claimType)?.Value;
+            return !string.IsNullOrEmpty(claimValue) && int.TryParse(claimValue, out result);
+        }
+
 
         #region All Events 
         [HttpGet]
