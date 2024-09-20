@@ -3208,6 +3208,7 @@ namespace EAMS_DAL.Repository
                                                             existingbooth.AssemblyMasterId = boothMaster.AssemblyMasterId;
                                                             existingbooth.DistrictMasterId = boothMaster.DistrictMasterId;
                                                             existingbooth.StateMasterId = boothMaster.StateMasterId;
+                                                            existingbooth.IsPrimaryBooth = boothMaster.IsPrimaryBooth;
                                                             _context.BoothMaster.Update(existingbooth);
                                                             await _context.SaveChangesAsync();
 
