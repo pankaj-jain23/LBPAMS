@@ -6,6 +6,7 @@ using EAMS.ViewModels.PSFormViewModel;
 using EAMS.ViewModels.QueueViewModel;
 using EAMS_ACore;
 using EAMS_ACore.HelperModels;
+using EAMS_ACore.IExternal;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
@@ -13,6 +14,7 @@ using EAMS_ACore.Models.ElectionType;
 using EAMS_ACore.Models.EventActivityModels;
 using EAMS_ACore.Models.PollingStationFormModels;
 using EAMS_ACore.Models.QueueModel;
+using EAMS_BLL.ExternalServices;
 using LBPAMS.ViewModels;
 using LBPAMS.ViewModels.EventActivityViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -30,12 +32,13 @@ namespace EAMS.Controllers
         private readonly ILogger<EAMSController> _logger;
         private readonly IEamsService _EAMSService;
         private readonly IMapper _mapper;
-
-        public EAMSController(IEamsService eamsService, IMapper mapper, ILogger<EAMSController> logger)
+        private readonly ICacheService _cacheService;
+        public EAMSController(IEamsService eamsService, IMapper mapper, ILogger<EAMSController> logger,ICacheService cacheService)
         {
             _EAMSService = eamsService;
             _mapper = mapper;
             _logger = logger;
+            _cacheService = cacheService;
         }
 
 
@@ -163,15 +166,32 @@ namespace EAMS.Controllers
         {
             try
             {
-                var stateList = await _EAMSService.GetState();
-                var mappedData = _mapper.Map<List<StateMasterViewModel>>(stateList);
+                var getState = await _cacheService.GetDataAsync<List<StateMasterViewModel>>("GetState");
 
-                var data = new
+                if (getState == null)
                 {
-                    count = mappedData.Count,
-                    data = mappedData
+                    // Cache miss, fetch data from the service
+                    var stateList = await _EAMSService.GetState();
+                    var mappedData = _mapper.Map<List<StateMasterViewModel>>(stateList);
+
+                    // Optionally set data in cache
+                    await _cacheService.SetDataAsync("GetState", mappedData, DateTimeOffset.Now.AddMinutes(5)); // Example expiration
+
+                    var data = new
+                    {
+                        count = mappedData.Count,
+                        data = mappedData
+                    };
+                    return Ok(data);
+                }
+
+                // Cache hit
+                var dataFromCache = new
+                {
+                    count = getState.Count,
+                    data = getState
                 };
-                return Ok(data);
+                return Ok(dataFromCache);
             }
             catch (Exception ex)
             {
@@ -179,6 +199,7 @@ namespace EAMS.Controllers
                 return StatusCode(500, "Internal Server Error");
             }
         }
+
 
         [HttpPut]
         [Route("UpdateStateById")]
@@ -2217,9 +2238,9 @@ namespace EAMS.Controllers
             mappedData.AssemblyMasterId = assemblyMasterId;
             mappedData.ElectionTypeMasterId = electionTypeMasterId;
 
-            // Further processing (e.g., saving to database) here...
+            var result = await _EAMSService.UpdateEventActivity(mappedData);
 
-            return Ok(mappedData);
+            return Ok( );
         }
 
         private bool TryGetClaimValue(ClaimsPrincipal user, string claimType, out int result)

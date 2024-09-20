@@ -19,7 +19,7 @@ namespace EAMS_ACore.Models
 
         public int EventMasterId { get; set; }
         public int? EventSequence { get; set; }
-        public int? EventABBR { get; set; }
+        public string? EventABBR { get; set; }
         public bool? ElectionInfoStatus { get; set; }
         public string? FOUserId { get; set; }
         public string? AROUserId { get; set; }

@@ -7,6 +7,7 @@ using EAMS_ACore.IRepository;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
 using EAMS_ACore.Models.ElectionType;
+using EAMS_ACore.Models.EventActivityModels;
 using EAMS_ACore.Models.Polling_Personal_Randomisation_Models;
 using EAMS_ACore.Models.Polling_Personal_Randomization_Models;
 using EAMS_ACore.Models.PollingStationFormModels;
@@ -2058,7 +2059,7 @@ namespace EAMS_DAL.Repository
         /// <summary this api for Mobile App>
         public async Task<List<CombinedMaster>> GetBoothListForFo(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
         {
-
+            
             var boothlist = from bt in _context.BoothMaster.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.AssignedTo == foId.ToString())
                             join fourthLevelH in _context.FourthLevelH on bt.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
                             join asem in _context.AssemblyMaster
@@ -2086,8 +2087,9 @@ namespace EAMS_DAL.Repository
                                 IsStatus = bt.BoothStatus,
                                 BoothCode_No = bt.BoothCode_No,
                                 IsAssigned = bt.IsAssigned,
-                                FieldOfficerMasterId = foId
-
+                                FieldOfficerMasterId = foId,
+                                ElectionTypeMasterId = bt.ElectionTypeMasterId
+                                
 
                             };
             return await boothlist.ToListAsync();
@@ -4758,6 +4760,108 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             && d.BoothMasterId == electionInfoMaster.BoothMasterId && d.ElectionTypeMasterId == electionInfoMaster.ElectionTypeMasterId
             ).FirstOrDefault();
             return electionInfoRecord;
+        }
+        public async Task<ServiceResponse> PartyDispatch(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            // If the record exists, update it
+            if (result is not null)
+            {
+                result.EventMasterId = updateEventActivity.EventMasterId;
+                result.EventSequence = updateEventActivity.EventSequence;
+                result.EventABBR = updateEventActivity.EventABBR;
+                result.ElectionInfoStatus = updateEventActivity.EventStatus;
+                result.IsPartyDispatched = updateEventActivity.EventStatus;
+                result.PartyDispatchedLastUpdate = BharatDateTime();
+
+                _context.ElectionInfoMaster.Update(result);
+            }
+            // If the record does not exist, create a new one
+            else
+            {
+                var newElectionInfo = new ElectionInfoMaster
+                {
+                    StateMasterId = updateEventActivity.StateMasterId,
+                    DistrictMasterId = updateEventActivity.DistrictMasterId,
+                    AssemblyMasterId = updateEventActivity.AssemblyMasterId,
+                    ElectionTypeMasterId = updateEventActivity.ElectionTypeMasterId,
+                    BoothMasterId = updateEventActivity.BoothMasterId,
+                    EventMasterId = updateEventActivity.EventMasterId,
+                    EventSequence = updateEventActivity.EventSequence,
+                    EventABBR = updateEventActivity.EventABBR,
+                    ElectionInfoStatus = updateEventActivity.EventStatus,
+                    IsPartyDispatched = updateEventActivity.EventStatus,
+                    PartyDispatchedLastUpdate = BharatDateTime()
+                };
+
+                // Add the new record to the database
+                await _context.ElectionInfoMaster.AddAsync(newElectionInfo);
+            }
+
+            await _context.SaveChangesAsync();
+
+
+            return new ServiceResponse
+            {
+                IsSucceed = true
+            };
+        }
+        public async Task<ServiceResponse> PartyArrived(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the existing record by BoothMasterId
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            if (result is not null)
+            {
+                // Check if PartyDispatched is true before updating PartyArrived
+                if (result.IsPartyDispatched == true)
+                {
+                    if (updateEventActivity.EventABBR == "PA")
+                    {
+                        // Update the IsPartyReached status
+                        result.IsPartyReached = updateEventActivity.EventStatus;
+                        result.PartyReachedLastUpdate = BharatDateTime();
+
+                        _context.ElectionInfoMaster.Update(result);
+                        await _context.SaveChangesAsync();
+
+                        return new ServiceResponse
+                        {
+                            IsSucceed = true,
+                            Message = "Party Arrived status updated successfully."
+                        };
+                    }
+                }
+                else
+                {
+                    // Return an error message if Party Dispatch has not been completed
+                    return new ServiceResponse
+                    {
+                        IsSucceed = false,
+                        Message = "Party Dispatch must be completed before marking Party Arrived."
+                    };
+                }
+            }
+
+            return new ServiceResponse
+            {
+                IsSucceed = false,
+                Message = "Record not found for the given BoothMasterId."
+            };
         }
 
         public async Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(string boothMasterId, int eventmasterid)
@@ -9455,7 +9559,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 AssemblyName = d.AssemblyMaster.AssemblyName,
                 HierarchyName = d.FourthLevelH.HierarchyName,
                 PSZonePanchayatName = d.PsZonePanchayat.PSZonePanchayatName,
-                TotalNumberOfBooths = d.AssemblyMaster.BoothMaster.Count,
+                TotalNumberOfBooths = d.FourthLevelH.BoothMaster.Count,
                 TotalNumberOfBoothsEntered = d.AssemblyMaster.TotalBooths,
                 Male = d.AssemblyMaster.BoothMaster.Sum(b => b.Male),
                 Female = d.AssemblyMaster.BoothMaster.Sum(b => b.Female),
@@ -9500,6 +9604,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 query = query.Where(d => d.FourthLevelHMasterId == boothReportModel.FourthLevelHMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
                 reportType = "FourthLevel";
             }
+ 
 
             return await query.Select(d => new ConsolidateBoothReport
             {

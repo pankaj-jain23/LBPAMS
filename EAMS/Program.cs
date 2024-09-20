@@ -21,6 +21,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using StackExchange.Redis;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -44,11 +45,9 @@ builder.Services.AddDbContextPool<EamsContext>(options =>
            
         });
 });
-builder.Services.AddStackExchangeRedisCache(options => {
-    var redisString = builder.Configuration.GetConnectionString("RedisCacheUrl");
+var redisConnectionString = builder.Configuration.GetConnectionString("RedisCacheUrl");
+builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));
 
-    options.Configuration = redisString; 
-});
 
 builder.Services
     .AddIdentity<UserRegistration, IdentityRole>()
@@ -115,6 +114,7 @@ builder.Services.AddScoped<IUserConnectionService, UserConnectionService>();
 builder.Services.AddScoped<IUserConnectionServiceRepository, UserConnectionServiceRepository>();
 builder.Services.AddScoped<IRealTime, RealTimeService>();
 builder.Services.AddScoped<IExternal, ExternalService>();
+builder.Services.AddScoped<ICacheService, CacheService>();
 //builder.Services.AddHostedService<DatabaseListenerService>();
 
 builder.Services.AddSwaggerGen(opt =>

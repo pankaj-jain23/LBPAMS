@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using EAMS.ViewModels.ChartViewModel;
 using EAMS.ViewModels.ReportViewModel;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.ReportModels;

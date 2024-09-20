@@ -4,6 +4,7 @@ using EAMS_ACore.HelperModels;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
 using EAMS_ACore.Models.ElectionType;
+using EAMS_ACore.Models.EventActivityModels;
 using EAMS_ACore.Models.Polling_Personal_Randomisation_Models;
 using EAMS_ACore.Models.Polling_Personal_Randomization_Models;
 using EAMS_ACore.Models.PollingStationFormModels;
@@ -113,7 +114,9 @@ namespace EAMS_ACore.IRepository
         #endregion
 
         #region Event Activity
-        
+
+        Task<ServiceResponse> PartyDispatch(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> PartyArrived(UpdateEventActivity updateEventActivity);
         Task<bool> CanPollStart(int boothMasterId, int eventid);
         Task<bool> CanQueueStart(int boothMasterId);
         Task<bool> QueueTime(int boothMasterId);
@@ -198,6 +201,7 @@ namespace EAMS_ACore.IRepository
         Task<List<SoReport>> GetPendingSOReport(BoothReportModel boothReportModel);
         Task<List<AssemblyWisePendingBooth>> GetAssemblyWisePendingReports(string stateMasterId);
         #endregion
+
         Task<List<VTPSReportReportModel>> GetVoterTurnOutPollingStationReports(BoothReportModel boothReportModel);
 
         Task<List<VTReportModel>> GetVoterTurnOutConsolidatedReports(BoothReportModel boothReportModel);

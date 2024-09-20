@@ -3,6 +3,7 @@ using EAMS.ViewModels.PSFormViewModel;
 using EAMS_ACore;
 using EAMS_ACore.HelperModels;
 using EAMS_ACore.IAuthRepository;
+using EAMS_ACore.IExternal;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.IRepository;
 using EAMS_ACore.Models;
@@ -25,10 +26,12 @@ namespace EAMS_BLL.Services
     {
         private readonly IEamsRepository _eamsRepository;
         private readonly IAuthRepository _authRepository;
-        public EamsService(IEamsRepository eamsRepository, IAuthRepository authRepository)
+        private readonly ICacheService _cacheService;
+        public EamsService(IEamsRepository eamsRepository, IAuthRepository authRepository,ICacheService cacheService)
         {
             _eamsRepository = eamsRepository;
             _authRepository = authRepository;
+            _cacheService = cacheService;
         }
         private DateTime? BharatDateTime()
         {
@@ -378,11 +381,84 @@ namespace EAMS_BLL.Services
         #region EventActivity
         public async Task<ServiceResponse> UpdateEventActivity(UpdateEventActivity updateEventActivity)
         {
+            var getPreviousEventStatus = await CheckEventStatus(updateEventActivity);
+            // Execute different logic based on EventABBR
+            switch (updateEventActivity.EventABBR)
+            {
+                case "PD": // Party Dispatch
+                    await PartyDispatch(updateEventActivity);
+                    break;
+
+                case "PA": // Party Arrived
+                    await PartyArrived(updateEventActivity);
+                    break;
+
+                // Add more cases for other event abbreviations if needed
+                // case "XYZ":
+                //    await AnotherEventHandlingMethod(updateEventActivity);
+                //    break;
+
+                default:
+                    // Handle any unsupported events if necessary
+                    break;
+            }
+
             return new ServiceResponse
             {
                 IsSucceed = false
             };
 
+
+        }
+        public async Task<EventMaster> CheckEventStatus(UpdateEventActivity updateEventActivity)
+        {
+            // Try to retrieve the event list from cache
+            var eventList = await _cacheService.GetDataAsync<List<EventMaster>>("GetEventList");
+
+            // If cache is empty, retrieve from repository and set it in cache
+            if (eventList == null || !eventList.Any())
+            {
+                eventList = await _eamsRepository.GetEventListById(updateEventActivity.StateMasterId, updateEventActivity.ElectionTypeMasterId);
+                await _cacheService.SetDataAsync("GetEventList", eventList, DateTimeOffset.Now.AddMinutes(5)); // Cache for 5 minutes
+            }
+
+            // Sort the event list by sequence in ascending order
+            var sortedEventList = eventList.OrderBy(e => e.EventSequence).ToList();
+
+            // Find the current event based on EventABBR and EventSequence
+            var currentEvent = sortedEventList.FirstOrDefault(e => e.EventABBR == updateEventActivity.EventABBR && e.EventSequence == updateEventActivity.EventSequence);
+
+            if (currentEvent == null)
+            {
+                // If the current event is not found, handle the error (return null or throw exception)
+                return null;
+            }
+
+            // Check previous events for status
+            var previousEvent = sortedEventList.Take(sortedEventList.IndexOf(currentEvent))
+                                               .LastOrDefault(e => e.Status == true);
+
+            
+            // Return the first previous event with Status = true (or null if none found)
+            return previousEvent;
+        }
+
+
+        private async Task<ServiceResponse> PartyDispatch(UpdateEventActivity updateEventActivity)
+        {
+            var pdResult = await _eamsRepository.PartyDispatch(updateEventActivity);
+            return new ServiceResponse
+            {
+                IsSucceed = false
+            };
+        }
+        private async Task<ServiceResponse> PartyArrived(UpdateEventActivity updateEventActivity)
+        {
+            var pdResult = await _eamsRepository.PartyDispatch(updateEventActivity);
+            return new ServiceResponse
+            {
+                IsSucceed = false
+            };
         }
         public async Task<ServiceResponse> EventActivity(ElectionInfoMaster electionInfoMaster)
         {
@@ -465,7 +541,7 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetEventListAssemblyWiseById(stateId, districtId);
         }
-      
+
         public async Task<List<AssemblyEventActivityCountPCWise>> GetEventListAssemblyWiseByPCId(string stateId, string pcId)
         {
             return await _eamsRepository.GetEventListAssemblyWiseByPCId(stateId, pcId);
@@ -1952,7 +2028,7 @@ namespace EAMS_BLL.Services
         #endregion
 
 
-     
+
 
         #region HelpDesk
         public async Task<Response> AddHelpDeskInfo(HelpDeskDetail helpDeskDetail)
