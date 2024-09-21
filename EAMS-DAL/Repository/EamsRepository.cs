@@ -2059,7 +2059,7 @@ namespace EAMS_DAL.Repository
         /// <summary this api for Mobile App>
         public async Task<List<CombinedMaster>> GetBoothListForFo(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
         {
-            
+
             var boothlist = from bt in _context.BoothMaster.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.AssignedTo == foId.ToString())
                             join fourthLevelH in _context.FourthLevelH on bt.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
                             join asem in _context.AssemblyMaster
@@ -2089,7 +2089,7 @@ namespace EAMS_DAL.Repository
                                 IsAssigned = bt.IsAssigned,
                                 FieldOfficerMasterId = foId,
                                 ElectionTypeMasterId = bt.ElectionTypeMasterId
-                                
+
 
                             };
             return await boothlist.ToListAsync();
@@ -4814,6 +4814,395 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 IsSucceed = true
             };
         }
+        public async Task<ServiceResponse> IsPartyDispatch(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            if (result is null || result.IsPartyDispatched == true)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = true,
+                };
+
+            }
+            else
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "Party Not Arrived Yet"
+                };
+
+            }
+
+
+        }
+        public async Task<ServiceResponse> IsPartyArrived(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            if (result is null || result.IsPartyReached == true)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = true,
+                };
+
+            }
+            else
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "Party Not Arrived Yet"
+                };
+
+            }
+        }
+        public async Task<ServiceResponse> IsSetupPollingStation(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            if (result is null || result.IsSetupOfPolling == true)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = true,
+                };
+
+            }
+            else
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "Setup of Polling not  Yet"
+                };
+
+            }
+        }
+
+        public async Task<ServiceResponse> IsMockPollDone(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            if (result is null || result.IsMockPollDone == true)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = true,
+                };
+
+            }
+            else
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "Mock Poll Not Done Yet"
+                };
+
+            }
+        }
+
+        public async Task<ServiceResponse> IsPollStarted(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            if (result is null || result.IsPollStarted == true)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = true,
+                };
+
+            }
+            else
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "Poll Not Started Yet"
+                };
+
+            }
+        }
+
+        public async Task<ServiceResponse> IsVoterTurnOut(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            if (result is null || result.IsVoterTurnOut == true)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = true,
+                };
+
+            }
+            else
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "Voter TurnOut not Started Yet"
+                };
+
+            }
+        }
+
+        public async Task<ServiceResponse> IsVoterInQueue(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            if (result is null || result.IsPartyReached == true)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = true,
+                };
+
+            }
+            else
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "Party Not Arrived Yet"
+                };
+
+            }
+        }
+
+        public async Task<ServiceResponse> IsFinalVotesPolled(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            if (result is null || result.IsPartyReached == true)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = true,
+                };
+
+            }
+            else
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "Party Not Arrived Yet"
+                };
+
+            }
+        }
+
+        public async Task<ServiceResponse> IsPollEnded(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            if (result is null || result.IsPollEnded == true)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = true,
+                };
+
+            }
+            else
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "Party Not Ended Yet"
+                };
+
+            }
+        }
+
+        public async Task<ServiceResponse> IsEVMVVPATOff(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            if (result is null || result.IsMCESwitchOff == true)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = true,
+                };
+
+            }
+            else
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "EVM Machine is not switched off Yet"
+                };
+
+            }
+        }
+
+        public async Task<ServiceResponse> IsPartyDeparted(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            if (result is null || result.IsPartyDeparted == true)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = true,
+                };
+
+            }
+            else
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "Party Not Departed Yet"
+                };
+
+            }
+        }
+
+        public async Task<ServiceResponse> IsPartyReachedAtCollection(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            if (result is null || result.IsPartyReachedCollectionCenter == true)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = true,
+                };
+
+            }
+            else
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "Party Not Reached At Collection Center Yet"
+                };
+
+            }
+        }
+
+        public async Task<ServiceResponse> IsEVMDeposited(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            if (result is null || result.IsEVMDeposited == true)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = true,
+                };
+
+            }
+            else
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "EVAM Not Deposited Yet"
+                };
+
+            }
+        }
         public async Task<ServiceResponse> PartyArrived(UpdateEventActivity updateEventActivity)
         {
             // Fetch the existing record by BoothMasterId
@@ -4863,7 +5252,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 Message = "Record not found for the given BoothMasterId."
             };
         }
-
         public async Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(string boothMasterId, int eventmasterid)
         {
             VoterTurnOutPolledDetailViewModel model;
@@ -6375,8 +6763,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             return lastSlotExceededTime;
 
         }
-
-
 
 
         public async Task<List<EventWiseBoothStatus>> EventWiseBoothStatus(string soId)
@@ -9497,12 +9883,12 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 .Include(d => d.PsZonePanchayat)
                 .AsQueryable();
             string reportType = "";
-            //State
-            if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId == 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0 && boothReportModel.PSZonePanchayatMasterId == 0)
-            {
-                query = query.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
-                reportType = "State";
-            }
+            ////State
+            //if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId == 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0 && boothReportModel.PSZonePanchayatMasterId == 0)
+            //{
+            //    query = query.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
+            //    reportType = "State";
+            //}
             //District
             if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0 && boothReportModel.PSZonePanchayatMasterId == 0)
             {
@@ -9559,19 +9945,19 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 AssemblyName = d.AssemblyMaster.AssemblyName,
                 HierarchyName = d.FourthLevelH.HierarchyName,
                 PSZonePanchayatName = d.PsZonePanchayat.PSZonePanchayatName,
-                TotalNumberOfBooths = d.FourthLevelH.BoothMaster.Count,
-                TotalNumberOfBoothsEntered = d.AssemblyMaster.TotalBooths,
-                Male = d.AssemblyMaster.BoothMaster.Sum(b => b.Male),
-                Female = d.AssemblyMaster.BoothMaster.Sum(b => b.Female),
-                Trans = d.AssemblyMaster.BoothMaster.Sum(b => b.Transgender),
-                Total = d.AssemblyMaster.BoothMaster.Sum(b => b.TotalVoters),
-                IsStatus = d.AssemblyMaster.AssemblyStatus
+                //TotalNumberOfBooths = d.FourthLevelH.BoothMaster.Count,
+                //TotalNumberOfBoothsEntered = d.AssemblyMaster.TotalBooths,
+                Male = d.Male,
+                Female = d.Female,
+                Trans = d.Transgender,
+                Total = d.TotalVoters,
+                IsStatus = d.BoothStatus
             }).ToListAsync();
         }
 
         public async Task<List<ConsolidateBoothReport>> GetConsolidateGPWardReports(BoothReportModel boothReportModel)
         {
-            var query = _context.BoothMaster
+            var query = _context.GPPanchayatWards
                 .Include(d => d.StateMaster)
                 .Include(d => d.DistrictMaster)
                 .Include(d => d.AssemblyMaster)
@@ -9580,14 +9966,14 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             string reportType = "";
 
-            // State
-            if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId == 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0 && boothReportModel.PSZonePanchayatMasterId == 0)
-            {
-                query = query.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
-                reportType = "State";
-            }
+            //// State
+            //if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId == 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0 && boothReportModel.PSZonePanchayatMasterId == 0)
+            //{
+            //    query = query.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
+            //    reportType = "State";
+            //}
             // District
-            else if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0 && boothReportModel.PSZonePanchayatMasterId == 0)
+            if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0 && boothReportModel.PSZonePanchayatMasterId == 0)
             {
                 query = query.Where(d => d.DistrictMasterId == boothReportModel.DistrictMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
                 reportType = "District";
@@ -9604,7 +9990,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 query = query.Where(d => d.FourthLevelHMasterId == boothReportModel.FourthLevelHMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
                 reportType = "FourthLevel";
             }
- 
+
 
             return await query.Select(d => new ConsolidateBoothReport
             {
@@ -9628,18 +10014,18 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
 
                 Type = reportType,
-                Code = d.BoothCode_No.ToString(),
-                Name = d.BoothName,
+                Code = d.GPPanchayatWardsCode.ToString(),
+                Name = d.GPPanchayatWardsName,
                 DistrictName = d.DistrictMaster.DistrictName,
                 AssemblyName = d.AssemblyMaster.AssemblyName,
                 HierarchyName = d.FourthLevelH.HierarchyName,
-                TotalNumberOfBooths = d.AssemblyMaster.TotalBooths,
-                TotalNumberOfBoothsEntered = d.AssemblyMaster.BoothMaster.Count,
-                Male = d.AssemblyMaster.BoothMaster.Sum(b => b.Male),
-                Female = d.AssemblyMaster.BoothMaster.Sum(b => b.Female),
-                Trans = d.AssemblyMaster.BoothMaster.Sum(b => b.Transgender),
-                Total = d.AssemblyMaster.BoothMaster.Sum(b => b.TotalVoters),
-                IsStatus = d.AssemblyMaster.AssemblyStatus
+                //TotalNumberOfBooths = d.FourthLevelH.BoothMaster.Count,
+                //TotalNumberOfBoothsEntered = d.AssemblyMaster.TotalBooths,
+                // Male = d.Male,
+                //Female = d.Female,
+                //Trans = d.Transgender,
+                //Total = d.TotalVoters,
+                IsStatus = d.GPPanchayatWardsStatus
             }).ToListAsync();
         }
 
@@ -16665,6 +17051,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return resultList;
         }
+
+
         #endregion
 
     }

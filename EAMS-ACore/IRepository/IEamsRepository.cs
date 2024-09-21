@@ -115,6 +115,19 @@ namespace EAMS_ACore.IRepository
 
         #region Event Activity
 
+        Task<ServiceResponse> IsPartyDispatch(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> IsPartyArrived(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> IsSetupPollingStation(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> IsMockPollDone(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> IsPollStarted(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> IsVoterTurnOut(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> IsVoterInQueue(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> IsFinalVotesPolled(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> IsPollEnded(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> IsEVMVVPATOff(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> IsPartyDeparted(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> IsPartyReachedAtCollection(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> IsEVMDeposited(UpdateEventActivity updateEventActivity);
         Task<ServiceResponse> PartyDispatch(UpdateEventActivity updateEventActivity);
         Task<ServiceResponse> PartyArrived(UpdateEventActivity updateEventActivity);
         Task<bool> CanPollStart(int boothMasterId, int eventid);

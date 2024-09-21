@@ -27,7 +27,7 @@ namespace EAMS_BLL.Services
         private readonly IEamsRepository _eamsRepository;
         private readonly IAuthRepository _authRepository;
         private readonly ICacheService _cacheService;
-        public EamsService(IEamsRepository eamsRepository, IAuthRepository authRepository,ICacheService cacheService)
+        public EamsService(IEamsRepository eamsRepository, IAuthRepository authRepository, ICacheService cacheService)
         {
             _eamsRepository = eamsRepository;
             _authRepository = authRepository;
@@ -381,36 +381,28 @@ namespace EAMS_BLL.Services
         #region EventActivity
         public async Task<ServiceResponse> UpdateEventActivity(UpdateEventActivity updateEventActivity)
         {
-            var getPreviousEventStatus = await CheckEventStatus(updateEventActivity);
-            // Execute different logic based on EventABBR
-            switch (updateEventActivity.EventABBR)
+            var getPreviousEventStatus = await GetPreviousEvent(updateEventActivity);
+            var isEventDone = await IsEventActivityDone(getPreviousEventStatus);
+            if (isEventDone.IsSucceed == false)
             {
-                case "PD": // Party Dispatch
-                    await PartyDispatch(updateEventActivity);
-                    break;
 
-                case "PA": // Party Arrived
-                    await PartyArrived(updateEventActivity);
-                    break;
-
-                // Add more cases for other event abbreviations if needed
-                // case "XYZ":
-                //    await AnotherEventHandlingMethod(updateEventActivity);
-                //    break;
-
-                default:
-                    // Handle any unsupported events if necessary
-                    break;
+                return new ServiceResponse
+                {
+                    IsSucceed = false,
+                    Message = isEventDone.Message
+                };
             }
-
-            return new ServiceResponse
+            else
             {
-                IsSucceed = false
-            };
+                return new ServiceResponse
+                {
+                    IsSucceed = false
+                };
+            }
 
 
         }
-        public async Task<EventMaster> CheckEventStatus(UpdateEventActivity updateEventActivity)
+        private async Task<UpdateEventActivity> GetPreviousEvent(UpdateEventActivity updateEventActivity)
         {
             // Try to retrieve the event list from cache
             var eventList = await _cacheService.GetDataAsync<List<EventMaster>>("GetEventList");
@@ -438,12 +430,75 @@ namespace EAMS_BLL.Services
             var previousEvent = sortedEventList.Take(sortedEventList.IndexOf(currentEvent))
                                                .LastOrDefault(e => e.Status == true);
 
-            
+            updateEventActivity.EventMasterId = previousEvent.EventMasterId;
+            updateEventActivity.EventABBR = previousEvent.EventABBR;
+            updateEventActivity.EventSequence = previousEvent.EventSequence;
+            updateEventActivity.EventStatus = previousEvent.Status;
             // Return the first previous event with Status = true (or null if none found)
-            return previousEvent;
+            return updateEventActivity;
         }
 
+        private async Task<ServiceResponse> IsEventActivityDone(UpdateEventActivity updateEventActivity)
+        {
+            ServiceResponse response = null;
 
+            switch (updateEventActivity.EventABBR)
+            {
+                case "PD": // Party Dispatch
+                    response = await _eamsRepository.IsPartyDispatch(updateEventActivity);
+                    break;
+
+                case "PA": // Party Arrived
+                    response = await _eamsRepository.IsPartyArrived(updateEventActivity);
+                    break;
+                case "SP": // Setup Polling Station
+                    response = await _eamsRepository.IsSetupPollingStation(updateEventActivity);
+                    break;
+                case "MP": // Mock Poll Done
+                    response = await _eamsRepository.IsMockPollDone(updateEventActivity);
+                    break;
+                case "PS": // Poll Started
+                    response = await _eamsRepository.IsPollStarted(updateEventActivity);
+                    break;
+                case "VT": // Voter Turn Out
+                    response = await _eamsRepository.IsVoterTurnOut(updateEventActivity);
+                    break;
+                case "VQ": // Voter In Queue
+                    response = await _eamsRepository.IsVoterInQueue(updateEventActivity);
+                    break;
+                case "FV": // Final Votes Polled
+                    response = await _eamsRepository.IsFinalVotesPolled(updateEventActivity);
+                    break;
+                case "PE": // Poll Ended
+                    response = await _eamsRepository.IsPollEnded(updateEventActivity);
+                    break;
+                case "EO": // EVMVVPATOff
+                    response = await _eamsRepository.IsEVMVVPATOff(updateEventActivity);
+                    break;
+
+                case "PC": // PartyDeparted	
+                    response = await _eamsRepository.IsPartyDeparted(updateEventActivity);
+                    break;
+
+                case "PR": // PartyReachedAtCollection
+                    response = await _eamsRepository.IsPartyReachedAtCollection(updateEventActivity);
+                    break;
+
+                case "ED": // EVMDeposited
+                    response = await _eamsRepository.IsEVMDeposited(updateEventActivity);
+                    break;
+
+
+
+                default:
+                    // Handle any unsupported events if necessary
+                    response = new ServiceResponse { IsSucceed = false };
+                    break;
+            }
+             
+            return response; 
+
+        }
         private async Task<ServiceResponse> PartyDispatch(UpdateEventActivity updateEventActivity)
         {
             var pdResult = await _eamsRepository.PartyDispatch(updateEventActivity);

@@ -10,17 +10,14 @@ using EAMS_ACore.IExternal;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
-using EAMS_ACore.Models.ElectionType;
 using EAMS_ACore.Models.EventActivityModels;
 using EAMS_ACore.Models.PollingStationFormModels;
 using EAMS_ACore.Models.QueueModel;
-using EAMS_BLL.ExternalServices;
 using LBPAMS.ViewModels;
 using LBPAMS.ViewModels.EventActivityViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Mono.TextTemplating;
 using System.Security.Claims;
 
 namespace EAMS.Controllers
@@ -1259,7 +1256,7 @@ namespace EAMS.Controllers
             var eventList = await _EAMSService.GetEventListById(stateMasterId, electionTypeMasterId);
             if (eventList != null)
             {
-                var mappedEvent = _mapper.Map<List<EventMasterViewModel>>(eventList);
+                var mappedEvent = _mapper.Map<List<EventMasterListViewModel>>(eventList);
                 if (mappedEvent != null)
                 {
                     var data = new
