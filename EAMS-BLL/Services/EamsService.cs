@@ -294,6 +294,10 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetEventListById(stateMasterId, electionTypeMasterId);
         }
+        public async Task<List<EventMaster>> GetEventListForBooth(int stateMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.GetEventListForBooth(stateMasterId, electionTypeMasterId);
+        }
         public async Task<List<EventAbbr>> GetEventAbbrList()
         {
             return await _eamsRepository.GetEventAbbrList();

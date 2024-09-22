@@ -94,6 +94,7 @@ namespace EAMS_ACore.Interfaces
         Task<ServiceResponse> UpdateEvent(EventMaster eventMaster);
         Task<ServiceResponse> UpdateEventStaus(EventMaster eventMaster);
         Task<EventMaster> GetEventById(int eventMasterId);
+        Task<List<EventMaster>> GetEventListForBooth(int stateMasterId, int electionTypeMasterId);
         Task<ServiceResponse> DeleteEventById(int eventMasterId);
         Task<List<EventWiseBooth>> GetBoothListByEventId(string eventId, string soId);
         Task<List<EventActivityWiseBooth>> GetBoothEventActivityById(string soId);

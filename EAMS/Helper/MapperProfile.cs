@@ -924,6 +924,16 @@ namespace EAMS.Helper
                  .ForMember(dest => dest.ResultDecStatus, opt => opt.MapFrom(src => src.ResultDecStatus))
                  .ReverseMap();
             #endregion
+            #region EventByBoothViewModel  EventByBooth
+            CreateMap<EventByBoothViewModel, EventByBooth>()
+                .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
+                .ForMember(dest => dest.EventMasterId, opt => opt.MapFrom(src => src.EventMasterId))
+                .ForMember(dest => dest.EventName, opt => opt.MapFrom(src => src.EventName))
+                .ForMember(dest => dest.EventSequence, opt => opt.MapFrom(src => src.EventSequence))
+                .ForMember(dest => dest.EventABBR, opt => opt.MapFrom(src => src.EventABBR))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ReverseMap();
+            #endregion
         }
         #region Convert DateTime UTC
         private DateTime? ParseAndConvertToUtc(string dateTimeString)

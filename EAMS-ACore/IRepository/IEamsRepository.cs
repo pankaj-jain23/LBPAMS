@@ -91,6 +91,7 @@ namespace EAMS_ACore.IRepository
         #region Event Master
 
         Task<List<EventMaster>> GetEventListById(int stateMasterId, int electionTypeMasterId);
+        Task<List<EventMaster>> GetEventListForBooth(int stateMasterId, int electionTypeMasterId);
         Task<List<EventAbbr>> GetEventAbbrList();
         Task<ServiceResponse> AddEvent(EventMaster eventMaster);
         Task<ServiceResponse> UpdateEvent(EventMaster eventMaster);
