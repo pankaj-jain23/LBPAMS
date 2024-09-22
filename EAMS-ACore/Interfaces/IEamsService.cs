@@ -116,7 +116,7 @@ namespace EAMS_ACore.Interfaces
         #region Event Activity
         Task<ServiceResponse> EventActivity(ElectionInfoMaster electionInfoMaster);
         Task<ServiceResponse> UpdateEventActivity(UpdateEventActivity updateEventActivity);
-
+        Task<List<BoothEvents>> GetBoothEventListById(int stateMasterId,int electionTypeMasterId,int boothMasterId);
         Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(string boothMasterId, int eventid);
         Task<Models.Queue> GetVoterInQueue(string boothMasterId);
 

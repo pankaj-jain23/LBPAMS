@@ -2063,18 +2063,12 @@ namespace EAMS_DAL.Repository
         /// <summary this api for Mobile App>
         public async Task<List<CombinedMaster>> GetBoothListForFo(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
         {
-            UpdateEventActivity updateEventActivity = new UpdateEventActivity();
-            //If any record exist then pass event ABBR and sequence to getnextevent else pass default PD and Sequence 1
-            var electionInfo = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d => d.BoothMasterId == 1);
-            var sads = await GetNextEvent(updateEventActivity);
+            // Step 1: Get booth list with joins
             var boothlist = from bt in _context.BoothMaster.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.AssignedTo == foId.ToString())
                             join fourthLevelH in _context.FourthLevelH on bt.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
-                            join asem in _context.AssemblyMaster
-                            on bt.AssemblyMasterId equals asem.AssemblyMasterId
-                            join dist in _context.DistrictMaster
-                            on asem.DistrictMasterId equals dist.DistrictMasterId
-                            join state in _context.StateMaster
-                             on dist.StateMasterId equals state.StateMasterId
+                            join asem in _context.AssemblyMaster on bt.AssemblyMasterId equals asem.AssemblyMasterId
+                            join dist in _context.DistrictMaster on asem.DistrictMasterId equals dist.DistrictMasterId
+                            join state in _context.StateMaster on dist.StateMasterId equals state.StateMasterId
 
                             select new CombinedMaster
                             {
@@ -2096,12 +2090,117 @@ namespace EAMS_DAL.Repository
                                 IsAssigned = bt.IsAssigned,
                                 FieldOfficerMasterId = foId,
                                 ElectionTypeMasterId = bt.ElectionTypeMasterId
-
-
                             };
-            return await boothlist.ToListAsync();
+
+            var boothListResult = await boothlist.ToListAsync();
+
+            // Step 2: For each booth, get event status and determine the next event
+            foreach (var booth in boothListResult)
+            {
+                // Fetch election info for this booth
+                var getElectionInfoRecord = await _context.ElectionInfoMaster
+                    .FirstOrDefaultAsync(e => e.BoothMasterId == booth.BoothMasterId
+                        && e.StateMasterId == stateMasterId
+                        && e.ElectionTypeMasterId == booth.ElectionTypeMasterId);
+
+                if (getElectionInfoRecord != null)
+                {
+                    // Get the list of events for the current booth (this could be similar to your GetEventListForBooth method)
+                    var eventList = await GetEventListForBooth(stateMasterId, booth.ElectionTypeMasterId);
+                    UpdateEventActivity updateEventActivity = new UpdateEventActivity();
+                    updateEventActivity.StateMasterId = booth.StateId;
+                    updateEventActivity.DistrictMasterId = booth.DistrictId;
+                    updateEventActivity.AssemblyMasterId = booth.AssemblyId;
+                    updateEventActivity.ElectionTypeMasterId = booth.ElectionTypeMasterId;
+                    updateEventActivity.BoothMasterId = booth.BoothMasterId;
+                  
+                    // Step 3: Check the event status dynamically and assign the next event
+                    foreach (var eventItem in eventList)
+                    {
+                        updateEventActivity.EventMasterId = eventItem.EventMasterId;
+                        updateEventActivity.EventABBR = eventItem.EventABBR;
+                        updateEventActivity.EventSequence = eventItem.EventSequence;
+                        updateEventActivity.EventStatus = eventItem.Status;
+                        var getNextEvent = await GetNextEvent(updateEventActivity);
+                        bool eventStatus = false;
+
+                        switch (eventItem.EventABBR)
+                        {
+                            case "PD":
+                                eventStatus = getElectionInfoRecord.IsPartyDispatched ?? false;
+                                break;
+
+                            case "PA": // Party Arrived
+                                eventStatus = getElectionInfoRecord.IsPartyReached ?? false;
+                                break;
+                            case "SP": // Setup Polling Station
+                                eventStatus = getElectionInfoRecord.IsSetupOfPolling ?? false;
+                                break;
+                            case "MP": // Mock Poll Done
+                                eventStatus = getElectionInfoRecord.IsMockPollDone ?? false;
+                                break;
+                            case "PS": // Poll Started
+                                eventStatus = getElectionInfoRecord.IsPollStarted ?? false;
+                                break;
+                            case "VT": // Voter Turn Out
+                                eventStatus = getElectionInfoRecord.IsVoterTurnOut ?? false;
+                                break;
+                            case "VQ": // Voter In Queue
+                                eventStatus = getElectionInfoRecord.IsVoterTurnOut ?? false;
+                                break;
+                            case "FV": // Final Votes Polled
+                                eventStatus = getElectionInfoRecord.IsVoterTurnOut ?? false;
+                                break;
+                            case "PE": // Poll Ended
+                                eventStatus = getElectionInfoRecord.IsPollEnded ?? false;
+                                break;
+                            case "EO": // EVMVVPATOff
+                                eventStatus = getElectionInfoRecord.IsMCESwitchOff ?? false;
+                                break;
+
+                            case "PC": // PartyDeparted	
+                                eventStatus = getElectionInfoRecord.IsPartyDeparted ?? false;
+                                break;
+
+                            case "PR": // PartyReachedAtCollection
+                                eventStatus = getElectionInfoRecord.IsPartyReachedCollectionCenter ?? false;
+                                break;
+
+                            case "ED": // EVMDeposited
+                                eventStatus = getElectionInfoRecord.IsEVMDeposited ?? false;
+                                break;
+
+                                // Add more cases as needed
+                        }
+
+                        // Step 4: If the current event is completed, set the next event
+                        if (eventStatus)
+                        {
+                            booth.EventMasterId = eventItem.EventMasterId;
+                            booth.EventName = eventItem.EventName;
+                            booth.EventABBR = eventItem.EventABBR;
+                            booth.EventSequence = eventItem.EventSequence;
+                        }
+                    }
+                }
+                else
+                {
+                    var defaultEvent = await _context.EventMaster
+                 .FirstOrDefaultAsync(e => e.EventABBR == "PD");
+
+                    if (defaultEvent != null)
+                    {
+                        booth.EventMasterId = defaultEvent.EventMasterId;
+                        booth.EventName = defaultEvent.EventName;
+                        booth.EventABBR = defaultEvent.EventABBR;
+                        booth.EventSequence = defaultEvent.EventSequence;
+                    }
+                }
+            }
+
+            return boothListResult;
         }
-        /// </summary>
+
         public async Task<FieldOfficerMasterList> GetFieldOfficerById(int fieldOfficerMasterId)
         {
             var foRecord = await _context.FieldOfficerMaster
@@ -3797,14 +3896,16 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         public async Task<List<EventMaster>> GetEventListById(int stateMasterId, int electionTypeMasterId)
         {
-            return await _context.EventMaster.Where(d => d.StateMasterId == stateMasterId && d.ElectionTypeMasterId == electionTypeMasterId).OrderBy(d => d.EventSequence)
+            return await _context.EventMaster.Where(d => d.StateMasterId == stateMasterId
+            && d.ElectionTypeMasterId == electionTypeMasterId).OrderBy(d => d.EventSequence)
             .ToListAsync();
 
 
         }
         public async Task<List<EventMaster>> GetEventListForBooth(int stateMasterId, int electionTypeMasterId)
         {
-            return await _context.EventMaster.Where(d => d.StateMasterId == stateMasterId && d.ElectionTypeMasterId == electionTypeMasterId && d.Status == true)
+            return await _context.EventMaster.Where(d => d.StateMasterId == stateMasterId
+            && d.ElectionTypeMasterId == electionTypeMasterId && d.Status == true).OrderBy(d => d.EventSequence)
             .ToListAsync();
 
 
@@ -4763,6 +4864,106 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
 
         #region EventActivity
+        public async Task<List<BoothEvents>> GetBoothEventListById(int stateMasterId, int electionTypeMasterId, int boothMasterId)
+        {
+            // Step 1: Get the list of events for the given state and election type
+            var getBoothEvents = await GetEventListForBooth(stateMasterId, electionTypeMasterId);
+
+            // Step 2: Get the corresponding election info for the given booth
+            var getElectionInfoRecord = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d => d.StateMasterId == stateMasterId
+                && d.ElectionTypeMasterId == electionTypeMasterId
+                && d.BoothMasterId == boothMasterId);
+
+            // Step 3: Prepare the final list of BoothEvents with the appropriate statuses
+            var boothEventsList = new List<BoothEvents>();
+            if (getElectionInfoRecord == null)
+            {
+                foreach (var eventItem in getBoothEvents)
+                {
+                    boothEventsList.Add(new BoothEvents
+                    {
+                        BoothMasterId = boothMasterId,
+                        EventMasterId = eventItem.EventMasterId,
+                        EventName = eventItem.EventName,
+                        EventSequence = eventItem.EventSequence,
+                        EventABBR = eventItem.EventABBR,
+                        Status = false  // Set all statuses to false if getElectionInfoRecord is null
+                    });
+                }
+            }
+            else
+            {
+                foreach (var eventItem in getBoothEvents)
+                {
+                    bool eventStatus = false;  // Default status is false
+
+                    // Map the event status based on getElectionInfoRecord only for events from getBoothEvents
+                    switch (eventItem.EventABBR)
+                    {
+                        case "PD":
+                            eventStatus = getElectionInfoRecord.IsPartyDispatched ?? false;
+                            break;
+
+                        case "PA": // Party Arrived
+                            eventStatus = getElectionInfoRecord.IsPartyReached ?? false;
+                            break;
+                        case "SP": // Setup Polling Station
+                            eventStatus = getElectionInfoRecord.IsSetupOfPolling ?? false;
+                            break;
+                        case "MP": // Mock Poll Done
+                            eventStatus = getElectionInfoRecord.IsMockPollDone ?? false;
+                            break;
+                        case "PS": // Poll Started
+                            eventStatus = getElectionInfoRecord.IsPollStarted ?? false;
+                            break;
+                        case "VT": // Voter Turn Out
+                            eventStatus = getElectionInfoRecord.IsVoterTurnOut ?? false;
+                            break;
+                        case "VQ": // Voter In Queue
+                            eventStatus = getElectionInfoRecord.IsVoterTurnOut ?? false;
+                            break;
+                        case "FV": // Final Votes Polled
+                            eventStatus = getElectionInfoRecord.IsVoterTurnOut ?? false;
+                            break;
+                        case "PE": // Poll Ended
+                            eventStatus = getElectionInfoRecord.IsPollEnded ?? false;
+                            break;
+                        case "EO": // EVMVVPATOff
+                            eventStatus = getElectionInfoRecord.IsMCESwitchOff ?? false;
+                            break;
+
+                        case "PC": // PartyDeparted	
+                            eventStatus = getElectionInfoRecord.IsPartyDeparted ?? false;
+                            break;
+
+                        case "PR": // PartyReachedAtCollection
+                            eventStatus = getElectionInfoRecord.IsPartyReachedCollectionCenter ?? false;
+                            break;
+
+                        case "ED": // EVMDeposited
+                            eventStatus = getElectionInfoRecord.IsEVMDeposited ?? false;
+                            break;
+
+                        default:
+                            eventStatus = false;  // If no matching status is found, set it to false
+                            break;
+                    }
+
+                    // Step 4: Add only those events to the list that are from getBoothEvents
+                    boothEventsList.Add(new BoothEvents
+                    {
+                        BoothMasterId = boothMasterId,
+                        EventMasterId = eventItem.EventMasterId,
+                        EventName = eventItem.EventName,
+                        EventSequence = eventItem.EventSequence,
+                        EventABBR = eventItem.EventABBR,
+                        Status = eventStatus  // Set the status according to the ElectionInfoMaster record
+                    });
+                }
+            }
+
+            return boothEventsList;  // Return the filtered and mapped list of BoothEvents
+        }
 
         private async Task<UpdateEventActivity> GetNextEvent(UpdateEventActivity updateEventActivity)
         {
@@ -9888,7 +10089,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             //District
             if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0 && boothReportModel.PSZonePanchayatMasterId == 0)
             {
-                query = query.Where(d =>d.ElectionTypeMasterId==boothReportModel.ElectionTypeMasterId
+                query = query.Where(d => d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId
                 && d.StateMasterId == boothReportModel.StateMasterId
                 && d.DistrictMasterId == boothReportModel.DistrictMasterId);
                 query = query.Include(d => d.DistrictMaster);
@@ -9922,7 +10123,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 && d.StateMasterId == boothReportModel.StateMasterId
                 && d.DistrictMasterId == boothReportModel.DistrictMasterId &&
                   d.AssemblyMasterId == boothReportModel.AssemblyMasterId
-                && d.FourthLevelHMasterId == boothReportModel.FourthLevelHMasterId&&
+                && d.FourthLevelHMasterId == boothReportModel.FourthLevelHMasterId &&
                 d.PSZonePanchayatMasterId == boothReportModel.PSZonePanchayatMasterId);
                 query = query.Include(d => d.PsZonePanchayat);
                 reportType = "PSZonePanchayat";
@@ -9977,7 +10178,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             string reportType = "";
 
             //// State
- 
+
             //if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId == 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0 && boothReportModel.PSZonePanchayatMasterId == 0)
             //{
             //    query = query.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
@@ -9985,7 +10186,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             //}
             // District
             if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0)
-             {
+            {
                 query = query.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
                 query = query.Include(d => d.StateMaster);
                 reportType = "State";
@@ -9993,8 +10194,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             // District
             if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0)
             {
-                query = query.Where(d => d.StateMasterId == boothReportModel.StateMasterId 
-                && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId 
+                query = query.Where(d => d.StateMasterId == boothReportModel.StateMasterId
+                && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId
                 && d.DistrictMasterId == boothReportModel.DistrictMasterId);
                 query = query.Include(d => d.DistrictMaster);
                 reportType = "District";

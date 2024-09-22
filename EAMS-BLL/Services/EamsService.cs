@@ -411,7 +411,6 @@ namespace EAMS_BLL.Services
             return await UpdateEventsActivity(updateEventActivity);
         }
 
-
         private async Task<UpdateEventActivity> GetPreviousEvent(UpdateEventActivity updateEventActivity)
         {
             // Try to retrieve the event list from cache
@@ -513,10 +512,15 @@ namespace EAMS_BLL.Services
             return response;
 
         }
+
         private async Task<ServiceResponse> UpdateEventsActivity(UpdateEventActivity updateEventActivity)
         {
             return await _eamsRepository.UpdateEventActivity(updateEventActivity);
-            
+
+        }
+        public async Task<List<BoothEvents>> GetBoothEventListById(int stateMasterId, int electionTypeMasterId, int boothMasterId)
+        {
+            return await _eamsRepository.GetBoothEventListById(stateMasterId,electionTypeMasterId,boothMasterId);
         }
 
         public async Task<ServiceResponse> EventActivity(ElectionInfoMaster electionInfoMaster)

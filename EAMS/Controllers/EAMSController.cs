@@ -30,7 +30,7 @@ namespace EAMS.Controllers
         private readonly IEamsService _EAMSService;
         private readonly IMapper _mapper;
         private readonly ICacheService _cacheService;
-        public EAMSController(IEamsService eamsService, IMapper mapper, ILogger<EAMSController> logger,ICacheService cacheService)
+        public EAMSController(IEamsService eamsService, IMapper mapper, ILogger<EAMSController> logger, ICacheService cacheService)
         {
             _EAMSService = eamsService;
             _mapper = mapper;
@@ -752,8 +752,8 @@ namespace EAMS.Controllers
             };
             return Ok(data);
         }
-        /// </summary>
-        
+       
+
         /// <summary this api for Mobile App>
         [HttpGet]
         [Route("GetBoothListForFo")]
@@ -767,17 +767,15 @@ namespace EAMS.Controllers
 
             var boothList = await _EAMSService.GetBoothListForFo(stateMasterId, districtMasterId, assemblyMasterId, foId);
 
-            var mappedData = _mapper.Map<List<FieldOfficerBoothViewModel>>(boothList); 
+            var mappedData = _mapper.Map<List<FieldOfficerBoothViewModel>>(boothList);
             var data = new
             {
-                count = mappedData.Count, 
-                data = mappedData.OrderBy(p => Int32.Parse(p.BoothCode_No)), 
+                count = mappedData.Count,
+                data = mappedData.OrderBy(p => Int32.Parse(p.BoothCode_No)),
             };
             return Ok(data);
         }
-        /// </summary>
-
-
+         
 
         [HttpGet]
         [Route("GetFieldOfficerById")]
@@ -937,7 +935,7 @@ namespace EAMS.Controllers
             return Ok(data);
         }
 
-        
+
 
         /// <summary>
         /// Insert Booth Under Assembly, District, State
@@ -2244,7 +2242,7 @@ namespace EAMS.Controllers
             {
                 return BadRequest(result.Message);
             }
-            return result.IsSucceed ? Ok(result) : BadRequest(result.Message);
+
         }
 
         private bool TryGetClaimValue(ClaimsPrincipal user, string claimType, out int result)
@@ -2254,6 +2252,19 @@ namespace EAMS.Controllers
             return !string.IsNullOrEmpty(claimValue) && int.TryParse(claimValue, out result);
         }
 
+        [HttpGet]
+        [Route("GetBoothEventListById")]
+        [Authorize]
+        public async Task<IActionResult> GetBoothEventListById(int boothMasterId)
+        {
+            if (!TryGetClaimValue(User, "StateMasterId", out int stateMasterId) || 
+                !TryGetClaimValue(User, "ElectionTypeMasterId", out int electionTypeMasterId))
+            {
+                return BadRequest("Missing or invalid claims.");
+            }
+            var result = await _EAMSService.GetBoothEventListById(stateMasterId,electionTypeMasterId,boothMasterId);
+            return Ok(result);
+        }
 
         #region All Events 
         [HttpGet]
