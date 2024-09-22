@@ -381,27 +381,33 @@ namespace EAMS_BLL.Services
         #region EventActivity
         public async Task<ServiceResponse> UpdateEventActivity(UpdateEventActivity updateEventActivity)
         {
-            var getPreviousEventStatus = await GetPreviousEvent(updateEventActivity);
-            var isEventDone = await IsEventActivityDone(getPreviousEventStatus);
-            if (isEventDone.IsSucceed == false)
-            {
+            // Get the previous event status
+            var previousEventStatus = await GetPreviousEvent(updateEventActivity);
 
+            // If no previous event exists, update the activity directly
+            if (previousEventStatus == null)
+            {
+                return await UpdateEventsActivity(updateEventActivity);
+            }
+
+            // Check if the event activity is done
+            var eventDoneResponse = await IsEventActivityDone(previousEventStatus);
+
+            // If the event is not done, return a failure response
+            if (!eventDoneResponse.IsSucceed)
+            {
                 return new ServiceResponse
                 {
                     IsSucceed = false,
-                    Message = isEventDone.Message
-                };
-            }
-            else
-            {
-                return new ServiceResponse
-                {
-                    IsSucceed = false
+                    Message = eventDoneResponse.Message
                 };
             }
 
-
+            // If the event UpdateEventsActivity done, proceed with updating the activity
+            return await UpdateEventsActivity(updateEventActivity);
         }
+
+
         private async Task<UpdateEventActivity> GetPreviousEvent(UpdateEventActivity updateEventActivity)
         {
             // Try to retrieve the event list from cache
@@ -429,7 +435,11 @@ namespace EAMS_BLL.Services
             // Check previous events for status
             var previousEvent = sortedEventList.Take(sortedEventList.IndexOf(currentEvent))
                                                .LastOrDefault(e => e.Status == true);
-
+            if (previousEvent == null)
+            {
+                // If the current event is not found, handle the error (return null or throw exception)
+                return null;
+            }
             updateEventActivity.EventMasterId = previousEvent.EventMasterId;
             updateEventActivity.EventABBR = previousEvent.EventABBR;
             updateEventActivity.EventSequence = previousEvent.EventSequence;
@@ -495,26 +505,16 @@ namespace EAMS_BLL.Services
                     response = new ServiceResponse { IsSucceed = false };
                     break;
             }
-             
-            return response; 
+
+            return response;
 
         }
-        private async Task<ServiceResponse> PartyDispatch(UpdateEventActivity updateEventActivity)
+        private async Task<ServiceResponse> UpdateEventsActivity(UpdateEventActivity updateEventActivity)
         {
-            var pdResult = await _eamsRepository.PartyDispatch(updateEventActivity);
-            return new ServiceResponse
-            {
-                IsSucceed = false
-            };
+            return await _eamsRepository.UpdateEventActivity(updateEventActivity);
+            
         }
-        private async Task<ServiceResponse> PartyArrived(UpdateEventActivity updateEventActivity)
-        {
-            var pdResult = await _eamsRepository.PartyDispatch(updateEventActivity);
-            return new ServiceResponse
-            {
-                IsSucceed = false
-            };
-        }
+
         public async Task<ServiceResponse> EventActivity(ElectionInfoMaster electionInfoMaster)
         {
             return new ServiceResponse

@@ -36,7 +36,7 @@ namespace EAMS_DAL.Repository
         private readonly ILogger<EamsRepository> _logger;
         private readonly IConfiguration _configuration;
         private readonly ICacheService _cacheService;
-        public EamsRepository(EamsContext context, IAuthRepository authRepository, ILogger<EamsRepository> logger, 
+        public EamsRepository(EamsContext context, IAuthRepository authRepository, ILogger<EamsRepository> logger,
             IConfiguration configuration, ICacheService cacheService)
         {
             _context = context;
@@ -2064,7 +2064,9 @@ namespace EAMS_DAL.Repository
         public async Task<List<CombinedMaster>> GetBoothListForFo(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
         {
             UpdateEventActivity updateEventActivity = new UpdateEventActivity();
-           var sads=await GetNextEvent(updateEventActivity);
+            //If any record exist then pass event ABBR and sequence to getnextevent else pass default PD and Sequence 1
+            var electionInfo = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d => d.BoothMasterId == 1);
+            var sads = await GetNextEvent(updateEventActivity);
             var boothlist = from bt in _context.BoothMaster.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.AssignedTo == foId.ToString())
                             join fourthLevelH in _context.FourthLevelH on bt.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
                             join asem in _context.AssemblyMaster
@@ -3795,7 +3797,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         public async Task<List<EventMaster>> GetEventListById(int stateMasterId, int electionTypeMasterId)
         {
-            return await _context.EventMaster.Where(d => d.StateMasterId == stateMasterId && d.ElectionTypeMasterId == electionTypeMasterId)
+            return await _context.EventMaster.Where(d => d.StateMasterId == stateMasterId && d.ElectionTypeMasterId == electionTypeMasterId).OrderBy(d => d.EventSequence)
             .ToListAsync();
 
 
@@ -4801,7 +4803,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             ).FirstOrDefault();
             return electionInfoRecord;
         }
-        public async Task<ServiceResponse> PartyDispatch(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> UpdateEventActivity(UpdateEventActivity updateEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
@@ -5242,55 +5244,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 };
 
             }
-        }
-        public async Task<ServiceResponse> PartyArrived(UpdateEventActivity updateEventActivity)
-        {
-            // Fetch the existing record by BoothMasterId
-            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
-                d.StateMasterId == updateEventActivity.StateMasterId &&
-                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
-                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
-                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
-                d.BoothMasterId == updateEventActivity.BoothMasterId
-            );
-
-            if (result is not null)
-            {
-                // Check if PartyDispatched is true before updating PartyArrived
-                if (result.IsPartyDispatched == true)
-                {
-                    if (updateEventActivity.EventABBR == "PA")
-                    {
-                        // Update the IsPartyReached status
-                        result.IsPartyReached = updateEventActivity.EventStatus;
-                        result.PartyReachedLastUpdate = BharatDateTime();
-
-                        _context.ElectionInfoMaster.Update(result);
-                        await _context.SaveChangesAsync();
-
-                        return new ServiceResponse
-                        {
-                            IsSucceed = true,
-                            Message = "Party Arrived status updated successfully."
-                        };
-                    }
-                }
-                else
-                {
-                    // Return an error message if Party Dispatch has not been completed
-                    return new ServiceResponse
-                    {
-                        IsSucceed = false,
-                        Message = "Party Dispatch must be completed before marking Party Arrived."
-                    };
-                }
-            }
-
-            return new ServiceResponse
-            {
-                IsSucceed = false,
-                Message = "Record not found for the given BoothMasterId."
-            };
         }
         public async Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(string boothMasterId, int eventmasterid)
         {
@@ -9916,41 +9869,55 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         public async Task<List<ConsolidateBoothReport>> GetConsolidateBoothReports(BoothReportModel boothReportModel)
         {
             var query = _context.BoothMaster
-                .Include(d => d.StateMaster)
-                .Include(d => d.DistrictMaster)
-                .Include(d => d.AssemblyMaster)
-                .Include(d => d.FourthLevelH)
-                .Include(d => d.PsZonePanchayat)
                 .AsQueryable();
             string reportType = "";
             ////State
             //if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId == 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0 && boothReportModel.PSZonePanchayatMasterId == 0)
             //{
-            //    query = query.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
-            //    reportType = "State";
+            //  query = query.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
+            // query = query.Include(d => d.StateMaster);
+            //  reportType = "State";
             //}
             //District
             if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0 && boothReportModel.PSZonePanchayatMasterId == 0)
             {
-                query = query.Where(d => d.DistrictMasterId == boothReportModel.DistrictMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
+                query = query.Where(d =>d.ElectionTypeMasterId==boothReportModel.ElectionTypeMasterId
+                && d.StateMasterId == boothReportModel.StateMasterId
+                && d.DistrictMasterId == boothReportModel.DistrictMasterId);
+                query = query.Include(d => d.DistrictMaster);
                 reportType = "District";
             }
             //Assembly
             if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId != 0 && boothReportModel.FourthLevelHMasterId == 0 && boothReportModel.PSZonePanchayatMasterId == 0)
             {
-                query = query.Where(d => d.AssemblyMasterId == boothReportModel.AssemblyMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
+                query = query.Where(d => d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId
+                && d.StateMasterId == boothReportModel.StateMasterId
+                && d.DistrictMasterId == boothReportModel.DistrictMasterId &&
+                  d.AssemblyMasterId == boothReportModel.AssemblyMasterId);
+                query = query.Include(d => d.AssemblyMaster);
                 reportType = "Assembly";
             }
             //FourthLevel
             if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId != 0 && boothReportModel.FourthLevelHMasterId != 0 && boothReportModel.PSZonePanchayatMasterId == 0)
             {
-                query = query.Where(d => d.FourthLevelHMasterId == boothReportModel.FourthLevelHMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
+                query = query.Where(d => d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId
+                && d.StateMasterId == boothReportModel.StateMasterId
+                && d.DistrictMasterId == boothReportModel.DistrictMasterId &&
+                  d.AssemblyMasterId == boothReportModel.AssemblyMasterId
+                && d.FourthLevelHMasterId == boothReportModel.FourthLevelHMasterId);
+                query = query.Include(d => d.FourthLevelH);
                 reportType = "FourthLevel";
             }
             //PSZonePanchayat
             if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId != 0 && boothReportModel.FourthLevelHMasterId != 0 && boothReportModel.PSZonePanchayatMasterId != 0)
             {
-                query = query.Where(d => d.PSZonePanchayatMasterId == boothReportModel.PSZonePanchayatMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
+                query = query.Where(d => d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId
+                && d.StateMasterId == boothReportModel.StateMasterId
+                && d.DistrictMasterId == boothReportModel.DistrictMasterId &&
+                  d.AssemblyMasterId == boothReportModel.AssemblyMasterId
+                && d.FourthLevelHMasterId == boothReportModel.FourthLevelHMasterId&&
+                d.PSZonePanchayatMasterId == boothReportModel.PSZonePanchayatMasterId);
+                query = query.Include(d => d.PsZonePanchayat);
                 reportType = "PSZonePanchayat";
             }
 
@@ -9998,36 +9965,45 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         public async Task<List<ConsolidateBoothReport>> GetConsolidateGPWardReports(BoothReportModel boothReportModel)
         {
             var query = _context.GPPanchayatWards
-                .Include(d => d.StateMaster)
-                .Include(d => d.DistrictMaster)
-                .Include(d => d.AssemblyMaster)
-                .Include(d => d.FourthLevelH)
                 .AsQueryable();
 
             string reportType = "";
 
             //// State
-            //if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId == 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0 && boothReportModel.PSZonePanchayatMasterId == 0)
-            //{
-            //    query = query.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
-            //    reportType = "State";
-            //}
-            // District
-            if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0 && boothReportModel.PSZonePanchayatMasterId == 0)
+            if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId == 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0)
             {
-                query = query.Where(d => d.DistrictMasterId == boothReportModel.DistrictMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
+                query = query.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
+                query = query.Include(d => d.StateMaster);
+                reportType = "State";
+            }
+            // District
+            if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0)
+            {
+                query = query.Where(d => d.StateMasterId == boothReportModel.StateMasterId 
+                && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId 
+                && d.DistrictMasterId == boothReportModel.DistrictMasterId);
+                query = query.Include(d => d.DistrictMaster);
                 reportType = "District";
             }
             // Assembly
-            else if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId != 0 && boothReportModel.FourthLevelHMasterId == 0 && boothReportModel.PSZonePanchayatMasterId == 0)
+            else if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId != 0 && boothReportModel.FourthLevelHMasterId == 0)
             {
-                query = query.Where(d => d.AssemblyMasterId == boothReportModel.AssemblyMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
+                query = query.Where(d => d.StateMasterId == boothReportModel.StateMasterId
+                && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId
+                && d.DistrictMasterId == boothReportModel.DistrictMasterId
+                && d.AssemblyMasterId == boothReportModel.AssemblyMasterId);
+                query = query.Include(d => d.AssemblyMaster);
                 reportType = "Assembly";
             }
             // FourthLevel
-            else if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId != 0 && boothReportModel.FourthLevelHMasterId != 0 && boothReportModel.PSZonePanchayatMasterId == 0)
+            else if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId != 0 && boothReportModel.FourthLevelHMasterId != 0)
             {
-                query = query.Where(d => d.FourthLevelHMasterId == boothReportModel.FourthLevelHMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
+                query = query.Where(d => d.StateMasterId == boothReportModel.StateMasterId
+                && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId
+                && d.DistrictMasterId == boothReportModel.DistrictMasterId
+                && d.AssemblyMasterId == boothReportModel.AssemblyMasterId
+                && d.FourthLevelHMasterId == boothReportModel.FourthLevelHMasterId);
+                query = query.Include(d => d.FourthLevelH);
                 reportType = "FourthLevel";
             }
 

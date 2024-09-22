@@ -2236,8 +2236,15 @@ namespace EAMS.Controllers
             mappedData.ElectionTypeMasterId = electionTypeMasterId;
 
             var result = await _EAMSService.UpdateEventActivity(mappedData);
-
-            return Ok( );
+            if (result.IsSucceed == true)
+            {
+                return Ok(result.Message);
+            }
+            else
+            {
+                return BadRequest(result.Message);
+            }
+            return result.IsSucceed ? Ok(result) : BadRequest(result.Message);
         }
 
         private bool TryGetClaimValue(ClaimsPrincipal user, string claimType, out int result)

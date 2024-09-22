@@ -128,8 +128,7 @@ namespace EAMS_ACore.IRepository
         Task<ServiceResponse> IsPartyDeparted(UpdateEventActivity updateEventActivity);
         Task<ServiceResponse> IsPartyReachedAtCollection(UpdateEventActivity updateEventActivity);
         Task<ServiceResponse> IsEVMDeposited(UpdateEventActivity updateEventActivity);
-        Task<ServiceResponse> PartyDispatch(UpdateEventActivity updateEventActivity);
-        Task<ServiceResponse> PartyArrived(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> UpdateEventActivity(UpdateEventActivity updateEventActivity);
         Task<bool> CanPollStart(int boothMasterId, int eventid);
         Task<bool> CanQueueStart(int boothMasterId);
         Task<bool> QueueTime(int boothMasterId);

@@ -198,7 +198,7 @@ namespace EAMS_BLL.AuthServices
 
         #region ValidateMobile && Generate OTP 
         public async Task<Response> ValidateMobile(ValidateMobile validateMobile)
-        {  
+        {
             var foRecords = await _authRepository.ValidateMobile(validateMobile);
             if (foRecords == null)
             {
@@ -208,7 +208,7 @@ namespace EAMS_BLL.AuthServices
                     Message = "Mobile Number doesn't Exist"
                 };
             }
-             
+
 
             // Check if OTP is empty or not 6 digits
             if (string.IsNullOrEmpty(validateMobile.Otp) || validateMobile.Otp.Length != 6)
@@ -217,13 +217,13 @@ namespace EAMS_BLL.AuthServices
                 foRecords.OTP = GenerateOTP();
                 foRecords.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 0, 60);  // Set OTP expiration time
                 foRecords.OTPAttempts = foRecords.OTPAttempts + 1;
-               
-               
-                var updateFO =await _eamsRepository.UpdateFieldOfficerValidate(foRecords);
+
+
+                var updateFO = await _eamsRepository.UpdateFieldOfficerValidate(foRecords);
                 // Check if OTP send was successful
-                if (updateFO.Status==RequestStatusEnum.OK)
+                if (updateFO.Status == RequestStatusEnum.OK)
                 {
-                   // await _authRepository.UpdateUserAsync(fieldOfficer);  // Ensure the field officer's record is updated with OTP
+                    // await _authRepository.UpdateUserAsync(fieldOfficer);  // Ensure the field officer's record is updated with OTP
                     return new Response { Status = RequestStatusEnum.OK, Message = $"OTP Sent on your number {foRecords.OTP}" };
                 }
 
@@ -233,8 +233,10 @@ namespace EAMS_BLL.AuthServices
 
             // Validate OTP and expiration time
             if (foRecords.OTP == validateMobile.Otp && BharatDateTime() <= foRecords.OTPExpireTime)
-            { 
+            {
                 foRecords.OTPAttempts = 0;
+                foRecords.RefreshToken = GenerateRefreshToken();
+                foRecords.RefreshTokenExpiryTime = BharatTimeDynamic(0, 7, 0, 0, 0);
 
                 var updateFO = await _eamsRepository.UpdateFieldOfficerValidate(foRecords);
 
@@ -248,27 +250,27 @@ namespace EAMS_BLL.AuthServices
                     new Claim(ClaimTypes.Name, foRecords.FieldOfficerName),
                     new Claim(ClaimTypes.MobilePhone, foRecords.FieldOfficerMobile),
                     new Claim(ClaimTypes.Role,"FO"),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), 
-                    new Claim("ElectionTypeMasterId",foRecords.ElectionTypeMasterId.ToString()), 
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    new Claim("ElectionTypeMasterId",foRecords.ElectionTypeMasterId.ToString()),
                     new Claim("FieldOfficerMasterId", foRecords.FieldOfficerMasterId.ToString()),
                     new Claim("StateMasterId", foRecords.StateMasterId.ToString()),
                     new Claim("DistrictMasterId", foRecords.DistrictMasterId.ToString()),
-                    new Claim("AssemblyMasterId", foRecords.AssemblyMasterId.ToString()) 
+                    new Claim("AssemblyMasterId", foRecords.AssemblyMasterId.ToString())
 
                 };
                 var token = GenerateToken(authClaims);
 
-                return new Response { Status = RequestStatusEnum.OK, Message = "Mobile number updated successfully" ,AccessToken = token};
+                return new Response { Status = RequestStatusEnum.OK, Message = "Mobile number updated successfully", AccessToken = token,RefreshToken=foRecords.RefreshToken };
             }
 
             // OTP validation failed
             return new Response { Status = RequestStatusEnum.BadRequest, Message = "OTP Expired or Invalid" };
- 
-             
- 
+
+
+
         }
 
-       
+
         public static string GenerateOTP(int length = 6)
         {
             const string chars = "123456789";
@@ -353,10 +355,81 @@ namespace EAMS_BLL.AuthServices
             {
                 principal = await GetPrincipalFromExpiredToken(model.AccessToken);
             }
-            var userId = principal.Claims.FirstOrDefault(d => d.Type == "UserId").Value;
-        //    var getCurrentUser = _authRepository.GetUserById(userId);
+            var role = principal.Claims.FirstOrDefault(d => d.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role").Value;
+            if (role.Contains("FO"))
+            {
+                var fieldOfficerMasterId = principal.Claims.FirstOrDefault(d => d.Type == "FieldOfficerMasterId").Value;
+
+                var foRecords = await _authRepository.GetFOById(Convert.ToInt32(fieldOfficerMasterId));
+                if (foRecords == null || foRecords.RefreshToken != model.RefreshToken || DateTime.Compare(foRecords.RefreshTokenExpiryTime, (DateTime)BharatDateTime()) <= 0)
+                {
+                    return new Token
+                    {
+                        Message = "Token Expired or Invalid Token"
+                    };
+                }
+                if (foRecords != null)
+                {
+
+                    foRecords.RefreshToken = GenerateRefreshToken();
+                    foRecords.RefreshTokenExpiryTime = BharatTimeDynamic(0, 7, 0, 0, 0);
+                    var updateUser = await _eamsRepository.UpdateFieldOfficerValidate(foRecords);
+                    var authClaims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, foRecords.FieldOfficerName),
+                    new Claim(ClaimTypes.MobilePhone, foRecords.FieldOfficerMobile),
+                    new Claim(ClaimTypes.Role,"FO"),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    new Claim("ElectionTypeMasterId",foRecords.ElectionTypeMasterId.ToString()),
+                    new Claim("FieldOfficerMasterId", foRecords.FieldOfficerMasterId.ToString()),
+                    new Claim("StateMasterId", foRecords.StateMasterId.ToString()),
+                    new Claim("DistrictMasterId", foRecords.DistrictMasterId.ToString()),
+                    new Claim("AssemblyMasterId", foRecords.AssemblyMasterId.ToString())
+
+                };
+                    var getAccessToken = GenerateToken(authClaims);
+                    if (updateUser.Status == RequestStatusEnum.OK)
+                    {
+                        _Token.IsSucceed = true;
+                        _Token.Is2FA = true;
+                        _Token.AccessToken = getAccessToken;
+                        _Token.RefreshToken = foRecords.RefreshToken;
+                    }
+                }
+            }
+            else
+            {
+                var userId = principal.Claims.FirstOrDefault(d => d.Type == "UserId").Value;
+                var getCurrentUser = await _authRepository.GetUserById(userId);
+                if (getCurrentUser == null || getCurrentUser.RefreshToken != model.RefreshToken || DateTime.Compare(getCurrentUser.RefreshTokenExpiryTime, (DateTime)BharatDateTime()) <= 0)
+                {
+                    return new Token
+                    {
+                        Message = "Token Expired or Invalid Token"
+                    };
+                }
+                if (getCurrentUser != null)
+                {
+
+                    getCurrentUser.RefreshToken = GenerateRefreshToken();
+                    getCurrentUser.RefreshTokenExpiryTime = BharatTimeDynamic(0, 7, 0, 0, 0);
+                    var updateUser = await _authRepository.UpdateUser(getCurrentUser);
+                    var getClaims = await GenerateClaims(getCurrentUser);
+                    var getAccessToken = GenerateToken(getClaims);
+                    if (updateUser.IsSucceed == true)
+                    {
+                        _Token.IsSucceed = true;
+                        _Token.Is2FA = true;
+                        _Token.AccessToken = getAccessToken;
+                        _Token.RefreshToken = getCurrentUser.RefreshToken;
+                    }
+                }
+
+            }
+
             return _Token;
         }
+     
         private string GenerateToken(IEnumerable<Claim> claims)
         {
             var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
