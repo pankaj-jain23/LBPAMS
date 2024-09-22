@@ -3802,6 +3802,13 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
 
         }
+        public async Task<List<EventMaster>> GetEventListForBooth(int stateMasterId, int electionTypeMasterId)
+        {
+            return await _context.EventMaster.Where(d => d.StateMasterId == stateMasterId && d.ElectionTypeMasterId == electionTypeMasterId && d.Status == true)
+            .ToListAsync();
+
+
+        }
         public async Task<List<EventAbbr>> GetEventAbbrList()
         {
             return await _context.EventAbbr.ToListAsync();
@@ -9970,8 +9977,15 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             string reportType = "";
 
             //// State
-            if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId == 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0)
-            {
+ 
+            //if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId == 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0 && boothReportModel.PSZonePanchayatMasterId == 0)
+            //{
+            //    query = query.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
+            //    reportType = "State";
+            //}
+            // District
+            if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0)
+             {
                 query = query.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
                 query = query.Include(d => d.StateMaster);
                 reportType = "State";
