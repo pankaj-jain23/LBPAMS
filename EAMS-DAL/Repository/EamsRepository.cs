@@ -3,6 +3,7 @@ using EAMS.ViewModels.PSFormViewModel;
 using EAMS_ACore;
 using EAMS_ACore.HelperModels;
 using EAMS_ACore.IAuthRepository;
+using EAMS_ACore.IExternal;
 using EAMS_ACore.IRepository;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
@@ -34,12 +35,15 @@ namespace EAMS_DAL.Repository
         private readonly IAuthRepository _authRepository;
         private readonly ILogger<EamsRepository> _logger;
         private readonly IConfiguration _configuration;
-        public EamsRepository(EamsContext context, IAuthRepository authRepository, ILogger<EamsRepository> logger, IConfiguration configuration)
+        private readonly ICacheService _cacheService;
+        public EamsRepository(EamsContext context, IAuthRepository authRepository, ILogger<EamsRepository> logger, 
+            IConfiguration configuration, ICacheService cacheService)
         {
             _context = context;
             _authRepository = authRepository;
             _logger = logger;
             _configuration = configuration;
+            _cacheService = cacheService;
         }
 
 
@@ -2059,7 +2063,8 @@ namespace EAMS_DAL.Repository
         /// <summary this api for Mobile App>
         public async Task<List<CombinedMaster>> GetBoothListForFo(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
         {
-
+            UpdateEventActivity updateEventActivity = new UpdateEventActivity();
+           var sads=await GetNextEvent(updateEventActivity);
             var boothlist = from bt in _context.BoothMaster.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.AssignedTo == foId.ToString())
                             join fourthLevelH in _context.FourthLevelH on bt.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
                             join asem in _context.AssemblyMaster
@@ -4750,6 +4755,41 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         #region EventActivity
 
+        private async Task<UpdateEventActivity> GetNextEvent(UpdateEventActivity updateEventActivity)
+        {
+            // Try to retrieve the event list from cache
+            var eventList = await _cacheService.GetDataAsync<List<EventMaster>>("GetNextEventList");
+
+            // If cache is empty, retrieve from repository and set it in cache
+            if (eventList == null || !eventList.Any())
+            {
+                eventList = await GetEventListById(updateEventActivity.StateMasterId, updateEventActivity.ElectionTypeMasterId);
+                await _cacheService.SetDataAsync("GetNextEventList", eventList, DateTimeOffset.Now.AddMinutes(5)); // Cache for 5 minutes
+            }
+
+            // Sort the event list by sequence in ascending order
+            var sortedEventList = eventList.OrderBy(e => e.EventSequence).ToList();
+
+            // Find the current event based on EventABBR and EventSequence
+            var currentEvent = sortedEventList.FirstOrDefault(e => e.EventABBR == updateEventActivity.EventABBR && e.EventSequence == updateEventActivity.EventSequence);
+
+            if (currentEvent == null)
+            {
+                // If the current event is not found, handle the error (return null or throw exception)
+                return null;
+            }
+
+            // Check previous events for status
+            var previousEvent = sortedEventList.Take(sortedEventList.IndexOf(currentEvent))
+                                               .FirstOrDefault(e => e.Status == true);
+
+            updateEventActivity.EventMasterId = previousEvent.EventMasterId;
+            updateEventActivity.EventABBR = previousEvent.EventABBR;
+            updateEventActivity.EventSequence = previousEvent.EventSequence;
+            updateEventActivity.EventStatus = previousEvent.Status;
+            // Return the first previous event with Status = true (or null if none found)
+            return updateEventActivity;
+        }
 
         public async Task<ElectionInfoMaster> EventUpdationStatus(ElectionInfoMaster electionInfoMaster)
         {
