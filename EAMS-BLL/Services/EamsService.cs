@@ -387,7 +387,7 @@ namespace EAMS_BLL.Services
         {
             // Get the previous event status
             var previousEventStatus = await GetPreviousEvent(updateEventActivity);
-
+            var nextEvent = await _eamsRepository.GetNextEvent(updateEventActivity);
             // If no previous event exists, update the activity directly
             if (previousEventStatus == null)
             {
@@ -395,18 +395,26 @@ namespace EAMS_BLL.Services
             }
 
             // Check if the event activity is done
-            var eventDoneResponse = await IsEventActivityDone(previousEventStatus);
+            var previousEventResponse = await IsEventActivityDone(previousEventStatus);
+            var NextEventResponse = await IsEventActivityDone(previousEventStatus);
 
             // If the event is not done, return a failure response
-            if (!eventDoneResponse.IsSucceed)
+            if (!previousEventResponse.IsSucceed)
             {
                 return new ServiceResponse
                 {
                     IsSucceed = false,
-                    Message = eventDoneResponse.Message
+                    Message = previousEventResponse.Message
                 };
             }
-
+            if (previousEventResponse.IsSucceed==true&& NextEventResponse.IsSucceed==true)
+            {
+                return new ServiceResponse
+                {
+                    IsSucceed = false,
+                    Message = "You have to undo Last updated Event"
+                };
+            }
             // If the event UpdateEventsActivity done, proceed with updating the activity
             return await UpdateEventsActivity(updateEventActivity);
         }
@@ -448,6 +456,8 @@ namespace EAMS_BLL.Services
             checkEventActivity.StateMasterId = updateEventActivity.StateMasterId;
             checkEventActivity.DistrictMasterId = updateEventActivity.DistrictMasterId;
             checkEventActivity.AssemblyMasterId = updateEventActivity.AssemblyMasterId;
+            checkEventActivity.BoothMasterId = updateEventActivity.BoothMasterId;
+            checkEventActivity.ElectionTypeMasterId = updateEventActivity.ElectionTypeMasterId;
             checkEventActivity.EventMasterId = previousEvent.EventMasterId;
             checkEventActivity.EventABBR = previousEvent.EventABBR;
             checkEventActivity.EventSequence = previousEvent.EventSequence;

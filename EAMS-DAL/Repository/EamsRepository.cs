@@ -4973,7 +4973,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             return boothEventsList;  // Return the filtered and mapped list of BoothEvents
         }
 
-        private async Task<UpdateEventActivity> GetNextEvent(UpdateEventActivity updateEventActivity)
+        public async Task<CheckEventActivity> GetNextEvent(UpdateEventActivity updateEventActivity)
         {
             // Try to retrieve the event list from cache
             var eventList = await _cacheService.GetDataAsync<List<EventMaster>>("GetNextEventList");
@@ -4997,28 +4997,39 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 return null;
             }
 
-            // Check previous events for status
-            var previousEvent = sortedEventList.Take(sortedEventList.IndexOf(currentEvent))
-                                               .FirstOrDefault(e => e.Status == true);
-            if (previousEvent == null)
-            {
+            // Find the index of the current event
+            int currentIndex = sortedEventList.IndexOf(currentEvent);
 
-                updateEventActivity.EventMasterId = currentEvent.EventMasterId;
-                updateEventActivity.EventABBR = currentEvent.EventABBR;
-                updateEventActivity.EventSequence = currentEvent.EventSequence;
-                updateEventActivity.EventStatus = false;
+            // Check if there is a next event after the current one
+            var nextEvent = currentIndex >= 0 && currentIndex < sortedEventList.Count - 1
+                ? sortedEventList[currentIndex + 1]
+                : null;
+
+            CheckEventActivity checkEventActivity = new CheckEventActivity();
+
+            if (nextEvent != null)
+            {
+                // Set up the CheckEventActivity with the next event details
+                checkEventActivity.StateMasterId = updateEventActivity.StateMasterId;
+                checkEventActivity.DistrictMasterId = updateEventActivity.DistrictMasterId;
+                checkEventActivity.AssemblyMasterId = updateEventActivity.AssemblyMasterId;
+                checkEventActivity.BoothMasterId = updateEventActivity.BoothMasterId;
+                checkEventActivity.ElectionTypeMasterId = updateEventActivity.ElectionTypeMasterId;
+                checkEventActivity.EventMasterId = nextEvent.EventMasterId;
+                checkEventActivity.EventABBR = nextEvent.EventABBR;
+                checkEventActivity.EventSequence = nextEvent.EventSequence;
+                checkEventActivity.EventStatus = nextEvent.Status;
             }
             else
             {
-                updateEventActivity.EventMasterId = previousEvent.EventMasterId;
-                updateEventActivity.EventABBR = previousEvent.EventABBR;
-                updateEventActivity.EventSequence = previousEvent.EventSequence;
-                updateEventActivity.EventStatus = previousEvent.Status;
+                // No next event, handle accordingly
+                checkEventActivity = null; // or set it up with some default values
             }
 
-            // Return the first previous event with Status = true (or null if none found)
-            return updateEventActivity;
+            // Return the next event (or null if none found)
+            return checkEventActivity;
         }
+
         public async Task<ElectionInfoMaster> EventUpdationStatus(ElectionInfoMaster electionInfoMaster)
         {
             // added electionTypeMasterId check
