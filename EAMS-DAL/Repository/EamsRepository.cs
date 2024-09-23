@@ -20,6 +20,7 @@ using EAMS_DAL.DBContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using System.Data;
 using System.Globalization;
@@ -4999,11 +5000,22 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             // Check previous events for status
             var previousEvent = sortedEventList.Take(sortedEventList.IndexOf(currentEvent))
                                                .FirstOrDefault(e => e.Status == true);
+            if (previousEvent == null)
+            {
 
-            updateEventActivity.EventMasterId = previousEvent.EventMasterId;
-            updateEventActivity.EventABBR = previousEvent.EventABBR;
-            updateEventActivity.EventSequence = previousEvent.EventSequence;
-            updateEventActivity.EventStatus = previousEvent.Status;
+                updateEventActivity.EventMasterId = currentEvent.EventMasterId;
+                updateEventActivity.EventABBR = currentEvent.EventABBR;
+                updateEventActivity.EventSequence = currentEvent.EventSequence;
+                updateEventActivity.EventStatus = false;
+            }
+            else
+            {
+                updateEventActivity.EventMasterId = previousEvent.EventMasterId;
+                updateEventActivity.EventABBR = previousEvent.EventABBR;
+                updateEventActivity.EventSequence = previousEvent.EventSequence;
+                updateEventActivity.EventStatus = previousEvent.Status;
+            }
+            
             // Return the first previous event with Status = true (or null if none found)
             return updateEventActivity;
         } 
