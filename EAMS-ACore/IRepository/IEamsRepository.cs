@@ -148,6 +148,7 @@ namespace EAMS_ACore.IRepository
         Task<ServiceResponse> PartyReachedAtCollection(UpdateEventActivity updateEventActivity);
         Task<ServiceResponse> EVMDeposited(UpdateEventActivity updateEventActivity);
         #endregion
+
         Task<List<BoothEvents>> GetBoothEventListById(int stateMasterId, int electionTypeMasterId, int boothMasterId);
 
         Task<bool> CanPollStart(int boothMasterId, int eventid);

@@ -5069,7 +5069,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             {
                 IsSucceed = true
                 ,
-                Message = "Event Updated SucessFully"
+                Message = "Party Dispatch Updated SucessFully"
             };
         }
         public async Task<ServiceResponse>  PartyArrived(UpdateEventActivity updateEventActivity)
@@ -5090,8 +5090,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.EventSequence = updateEventActivity.EventSequence;
                 result.EventABBR = updateEventActivity.EventABBR;
                 result.ElectionInfoStatus = updateEventActivity.EventStatus;
-                result.IsPartyDispatched = updateEventActivity.EventStatus;
-                result.PartyDispatchedLastUpdate = BharatDateTime();
+                result.IsPartyReached = updateEventActivity.EventStatus;
+                result.PartyReachedLastUpdate = BharatDateTime();
 
                 _context.ElectionInfoMaster.Update(result);
             }
@@ -5103,7 +5103,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             {
                 IsSucceed = true
                 ,
-                Message = "Event Updated SucessFully"
+                Message = "Party Arrived Updated SucessFully"
             };
         }
         public async Task<ServiceResponse>  SetupPollingStation(UpdateEventActivity updateEventActivity)
@@ -5124,8 +5124,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.EventSequence = updateEventActivity.EventSequence;
                 result.EventABBR = updateEventActivity.EventABBR;
                 result.ElectionInfoStatus = updateEventActivity.EventStatus;
-                result.IsPartyDispatched = updateEventActivity.EventStatus;
-                result.PartyDispatchedLastUpdate = BharatDateTime();
+                result.IsSetupOfPolling = updateEventActivity.EventStatus;
+                result.SetupOfPollingLastUpdate = BharatDateTime();
 
                 _context.ElectionInfoMaster.Update(result);
             }
@@ -5159,8 +5159,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.EventSequence = updateEventActivity.EventSequence;
                 result.EventABBR = updateEventActivity.EventABBR;
                 result.ElectionInfoStatus = updateEventActivity.EventStatus;
-                result.IsPartyDispatched = updateEventActivity.EventStatus;
-                result.PartyDispatchedLastUpdate = BharatDateTime();
+                result.IsMockPollDone = updateEventActivity.EventStatus;
+                result.MockPollDoneLastUpdate = BharatDateTime();
 
                 _context.ElectionInfoMaster.Update(result);
             }
@@ -5194,8 +5194,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.EventSequence = updateEventActivity.EventSequence;
                 result.EventABBR = updateEventActivity.EventABBR;
                 result.ElectionInfoStatus = updateEventActivity.EventStatus;
-                result.IsPartyDispatched = updateEventActivity.EventStatus;
-                result.PartyDispatchedLastUpdate = BharatDateTime();
+                result.IsPollStarted = updateEventActivity.EventStatus;
+                result.PollStartedLastUpdate = BharatDateTime();
 
                 _context.ElectionInfoMaster.Update(result);
             }
@@ -5229,8 +5229,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.EventSequence = updateEventActivity.EventSequence;
                 result.EventABBR = updateEventActivity.EventABBR;
                 result.ElectionInfoStatus = updateEventActivity.EventStatus;
-                result.IsPartyDispatched = updateEventActivity.EventStatus;
-                result.PartyDispatchedLastUpdate = BharatDateTime();
+                result.IsVoterTurnOut = updateEventActivity.EventStatus;
+                result.VotingTurnOutLastUpdate = BharatDateTime();
 
                 _context.ElectionInfoMaster.Update(result);
             }
@@ -5264,8 +5264,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.EventSequence = updateEventActivity.EventSequence;
                 result.EventABBR = updateEventActivity.EventABBR;
                 result.ElectionInfoStatus = updateEventActivity.EventStatus;
-                result.IsPartyDispatched = updateEventActivity.EventStatus;
-                result.PartyDispatchedLastUpdate = BharatDateTime();
+                result.IsVoterTurnOut = updateEventActivity.EventStatus;
+                result.VoterInQueueLastUpdate = BharatDateTime();
 
                 _context.ElectionInfoMaster.Update(result);
             }
@@ -5299,8 +5299,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.EventSequence = updateEventActivity.EventSequence;
                 result.EventABBR = updateEventActivity.EventABBR;
                 result.ElectionInfoStatus = updateEventActivity.EventStatus;
-                result.IsPartyDispatched = updateEventActivity.EventStatus;
-                result.PartyDispatchedLastUpdate = BharatDateTime();
+                //result.IsPartyDispatched = updateEventActivity.EventStatus;
+                //result.PartyDispatchedLastUpdate = BharatDateTime();
 
                 _context.ElectionInfoMaster.Update(result);
             }
@@ -5334,8 +5334,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.EventSequence = updateEventActivity.EventSequence;
                 result.EventABBR = updateEventActivity.EventABBR;
                 result.ElectionInfoStatus = updateEventActivity.EventStatus;
-                result.IsPartyDispatched = updateEventActivity.EventStatus;
-                result.PartyDispatchedLastUpdate = BharatDateTime();
+                result.IsPollEnded = updateEventActivity.EventStatus;
+                result.IsPollEndedLastUpdate = BharatDateTime();
 
                 _context.ElectionInfoMaster.Update(result);
             }
@@ -5369,8 +5369,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.EventSequence = updateEventActivity.EventSequence;
                 result.EventABBR = updateEventActivity.EventABBR;
                 result.ElectionInfoStatus = updateEventActivity.EventStatus;
-                result.IsPartyDispatched = updateEventActivity.EventStatus;
-                result.PartyDispatchedLastUpdate = BharatDateTime();
+                result.IsMCESwitchOff = updateEventActivity.EventStatus;
+                result.MCESwitchOffLastUpdate = BharatDateTime();
 
                 _context.ElectionInfoMaster.Update(result);
             }
@@ -5404,8 +5404,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.EventSequence = updateEventActivity.EventSequence;
                 result.EventABBR = updateEventActivity.EventABBR;
                 result.ElectionInfoStatus = updateEventActivity.EventStatus;
-                result.IsPartyDispatched = updateEventActivity.EventStatus;
-                result.PartyDispatchedLastUpdate = BharatDateTime();
+                result.IsPartyDeparted = updateEventActivity.EventStatus;
+                result.PartyDepartedLastUpdate = BharatDateTime();
 
                 _context.ElectionInfoMaster.Update(result);
             }
@@ -5439,8 +5439,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.EventSequence = updateEventActivity.EventSequence;
                 result.EventABBR = updateEventActivity.EventABBR;
                 result.ElectionInfoStatus = updateEventActivity.EventStatus;
-                result.IsPartyDispatched = updateEventActivity.EventStatus;
-                result.PartyDispatchedLastUpdate = BharatDateTime();
+                result.IsPartyReachedCollectionCenter = updateEventActivity.EventStatus;
+                result.PartyReachedCollectionCenterLastUpdate = BharatDateTime();
 
                 _context.ElectionInfoMaster.Update(result);
             }
@@ -5474,8 +5474,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.EventSequence = updateEventActivity.EventSequence;
                 result.EventABBR = updateEventActivity.EventABBR;
                 result.ElectionInfoStatus = updateEventActivity.EventStatus;
-                result.IsPartyDispatched = updateEventActivity.EventStatus;
-                result.PartyDispatchedLastUpdate = BharatDateTime();
+                result.IsEVMDeposited = updateEventActivity.EventStatus;
+                result.EVMDepositedLastUpdate = BharatDateTime();
 
                 _context.ElectionInfoMaster.Update(result);
             }

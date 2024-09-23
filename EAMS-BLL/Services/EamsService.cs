@@ -515,11 +515,63 @@ namespace EAMS_BLL.Services
 
         private async Task<ServiceResponse> UpdateEventsActivity(UpdateEventActivity updateEventActivity)
         {
-            //   return await _eamsRepository.UpdateEventActivity(updateEventActivity);
-            return new ServiceResponse
+            ServiceResponse response = null;
+
+            switch (updateEventActivity.EventABBR)
             {
-                IsSucceed = false
-            };
+                case "PD": // Party Dispatch
+                    response = await _eamsRepository.PartyDispatch(updateEventActivity);
+                    break;
+
+                case "PA": // Party Arrived
+                    response = await _eamsRepository.PartyArrived(updateEventActivity);
+                    break;
+                case "SP": // Setup Polling Station
+                    response = await _eamsRepository.SetupPollingStation(updateEventActivity);
+                    break;
+                case "MP": // Mock Poll Done
+                    response = await _eamsRepository.MockPollDone(updateEventActivity);
+                    break;
+                case "PS": // Poll Started
+                    response = await _eamsRepository.PollStarted(updateEventActivity);
+                    break;
+                case "VT": // Voter Turn Out
+                    response = await _eamsRepository.VoterTurnOut(updateEventActivity);
+                    break;
+                case "VQ": // Voter In Queue
+                    response = await _eamsRepository.VoterInQueue(updateEventActivity);
+                    break;
+                case "FV": // Final Votes Polled
+                    response = await _eamsRepository.FinalVotesPolled(updateEventActivity);
+                    break;
+                case "PE": // Poll Ended
+                    response = await _eamsRepository.PollEnded(updateEventActivity);
+                    break;
+                case "EO": // EVMVVPATOff
+                    response = await _eamsRepository.EVMVVPATOff(updateEventActivity);
+                    break;
+
+                case "PC": // PartyDeparted	
+                    response = await _eamsRepository.PartyDeparted(updateEventActivity);
+                    break;
+
+                case "PR": // PartyReachedAtCollection
+                    response = await _eamsRepository.PartyReachedAtCollection(updateEventActivity);
+                    break;
+
+                case "ED": // EVMDeposited
+                    response = await _eamsRepository.EVMDeposited(updateEventActivity);
+                    break;
+
+
+
+                default:
+                    // Handle any unsupported events if necessary
+                    response = new ServiceResponse { IsSucceed = false };
+                    break;
+            }
+
+            return response;
         }
         public async Task<List<BoothEvents>> GetBoothEventListById(int stateMasterId, int electionTypeMasterId, int boothMasterId)
         {
