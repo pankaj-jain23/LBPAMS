@@ -5015,10 +5015,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 updateEventActivity.EventSequence = previousEvent.EventSequence;
                 updateEventActivity.EventStatus = previousEvent.Status;
             }
-            
+
             // Return the first previous event with Status = true (or null if none found)
             return updateEventActivity;
-        } 
+        }
         public async Task<ElectionInfoMaster> EventUpdationStatus(ElectionInfoMaster electionInfoMaster)
         {
             // added electionTypeMasterId check
@@ -5029,7 +5029,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             ).FirstOrDefault();
             return electionInfoRecord;
         }
-        public async Task<ServiceResponse>  PartyDispatch(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> PartyDispatch(UpdateEventActivity updateEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
@@ -5084,7 +5084,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 Message = "Party Dispatch Updated SucessFully"
             };
         }
-        public async Task<ServiceResponse>  PartyArrived(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> PartyArrived(UpdateEventActivity updateEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
@@ -5107,7 +5107,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
                 _context.ElectionInfoMaster.Update(result);
             }
-               
+
             await _context.SaveChangesAsync();
 
 
@@ -5118,7 +5118,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 Message = "Party Arrived Updated SucessFully"
             };
         }
-        public async Task<ServiceResponse>  SetupPollingStation(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> SetupPollingStation(UpdateEventActivity updateEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
@@ -5141,7 +5141,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
                 _context.ElectionInfoMaster.Update(result);
             }
-            
+
 
             await _context.SaveChangesAsync();
 
@@ -5153,7 +5153,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 Message = "Event Updated SucessFully"
             };
         }
-        public async Task<ServiceResponse>  MockPollDone(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> MockPollDone(UpdateEventActivity updateEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
@@ -5176,7 +5176,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
                 _context.ElectionInfoMaster.Update(result);
             }
-            
+
 
             await _context.SaveChangesAsync();
 
@@ -5188,7 +5188,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 Message = "Event Updated SucessFully"
             };
         }
-        public async Task<ServiceResponse>  PollStarted(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> PollStarted(UpdateEventActivity updateEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
@@ -5211,7 +5211,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
                 _context.ElectionInfoMaster.Update(result);
             }
-             
+
 
             await _context.SaveChangesAsync();
 
@@ -5223,7 +5223,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 Message = "Event Updated SucessFully"
             };
         }
-        public async Task<ServiceResponse>  VoterTurnOut(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> VoterTurnOut(UpdateEventActivity updateEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
@@ -5246,7 +5246,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
                 _context.ElectionInfoMaster.Update(result);
             }
-          
+
 
             await _context.SaveChangesAsync();
 
@@ -5258,7 +5258,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 Message = "Event Updated SucessFully"
             };
         }
-        public async Task<ServiceResponse>  VoterInQueue(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> VoterInQueue(UpdateEventActivity updateEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
@@ -5281,7 +5281,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
                 _context.ElectionInfoMaster.Update(result);
             }
-             
+
 
             await _context.SaveChangesAsync();
 
@@ -5293,7 +5293,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 Message = "Event Updated SucessFully"
             };
         }
-        public async Task<ServiceResponse>  FinalVotesPolled(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> FinalVotesPolled(UpdateEventActivity updateEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
@@ -5316,7 +5316,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
                 _context.ElectionInfoMaster.Update(result);
             }
-           
+
 
             await _context.SaveChangesAsync();
 
@@ -5328,7 +5328,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 Message = "Event Updated SucessFully"
             };
         }
-        public async Task<ServiceResponse>  PollEnded(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> PollEnded(UpdateEventActivity updateEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
@@ -5351,7 +5351,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
                 _context.ElectionInfoMaster.Update(result);
             }
-            
+
 
             await _context.SaveChangesAsync();
 
@@ -5363,7 +5363,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 Message = "Event Updated SucessFully"
             };
         }
-        public async Task<ServiceResponse>  EVMVVPATOff(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> EVMVVPATOff(UpdateEventActivity updateEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
@@ -5386,7 +5386,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
                 _context.ElectionInfoMaster.Update(result);
             }
-             
+
 
             await _context.SaveChangesAsync();
 
@@ -5398,7 +5398,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 Message = "Event Updated SucessFully"
             };
         }
-        public async Task<ServiceResponse>  PartyDeparted(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> PartyDeparted(UpdateEventActivity updateEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
@@ -5421,7 +5421,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
                 _context.ElectionInfoMaster.Update(result);
             }
-           
+
 
             await _context.SaveChangesAsync();
 
@@ -5433,7 +5433,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 Message = "Event Updated SucessFully"
             };
         }
-        public async Task<ServiceResponse>  PartyReachedAtCollection(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> PartyReachedAtCollection(UpdateEventActivity updateEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
@@ -5456,7 +5456,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
                 _context.ElectionInfoMaster.Update(result);
             }
-            
+
 
             await _context.SaveChangesAsync();
 
@@ -5468,7 +5468,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 Message = "Event Updated SucessFully"
             };
         }
-        public async Task<ServiceResponse>  EVMDeposited(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> EVMDeposited(UpdateEventActivity updateEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
@@ -5491,7 +5491,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
                 _context.ElectionInfoMaster.Update(result);
             }
-           
+
 
             await _context.SaveChangesAsync();
 
@@ -5505,16 +5505,16 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
 
         #region IsCheckEvent
-          
-        public async Task<ServiceResponse> IsPartyDispatch(UpdateEventActivity updateEventActivity)
+
+        public async Task<ServiceResponse> IsPartyDispatch(CheckEventActivity checkEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
-                d.StateMasterId == updateEventActivity.StateMasterId &&
-                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
-                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
-                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
-                d.BoothMasterId == updateEventActivity.BoothMasterId
+                d.StateMasterId == checkEventActivity.StateMasterId &&
+                d.DistrictMasterId == checkEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == checkEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == checkEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
             if (result is null || result.IsPartyDispatched == true)
@@ -5537,15 +5537,15 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
 
         }
-        public async Task<ServiceResponse> IsPartyArrived(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> IsPartyArrived(CheckEventActivity checkEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
-                d.StateMasterId == updateEventActivity.StateMasterId &&
-                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
-                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
-                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
-                d.BoothMasterId == updateEventActivity.BoothMasterId
+                d.StateMasterId == checkEventActivity.StateMasterId &&
+                d.DistrictMasterId == checkEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == checkEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == checkEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
             if (result is null || result.IsPartyReached == true)
@@ -5566,15 +5566,15 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             }
         }
-        public async Task<ServiceResponse> IsSetupPollingStation(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> IsSetupPollingStation(CheckEventActivity checkEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
-                d.StateMasterId == updateEventActivity.StateMasterId &&
-                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
-                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
-                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
-                d.BoothMasterId == updateEventActivity.BoothMasterId
+                d.StateMasterId == checkEventActivity.StateMasterId &&
+                d.DistrictMasterId == checkEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == checkEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == checkEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
             if (result is null || result.IsSetupOfPolling == true)
@@ -5596,15 +5596,15 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
         }
 
-        public async Task<ServiceResponse> IsMockPollDone(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> IsMockPollDone(CheckEventActivity checkEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
-                d.StateMasterId == updateEventActivity.StateMasterId &&
-                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
-                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
-                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
-                d.BoothMasterId == updateEventActivity.BoothMasterId
+                d.StateMasterId == checkEventActivity.StateMasterId &&
+                d.DistrictMasterId == checkEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == checkEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == checkEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
             if (result is null || result.IsMockPollDone == true)
@@ -5626,15 +5626,15 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
         }
 
-        public async Task<ServiceResponse> IsPollStarted(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> IsPollStarted(CheckEventActivity checkEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
-                d.StateMasterId == updateEventActivity.StateMasterId &&
-                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
-                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
-                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
-                d.BoothMasterId == updateEventActivity.BoothMasterId
+                d.StateMasterId == checkEventActivity.StateMasterId &&
+                d.DistrictMasterId == checkEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == checkEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == checkEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
             if (result is null || result.IsPollStarted == true)
@@ -5656,15 +5656,15 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
         }
 
-        public async Task<ServiceResponse> IsVoterTurnOut(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> IsVoterTurnOut(CheckEventActivity checkEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
-                d.StateMasterId == updateEventActivity.StateMasterId &&
-                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
-                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
-                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
-                d.BoothMasterId == updateEventActivity.BoothMasterId
+                d.StateMasterId == checkEventActivity.StateMasterId &&
+                d.DistrictMasterId == checkEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == checkEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == checkEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
             if (result is null || result.IsVoterTurnOut == true)
@@ -5686,15 +5686,15 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
         }
 
-        public async Task<ServiceResponse> IsVoterInQueue(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> IsVoterInQueue(CheckEventActivity checkEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
-                d.StateMasterId == updateEventActivity.StateMasterId &&
-                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
-                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
-                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
-                d.BoothMasterId == updateEventActivity.BoothMasterId
+                d.StateMasterId == checkEventActivity.StateMasterId &&
+                d.DistrictMasterId == checkEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == checkEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == checkEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
             if (result is null || result.IsPartyReached == true)
@@ -5716,15 +5716,15 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
         }
 
-        public async Task<ServiceResponse> IsFinalVotesPolled(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> IsFinalVotesPolled(CheckEventActivity checkEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
-                d.StateMasterId == updateEventActivity.StateMasterId &&
-                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
-                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
-                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
-                d.BoothMasterId == updateEventActivity.BoothMasterId
+                d.StateMasterId == checkEventActivity.StateMasterId &&
+                d.DistrictMasterId == checkEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == checkEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == checkEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
             if (result is null || result.IsPartyReached == true)
@@ -5746,15 +5746,15 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
         }
 
-        public async Task<ServiceResponse> IsPollEnded(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> IsPollEnded(CheckEventActivity checkEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
-                d.StateMasterId == updateEventActivity.StateMasterId &&
-                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
-                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
-                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
-                d.BoothMasterId == updateEventActivity.BoothMasterId
+                d.StateMasterId == checkEventActivity.StateMasterId &&
+                d.DistrictMasterId == checkEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == checkEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == checkEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
             if (result is null || result.IsPollEnded == true)
@@ -5776,15 +5776,15 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
         }
 
-        public async Task<ServiceResponse> IsEVMVVPATOff(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> IsEVMVVPATOff(CheckEventActivity checkEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
-                d.StateMasterId == updateEventActivity.StateMasterId &&
-                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
-                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
-                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
-                d.BoothMasterId == updateEventActivity.BoothMasterId
+                d.StateMasterId == checkEventActivity.StateMasterId &&
+                d.DistrictMasterId == checkEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == checkEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == checkEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
             if (result is null || result.IsMCESwitchOff == true)
@@ -5806,15 +5806,15 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
         }
 
-        public async Task<ServiceResponse> IsPartyDeparted(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> IsPartyDeparted(CheckEventActivity checkEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
-                d.StateMasterId == updateEventActivity.StateMasterId &&
-                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
-                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
-                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
-                d.BoothMasterId == updateEventActivity.BoothMasterId
+                d.StateMasterId == checkEventActivity.StateMasterId &&
+                d.DistrictMasterId == checkEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == checkEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == checkEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
             if (result is null || result.IsPartyDeparted == true)
@@ -5836,15 +5836,15 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
         }
 
-        public async Task<ServiceResponse> IsPartyReachedAtCollection(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> IsPartyReachedAtCollection(CheckEventActivity checkEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
-                d.StateMasterId == updateEventActivity.StateMasterId &&
-                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
-                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
-                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
-                d.BoothMasterId == updateEventActivity.BoothMasterId
+                d.StateMasterId == checkEventActivity.StateMasterId &&
+                d.DistrictMasterId == checkEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == checkEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == checkEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
             if (result is null || result.IsPartyReachedCollectionCenter == true)
@@ -5866,15 +5866,15 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
         }
 
-        public async Task<ServiceResponse> IsEVMDeposited(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> IsEVMDeposited(CheckEventActivity checkEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
-                d.StateMasterId == updateEventActivity.StateMasterId &&
-                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
-                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
-                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
-                d.BoothMasterId == updateEventActivity.BoothMasterId
+                d.StateMasterId == checkEventActivity.StateMasterId &&
+                d.DistrictMasterId == checkEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == checkEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == checkEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
             if (result is null || result.IsEVMDeposited == true)

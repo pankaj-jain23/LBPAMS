@@ -411,7 +411,7 @@ namespace EAMS_BLL.Services
             return await UpdateEventsActivity(updateEventActivity);
         }
 
-        private async Task<UpdateEventActivity> GetPreviousEvent(UpdateEventActivity updateEventActivity)
+        private async Task<CheckEventActivity> GetPreviousEvent(UpdateEventActivity updateEventActivity)
         {
             // Try to retrieve the event list from cache
             var eventList = await _cacheService.GetDataAsync<List<EventMaster>>("GetEventList");
@@ -443,62 +443,67 @@ namespace EAMS_BLL.Services
                 // If the current event is not found, handle the error (return null or throw exception)
                 return null;
             }
-            updateEventActivity.EventMasterId = previousEvent.EventMasterId;
-            updateEventActivity.EventABBR = previousEvent.EventABBR;
-            updateEventActivity.EventSequence = previousEvent.EventSequence;
-            updateEventActivity.EventStatus = previousEvent.Status;
+
+            CheckEventActivity checkEventActivity = new CheckEventActivity();
+            checkEventActivity.StateMasterId = updateEventActivity.StateMasterId;
+            checkEventActivity.DistrictMasterId = updateEventActivity.DistrictMasterId;
+            checkEventActivity.AssemblyMasterId = updateEventActivity.AssemblyMasterId;
+            checkEventActivity.EventMasterId = previousEvent.EventMasterId;
+            checkEventActivity.EventABBR = previousEvent.EventABBR;
+            checkEventActivity.EventSequence = previousEvent.EventSequence;
+            checkEventActivity.EventStatus = previousEvent.Status;
             // Return the first previous event with Status = true (or null if none found)
-            return updateEventActivity;
+            return checkEventActivity;
         }
 
-        private async Task<ServiceResponse> IsEventActivityDone(UpdateEventActivity updateEventActivity)
+        private async Task<ServiceResponse> IsEventActivityDone(CheckEventActivity checkEventActivity)
         {
             ServiceResponse response = null;
 
-            switch (updateEventActivity.EventABBR)
+            switch (checkEventActivity.EventABBR)
             {
                 case "PD": // Party Dispatch
-                    response = await _eamsRepository.IsPartyDispatch(updateEventActivity);
+                    response = await _eamsRepository.IsPartyDispatch(checkEventActivity);
                     break;
 
                 case "PA": // Party Arrived
-                    response = await _eamsRepository.IsPartyArrived(updateEventActivity);
+                    response = await _eamsRepository.IsPartyArrived(checkEventActivity);
                     break;
                 case "SP": // Setup Polling Station
-                    response = await _eamsRepository.IsSetupPollingStation(updateEventActivity);
+                    response = await _eamsRepository.IsSetupPollingStation(checkEventActivity);
                     break;
                 case "MP": // Mock Poll Done
-                    response = await _eamsRepository.IsMockPollDone(updateEventActivity);
+                    response = await _eamsRepository.IsMockPollDone(checkEventActivity);
                     break;
                 case "PS": // Poll Started
-                    response = await _eamsRepository.IsPollStarted(updateEventActivity);
+                    response = await _eamsRepository.IsPollStarted(checkEventActivity);
                     break;
                 case "VT": // Voter Turn Out
-                    response = await _eamsRepository.IsVoterTurnOut(updateEventActivity);
+                    response = await _eamsRepository.IsVoterTurnOut(checkEventActivity);
                     break;
                 case "VQ": // Voter In Queue
-                    response = await _eamsRepository.IsVoterInQueue(updateEventActivity);
+                    response = await _eamsRepository.IsVoterInQueue(checkEventActivity);
                     break;
                 case "FV": // Final Votes Polled
-                    response = await _eamsRepository.IsFinalVotesPolled(updateEventActivity);
+                    response = await _eamsRepository.IsFinalVotesPolled(checkEventActivity);
                     break;
                 case "PE": // Poll Ended
-                    response = await _eamsRepository.IsPollEnded(updateEventActivity);
+                    response = await _eamsRepository.IsPollEnded(checkEventActivity);
                     break;
                 case "EO": // EVMVVPATOff
-                    response = await _eamsRepository.IsEVMVVPATOff(updateEventActivity);
+                    response = await _eamsRepository.IsEVMVVPATOff(checkEventActivity);
                     break;
 
                 case "PC": // PartyDeparted	
-                    response = await _eamsRepository.IsPartyDeparted(updateEventActivity);
+                    response = await _eamsRepository.IsPartyDeparted(checkEventActivity);
                     break;
 
                 case "PR": // PartyReachedAtCollection
-                    response = await _eamsRepository.IsPartyReachedAtCollection(updateEventActivity);
+                    response = await _eamsRepository.IsPartyReachedAtCollection(checkEventActivity);
                     break;
 
                 case "ED": // EVMDeposited
-                    response = await _eamsRepository.IsEVMDeposited(updateEventActivity);
+                    response = await _eamsRepository.IsEVMDeposited(checkEventActivity);
                     break;
 
 

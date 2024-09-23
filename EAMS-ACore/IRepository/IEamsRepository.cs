@@ -117,19 +117,19 @@ namespace EAMS_ACore.IRepository
         #region Event Activity
 
         #region  IsCheckEvent 
-        Task<ServiceResponse> IsPartyDispatch(UpdateEventActivity updateEventActivity);
-        Task<ServiceResponse> IsPartyArrived(UpdateEventActivity updateEventActivity);
-        Task<ServiceResponse> IsSetupPollingStation(UpdateEventActivity updateEventActivity);
-        Task<ServiceResponse> IsMockPollDone(UpdateEventActivity updateEventActivity);
-        Task<ServiceResponse> IsPollStarted(UpdateEventActivity updateEventActivity);
-        Task<ServiceResponse> IsVoterTurnOut(UpdateEventActivity updateEventActivity);
-        Task<ServiceResponse> IsVoterInQueue(UpdateEventActivity updateEventActivity);
-        Task<ServiceResponse> IsFinalVotesPolled(UpdateEventActivity updateEventActivity);
-        Task<ServiceResponse> IsPollEnded(UpdateEventActivity updateEventActivity);
-        Task<ServiceResponse> IsEVMVVPATOff(UpdateEventActivity updateEventActivity);
-        Task<ServiceResponse> IsPartyDeparted(UpdateEventActivity updateEventActivity);
-        Task<ServiceResponse> IsPartyReachedAtCollection(UpdateEventActivity updateEventActivity);
-        Task<ServiceResponse> IsEVMDeposited(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> IsPartyDispatch(CheckEventActivity checkEventActivity);
+        Task<ServiceResponse> IsPartyArrived(CheckEventActivity checkEventActivity);
+        Task<ServiceResponse> IsSetupPollingStation(CheckEventActivity checkEventActivity);
+        Task<ServiceResponse> IsMockPollDone(CheckEventActivity checkEventActivity);
+        Task<ServiceResponse> IsPollStarted(CheckEventActivity checkEventActivity);
+        Task<ServiceResponse> IsVoterTurnOut(CheckEventActivity checkEventActivity);
+        Task<ServiceResponse> IsVoterInQueue(CheckEventActivity checkEventActivity);
+        Task<ServiceResponse> IsFinalVotesPolled(CheckEventActivity checkEventActivity);
+        Task<ServiceResponse> IsPollEnded(CheckEventActivity checkEventActivity);
+        Task<ServiceResponse> IsEVMVVPATOff(CheckEventActivity checkEventActivity);
+        Task<ServiceResponse> IsPartyDeparted(CheckEventActivity checkEventActivity);
+        Task<ServiceResponse> IsPartyReachedAtCollection(CheckEventActivity checkEventActivity);
+        Task<ServiceResponse> IsEVMDeposited(CheckEventActivity checkEventActivity);
         #endregion
 
         #region Activity Events
