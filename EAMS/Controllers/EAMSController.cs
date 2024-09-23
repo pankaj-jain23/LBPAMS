@@ -2205,7 +2205,6 @@ namespace EAMS.Controllers
         #endregion
 
         #region Event Activity
-
         [HttpPut]
         [Route("UpdateEventActivity")]
         [Authorize]

@@ -68,7 +68,7 @@ namespace EAMS_ACore.IRepository
         /// <summary this api for Portal>
         Task<List<CombinedMaster>> GetBoothListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId);
         /// </summary>
-         /// <summary this api for Portal>
+        /// <summary this api for Portal>
         Task<List<CombinedMaster>> GetBoothListForFo(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId);
         /// </summary>
         Task<FieldOfficerMasterList> GetFieldOfficerById(int FieldOfficerMasterId);
@@ -116,6 +116,7 @@ namespace EAMS_ACore.IRepository
 
         #region Event Activity
 
+        #region  IsCheckEvent 
         Task<ServiceResponse> IsPartyDispatch(UpdateEventActivity updateEventActivity);
         Task<ServiceResponse> IsPartyArrived(UpdateEventActivity updateEventActivity);
         Task<ServiceResponse> IsSetupPollingStation(UpdateEventActivity updateEventActivity);
@@ -129,8 +130,24 @@ namespace EAMS_ACore.IRepository
         Task<ServiceResponse> IsPartyDeparted(UpdateEventActivity updateEventActivity);
         Task<ServiceResponse> IsPartyReachedAtCollection(UpdateEventActivity updateEventActivity);
         Task<ServiceResponse> IsEVMDeposited(UpdateEventActivity updateEventActivity);
-        Task<ServiceResponse> UpdateEventActivity(UpdateEventActivity updateEventActivity);
+        #endregion
 
+        #region Activity Events
+         
+        Task<ServiceResponse> PartyDispatch(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> PartyArrived(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> SetupPollingStation(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> MockPollDone(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> PollStarted(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> VoterTurnOut(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> VoterInQueue(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> FinalVotesPolled(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> PollEnded(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> EVMVVPATOff(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> PartyDeparted(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> PartyReachedAtCollection(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> EVMDeposited(UpdateEventActivity updateEventActivity);
+        #endregion
         Task<List<BoothEvents>> GetBoothEventListById(int stateMasterId, int electionTypeMasterId, int boothMasterId);
 
         Task<bool> CanPollStart(int boothMasterId, int eventid);
@@ -224,7 +241,7 @@ namespace EAMS_ACore.IRepository
         Task<List<VTReportModel>> GetSlotBasedVoterTurnOutReport(SlotVTReportModel boothReportModel);
 
 
-       
+
 
 
         #region
@@ -337,7 +354,7 @@ namespace EAMS_ACore.IRepository
         Task<Response> UpdateGPPanchayatWards(GPPanchayatWards gpPanchayatWards);
         Task<GPPanchayatWards> GetGPPanchayatWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId);
 
-        Task<Response> DeleteGPPanchayatWardsById( int gpPanchayatWardsMasterId);
+        Task<Response> DeleteGPPanchayatWardsById(int gpPanchayatWardsMasterId);
 
         #endregion
 

@@ -19,6 +19,11 @@
         public string? BoothAuxy { get; set; }
         public bool IsAssigned { get; set; }
         public int ElectionTypeMasterId { get; set; }
+        public int EventMasterId { get; set; }
+        public string? EventName { get; set; }
+        public string? EventABBR { get; set; }
+        public int EventSequence { get; set; }
+        public bool EventStatus { get; set; }
 
     }
 }

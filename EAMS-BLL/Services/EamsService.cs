@@ -515,8 +515,11 @@ namespace EAMS_BLL.Services
 
         private async Task<ServiceResponse> UpdateEventsActivity(UpdateEventActivity updateEventActivity)
         {
-            return await _eamsRepository.UpdateEventActivity(updateEventActivity);
-
+            //   return await _eamsRepository.UpdateEventActivity(updateEventActivity);
+            return new ServiceResponse
+            {
+                IsSucceed = false
+            };
         }
         public async Task<List<BoothEvents>> GetBoothEventListById(int stateMasterId, int electionTypeMasterId, int boothMasterId)
         {

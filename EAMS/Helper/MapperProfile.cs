@@ -407,7 +407,11 @@ namespace EAMS.Helper
                 .ForMember(dest => dest.IsAssigned, opt => opt.MapFrom(src => src.IsAssigned))
                 .ForMember(dest => dest.BoothAuxy, opt => opt.MapFrom(src => src.BoothAuxy))
                 .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
-
+                .ForMember(dest => dest.EventMasterId, opt => opt.MapFrom(src => src.EventMasterId))
+                .ForMember(dest => dest.EventName, opt => opt.MapFrom(src => src.EventName))
+                .ForMember(dest => dest.EventABBR, opt => opt.MapFrom(src => src.EventABBR))
+                .ForMember(dest => dest.EventSequence, opt => opt.MapFrom(src => src.EventSequence))
+                .ForMember(dest => dest.EventStatus, opt => opt.MapFrom(src => src.EventStatus))
 
              .ReverseMap();
             #endregion
@@ -454,8 +458,7 @@ namespace EAMS.Helper
             #region Event Activity
 
             CreateMap<UpdateEventActivityViewModel, UpdateEventActivity>()
-         .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
-         .ForMember(dest => dest.BoothCode, opt => opt.MapFrom(src => src.BoothCode))
+         .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId)) 
          .ForMember(dest => dest.EventMasterId, opt => opt.MapFrom(src => src.EventMasterId))
          .ForMember(dest => dest.EventABBR, opt => opt.MapFrom(src => src.EventABBR))
          .ForMember(dest => dest.EventSequence, opt => opt.MapFrom(src => src.EventSequence))

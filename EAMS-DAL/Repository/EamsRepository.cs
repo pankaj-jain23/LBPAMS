@@ -4398,7 +4398,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                             BoothMasterId = Convert.ToInt32(soTotalBooths.BoothMasterId),
                             BoothName = soTotalBooths.BoothName + "-" + boothName,
                             BoothCode = soTotalBooths.BoothCode_No,
-                            UpdateStatus = electioInfoRecord.IsPartyReachedCollectionCenter  
+                            UpdateStatus = electioInfoRecord.IsPartyReachedCollectionCenter
                         };
                         eventwiseboothlist.Add(model);
                     }
@@ -5006,8 +5006,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             updateEventActivity.EventStatus = previousEvent.Status;
             // Return the first previous event with Status = true (or null if none found)
             return updateEventActivity;
-        }
-
+        } 
         public async Task<ElectionInfoMaster> EventUpdationStatus(ElectionInfoMaster electionInfoMaster)
         {
             // added electionTypeMasterId check
@@ -5018,7 +5017,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             ).FirstOrDefault();
             return electionInfoRecord;
         }
-        public async Task<ServiceResponse> UpdateEventActivity(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse>  PartyDispatch(UpdateEventActivity updateEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
@@ -5069,8 +5068,432 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             return new ServiceResponse
             {
                 IsSucceed = true
+                ,
+                Message = "Event Updated SucessFully"
             };
         }
+        public async Task<ServiceResponse>  PartyArrived(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            // If the record exists, update it
+            if (result is not null)
+            {
+                result.EventMasterId = updateEventActivity.EventMasterId;
+                result.EventSequence = updateEventActivity.EventSequence;
+                result.EventABBR = updateEventActivity.EventABBR;
+                result.ElectionInfoStatus = updateEventActivity.EventStatus;
+                result.IsPartyDispatched = updateEventActivity.EventStatus;
+                result.PartyDispatchedLastUpdate = BharatDateTime();
+
+                _context.ElectionInfoMaster.Update(result);
+            }
+               
+            await _context.SaveChangesAsync();
+
+
+            return new ServiceResponse
+            {
+                IsSucceed = true
+                ,
+                Message = "Event Updated SucessFully"
+            };
+        }
+        public async Task<ServiceResponse>  SetupPollingStation(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            // If the record exists, update it
+            if (result is not null)
+            {
+                result.EventMasterId = updateEventActivity.EventMasterId;
+                result.EventSequence = updateEventActivity.EventSequence;
+                result.EventABBR = updateEventActivity.EventABBR;
+                result.ElectionInfoStatus = updateEventActivity.EventStatus;
+                result.IsPartyDispatched = updateEventActivity.EventStatus;
+                result.PartyDispatchedLastUpdate = BharatDateTime();
+
+                _context.ElectionInfoMaster.Update(result);
+            }
+            
+
+            await _context.SaveChangesAsync();
+
+
+            return new ServiceResponse
+            {
+                IsSucceed = true
+                ,
+                Message = "Event Updated SucessFully"
+            };
+        }
+        public async Task<ServiceResponse>  MockPollDone(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            // If the record exists, update it
+            if (result is not null)
+            {
+                result.EventMasterId = updateEventActivity.EventMasterId;
+                result.EventSequence = updateEventActivity.EventSequence;
+                result.EventABBR = updateEventActivity.EventABBR;
+                result.ElectionInfoStatus = updateEventActivity.EventStatus;
+                result.IsPartyDispatched = updateEventActivity.EventStatus;
+                result.PartyDispatchedLastUpdate = BharatDateTime();
+
+                _context.ElectionInfoMaster.Update(result);
+            }
+            
+
+            await _context.SaveChangesAsync();
+
+
+            return new ServiceResponse
+            {
+                IsSucceed = true
+                ,
+                Message = "Event Updated SucessFully"
+            };
+        }
+        public async Task<ServiceResponse>  PollStarted(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            // If the record exists, update it
+            if (result is not null)
+            {
+                result.EventMasterId = updateEventActivity.EventMasterId;
+                result.EventSequence = updateEventActivity.EventSequence;
+                result.EventABBR = updateEventActivity.EventABBR;
+                result.ElectionInfoStatus = updateEventActivity.EventStatus;
+                result.IsPartyDispatched = updateEventActivity.EventStatus;
+                result.PartyDispatchedLastUpdate = BharatDateTime();
+
+                _context.ElectionInfoMaster.Update(result);
+            }
+             
+
+            await _context.SaveChangesAsync();
+
+
+            return new ServiceResponse
+            {
+                IsSucceed = true
+                ,
+                Message = "Event Updated SucessFully"
+            };
+        }
+        public async Task<ServiceResponse>  VoterTurnOut(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            // If the record exists, update it
+            if (result is not null)
+            {
+                result.EventMasterId = updateEventActivity.EventMasterId;
+                result.EventSequence = updateEventActivity.EventSequence;
+                result.EventABBR = updateEventActivity.EventABBR;
+                result.ElectionInfoStatus = updateEventActivity.EventStatus;
+                result.IsPartyDispatched = updateEventActivity.EventStatus;
+                result.PartyDispatchedLastUpdate = BharatDateTime();
+
+                _context.ElectionInfoMaster.Update(result);
+            }
+          
+
+            await _context.SaveChangesAsync();
+
+
+            return new ServiceResponse
+            {
+                IsSucceed = true
+                ,
+                Message = "Event Updated SucessFully"
+            };
+        }
+        public async Task<ServiceResponse>  VoterInQueue(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            // If the record exists, update it
+            if (result is not null)
+            {
+                result.EventMasterId = updateEventActivity.EventMasterId;
+                result.EventSequence = updateEventActivity.EventSequence;
+                result.EventABBR = updateEventActivity.EventABBR;
+                result.ElectionInfoStatus = updateEventActivity.EventStatus;
+                result.IsPartyDispatched = updateEventActivity.EventStatus;
+                result.PartyDispatchedLastUpdate = BharatDateTime();
+
+                _context.ElectionInfoMaster.Update(result);
+            }
+             
+
+            await _context.SaveChangesAsync();
+
+
+            return new ServiceResponse
+            {
+                IsSucceed = true
+                ,
+                Message = "Event Updated SucessFully"
+            };
+        }
+        public async Task<ServiceResponse>  FinalVotesPolled(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            // If the record exists, update it
+            if (result is not null)
+            {
+                result.EventMasterId = updateEventActivity.EventMasterId;
+                result.EventSequence = updateEventActivity.EventSequence;
+                result.EventABBR = updateEventActivity.EventABBR;
+                result.ElectionInfoStatus = updateEventActivity.EventStatus;
+                result.IsPartyDispatched = updateEventActivity.EventStatus;
+                result.PartyDispatchedLastUpdate = BharatDateTime();
+
+                _context.ElectionInfoMaster.Update(result);
+            }
+           
+
+            await _context.SaveChangesAsync();
+
+
+            return new ServiceResponse
+            {
+                IsSucceed = true
+                ,
+                Message = "Event Updated SucessFully"
+            };
+        }
+        public async Task<ServiceResponse>  PollEnded(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            // If the record exists, update it
+            if (result is not null)
+            {
+                result.EventMasterId = updateEventActivity.EventMasterId;
+                result.EventSequence = updateEventActivity.EventSequence;
+                result.EventABBR = updateEventActivity.EventABBR;
+                result.ElectionInfoStatus = updateEventActivity.EventStatus;
+                result.IsPartyDispatched = updateEventActivity.EventStatus;
+                result.PartyDispatchedLastUpdate = BharatDateTime();
+
+                _context.ElectionInfoMaster.Update(result);
+            }
+            
+
+            await _context.SaveChangesAsync();
+
+
+            return new ServiceResponse
+            {
+                IsSucceed = true
+                ,
+                Message = "Event Updated SucessFully"
+            };
+        }
+        public async Task<ServiceResponse>  EVMVVPATOff(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            // If the record exists, update it
+            if (result is not null)
+            {
+                result.EventMasterId = updateEventActivity.EventMasterId;
+                result.EventSequence = updateEventActivity.EventSequence;
+                result.EventABBR = updateEventActivity.EventABBR;
+                result.ElectionInfoStatus = updateEventActivity.EventStatus;
+                result.IsPartyDispatched = updateEventActivity.EventStatus;
+                result.PartyDispatchedLastUpdate = BharatDateTime();
+
+                _context.ElectionInfoMaster.Update(result);
+            }
+             
+
+            await _context.SaveChangesAsync();
+
+
+            return new ServiceResponse
+            {
+                IsSucceed = true
+                ,
+                Message = "Event Updated SucessFully"
+            };
+        }
+        public async Task<ServiceResponse>  PartyDeparted(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            // If the record exists, update it
+            if (result is not null)
+            {
+                result.EventMasterId = updateEventActivity.EventMasterId;
+                result.EventSequence = updateEventActivity.EventSequence;
+                result.EventABBR = updateEventActivity.EventABBR;
+                result.ElectionInfoStatus = updateEventActivity.EventStatus;
+                result.IsPartyDispatched = updateEventActivity.EventStatus;
+                result.PartyDispatchedLastUpdate = BharatDateTime();
+
+                _context.ElectionInfoMaster.Update(result);
+            }
+           
+
+            await _context.SaveChangesAsync();
+
+
+            return new ServiceResponse
+            {
+                IsSucceed = true
+                ,
+                Message = "Event Updated SucessFully"
+            };
+        }
+        public async Task<ServiceResponse>  PartyReachedAtCollection(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            // If the record exists, update it
+            if (result is not null)
+            {
+                result.EventMasterId = updateEventActivity.EventMasterId;
+                result.EventSequence = updateEventActivity.EventSequence;
+                result.EventABBR = updateEventActivity.EventABBR;
+                result.ElectionInfoStatus = updateEventActivity.EventStatus;
+                result.IsPartyDispatched = updateEventActivity.EventStatus;
+                result.PartyDispatchedLastUpdate = BharatDateTime();
+
+                _context.ElectionInfoMaster.Update(result);
+            }
+            
+
+            await _context.SaveChangesAsync();
+
+
+            return new ServiceResponse
+            {
+                IsSucceed = true
+                ,
+                Message = "Event Updated SucessFully"
+            };
+        }
+        public async Task<ServiceResponse>  EVMDeposited(UpdateEventActivity updateEventActivity)
+        {
+            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+
+            // If the record exists, update it
+            if (result is not null)
+            {
+                result.EventMasterId = updateEventActivity.EventMasterId;
+                result.EventSequence = updateEventActivity.EventSequence;
+                result.EventABBR = updateEventActivity.EventABBR;
+                result.ElectionInfoStatus = updateEventActivity.EventStatus;
+                result.IsPartyDispatched = updateEventActivity.EventStatus;
+                result.PartyDispatchedLastUpdate = BharatDateTime();
+
+                _context.ElectionInfoMaster.Update(result);
+            }
+           
+
+            await _context.SaveChangesAsync();
+
+
+            return new ServiceResponse
+            {
+                IsSucceed = true
+                ,
+                Message = "Event Updated SucessFully"
+            };
+        }
+
+        #region IsCheckEvent
+          
         public async Task<ServiceResponse> IsPartyDispatch(UpdateEventActivity updateEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
@@ -5460,6 +5883,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             }
         }
+        #endregion
+
         public async Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(string boothMasterId, int eventmasterid)
         {
             VoterTurnOutPolledDetailViewModel model;
