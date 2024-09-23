@@ -2062,6 +2062,8 @@ namespace EAMS_DAL.Repository
         }
         /// </summary>
         /// <summary this api for Mobile App>
+
+
         public async Task<List<CombinedMaster>> GetBoothListForFo(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
         {
             // Step 1: Get booth list with joins
@@ -2122,6 +2124,7 @@ namespace EAMS_DAL.Repository
                         updateEventActivity.EventABBR = eventItem.EventABBR;
                         updateEventActivity.EventSequence = eventItem.EventSequence;
                         updateEventActivity.EventStatus = eventItem.Status;
+
                         var getNextEvent = await GetNextEvent(updateEventActivity);
                         bool eventStatus = false;
 
