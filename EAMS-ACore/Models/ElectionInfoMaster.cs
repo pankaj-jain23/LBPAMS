@@ -23,44 +23,44 @@ namespace EAMS_ACore.Models
         public bool? ElectionInfoStatus { get; set; }
         public string? FOUserId { get; set; }
         public string? AROUserId { get; set; }
-        public bool? IsPartyDispatched { get; set; }
+        public bool IsPartyDispatched { get; set; }
         public DateTime? PartyDispatchedLastUpdate { get; set; }
 
-        public bool? IsPartyReached { get; set; }
+        public bool IsPartyReached { get; set; }
         public DateTime? PartyReachedLastUpdate { get; set; }
 
-        public bool? IsSetupOfPolling { get; set; }
+        public bool IsSetupOfPolling { get; set; }
         public DateTime? SetupOfPollingLastUpdate { get; set; }
 
-        public bool? IsMockPollDone { get; set; }
+        public bool IsMockPollDone { get; set; }
         public DateTime? MockPollDoneLastUpdate { get; set; }
         public int? NoOfPollingAgents { get; set; }
 
-        public bool? IsPollStarted { get; set; }
+        public bool IsPollStarted { get; set; }
         public DateTime? PollStartedLastUpdate { get; set; }
 
         public int? FinalTVote { get; set; }
 
-        public bool? FinalTVoteStatus { get; set; }
+        public bool FinalTVoteStatus { get; set; }
 
         public DateTime? VotingLastUpdate { get; set; }
 
         public int? VoterInQueue { get; set; }
         public DateTime? VoterInQueueLastUpdate { get; set; }
 
-        public bool? IsVoterTurnOut { get; set; }
+        public bool IsVoterTurnOut { get; set; }
         public DateTime? VotingTurnOutLastUpdate { get; set; }
 
-        public bool? IsPollEnded { get; set; }
+        public bool IsPollEnded { get; set; }
         public DateTime? IsPollEndedLastUpdate { get; set; }
-        public bool? IsMCESwitchOff { get; set; }
+        public bool IsMCESwitchOff { get; set; }
         public DateTime? MCESwitchOffLastUpdate { get; set; }
-        public bool? IsPartyDeparted { get; set; }
+        public bool IsPartyDeparted { get; set; }
         public DateTime? PartyDepartedLastUpdate { get; set; }
-        public bool? IsPartyReachedCollectionCenter { get; set; }
+        public bool IsPartyReachedCollectionCenter { get; set; }
         public DateTime? PartyReachedCollectionCenterLastUpdate { get; set; }
 
-        public bool? IsEVMDeposited { get; set; }
+        public bool IsEVMDeposited { get; set; }
         public DateTime? EVMDepositedLastUpdate { get; set; }
 
         /**Male Female Transgender**/

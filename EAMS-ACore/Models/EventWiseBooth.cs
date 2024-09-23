@@ -10,7 +10,7 @@
         public int EventMasterId { get; set; }
         public string EventName { get; set; }
         public string BoothName { get; set; }
-        public bool? UpdateStatus { get; set; }
+        public bool  UpdateStatus { get; set; }
         public string? Color { get; set; }
     }
 }

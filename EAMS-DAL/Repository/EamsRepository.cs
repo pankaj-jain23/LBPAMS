@@ -2113,7 +2113,7 @@ namespace EAMS_DAL.Repository
                     updateEventActivity.AssemblyMasterId = booth.AssemblyId;
                     updateEventActivity.ElectionTypeMasterId = booth.ElectionTypeMasterId;
                     updateEventActivity.BoothMasterId = booth.BoothMasterId;
-                  
+
                     // Step 3: Check the event status dynamically and assign the next event
                     foreach (var eventItem in eventList)
                     {
@@ -2127,47 +2127,47 @@ namespace EAMS_DAL.Repository
                         switch (eventItem.EventABBR)
                         {
                             case "PD":
-                                eventStatus = getElectionInfoRecord.IsPartyDispatched ?? false;
+                                eventStatus = getElectionInfoRecord.IsPartyDispatched;
                                 break;
 
                             case "PA": // Party Arrived
-                                eventStatus = getElectionInfoRecord.IsPartyReached ?? false;
+                                eventStatus = getElectionInfoRecord.IsPartyReached;
                                 break;
                             case "SP": // Setup Polling Station
-                                eventStatus = getElectionInfoRecord.IsSetupOfPolling ?? false;
+                                eventStatus = getElectionInfoRecord.IsSetupOfPolling;
                                 break;
                             case "MP": // Mock Poll Done
-                                eventStatus = getElectionInfoRecord.IsMockPollDone ?? false;
+                                eventStatus = getElectionInfoRecord.IsMockPollDone;
                                 break;
                             case "PS": // Poll Started
-                                eventStatus = getElectionInfoRecord.IsPollStarted ?? false;
+                                eventStatus = getElectionInfoRecord.IsPollStarted;
                                 break;
                             case "VT": // Voter Turn Out
-                                eventStatus = getElectionInfoRecord.IsVoterTurnOut ?? false;
+                                eventStatus = getElectionInfoRecord.IsVoterTurnOut;
                                 break;
                             case "VQ": // Voter In Queue
-                                eventStatus = getElectionInfoRecord.IsVoterTurnOut ?? false;
+                                eventStatus = getElectionInfoRecord.IsVoterTurnOut;
                                 break;
                             case "FV": // Final Votes Polled
-                                eventStatus = getElectionInfoRecord.IsVoterTurnOut ?? false;
+                                eventStatus = getElectionInfoRecord.IsVoterTurnOut;
                                 break;
                             case "PE": // Poll Ended
-                                eventStatus = getElectionInfoRecord.IsPollEnded ?? false;
+                                eventStatus = getElectionInfoRecord.IsPollEnded;
                                 break;
                             case "EO": // EVMVVPATOff
-                                eventStatus = getElectionInfoRecord.IsMCESwitchOff ?? false;
+                                eventStatus = getElectionInfoRecord.IsMCESwitchOff;
                                 break;
 
                             case "PC": // PartyDeparted	
-                                eventStatus = getElectionInfoRecord.IsPartyDeparted ?? false;
+                                eventStatus = getElectionInfoRecord.IsPartyDeparted;
                                 break;
 
                             case "PR": // PartyReachedAtCollection
-                                eventStatus = getElectionInfoRecord.IsPartyReachedCollectionCenter ?? false;
+                                eventStatus = getElectionInfoRecord.IsPartyReachedCollectionCenter;
                                 break;
 
                             case "ED": // EVMDeposited
-                                eventStatus = getElectionInfoRecord.IsEVMDeposited ?? false;
+                                eventStatus = getElectionInfoRecord.IsEVMDeposited;
                                 break;
 
                                 // Add more cases as needed
@@ -4211,7 +4211,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                             BoothMasterId = Convert.ToInt32(soTotalBooths.BoothMasterId),
                             BoothName = soTotalBooths.BoothName + "-" + boothName,
                             BoothCode = soTotalBooths.BoothCode_No,
-                            UpdateStatus = electioInfoRecord.IsPartyDispatched ?? false
+                            UpdateStatus = electioInfoRecord.IsPartyDispatched
                         };
 
                         eventwiseboothlist.Add(model);
@@ -4228,7 +4228,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                             BoothMasterId = Convert.ToInt32(soTotalBooths.BoothMasterId),
                             BoothName = soTotalBooths.BoothName + "-" + boothName,
                             BoothCode = soTotalBooths.BoothCode_No,
-                            UpdateStatus = electioInfoRecord.IsPartyReached ?? false
+                            UpdateStatus = electioInfoRecord.IsPartyReached
                         };
 
                         eventwiseboothlist.Add(model);
@@ -4245,7 +4245,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                             BoothMasterId = Convert.ToInt32(soTotalBooths.BoothMasterId),
                             BoothName = soTotalBooths.BoothName + "-" + boothName,
                             BoothCode = soTotalBooths.BoothCode_No,
-                            UpdateStatus = electioInfoRecord.IsSetupOfPolling ?? false
+                            UpdateStatus = electioInfoRecord.IsSetupOfPolling
                         };
                         eventwiseboothlist.Add(model);
                     }
@@ -4262,7 +4262,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                             BoothMasterId = Convert.ToInt32(soTotalBooths.BoothMasterId),
                             BoothName = soTotalBooths.BoothName + "-" + boothName,
                             BoothCode = soTotalBooths.BoothCode_No,
-                            UpdateStatus = electioInfoRecord.IsMockPollDone ?? false
+                            UpdateStatus = electioInfoRecord.IsMockPollDone
                         };
                         eventwiseboothlist.Add(model);
                     }
@@ -4278,7 +4278,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                             BoothMasterId = Convert.ToInt32(soTotalBooths.BoothMasterId),
                             BoothName = soTotalBooths.BoothName + "-" + boothName,
                             BoothCode = soTotalBooths.BoothCode_No,
-                            UpdateStatus = electioInfoRecord.IsPollStarted ?? false
+                            UpdateStatus = electioInfoRecord.IsPollStarted
                         };
                         eventwiseboothlist.Add(model);
                     }
@@ -4330,7 +4330,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                             BoothName = soTotalBooths.BoothName + "-" + boothName,
                             BoothCode = soTotalBooths.BoothCode_No,
                             //UpdateStatus = isFinalVotes
-                            UpdateStatus = electioInfoRecord.FinalTVoteStatus ?? false
+                            UpdateStatus = electioInfoRecord.FinalTVoteStatus
                         };
                         eventwiseboothlist.Add(model);
                     }
@@ -4346,7 +4346,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                             BoothMasterId = Convert.ToInt32(soTotalBooths.BoothMasterId),
                             BoothName = soTotalBooths.BoothName + "-" + boothName,
                             BoothCode = soTotalBooths.BoothCode_No,
-                            UpdateStatus = electioInfoRecord.IsPollEnded ?? false
+                            UpdateStatus = electioInfoRecord.IsPollEnded
                         };
                         eventwiseboothlist.Add(model);
                     }
@@ -4362,7 +4362,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                             BoothMasterId = Convert.ToInt32(soTotalBooths.BoothMasterId),
                             BoothName = soTotalBooths.BoothName + "-" + boothName,
                             BoothCode = soTotalBooths.BoothCode_No,
-                            UpdateStatus = electioInfoRecord.IsMCESwitchOff ?? false
+                            UpdateStatus = electioInfoRecord.IsMCESwitchOff
                         };
                         eventwiseboothlist.Add(model);
                     }
@@ -4378,7 +4378,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                             BoothMasterId = Convert.ToInt32(soTotalBooths.BoothMasterId),
                             BoothName = soTotalBooths.BoothName + "-" + boothName,
                             BoothCode = soTotalBooths.BoothCode_No,
-                            UpdateStatus = electioInfoRecord.IsPartyDeparted ?? false
+                            UpdateStatus = electioInfoRecord.IsPartyDeparted
                         };
                         eventwiseboothlist.Add(model);
                     }
@@ -4394,7 +4394,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                             BoothMasterId = Convert.ToInt32(soTotalBooths.BoothMasterId),
                             BoothName = soTotalBooths.BoothName + "-" + boothName,
                             BoothCode = soTotalBooths.BoothCode_No,
-                            UpdateStatus = electioInfoRecord.IsPartyReachedCollectionCenter ?? false
+                            UpdateStatus = electioInfoRecord.IsPartyReachedCollectionCenter  
                         };
                         eventwiseboothlist.Add(model);
                     }
@@ -4410,7 +4410,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                             BoothMasterId = Convert.ToInt32(soTotalBooths.BoothMasterId),
                             BoothName = soTotalBooths.BoothName + "-" + boothName,
                             BoothCode = soTotalBooths.BoothCode_No,
-                            UpdateStatus = electioInfoRecord.IsEVMDeposited ?? false
+                            UpdateStatus = electioInfoRecord.IsEVMDeposited
                         };
                         eventwiseboothlist.Add(model);
                     }
@@ -4655,15 +4655,15 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             switch (eventId)
             {
                 case "1":
-                    return electioInfoRecord.IsPartyDispatched ?? false;
+                    return electioInfoRecord.IsPartyDispatched;
                 case "2":
-                    return electioInfoRecord.IsPartyReached ?? false;
+                    return electioInfoRecord.IsPartyReached;
                 case "3":
-                    return electioInfoRecord.IsSetupOfPolling ?? false;
+                    return electioInfoRecord.IsSetupOfPolling;
                 case "4":
-                    return electioInfoRecord.IsMockPollDone ?? false;
+                    return electioInfoRecord.IsMockPollDone;
                 case "5":
-                    return electioInfoRecord.IsPollStarted ?? false;
+                    return electioInfoRecord.IsPollStarted;
                 case "6":
                     //  return electioInfoRecord.IsVoterTurnOut ?? false;
                     //here logic need when current slot aviable and his entry done is that make color green
@@ -4675,18 +4675,18 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 case "8":
                     //return electioInfoRecord.FinalTVote != null && electioInfoRecord.FinalTVote > 0;
                     //return electioInfoRecord.IsPollEnded != null;
-                    return electioInfoRecord.FinalTVoteStatus ?? false;
+                    return electioInfoRecord.FinalTVoteStatus;
 
                 case "9":
-                    return electioInfoRecord.IsPollEnded ?? false;
+                    return electioInfoRecord.IsPollEnded;
                 case "10":
-                    return electioInfoRecord.IsMCESwitchOff ?? false;
+                    return electioInfoRecord.IsMCESwitchOff;
                 case "11":
-                    return electioInfoRecord.IsPartyDeparted ?? false;
+                    return electioInfoRecord.IsPartyDeparted;
                 case "12":
-                    return electioInfoRecord.IsPartyReachedCollectionCenter ?? false;
+                    return electioInfoRecord.IsPartyReachedCollectionCenter;
                 case "13":
-                    return electioInfoRecord.IsEVMDeposited ?? false;
+                    return electioInfoRecord.IsEVMDeposited;
                 default:
                     return false;
             }
@@ -4890,7 +4890,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                         EventName = eventItem.EventName,
                         EventSequence = eventItem.EventSequence,
                         EventABBR = eventItem.EventABBR,
-                        Status = false  // Set all statuses to false if getElectionInfoRecord is null
+                        EventStatus = false  // Set all statuses to false if getElectionInfoRecord is null
                     });
                 }
             }
@@ -4904,47 +4904,47 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     switch (eventItem.EventABBR)
                     {
                         case "PD":
-                            eventStatus = getElectionInfoRecord.IsPartyDispatched ?? false;
+                            eventStatus = getElectionInfoRecord.IsPartyDispatched;
                             break;
 
                         case "PA": // Party Arrived
-                            eventStatus = getElectionInfoRecord.IsPartyReached ?? false;
+                            eventStatus = getElectionInfoRecord.IsPartyReached;
                             break;
                         case "SP": // Setup Polling Station
-                            eventStatus = getElectionInfoRecord.IsSetupOfPolling ?? false;
+                            eventStatus = getElectionInfoRecord.IsSetupOfPolling;
                             break;
                         case "MP": // Mock Poll Done
-                            eventStatus = getElectionInfoRecord.IsMockPollDone ?? false;
+                            eventStatus = getElectionInfoRecord.IsMockPollDone;
                             break;
                         case "PS": // Poll Started
-                            eventStatus = getElectionInfoRecord.IsPollStarted ?? false;
+                            eventStatus = getElectionInfoRecord.IsPollStarted;
                             break;
                         case "VT": // Voter Turn Out
-                            eventStatus = getElectionInfoRecord.IsVoterTurnOut ?? false;
+                            eventStatus = getElectionInfoRecord.IsVoterTurnOut;
                             break;
                         case "VQ": // Voter In Queue
-                            eventStatus = getElectionInfoRecord.IsVoterTurnOut ?? false;
+                            eventStatus = getElectionInfoRecord.IsVoterTurnOut;
                             break;
                         case "FV": // Final Votes Polled
-                            eventStatus = getElectionInfoRecord.IsVoterTurnOut ?? false;
+                            eventStatus = getElectionInfoRecord.IsVoterTurnOut;
                             break;
                         case "PE": // Poll Ended
-                            eventStatus = getElectionInfoRecord.IsPollEnded ?? false;
+                            eventStatus = getElectionInfoRecord.IsPollEnded;
                             break;
                         case "EO": // EVMVVPATOff
-                            eventStatus = getElectionInfoRecord.IsMCESwitchOff ?? false;
+                            eventStatus = getElectionInfoRecord.IsMCESwitchOff;
                             break;
 
                         case "PC": // PartyDeparted	
-                            eventStatus = getElectionInfoRecord.IsPartyDeparted ?? false;
+                            eventStatus = getElectionInfoRecord.IsPartyDeparted;
                             break;
 
                         case "PR": // PartyReachedAtCollection
-                            eventStatus = getElectionInfoRecord.IsPartyReachedCollectionCenter ?? false;
+                            eventStatus = getElectionInfoRecord.IsPartyReachedCollectionCenter;
                             break;
 
                         case "ED": // EVMDeposited
-                            eventStatus = getElectionInfoRecord.IsEVMDeposited ?? false;
+                            eventStatus = getElectionInfoRecord.IsEVMDeposited;
                             break;
 
                         default:
@@ -4960,7 +4960,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                         EventName = eventItem.EventName,
                         EventSequence = eventItem.EventSequence,
                         EventABBR = eventItem.EventABBR,
-                        Status = eventStatus  // Set the status according to the ElectionInfoMaster record
+                        EventStatus = eventStatus  // Set the status according to the ElectionInfoMaster record
                     });
                 }
             }
@@ -5091,7 +5091,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 return new ServiceResponse()
                 {
                     IsSucceed = false,
-                    Message = "Party Not Arrived Yet"
+                    Message = "Party Not Dispatch Yet"
                 };
 
             }
@@ -14246,8 +14246,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             return eventActivityList;
         }
 
-        #endregion
-
+        #endregion 
 
         #region SO Pendency Screen
         public async Task<List<SectorOfficerPendency>> GetDistrictWiseSOCountEventWiseCount(string stateMasterId)
@@ -15756,8 +15755,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return list;
         }
-        #endregion
-
+        #endregion 
 
         #region MobileVersion
         public async Task<MobileVersion> GetMobileVersionById(string StateMasterId)
@@ -16048,8 +16046,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
         }
 
-        #endregion
-
+        #endregion 
 
         #region UnOpposed Public Details
         public async Task<ServiceResponse> AddUnOpposedDetails(UnOpposed unOpposed)
@@ -16913,7 +16910,12 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         #region GPVoter
         public async Task<ServiceResponse> AddGPVoterDetails(GPVoter gpVoterPdf)
         {
+            var existing = await _context.GPVoter.FirstOrDefaultAsync(k => k.FourthLevelHMasterId == gpVoterPdf.FourthLevelHMasterId);
 
+            if (existing != null)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "GP Voter Pdf Already Exist" };
+            }
             _context.GPVoter.Add(gpVoterPdf);
             _context.SaveChanges();
 

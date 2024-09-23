@@ -13,7 +13,7 @@ namespace EAMS_ACore.Models
         public string EventName { get; set; }
         public int EventSequence { get; set; }
         public string EventABBR { get; set; }
-        public bool Status { get; set; }
+        public bool EventStatus { get; set; }
 
     }
 }

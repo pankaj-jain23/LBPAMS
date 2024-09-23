@@ -33,7 +33,13 @@ namespace EAMS.Controllers
             {
                 return BadRequest("PDF file is missing.");
             }
+            const long MaxFileSize = 7 * 1024 * 1024; // 7 MB in bytes
 
+            // Check if the file exceeds the maximum size
+            if (kycViewModel.NominationPdf.Length > MaxFileSize)
+            {
+                return BadRequest($"File size exceeds the 7 MB limit.");
+            }
             // Generate a unique file name for the PDF file
             var fileName = Guid.NewGuid().ToString() + Path.GetExtension(kycViewModel.NominationPdf.FileName);
             var folderPath = @"C:\inetpub\wwwroot\LBPAMSDOC\kyc";
@@ -105,7 +111,12 @@ namespace EAMS.Controllers
         [HttpPut("UpdateKycDetails")]
         public async Task<IActionResult> UpdateKyc([FromForm] UpdateKycViewModel updateKycViewModel)
         {
-
+            const long MaxFileSize = 7 * 1024 * 1024; // 7 MB in bytes
+            // Check if the file exceeds the maximum size
+            if (updateKycViewModel.NominationPdf.Length > MaxFileSize)
+            {
+                return BadRequest($"File size exceeds the 7 MB limit.");
+            }
             // Update properties of the existing KYC object (except NominationPdfPath)
             var mappedData = _mapper.Map<Kyc>(updateKycViewModel);
 
@@ -235,7 +246,12 @@ namespace EAMS.Controllers
             {
                 return BadRequest("PDF file is missing.");
             }
-
+            const long MaxFileSize = 7 * 1024 * 1024; // 7 MB in bytes
+            // Check if the file exceeds the maximum size
+            if (unOppoedViewModel.NominationPdf.Length > MaxFileSize)
+            {
+                return BadRequest($"File size exceeds the 7 MB limit.");
+            }
             // Generate a unique file name for the PDF file
             var fileName = Guid.NewGuid().ToString() + Path.GetExtension(unOppoedViewModel.NominationPdf.FileName);
             var folderPath = @"C:\inetpub\wwwroot\LBPAMSDOC\unopposed";
@@ -327,7 +343,12 @@ namespace EAMS.Controllers
         [HttpPut("UpdateUnOpposedDetails")]
         public async Task<IActionResult> UpdateUnOpposedDetails([FromForm] UpdateUnOpposedViewModel updateUnOpposedViewModel)
         {
-
+            const long MaxFileSize = 7 * 1024 * 1024; // 7 MB in bytes
+            // Check if the file exceeds the maximum size
+            if (updateUnOpposedViewModel.NominationPdf.Length > MaxFileSize)
+            {
+                return BadRequest($"File size exceeds the 7 MB limit.");
+            }
             // Update properties of the existing KYC object (except NominationPdfPath)
             var mappedData = _mapper.Map<UnOpposed>(updateUnOpposedViewModel);
 
@@ -433,7 +454,13 @@ namespace EAMS.Controllers
             {
                 return BadRequest("PDF file is missing.");
             }
+            const long MaxFileSize = 7 * 1024 * 1024; // 7 MB in bytes
 
+            // Check if the file exceeds the maximum size
+            if (gpVoterPdfViewModel.GPVoterPdf.Length > MaxFileSize)
+            {
+                return BadRequest($"File size exceeds the 7 MB limit.");
+            }
             // Generate a unique file name for the PDF file
             var fileName = Guid.NewGuid().ToString() + Path.GetExtension(gpVoterPdfViewModel.GPVoterPdf.FileName);
             var staticFolderPath = @"C:\inetpub\wwwroot\LBPAMSDOC\GPVoter";
@@ -480,7 +507,14 @@ namespace EAMS.Controllers
             {
                 return NotFound("GP Voter not found.");
             }
+            // Define the maximum allowed size (7 MB)
+            const long MaxFileSize = 7 * 1024 * 1024; // 7 MB in bytes
 
+            // Check if the file exceeds the maximum size
+            if (updateGPVoterViewModel.GPVoterPdf.Length > MaxFileSize)
+            {
+                return BadRequest($"File size exceeds the 7 MB limit.");
+            }
             // Map the ViewModel to the Model
             var mappedData = _mapper.Map<GPVoter>(updateGPVoterViewModel);
 
