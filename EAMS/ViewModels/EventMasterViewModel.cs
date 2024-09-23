@@ -51,4 +51,18 @@ namespace EAMS.ViewModels
 
         public bool IsStatus { get; set; }
     }
+    public class EventMasterByIdViewModel
+    {
+        public int EventMasterId { get; set; }
+        public int StateMasterId { get; set; }
+        public string StateName { get; set; }
+        public int ElectionTypeMasterId { get; set; }
+        public string ElectionTypeName { get; set; }
+        public string EventName { get; set; }
+        public int EventSequence { get; set; }
+        public string EventABBR { get; set; }
+        public DateTime? StartDateTime { get; set; }
+        public DateTime? EndDateTime { get; set; }
+        public bool IsStatus { get; set; }
+    }
 }

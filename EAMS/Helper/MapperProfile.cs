@@ -220,7 +220,7 @@ namespace EAMS.Helper
 
             #region  BoothMasterViewModel and BoothMaster
 
-            
+
 
             CreateMap<BoothMasterViewModel, BoothMaster>()
                 .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
@@ -241,7 +241,7 @@ namespace EAMS.Helper
                   .ForMember(dest => dest.Transgender, opt => opt.MapFrom(src => src.Transgender))
                   .ForMember(dest => dest.LocationMasterId, opt => opt.MapFrom(src => src.LocationMasterId))
                   .ForMember(dest => dest.IsPrimaryBooth, opt => opt.MapFrom(src => src.IsPrimaryBooth))
-                  //.ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
+             //.ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
 
              .ReverseMap();
             CreateMap<UpdateBoothMasterViewModel, BoothMaster>()
@@ -313,7 +313,7 @@ namespace EAMS.Helper
 
             #region EventMasterViewModel and EventMaster
 
-            CreateMap<EventMasterViewModel, EventMaster>() 
+            CreateMap<EventMasterViewModel, EventMaster>()
                 .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
                 .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
                 .ForMember(dest => dest.EventName, opt => opt.MapFrom(src => src.EventName))
@@ -330,6 +330,20 @@ namespace EAMS.Helper
                .ForMember(dest => dest.EventABBR, opt => opt.MapFrom(src => src.EventABBR))
                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.IsStatus))
                .ReverseMap();
+            CreateMap<EventMasterByIdViewModel, EventMaster>()
+     .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+     .ForPath(dest => dest.StateMaster.StateName, opt => opt.MapFrom(src => src.StateName)) // Use ForPath for nested property
+     .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+     .ForPath(dest => dest.ElectionTypeMaster.ElectionType, opt => opt.MapFrom(src => src.ElectionTypeName)) // Use ForPath for nested property
+     .ForMember(dest => dest.EventMasterId, opt => opt.MapFrom(src => src.EventMasterId))
+     .ForMember(dest => dest.EventName, opt => opt.MapFrom(src => src.EventName))
+     .ForMember(dest => dest.EventSequence, opt => opt.MapFrom(src => src.EventSequence))
+     .ForMember(dest => dest.EventABBR, opt => opt.MapFrom(src => src.EventABBR))
+     .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.IsStatus))
+     .ForMember(dest => dest.StartDateTime, opt => opt.MapFrom(src => src.StartDateTime))
+     .ForMember(dest => dest.EndDateTime, opt => opt.MapFrom(src => src.EndDateTime))
+     .ReverseMap();
+
             CreateMap<UpdateEventMasterViewModel, EventMaster>()
 
                 .ForMember(dest => dest.EventMasterId, opt => opt.MapFrom(src => src.EventMasterId))
@@ -356,18 +370,18 @@ namespace EAMS.Helper
               .ForMember(dest => dest.FieldOfficerMasterId, opt => opt.MapFrom(src => src.FieldOfficerMasterId))
               .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
               .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
-              .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId)) 
+              .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
               .ForMember(dest => dest.FieldOfficerName, opt => opt.MapFrom(src => src.FieldOfficerName))
               .ForMember(dest => dest.FieldOfficerOfficeName, opt => opt.MapFrom(src => src.FieldOfficerOfficeName))
               .ForMember(dest => dest.FieldOfficerMobile, opt => opt.MapFrom(src => src.FieldOfficerMobile))
-              .ForMember(dest => dest.FieldOfficerDesignation, opt => opt.MapFrom(src => src.FieldOfficerDesignation)) 
+              .ForMember(dest => dest.FieldOfficerDesignation, opt => opt.MapFrom(src => src.FieldOfficerDesignation))
               .ForMember(dest => dest.FieldOfficerStatus, opt => opt.MapFrom(src => src.IsStatus))
               .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
               .ReverseMap();
             #endregion
 
             #region FieldOfficerViewModel FieldOfficerMaster
-            CreateMap<FieldOfficerViewModel, FieldOfficerMaster>() 
+            CreateMap<FieldOfficerViewModel, FieldOfficerMaster>()
               .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
               .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
               .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
@@ -439,9 +453,9 @@ namespace EAMS.Helper
 
             #region Event Activity
 
-            CreateMap<UpdateEventActivityViewModel, UpdateEventActivity>() 
+            CreateMap<UpdateEventActivityViewModel, UpdateEventActivity>()
          .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
-         .ForMember(dest => dest.BoothCode, opt => opt.MapFrom(src => src.BoothCode)) 
+         .ForMember(dest => dest.BoothCode, opt => opt.MapFrom(src => src.BoothCode))
          .ForMember(dest => dest.EventMasterId, opt => opt.MapFrom(src => src.EventMasterId))
          .ForMember(dest => dest.EventABBR, opt => opt.MapFrom(src => src.EventABBR))
          .ForMember(dest => dest.EventSequence, opt => opt.MapFrom(src => src.EventSequence))

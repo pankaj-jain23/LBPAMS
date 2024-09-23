@@ -1381,6 +1381,7 @@ namespace EAMS.Controllers
 
             // Fetch the event by ID
             var result = await _EAMSService.GetEventById(eventMasterId);
+            var mappedData=_mapper.Map<EventMasterByIdViewModel>(result);
 
             // Check if the event was found
             if (result == null)
@@ -1389,7 +1390,7 @@ namespace EAMS.Controllers
             }
 
             // Return the event
-            return Ok(result);
+            return Ok(mappedData);
         }
 
         [HttpDelete]

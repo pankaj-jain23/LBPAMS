@@ -3939,7 +3939,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         public async Task<EventMaster> GetEventById(int eventMasterId)
         {
-            return await _context.EventMaster.FirstOrDefaultAsync(d => d.EventMasterId == eventMasterId);
+            return await _context.EventMaster
+                .Include(e => e.StateMaster)
+                .Include(e => e.ElectionTypeMaster)
+                .FirstOrDefaultAsync(d => d.EventMasterId == eventMasterId);
         }
         public async Task<ServiceResponse> DeleteEventById(int eventMasterId)
         {
@@ -10103,7 +10106,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 && d.DistrictMasterId == boothReportModel.DistrictMasterId &&
                   d.AssemblyMasterId == boothReportModel.AssemblyMasterId);
                 query = query.Include(d => d.AssemblyMaster);
-                reportType = "Assembly";
+                reportType = "Local Bodies";
             }
             //FourthLevel
             if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId != 0 && boothReportModel.FourthLevelHMasterId != 0 && boothReportModel.PSZonePanchayatMasterId == 0)
@@ -10114,7 +10117,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                   d.AssemblyMasterId == boothReportModel.AssemblyMasterId
                 && d.FourthLevelHMasterId == boothReportModel.FourthLevelHMasterId);
                 query = query.Include(d => d.FourthLevelH);
-                reportType = "FourthLevel";
+                reportType = "Sub Local Bodies";
             }
             //PSZonePanchayat
             if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId != 0 && boothReportModel.FourthLevelHMasterId != 0 && boothReportModel.PSZonePanchayatMasterId != 0)
@@ -10185,12 +10188,12 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             //    reportType = "State";
             //}
             // District
-            if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0)
-            {
-                query = query.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
-                query = query.Include(d => d.StateMaster);
-                reportType = "State";
-            }
+            //if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0)
+            //{
+            //    query = query.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
+            //    query = query.Include(d => d.StateMaster);
+            //    reportType = "State";
+            //}
             // District
             if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0)
             {
@@ -10208,7 +10211,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 && d.DistrictMasterId == boothReportModel.DistrictMasterId
                 && d.AssemblyMasterId == boothReportModel.AssemblyMasterId);
                 query = query.Include(d => d.AssemblyMaster);
-                reportType = "Assembly";
+                reportType = "Local Bodies";
             }
             // FourthLevel
             else if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId != 0 && boothReportModel.FourthLevelHMasterId != 0)
@@ -10219,7 +10222,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 && d.AssemblyMasterId == boothReportModel.AssemblyMasterId
                 && d.FourthLevelHMasterId == boothReportModel.FourthLevelHMasterId);
                 query = query.Include(d => d.FourthLevelH);
-                reportType = "FourthLevel";
+                reportType = "Sub Local Bodies";
             }
 
 
