@@ -3200,6 +3200,7 @@ namespace EAMS_DAL.Repository
                                                         existingbooth.Female = boothMaster.Female;
                                                         existingbooth.Transgender = boothMaster.Transgender;
                                                         existingbooth.IsPrimaryBooth = boothMaster.IsPrimaryBooth;
+                                                        existingbooth.BoothNoAuxy = boothMaster.BoothNoAuxy;
                                                         _context.BoothMaster.Update(existingbooth);
 
                                                         // Save all changes to the database
@@ -3223,6 +3224,7 @@ namespace EAMS_DAL.Repository
                                                         existingbooth.Female = boothMaster.Female;
                                                         existingbooth.Transgender = boothMaster.Transgender;
                                                         existingbooth.IsPrimaryBooth = boothMaster.IsPrimaryBooth;
+                                                        existingbooth.BoothNoAuxy = boothMaster.BoothNoAuxy;
                                                         _context.BoothMaster.Update(existingbooth);
                                                         await _context.SaveChangesAsync();
                                                         return new Response { Status = RequestStatusEnum.OK, Message = "Booth Record Updated Sucessfully, and Booth is Unmapped from Location." };
@@ -3246,6 +3248,7 @@ namespace EAMS_DAL.Repository
                                                     existingbooth.Female = boothMaster.Female;
                                                     existingbooth.Transgender = boothMaster.Transgender;
                                                     existingbooth.IsPrimaryBooth = boothMaster.IsPrimaryBooth;
+                                                    existingbooth.BoothNoAuxy = boothMaster.BoothNoAuxy;
                                                     _context.BoothMaster.Update(existingbooth);
                                                     await _context.SaveChangesAsync();
                                                     return new Response { Status = RequestStatusEnum.OK, Message = "Booth Record Updated Sucessfully, and Booth is Unmapped from Location." };
@@ -3266,6 +3269,7 @@ namespace EAMS_DAL.Repository
                                                 existingbooth.Female = boothMaster.Female;
                                                 existingbooth.Transgender = boothMaster.Transgender;
                                                 existingbooth.IsPrimaryBooth = boothMaster.IsPrimaryBooth;
+                                                existingbooth.BoothNoAuxy = boothMaster.BoothNoAuxy;
                                                 _context.BoothMaster.Update(existingbooth);
                                                 await _context.SaveChangesAsync();
                                                 return new Response { Status = RequestStatusEnum.OK, Message = "Booth Record Updated Sucessfully, and Booth is Unmapped from Location." };
@@ -3317,6 +3321,7 @@ namespace EAMS_DAL.Repository
                                                             existingbooth.DistrictMasterId = boothMaster.DistrictMasterId;
                                                             existingbooth.StateMasterId = boothMaster.StateMasterId;
                                                             existingbooth.IsPrimaryBooth = boothMaster.IsPrimaryBooth;
+                                                            existingbooth.BoothNoAuxy = boothMaster.BoothNoAuxy;
                                                             _context.BoothMaster.Update(existingbooth);
                                                             await _context.SaveChangesAsync();
 
@@ -3339,6 +3344,7 @@ namespace EAMS_DAL.Repository
                                                             existingbooth.AssemblyMasterId = boothMaster.AssemblyMasterId;
                                                             existingbooth.DistrictMasterId = boothMaster.DistrictMasterId;
                                                             existingbooth.StateMasterId = boothMaster.StateMasterId;
+                                                            existingbooth.BoothNoAuxy = boothMaster.BoothNoAuxy;
                                                             _context.BoothMaster.Update(existingbooth);
                                                             await _context.SaveChangesAsync();
 
@@ -3365,6 +3371,7 @@ namespace EAMS_DAL.Repository
                                                         existingbooth.DistrictMasterId = boothMaster.DistrictMasterId;
                                                         existingbooth.StateMasterId = boothMaster.StateMasterId;
                                                         existingbooth.IsPrimaryBooth = boothMaster.IsPrimaryBooth;
+                                                        existingbooth.BoothNoAuxy = boothMaster.BoothNoAuxy;
                                                         _context.BoothMaster.Update(existingbooth);
                                                         await _context.SaveChangesAsync();
 
@@ -3387,6 +3394,7 @@ namespace EAMS_DAL.Repository
                                                     existingbooth.AssemblyMasterId = boothMaster.AssemblyMasterId;
                                                     existingbooth.DistrictMasterId = boothMaster.DistrictMasterId;
                                                     existingbooth.StateMasterId = boothMaster.StateMasterId;
+                                                    existingbooth.BoothNoAuxy = boothMaster.BoothNoAuxy;
                                                     _context.BoothMaster.Update(existingbooth);
                                                     await _context.SaveChangesAsync();
 
@@ -3456,6 +3464,7 @@ namespace EAMS_DAL.Repository
                                                             existingbooth.Male = boothMaster.Male;
                                                             existingbooth.Female = boothMaster.Female;
                                                             existingbooth.Transgender = boothMaster.Transgender;
+                                                            existingbooth.BoothNoAuxy = boothMaster.BoothNoAuxy;
                                                             _context.BoothMaster.Update(existingbooth);
                                                             await _context.SaveChangesAsync();
                                                             //return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux Booth is Unmapped from Location and Booth is Inactive." };
@@ -3474,6 +3483,7 @@ namespace EAMS_DAL.Repository
                                                         existingbooth.Male = boothMaster.Male;
                                                         existingbooth.Female = boothMaster.Female;
                                                         existingbooth.Transgender = boothMaster.Transgender;
+                                                        existingbooth.BoothNoAuxy = boothMaster.BoothNoAuxy;
                                                         _context.BoothMaster.Update(existingbooth);
                                                         await _context.SaveChangesAsync();
                                                         //return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux Booth is Unmapped from Location and Booth is Inactive." };
@@ -3489,6 +3499,7 @@ namespace EAMS_DAL.Repository
                                                     existingbooth.Male = boothMaster.Male;
                                                     existingbooth.Female = boothMaster.Female;
                                                     existingbooth.Transgender = boothMaster.Transgender;
+                                                    existingbooth.BoothNoAuxy = boothMaster.BoothNoAuxy;
                                                     _context.BoothMaster.Update(existingbooth);
                                                     await _context.SaveChangesAsync();
                                                     //return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux Booth is Unmapped from Location and Booth is Inactive." };
@@ -3532,6 +3543,7 @@ namespace EAMS_DAL.Repository
                                                                 existingbooth.Female = boothMaster.Female;
                                                                 existingbooth.Transgender = boothMaster.Transgender;
                                                                 existingbooth.IsPrimaryBooth = boothMaster.IsPrimaryBooth;
+                                                                existingbooth.BoothNoAuxy = boothMaster.BoothNoAuxy;
                                                                 _context.BoothMaster.Update(existingbooth);
                                                                 await _context.SaveChangesAsync();
                                                                 return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux. Kindly Release Booth in order to update all fields" };
@@ -3546,6 +3558,7 @@ namespace EAMS_DAL.Repository
                                                                 existingbooth.Female = boothMaster.Female;
                                                                 existingbooth.Transgender = boothMaster.Transgender;
                                                                 existingbooth.IsPrimaryBooth = boothMaster.IsPrimaryBooth;
+                                                                existingbooth.BoothNoAuxy = boothMaster.BoothNoAuxy;
                                                                 _context.BoothMaster.Update(existingbooth);
                                                                 await _context.SaveChangesAsync();
                                                                 return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux. Kindly Release Booth in order to update all fields" };
@@ -3563,7 +3576,7 @@ namespace EAMS_DAL.Repository
                                                             existingbooth.Male = boothMaster.Male;
                                                             existingbooth.Female = boothMaster.Female;
                                                             existingbooth.Transgender = boothMaster.Transgender;
-
+                                                            existingbooth.BoothNoAuxy = boothMaster.BoothNoAuxy;
                                                             _context.BoothMaster.Update(existingbooth);
                                                             await _context.SaveChangesAsync();
                                                             return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux. Kindly Release Booth in order to update all fields" };
@@ -3579,6 +3592,7 @@ namespace EAMS_DAL.Repository
                                                         existingbooth.Female = boothMaster.Female;
                                                         existingbooth.Transgender = boothMaster.Transgender;
                                                         existingbooth.IsPrimaryBooth = boothMaster.IsPrimaryBooth;
+                                                        existingbooth.BoothNoAuxy = boothMaster.BoothNoAuxy;
                                                         _context.BoothMaster.Update(existingbooth);
                                                         await _context.SaveChangesAsync();
                                                         return new Response { Status = RequestStatusEnum.OK, Message = "Booth Updated successfully except BoothName/Number/District/Assembly/Status/Aux. Kindly Release Booth in order to update all fields" };
@@ -3688,16 +3702,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                             return new Response { Status = RequestStatusEnum.BadRequest, Message = "Booth record Not Found." };
 
                         }
-
-
-                        //}
-                        //else
-                        //{
-                        //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Booth with Same Code Already Exists in the State: " + string.Join(", ", isExist.Select(p => $"{p.BoothName} ({p.BoothCode_No})")) };
-                        //}
-
-
-
 
                     }
                     else
