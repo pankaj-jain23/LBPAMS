@@ -26,6 +26,7 @@ namespace EAMS_ACore.Models.EventActivityModels
         public int ElectionTypeMasterId { get; set; }
         public int BoothMasterId { get; set; }
         public int EventMasterId { get; set; }
+        public string EventName { get; set; }
         public string EventABBR { get; set; }
         public int EventSequence { get; set; }
         public bool EventStatus { get; set; }

@@ -2105,100 +2105,38 @@ namespace EAMS_DAL.Repository
                     .FirstOrDefaultAsync(e => e.BoothMasterId == booth.BoothMasterId
                         && e.StateMasterId == stateMasterId
                         && e.ElectionTypeMasterId == booth.ElectionTypeMasterId);
-
                 if (getElectionInfoRecord != null)
                 {
-                    // Get the list of events for the current booth (this could be similar to your GetEventListForBooth method)
-                    var eventList = await GetEventListForBooth(stateMasterId, booth.ElectionTypeMasterId);
-                    UpdateEventActivity updateEventActivity = new UpdateEventActivity();
-                    updateEventActivity.StateMasterId = booth.StateId;
-                    updateEventActivity.DistrictMasterId = booth.DistrictId;
-                    updateEventActivity.AssemblyMasterId = booth.AssemblyId;
-                    updateEventActivity.ElectionTypeMasterId = booth.ElectionTypeMasterId;
-                    updateEventActivity.BoothMasterId = booth.BoothMasterId;
-
-                    // Step 3: Check the event status dynamically and assign the next event
-                    foreach (var eventItem in eventList)
+                    UpdateEventActivity updateEventActivity = new UpdateEventActivity()
                     {
-                        updateEventActivity.EventMasterId = eventItem.EventMasterId;
-                        updateEventActivity.EventABBR = eventItem.EventABBR;
-                        updateEventActivity.EventSequence = eventItem.EventSequence;
-                        updateEventActivity.EventStatus = eventItem.Status;
+                        StateMasterId = booth.StateId,
+                        DistrictMasterId = booth.DistrictId,
+                        AssemblyMasterId = booth.AssemblyId,
+                        ElectionTypeMasterId = booth.ElectionTypeMasterId,
+                        EventMasterId = getElectionInfoRecord.EventMasterId,
+                        EventSequence = getElectionInfoRecord.EventSequence,
+                        EventABBR = getElectionInfoRecord.EventABBR
 
-                        var getNextEvent = await GetNextEvent(updateEventActivity);
-                        bool eventStatus = false;
-
-                        switch (eventItem.EventABBR)
-                        {
-                            case "PD":
-                                eventStatus = getElectionInfoRecord.IsPartyDispatched;
-                                break;
-
-                            case "PA": // Party Arrived
-                                eventStatus = getElectionInfoRecord.IsPartyReached;
-                                break;
-                            case "SP": // Setup Polling Station
-                                eventStatus = getElectionInfoRecord.IsSetupOfPolling;
-                                break;
-                            case "MP": // Mock Poll Done
-                                eventStatus = getElectionInfoRecord.IsMockPollDone;
-                                break;
-                            case "PS": // Poll Started
-                                eventStatus = getElectionInfoRecord.IsPollStarted;
-                                break;
-                            case "VT": // Voter Turn Out
-                                eventStatus = getElectionInfoRecord.IsVoterTurnOut;
-                                break;
-                            case "VQ": // Voter In Queue
-                                eventStatus = getElectionInfoRecord.IsVoterTurnOut;
-                                break;
-                            case "FV": // Final Votes Polled
-                                eventStatus = getElectionInfoRecord.IsVoterTurnOut;
-                                break;
-                            case "PE": // Poll Ended
-                                eventStatus = getElectionInfoRecord.IsPollEnded;
-                                break;
-                            case "EO": // EVMVVPATOff
-                                eventStatus = getElectionInfoRecord.IsMCESwitchOff;
-                                break;
-
-                            case "PC": // PartyDeparted	
-                                eventStatus = getElectionInfoRecord.IsPartyDeparted;
-                                break;
-
-                            case "PR": // PartyReachedAtCollection
-                                eventStatus = getElectionInfoRecord.IsPartyReachedCollectionCenter;
-                                break;
-
-                            case "ED": // EVMDeposited
-                                eventStatus = getElectionInfoRecord.IsEVMDeposited;
-                                break;
-
-                                // Add more cases as needed
-                        }
-
-                        // Step 4: If the current event is completed, set the next event
-                        if (eventStatus)
-                        {
-                            booth.EventMasterId = eventItem.EventMasterId;
-                            booth.EventName = eventItem.EventName;
-                            booth.EventABBR = eventItem.EventABBR;
-                            booth.EventSequence = eventItem.EventSequence;
-                        }
-                    }
+                    };
+                    var getNextEvent = await GetNextEvent(updateEventActivity);
+                    booth.EventMasterId = getNextEvent.EventMasterId;
+                    booth.EventSequence = getNextEvent.EventSequence;
+                    booth.EventABBR = getNextEvent.EventABBR;
+                    booth.EventName = getNextEvent.EventName;
                 }
                 else
                 {
-                    var defaultEvent = await _context.EventMaster
-                 .FirstOrDefaultAsync(e => e.EventABBR == "PD");
-
-                    if (defaultEvent != null)
+                    var getfirstEvent = await _cacheService.GetDataAsync<EventMaster>("GetFirstEvent");
+                    if (getfirstEvent is null)
                     {
-                        booth.EventMasterId = defaultEvent.EventMasterId;
-                        booth.EventName = defaultEvent.EventName;
-                        booth.EventABBR = defaultEvent.EventABBR;
-                        booth.EventSequence = defaultEvent.EventSequence;
+                        getfirstEvent = await GetFirstSequenceEventById(booth.StateId, booth.ElectionTypeMasterId);
+                        await _cacheService.SetDataAsync("GetFirstEvent", getfirstEvent,
+                            BharatTimeDynamic(0, 0, 0, 5, 0));
                     }
+                    booth.EventMasterId = getfirstEvent.EventMasterId;
+                    booth.EventSequence = getfirstEvent.EventSequence;
+                    booth.EventABBR = getfirstEvent.EventABBR;
+                    booth.EventName = getfirstEvent.EventName;
                 }
             }
 
@@ -3910,6 +3848,14 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
 
         }
+        private async Task<EventMaster> GetFirstSequenceEventById(int stateMasterId, int electionTypeMasterId)
+        {
+            return await _context.EventMaster.Where(d => d.StateMasterId == stateMasterId
+                                                         && d.ElectionTypeMasterId == electionTypeMasterId).OrderBy(d => d.EventSequence)
+                .FirstOrDefaultAsync();
+
+
+        }
         public async Task<List<EventMaster>> GetEventListForBooth(int stateMasterId, int electionTypeMasterId)
         {
             return await _context.EventMaster.Where(d => d.StateMasterId == stateMasterId
@@ -5020,6 +4966,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 checkEventActivity.ElectionTypeMasterId = updateEventActivity.ElectionTypeMasterId;
                 checkEventActivity.EventMasterId = nextEvent.EventMasterId;
                 checkEventActivity.EventABBR = nextEvent.EventABBR;
+                checkEventActivity.EventName = nextEvent.EventName;
                 checkEventActivity.EventSequence = nextEvent.EventSequence;
                 checkEventActivity.EventStatus = nextEvent.Status;
             }
@@ -5531,7 +5478,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
-            if (result is null || result.IsPartyDispatched == true)
+            if (result is not null && result.IsPartyDispatched == true)
             {
                 return new ServiceResponse()
                 {
@@ -5562,7 +5509,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
-            if (result is null || result.IsPartyReached == true)
+            if (result is not null && result.IsPartyReached == true)
             {
                 return new ServiceResponse()
                 {
@@ -5591,7 +5538,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
-            if (result is null || result.IsSetupOfPolling == true)
+            if (result is not null && result.IsSetupOfPolling == true)
             {
                 return new ServiceResponse()
                 {
@@ -5621,7 +5568,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
-            if (result is null || result.IsMockPollDone == true)
+            if (result is not null && result.IsMockPollDone == true)
             {
                 return new ServiceResponse()
                 {
@@ -5651,7 +5598,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
-            if (result is null || result.IsPollStarted == true)
+            if (result is not null && result.IsPollStarted == true)
             {
                 return new ServiceResponse()
                 {
@@ -5681,7 +5628,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
-            if (result is null || result.IsVoterTurnOut == true)
+            if (result is not null && result.IsVoterTurnOut == true)
             {
                 return new ServiceResponse()
                 {
@@ -5711,7 +5658,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
-            if (result is null || result.IsPartyReached == true)
+            if (result is not null && result.IsPartyReached == true)
             {
                 return new ServiceResponse()
                 {
@@ -5741,7 +5688,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
-            if (result is null || result.IsPartyReached == true)
+            if (result is not null && result.IsPartyReached == true)
             {
                 return new ServiceResponse()
                 {
@@ -5771,7 +5718,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
-            if (result is null || result.IsPollEnded == true)
+            if (result is not null && result.IsPollEnded == true)
             {
                 return new ServiceResponse()
                 {
@@ -5801,7 +5748,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
-            if (result is null || result.IsMCESwitchOff == true)
+            if (result is not null && result.IsMCESwitchOff == true)
             {
                 return new ServiceResponse()
                 {
@@ -5831,7 +5778,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
-            if (result is null || result.IsPartyDeparted == true)
+            if (result is not null && result.IsPartyDeparted == true)
             {
                 return new ServiceResponse()
                 {
@@ -5861,7 +5808,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
-            if (result is null || result.IsPartyReachedCollectionCenter == true)
+            if (result is not null && result.IsPartyReachedCollectionCenter == true)
             {
                 return new ServiceResponse()
                 {
@@ -5891,7 +5838,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
-            if (result is null || result.IsEVMDeposited == true)
+            if (result is not null && result.IsEVMDeposited == true)
             {
                 return new ServiceResponse()
                 {
@@ -17743,7 +17690,55 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             return resultList;
         }
 
+        #region Common DateTime Methods
+       
 
+        /// <summary>
+        /// if developer want UTC Kind Time only for month just pass month and rest fill 00000
+        /// </summary>
+        /// <param name="month"></param>
+        /// <param name="day"></param>
+        /// <param name="minutes"></param>
+        /// <param name="seconds"></param>
+        /// <returns></returns>
+        private DateTime BharatTimeDynamic(int month, int day, int hour, int minutes, int seconds)
+        {
+            DateTime dateTime = DateTime.UtcNow; // Use UTC time instead of DateTime.Now
+            TimeSpan istOffset = TimeSpan.FromHours(5) + TimeSpan.FromMinutes(30); // IST offset
+            DateTime istDateTime = dateTime + istOffset;
+
+            if (month != 0)
+            {
+                istDateTime = DateTime.SpecifyKind(istDateTime.AddMonths(month), DateTimeKind.Utc);
+
+            }
+            else if (day != 0)
+            {
+                istDateTime = DateTime.SpecifyKind(istDateTime.AddDays(day), DateTimeKind.Utc);
+
+            }
+            else if (hour != 0)
+            {
+                istDateTime = DateTime.SpecifyKind(istDateTime.AddHours(hour), DateTimeKind.Utc);
+
+            }
+            else if (minutes != 0)
+            {
+                istDateTime = DateTime.SpecifyKind(istDateTime.AddMinutes(minutes), DateTimeKind.Utc);
+            }
+            else if (seconds != 0)
+            {
+
+                istDateTime = DateTime.SpecifyKind(istDateTime.AddSeconds(seconds), DateTimeKind.Utc);
+
+            }
+
+            return istDateTime;
+
+
+        }
+
+        #endregion
         #endregion
 
     }

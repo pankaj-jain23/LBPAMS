@@ -388,15 +388,38 @@ namespace EAMS_BLL.Services
             // Get the previous event status
             var previousEventStatus = await GetPreviousEvent(updateEventActivity);
             var nextEvent = await _eamsRepository.GetNextEvent(updateEventActivity);
-            // If no previous event exists, update the activity directly
+            // If no previous event exists, update the activity directly only for Party Dispatch Case
             if (previousEventStatus == null)
             {
+                //For Undo case we have to check next event is false or not in Party Dispatch Case
+                CheckEventActivity checkEventActivity = new CheckEventActivity()
+                {
+                    StateMasterId = updateEventActivity.StateMasterId,
+                    DistrictMasterId = updateEventActivity.DistrictMasterId,
+                    AssemblyMasterId = updateEventActivity.AssemblyMasterId,
+                    BoothMasterId = updateEventActivity.BoothMasterId,
+                    ElectionTypeMasterId = updateEventActivity.ElectionTypeMasterId,
+                    EventMasterId = nextEvent.EventMasterId,
+                    EventABBR = nextEvent.EventABBR,
+                    EventSequence = nextEvent.EventSequence,
+                    EventStatus = nextEvent.EventStatus,
+                };
+
+                var isPDTrue = await IsEventActivityDone(checkEventActivity);
+                if (isPDTrue.IsSucceed == true)
+                {
+                    return new ServiceResponse
+                    {
+                        IsSucceed = false,
+                        Message = "You have to undo Last updated Event"
+                    };
+                }
                 return await UpdateEventsActivity(updateEventActivity);
             }
 
             // Check if the event activity is done
             var previousEventResponse = await IsEventActivityDone(previousEventStatus);
-            var NextEventResponse = await IsEventActivityDone(previousEventStatus);
+            var NextEventResponse = await IsEventActivityDone(nextEvent);
 
             // If the event is not done, return a failure response
             if (!previousEventResponse.IsSucceed)
@@ -407,7 +430,7 @@ namespace EAMS_BLL.Services
                     Message = previousEventResponse.Message
                 };
             }
-            if (previousEventResponse.IsSucceed==true&& NextEventResponse.IsSucceed==true)
+            if (previousEventResponse.IsSucceed == true && NextEventResponse.IsSucceed == true)
             {
                 return new ServiceResponse
                 {
@@ -590,7 +613,7 @@ namespace EAMS_BLL.Services
         }
         public async Task<List<BoothEvents>> GetBoothEventListById(int stateMasterId, int electionTypeMasterId, int boothMasterId)
         {
-            return await _eamsRepository.GetBoothEventListById(stateMasterId,electionTypeMasterId,boothMasterId);
+            return await _eamsRepository.GetBoothEventListById(stateMasterId, electionTypeMasterId, boothMasterId);
         }
 
         public async Task<ServiceResponse> EventActivity(ElectionInfoMaster electionInfoMaster)
