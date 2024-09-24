@@ -3768,6 +3768,34 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return boothRecord;
         }
+        public async Task<BoothDetailForVoterInQueue> GetBoothDetailForVoterInQueue(int boothMasterId)
+        {
+            // Fetch FinalVote from ElectionInfoMaster
+            var finalVote = await _context.ElectionInfoMaster
+                .Where(e => e.BoothMasterId == boothMasterId)
+                .Select(e => e.FinalVote)
+                .FirstOrDefaultAsync();
+
+            // Fetch TotalVoters from BoothMaster
+            var boothRecord = await _context.BoothMaster
+                .Where(d => d.BoothMasterId == boothMasterId)
+                .Select(b => new
+                {
+                    TotalVoters = b.TotalVoters
+                })
+                .FirstOrDefaultAsync();
+
+            // Create and populate the result object
+            BoothDetailForVoterInQueue boothDetailForVoterInQueue = new BoothDetailForVoterInQueue()
+            {
+                BoothMasterId = boothMasterId, 
+                TotalVoters = boothRecord.TotalVoters, 
+                RemainingVoters = (boothRecord.TotalVoters) - (finalVote)
+            };
+
+            return boothDetailForVoterInQueue;
+        }
+
         #endregion
 
         #region Event Master
@@ -5149,6 +5177,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.IsMockPollDone = updateEventActivity.EventStatus;
                 result.MockPollDoneLastUpdate = BharatDateTime();
                 result.EventName = updateEventActivity.EventName;
+                result.NoOfPollingAgents = updateEventActivity.NoOfPollingAgents;
                 _context.ElectionInfoMaster.Update(result);
             }
 
@@ -5243,7 +5272,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
                 d.BoothMasterId == updateEventActivity.BoothMasterId
             );
-
+             
             // If the record exists, update it
             if (result is not null)
             {
@@ -5254,6 +5283,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.IsVoterTurnOut = updateEventActivity.EventStatus;
                 result.VoterInQueueLastUpdate = BharatDateTime();
                 result.EventName = updateEventActivity.EventName;
+                result.VoterInQueue = updateEventActivity.VoterInQueue;
                 _context.ElectionInfoMaster.Update(result);
             }
 
@@ -5265,7 +5295,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             {
                 IsSucceed = true
                 ,
-                Message = "Event Updated SucessFully"
+                Message = $"Event {result.EventName} Updated SucessFully"
             };
         }
         public async Task<ServiceResponse> FinalVotesPolled(UpdateEventActivity updateEventActivity)

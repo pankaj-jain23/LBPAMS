@@ -464,6 +464,8 @@ namespace EAMS.Helper
          .ForMember(dest => dest.EventName, opt => opt.MapFrom(src => src.EventName))
          .ForMember(dest => dest.EventSequence, opt => opt.MapFrom(src => src.EventSequence))
          .ForMember(dest => dest.EventStatus, opt => opt.MapFrom(src => src.EventStatus))
+         .ForMember(dest => dest.NoOfPollingAgents, opt => opt.MapFrom(src => src.NoOfPollingAgents))
+         .ForMember(dest => dest.VoterInQueue, opt => opt.MapFrom(src => src.VoterInQueue))
 
          .ReverseMap();
             #endregion

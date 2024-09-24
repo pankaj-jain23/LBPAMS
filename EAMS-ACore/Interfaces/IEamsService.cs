@@ -84,6 +84,7 @@ namespace EAMS_ACore.Interfaces
         Task<Response> ReleaseBoothBLO(BoothMaster boothMaster);
 
         Task<BoothMaster> GetBoothById(string boothMasterId);
+        Task<BoothDetailForVoterInQueue> GetBoothDetailForVoterInQueue(int boothMasterId);
         #endregion
 
         #region EventMaster

@@ -1224,6 +1224,21 @@ namespace EAMS.Controllers
                 return NotFound($"[{boothMasterId}] not exist");
             }
         }
+
+        [HttpGet]
+        [Route("GetBoothDetailForVoterInQueue")]
+        public async Task<IActionResult> GetBoothDetailForVoterInQueue(int boothMasterId)
+        {
+            var boothMasterDetail = await _EAMSService.GetBoothDetailForVoterInQueue(boothMasterId);
+            if (boothMasterDetail != null)
+            {
+                return Ok(boothMasterDetail);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
         #endregion
 
         #region Event Master

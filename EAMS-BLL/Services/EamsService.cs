@@ -286,6 +286,10 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetBoothById(boothMasterId);
         }
+        public async Task<BoothDetailForVoterInQueue> GetBoothDetailForVoterInQueue(int boothMasterId)
+        {
+            return await _eamsRepository.GetBoothDetailForVoterInQueue(boothMasterId);
+        }
 
         #endregion
 
