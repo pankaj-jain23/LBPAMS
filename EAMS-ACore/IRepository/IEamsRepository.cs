@@ -189,7 +189,7 @@ namespace EAMS_ACore.IRepository
 
         #region SlotManagement
         Task<Response> AddEventSlot(List<SlotManagementMaster> addEventSlot);
-        Task<List<SlotManagementMaster>> GetEventSlotList(int stateMasterId, int eventId);
+        Task<List<SlotManagementMaster>> GetEventSlotList(int stateMasterId, int electionTypeMasterId, int eventId);
         #endregion
         Task<List<UserList>> GetUserList(string soName, string type);
 

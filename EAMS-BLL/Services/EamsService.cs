@@ -732,9 +732,9 @@ namespace EAMS_BLL.Services
             return _eamsRepository.AddEventSlot(addEventSlot);
         }
 
-        public Task<List<SlotManagementMaster>> GetEventSlotList(int stateMasterId, int eventId)
+        public Task<List<SlotManagementMaster>> GetEventSlotList(int stateMasterId, int electionTypeMasterId, int eventId)
         {
-            return _eamsRepository.GetEventSlotList(stateMasterId, eventId);
+            return _eamsRepository.GetEventSlotList(stateMasterId, electionTypeMasterId, eventId);
         }
         #endregion
 

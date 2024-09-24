@@ -752,7 +752,7 @@ namespace EAMS.Controllers
             };
             return Ok(data);
         }
-       
+
 
         /// <summary this api for Mobile App>
         [HttpGet]
@@ -775,7 +775,7 @@ namespace EAMS.Controllers
             };
             return Ok(data);
         }
-         
+
 
         [HttpGet]
         [Route("GetFieldOfficerById")]
@@ -1381,7 +1381,7 @@ namespace EAMS.Controllers
 
             // Fetch the event by ID
             var result = await _EAMSService.GetEventById(eventMasterId);
-            var mappedData=_mapper.Map<EventMasterByIdViewModel>(result);
+            var mappedData = _mapper.Map<EventMasterByIdViewModel>(result);
 
             // Check if the event was found
             if (result == null)
@@ -2257,12 +2257,12 @@ namespace EAMS.Controllers
         [Authorize]
         public async Task<IActionResult> GetBoothEventListById(int boothMasterId)
         {
-            if (!TryGetClaimValue(User, "StateMasterId", out int stateMasterId) || 
+            if (!TryGetClaimValue(User, "StateMasterId", out int stateMasterId) ||
                 !TryGetClaimValue(User, "ElectionTypeMasterId", out int electionTypeMasterId))
             {
                 return BadRequest("Missing or invalid claims.");
             }
-            var result = await _EAMSService.GetBoothEventListById(stateMasterId,electionTypeMasterId,boothMasterId);
+            var result = await _EAMSService.GetBoothEventListById(stateMasterId, electionTypeMasterId, boothMasterId);
             return Ok(result);
         }
 
@@ -2487,7 +2487,7 @@ namespace EAMS.Controllers
         }
         #endregion
 
-        #endregion
+        #endregion  
 
         #region Event Wise Booth Status
         [HttpGet]
@@ -2560,19 +2560,15 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetEventSlotListById")]
         [Authorize]
-        public async Task<IActionResult> GetEventSlotList(int stateMasterId, int EventId)
+        public async Task<IActionResult> GetEventSlotList(int stateMasterId, int electionTypeMasterId, int EventId)
         {
-            var result = await _EAMSService.GetEventSlotList(stateMasterId, EventId);
-            if (result is not null)
+            var result = await _EAMSService.GetEventSlotList(stateMasterId, electionTypeMasterId, EventId);
+            if (result is null)
             {
-
-                return Ok(result);
+                return BadRequest(result);
             }
-            else
-            {
+            return Ok(result);
 
-                return BadRequest();
-            }
 
 
         }

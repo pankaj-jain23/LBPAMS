@@ -458,9 +458,10 @@ namespace EAMS.Helper
             #region Event Activity
 
             CreateMap<UpdateEventActivityViewModel, UpdateEventActivity>()
-         .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId)) 
+         .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
          .ForMember(dest => dest.EventMasterId, opt => opt.MapFrom(src => src.EventMasterId))
          .ForMember(dest => dest.EventABBR, opt => opt.MapFrom(src => src.EventABBR))
+         .ForMember(dest => dest.EventName, opt => opt.MapFrom(src => src.EventName))
          .ForMember(dest => dest.EventSequence, opt => opt.MapFrom(src => src.EventSequence))
          .ForMember(dest => dest.EventStatus, opt => opt.MapFrom(src => src.EventStatus))
 
@@ -476,20 +477,21 @@ namespace EAMS.Helper
             .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => DateOnly.Parse(src.StartDate))); // Add this line for StartDate mapping
 
             CreateMap<SlotManagementViewModel, List<SlotManagementMaster>>()
-        .ConvertUsing((src, dest, context) =>
-        {
-            var slotManagements = src.slotTimes
-                .Select(slotTime => context.Mapper.Map<SlotManagementMaster>(slotTime))
-                .ToList();
+                        .ConvertUsing((src, dest, context) =>
+                        {
+                            var slotManagements = src.slotTimes
+                                .Select(slotTime => context.Mapper.Map<SlotManagementMaster>(slotTime))
+                                .ToList();
 
-            foreach (var slotManagement in slotManagements)
-            {
-                slotManagement.StateMasterId = src.StateMasterId;
-                slotManagement.EventMasterId = src.EventMasterId;
-            }
+                            foreach (var slotManagement in slotManagements)
+                            {
+                                slotManagement.StateMasterId = src.StateMasterId;
+                                slotManagement.ElectionTypeMasterId = src.ElectionTypeMasterId;
+                                slotManagement.EventMasterId = src.EventMasterId;
+                            }
 
-            return slotManagements;
-        });
+                            return slotManagements;
+                        });
             #endregion
 
 

@@ -7,6 +7,7 @@ namespace EAMS_ACore.Models
         [Key]
         public int SlotManagementId { get; set; }
         public int StateMasterId { get; set; }
+        public int ElectionTypeMasterId { get; set; }
         public int EventMasterId { get; set; }
         public int SlotSequenceNumber { get; set; }
         public DateOnly StartDate { get; set; }

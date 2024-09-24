@@ -66,16 +66,13 @@ namespace EAMS.Controllers
             // Call your service method to add KYC details
             var result = await _eamsService.AddKYCDetails(kyc);
 
-            // Check if adding KYC details was successful
-            if (result.IsSucceed == true)
+            // Check if adding GP Voter details was successful
+            if (!result.IsSucceed)
             {
+                return BadRequest(result.Message);
 
-                return Ok(new { Message = "KYC data added successfully" });
             }
-            else
-            {
-                return BadRequest("Failed to add KYC data.");
-            }
+            return Ok(result.Message);
         }
 
         [HttpGet("GetKYCDetails")]
@@ -168,7 +165,7 @@ namespace EAMS.Controllers
         }
 
         [HttpGet("GetKYCDetailByAssemblyId")]
-        public async Task<IActionResult> GetKYCDetailByAssemblyId(int electionType,int stateMasterId, int districtMasterId, int assemblyMasterId)
+        public async Task<IActionResult> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
             var result = await _eamsService.GetKYCDetailByAssemblyId(electionType, stateMasterId, districtMasterId, assemblyMasterId);
 
@@ -188,7 +185,7 @@ namespace EAMS.Controllers
                 return NotFound();
             }
         }
-        
+
         [HttpGet("GetKycById")]
         public async Task<IActionResult> GetKycById(int KycMasterId)
         {
@@ -234,7 +231,7 @@ namespace EAMS.Controllers
                 }
             }
         }
-       
+
         #endregion
 
         #region UnOpposed 
@@ -270,7 +267,7 @@ namespace EAMS.Controllers
             }
 
             // Map the ViewModel to the Model
-            var mappedData = _mapper.Map<UnOpposed>(unOppoedViewModel); 
+            var mappedData = _mapper.Map<UnOpposed>(unOppoedViewModel);
             var fullpathName = Path.Combine("unopposed", fileName); // Store relative path
             mappedData.NominationPdfPath = $"{fullpathName.Replace("\\", "/")}";
             // Call your service method to add KYC details
@@ -280,7 +277,7 @@ namespace EAMS.Controllers
             // Check if adding KYC details was successful
             if (result.IsSucceed == true)
             {
-                
+
                 return Ok(new { Message = "UnOpposed data added successfully" });
             }
             else
@@ -296,7 +293,7 @@ namespace EAMS.Controllers
 
             var request = HttpContext.Request;
             var baseUrl = $"{request.Scheme}://{request.Host}/LBPAMSDOC/unopposed";
-             
+
             var kycResponses = list.Select(unOpposed => new UnOpposedResponseViewModel
             {
                 UnOpposedMasterId = unOpposed.UnOpposedMasterId,
@@ -317,11 +314,11 @@ namespace EAMS.Controllers
 
             return Ok(kycResponses);
         }
-         
+
         [HttpGet("GetUnOpposedDetailsByAssemblyId")]
-        public async Task<IActionResult> GetUnOpposedDetailsByAssemblyId(int electionType,int stateMasterId, int districtMasterId, int assemblyMasterId )
+        public async Task<IActionResult> GetUnOpposedDetailsByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            var result = await _eamsService.GetUnOpposedDetailsByAssemblyId(electionType,stateMasterId, districtMasterId, assemblyMasterId);
+            var result = await _eamsService.GetUnOpposedDetailsByAssemblyId(electionType, stateMasterId, districtMasterId, assemblyMasterId);
 
             if (result != null)
             {
@@ -421,7 +418,7 @@ namespace EAMS.Controllers
                 }
             }
         }
-      
+
         [HttpDelete("DeleteUnOpposedById")]
         public async Task<IActionResult> DeleteUnOpposedById(int unOpposedMasterId)
         {
@@ -483,20 +480,19 @@ namespace EAMS.Controllers
             var mappedData = _mapper.Map<GPVoter>(gpVoterPdfViewModel);
             var fullpathName = Path.Combine("GPVoter", fileName);
             mappedData.GPVoterPdfPath = $"{fullpathName.Replace("\\", "/")}";
-            mappedData.GPVoterCreatedAt = DateTime.UtcNow; 
+            mappedData.GPVoterCreatedAt = DateTime.UtcNow;
             mappedData.GPVoterUpdatedAt = DateTime.UtcNow;
             mappedData.GPVoterDeletedAt = DateTime.UtcNow;
             var result = await _eamsService.AddGPVoterDetails(mappedData);
 
             // Check if adding GP Voter details was successful
-            if (result.IsSucceed)
+            if (!result.IsSucceed)
             {
-                return Ok(new { Message = "GP Voter data added successfully" });
+                return BadRequest(result.Message);
+
             }
-            else
-            {
-                return BadRequest("Failed to add GP Voter data.");
-            }
+            return Ok(result.Message);
+
         }
         [HttpPut("UpdateGPVoterDetails")]
         public async Task<IActionResult> UpdateGPVoterDetails([FromForm] UpdateGPVoterViewModel updateGPVoterViewModel)
@@ -564,15 +560,13 @@ namespace EAMS.Controllers
 
             // Call your service method to update GP Voter details
             var result = await _eamsService.UpdateGPVoterDetails(mappedData);
+            // Check if adding GP Voter details was successful
+            if (!result.IsSucceed)
+            {
+                return BadRequest(result.Message);
 
-            if (result.IsSucceed)
-            {
-                return Ok(new { Message = "GP Voter data updated successfully" });
             }
-            else
-            {
-                return BadRequest("Failed to update GP Voter data.");
-            }
+            return Ok(result.Message);
         }
 
         [HttpGet("GetGPVoterById")]
@@ -648,18 +642,17 @@ namespace EAMS.Controllers
             mappedData.ResultDecDeletedAt = DateTime.UtcNow;
             var result = await _eamsService.AddResultDeclarationDetails(mappedData);
 
-            if (result.IsSucceed == true)
+            // Check if adding GP Voter details was successful
+            if (!result.IsSucceed)
             {
+                return BadRequest(result.Message);
 
-                return Ok(new { Message = "Result Declaration data added successfully" });
             }
-            else
-            {
-                return BadRequest("Failed to add Result Declaration data.");
-            }
+            return Ok(result.Message);
         }
-        [HttpPut("UpdateResultDeclarationDetails")]
 
+
+        [HttpPut("UpdateResultDeclarationDetails")]
         public async Task<IActionResult> UpdateResultDeclarationDetails(UpdateResultDeclarationViewModel updateResultDeclarationViewModel)
         {
             if (ModelState.IsValid)
@@ -687,6 +680,7 @@ namespace EAMS.Controllers
             }
         }
 
+
         [HttpGet("GetResultDeclarationById")]
         public async Task<IActionResult> GetResultDeclarationById(int resultDeclarationMasterId)
         {
@@ -709,6 +703,7 @@ namespace EAMS.Controllers
                 }
             }
         }
+
         [HttpDelete("DeleteResultDeclarationById")]
         public async Task<IActionResult> DeleteResultDeclarationById(int resultDeclarationMasterId)
         {
@@ -751,6 +746,7 @@ namespace EAMS.Controllers
                 return NotFound();
             }
         }
+      
         [HttpGet("GetBlockWiseResults")]
         public async Task<IActionResult> GetBlockWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
@@ -771,6 +767,7 @@ namespace EAMS.Controllers
                 return NotFound();
             }
         }
+       
         [HttpGet("GetDistrictWiseResults")]
         public async Task<IActionResult> GetDistrictWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId)
         {
