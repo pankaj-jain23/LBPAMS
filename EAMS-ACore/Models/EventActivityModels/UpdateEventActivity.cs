@@ -20,6 +20,7 @@ namespace EAMS_ACore.Models.EventActivityModels
         public bool EventStatus { get; set; }
         public int? NoOfPollingAgents { get; set; }
         public int? VoterInQueue { get; set; }
+        public int? VotesPolled { get; set; } //Voter Turnout Case 
     }
     public class CheckEventActivity
     {

@@ -286,10 +286,6 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetBoothById(boothMasterId);
         }
-        public async Task<BoothDetailForVoterInQueue> GetBoothDetailForVoterInQueue(int boothMasterId)
-        {
-            return await _eamsRepository.GetBoothDetailForVoterInQueue(boothMasterId);
-        }
 
         #endregion
 
@@ -632,10 +628,10 @@ namespace EAMS_BLL.Services
             return await _eamsRepository.EventWiseBoothStatus(soId);
         }
 
-        public async Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(string boothMasterId, int eventid)
+        public async Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(int boothMasterId)
 
         {
-            return await _eamsRepository.GetLastUpdatedPollDetail(boothMasterId, eventid);
+            return await _eamsRepository.GetLastUpdatedPollDetail(boothMasterId );
 
         }
         public async Task<EAMS_ACore.Models.Queue> GetVoterInQueue(string boothMasterId)

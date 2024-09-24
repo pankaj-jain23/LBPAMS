@@ -86,7 +86,6 @@ namespace EAMS_ACore.IRepository
         Task<Response> ReleaseBooth(BoothMaster boothMaster);
         Task<Response> ReleaseBoothBLO(BoothMaster boothMaster);
         Task<BoothMaster> GetBoothById(string boothMasterId);
-        Task<BoothDetailForVoterInQueue> GetBoothDetailForVoterInQueue(int boothMasterId);
         #endregion
 
         #region Event Master
@@ -159,7 +158,7 @@ namespace EAMS_ACore.IRepository
         Task<bool> CanFinalValueStart(int boothMasterId);
 
 
-        Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(string boothMasterId, int eventid);
+        Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(int boothMasterId );
         Task<Models.Queue> GetVoterInQueue(string boothMasterId);
         Task<VotesPolledPercentage> GetVotesPolledPercentage(ClaimsIdentity claimsIdentity);
         Task<FinalViewModel> GetFinalVotes(string boothMasterId);

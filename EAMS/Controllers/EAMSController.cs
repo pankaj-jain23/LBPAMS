@@ -1224,21 +1224,6 @@ namespace EAMS.Controllers
                 return NotFound($"[{boothMasterId}] not exist");
             }
         }
-
-        [HttpGet]
-        [Route("GetBoothDetailForVoterInQueue")]
-        public async Task<IActionResult> GetBoothDetailForVoterInQueue(int boothMasterId)
-        {
-            var boothMasterDetail = await _EAMSService.GetBoothDetailForVoterInQueue(boothMasterId);
-            if (boothMasterDetail != null)
-            {
-                return Ok(boothMasterDetail);
-            }
-            else
-            {
-                return NotFound();
-            }
-        }
         #endregion
 
         #region Event Master
@@ -2261,9 +2246,9 @@ namespace EAMS.Controllers
         }
        
         [HttpPut]
-        [Route("UpdateVoterTurnoutEventActivity")]
+        [Route("UpdateVTEventActivity")]
         [Authorize]
-        public async Task<IActionResult> UpdateVoterTurnoutEventActivity(UpdateEventActivityViewModel updateEventActivityViewModel)
+        public async Task<IActionResult> UpdateVTEventActivity(UpdateVTEventActivityViewModel updateEventActivityViewModel)
         {
             if (!ModelState.IsValid)
             {
@@ -2325,11 +2310,10 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetLastUpdatedPollDetail")]
         [Authorize]
-        public async Task<IActionResult> GetLastUpdatedPollDetail(string boothMasterId)
+        public async Task<IActionResult> GetLastUpdatedPollDetail(int boothMasterId)
         {
-            int voterturnotEventId = 6;
-            //return BadRequest("Enter Voter Turn Out in Next Slot( 5 - 5:30). Thanks for your Support.");
-            var result = await _EAMSService.GetLastUpdatedPollDetail(boothMasterId, voterturnotEventId);
+         
+            var result = await _EAMSService.GetLastUpdatedPollDetail(boothMasterId);
             if (result is not null)
             {
                 return Ok(result);

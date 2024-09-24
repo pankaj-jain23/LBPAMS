@@ -3768,34 +3768,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return boothRecord;
         }
-        public async Task<BoothDetailForVoterInQueue> GetBoothDetailForVoterInQueue(int boothMasterId)
-        {
-            // Fetch FinalVote from ElectionInfoMaster
-            var finalVote = await _context.ElectionInfoMaster
-                .Where(e => e.BoothMasterId == boothMasterId)
-                .Select(e => e.FinalVote)
-                .FirstOrDefaultAsync();
-
-            // Fetch TotalVoters from BoothMaster
-            var boothRecord = await _context.BoothMaster
-                .Where(d => d.BoothMasterId == boothMasterId)
-                .Select(b => new
-                {
-                    TotalVoters = b.TotalVoters
-                })
-                .FirstOrDefaultAsync();
-
-            // Create and populate the result object
-            BoothDetailForVoterInQueue boothDetailForVoterInQueue = new BoothDetailForVoterInQueue()
-            {
-                BoothMasterId = boothMasterId, 
-                TotalVoters = boothRecord.TotalVoters, 
-                RemainingVoters = (boothRecord.TotalVoters) - (finalVote)
-            };
-
-            return boothDetailForVoterInQueue;
-        }
-
         #endregion
 
         #region Event Master
@@ -5177,7 +5149,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.IsMockPollDone = updateEventActivity.EventStatus;
                 result.MockPollDoneLastUpdate = BharatDateTime();
                 result.EventName = updateEventActivity.EventName;
-                result.NoOfPollingAgents = updateEventActivity.NoOfPollingAgents;
                 _context.ElectionInfoMaster.Update(result);
             }
 
@@ -5237,7 +5208,14 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
                 d.BoothMasterId == updateEventActivity.BoothMasterId
             );
-
+            var pollDetail = await _context.PollDetails.FirstOrDefaultAsync(d =>
+                d.StateMasterId == updateEventActivity.StateMasterId &&
+                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == updateEventActivity.BoothMasterId
+            );
+            var getLatestSlot = await GetVoterSlotAvailable(updateEventActivity.StateMasterId, updateEventActivity.ElectionTypeMasterId);
             // If the record exists, update it
             if (result is not null)
             {
@@ -5245,9 +5223,20 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.EventSequence = updateEventActivity.EventSequence;
                 result.EventABBR = updateEventActivity.EventABBR;
                 result.ElectionInfoStatus = updateEventActivity.EventStatus;
-                result.IsVoterTurnOut = updateEventActivity.EventStatus;
-                result.VotingTurnOutLastUpdate = BharatDateTime();
+                //result.IsVoterTurnOut = updateEventActivity.EventStatus;
+                //result.VotingTurnOutLastUpdate = BharatDateTime();
+                result.VotingLastUpdate = BharatDateTime();
+                result.FinalVote = updateEventActivity.VotesPolled;
                 result.EventName = updateEventActivity.EventName;
+
+
+                pollDetail.EventMasterId = updateEventActivity.EventMasterId;
+                pollDetail.EventSequence = updateEventActivity.EventSequence;
+                pollDetail.EventABBR = updateEventActivity.EventABBR;
+                pollDetail.VotesPolledRecivedTime = BharatDateTime();
+                pollDetail.VotesPolled = updateEventActivity.VotesPolled;
+                pollDetail.EventName = updateEventActivity.EventName;
+                pollDetail.SlotManagementId = getLatestSlot.SlotManagementId;
                 _context.ElectionInfoMaster.Update(result);
             }
 
@@ -5272,7 +5261,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
                 d.BoothMasterId == updateEventActivity.BoothMasterId
             );
-             
+
             // If the record exists, update it
             if (result is not null)
             {
@@ -5283,7 +5272,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.IsVoterTurnOut = updateEventActivity.EventStatus;
                 result.VoterInQueueLastUpdate = BharatDateTime();
                 result.EventName = updateEventActivity.EventName;
-                result.VoterInQueue = updateEventActivity.VoterInQueue;
                 _context.ElectionInfoMaster.Update(result);
             }
 
@@ -5295,7 +5283,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             {
                 IsSucceed = true
                 ,
-                Message = $"Event {result.EventName} Updated SucessFully"
+                Message = "Event Updated SucessFully"
             };
         }
         public async Task<ServiceResponse> FinalVotesPolled(UpdateEventActivity updateEventActivity)
@@ -5690,6 +5678,89 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             }
         }
+        private async Task<ServiceResponse> IsVoterSlotAvailable(int stateMasterId, int electionTypeMasterId)
+        {
+            // Fetch slot list from cache
+            var getSlotList = await _cacheService.GetDataAsync<List<SlotManagementMaster>>("GetNextEventList");
+
+            // If not in cache, retrieve from the database and update cache
+            if (getSlotList == null)
+            {
+                getSlotList = await _context.SlotManagementMaster
+                    .Where(d => d.StateMasterId == stateMasterId &&
+                                d.ElectionTypeMasterId == electionTypeMasterId)
+                    .ToListAsync();
+
+                await _cacheService.SetDataAsync("GetNextEventList", getSlotList, BharatTimeDynamic(0, 0, 0, 10, 0));
+            }
+
+            // Get the current time
+            var currentTime = DateTimeOffset.Now;
+
+            // Find the latest slot where the current time is between the EndTime and LockTime
+            var availableSlot = getSlotList.FirstOrDefault(slot =>
+                slot.StartDate == DateOnly.FromDateTime(currentTime.DateTime) && // Match the date
+                slot.EndTime.HasValue &&
+                slot.LockTime.HasValue &&
+                currentTime.TimeOfDay > slot.EndTime.Value.ToTimeSpan() &&      // Current time is after EndTime
+                currentTime.TimeOfDay < slot.LockTime.Value.ToTimeSpan());      // Current time is before LockTime
+
+            // If a valid slot is found, return success
+            if (availableSlot != null)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = true,
+                    Message = $"Slot available. Slot ID: {availableSlot.SlotManagementId}, Time: {availableSlot.StartTime} - {availableSlot.EndTime}"
+                };
+            }
+
+            // Default response if no slot is available
+            return new ServiceResponse()
+            {
+                IsSucceed = false,
+                Message = "No slot available at this time."
+            };
+        }
+        private async Task<SlotManagementMaster> GetVoterSlotAvailable(int stateMasterId, int electionTypeMasterId)
+        {
+            // Fetch slot list from cache
+            var getSlotList = await _cacheService.GetDataAsync<List<SlotManagementMaster>>("GetNextEventList");
+
+            // If not in cache, retrieve from the database and update cache
+            if (getSlotList == null)
+            {
+                getSlotList = await _context.SlotManagementMaster
+                    .Where(d => d.StateMasterId == stateMasterId &&
+                                d.ElectionTypeMasterId == electionTypeMasterId)
+                    .ToListAsync();
+
+                await _cacheService.SetDataAsync("GetNextEventList", getSlotList, BharatTimeDynamic(0, 0, 0, 10, 0));
+            }
+
+            // Get the current time
+            var currentTime = DateTimeOffset.Now;
+
+            // Find the latest slot where the current time is between the EndTime and LockTime
+            var availableSlot = getSlotList.FirstOrDefault(slot =>
+                slot.StartDate == DateOnly.FromDateTime(currentTime.DateTime) && // Match the date
+                slot.EndTime.HasValue &&
+                slot.LockTime.HasValue &&
+                currentTime.TimeOfDay > slot.EndTime.Value.ToTimeSpan() &&      // Current time is after EndTime
+                currentTime.TimeOfDay < slot.LockTime.Value.ToTimeSpan());      // Current time is before LockTime
+
+            // If a valid slot is found, return success
+            if (availableSlot != null)
+            {
+                return availableSlot;
+            }
+            else
+            {
+                return null;
+            }
+            // Default response if no slot is available
+
+        }
 
         public async Task<ServiceResponse> IsVoterInQueue(CheckEventActivity checkEventActivity)
         {
@@ -5902,499 +5973,100 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         #endregion
 
-        public async Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(string boothMasterId, int eventmasterid)
+        public async Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(int boothMasterId)
         {
-            VoterTurnOutPolledDetailViewModel model;
-            try
+            // Step 1: Try to fetch BoothMaster details from cache
+            var cacheKeyBooth = $"BoothMaster_{boothMasterId}";
+            var getBooth = await _cacheService.GetDataAsync<BoothMaster>(cacheKeyBooth);
+
+            if (getBooth == null)
             {
-                var boothExists = await _context.BoothMaster.Where(p => p.BoothMasterId == Convert.ToInt32(boothMasterId)).FirstOrDefaultAsync();
-                var polldetail = await _context.PollDetails.Where(p => p.BoothMasterId == Convert.ToInt32(boothMasterId) && p.StateMasterId == boothExists.StateMasterId && p.DistrictMasterId == boothExists.DistrictMasterId).OrderByDescending(p => p.VotesPolledRecivedTime).FirstOrDefaultAsync();
-                var slotsList = await _context.SlotManagementMaster.Where(p => p.StateMasterId == boothExists.StateMasterId && p.EventMasterId == eventmasterid).OrderBy(p => p.SlotManagementId).ToListAsync();
-                var isGenderCptureRequired = await _context.StateMaster.Where(p => p.StateMasterId == boothExists.StateMasterId).Select(p => p.IsGenderCapturedinVoterTurnOut).FirstOrDefaultAsync();
+                // Fetch from database if not available in cache
+                getBooth = await _context.BoothMaster
+                                .Where(d => d.BoothMasterId == boothMasterId)
+                                .Select(d => new BoothMaster
+                                {
+                                    BoothMasterId = d.BoothMasterId,
+                                    StateMasterId = d.StateMasterId,
+                                    ElectionTypeMasterId = d.ElectionTypeMasterId,
+                                    TotalVoters = d.TotalVoters
+                                })
+                                .FirstOrDefaultAsync();
 
-                if (boothExists is not null)
+                // Add to cache if found
+                if (getBooth != null)
                 {
-                    var electionInfoRecord = await _context.ElectionInfoMaster.Where(p => p.StateMasterId == boothExists.StateMasterId && p.DistrictMasterId == boothExists.DistrictMasterId && p.AssemblyMasterId == boothExists.AssemblyMasterId && p.BoothMasterId == Convert.ToInt32(boothMasterId)).FirstOrDefaultAsync();
-                    if (electionInfoRecord is not null)
-                    {
-                        if (electionInfoRecord.IsPollStarted == true)
-                        {
-                            if (slotsList is not null) // any1 slot is there in poll table 
-                            {
-                                int SlotRecordMasterId = await GetSlot(slotsList);
-                                if (SlotRecordMasterId > 0)
-                                {
-                                    var SlotRecord = await _context.SlotManagementMaster.Where(p => p.SlotManagementId == SlotRecordMasterId).FirstOrDefaultAsync();
-                                    if (polldetail is not null)
-                                    {
-                                        // check whether current time slot already entered or not
-                                        var slotlast = slotsList.OrderByDescending(p => p.SlotManagementId).FirstOrDefault();
-                                        bool lastslotexceededtime = await TimeExceedLastSlot(slotlast);
-
-                                        if (lastslotexceededtime == false)
-                                        {
-                                            bool VoterTurnOutAlreadyExistsinSlot = await IsSlotAlreadyEntered(SlotRecord, polldetail.VotesPolledRecivedTime);
-
-                                            if (VoterTurnOutAlreadyExistsinSlot == false)
-                                            {
-                                                model = new VoterTurnOutPolledDetailViewModel()
-                                                {
-
-                                                    BoothMasterId = boothExists.BoothMasterId,
-                                                    TotalVoters = boothExists.TotalVoters,
-                                                    VotesPolled = polldetail.VotesPolled,
-                                                    VotesPolledRecivedTime = polldetail.VotesPolledRecivedTime,
-                                                    StartTime = SlotRecord.StartTime,
-                                                    EndTime = SlotRecord.EndTime,
-                                                    LockTime = SlotRecord.LockTime,
-                                                    VoteEnabled = true,
-                                                    IsLastSlot = SlotRecord.IsLastSlot,
-                                                    Message = "Slot is Available",
-                                                    ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId
-
-                                                };
-                                                if (isGenderCptureRequired == true)
-                                                {
-                                                    model.IsGenderCapturedReqinVT = true;
-                                                    model.Male = polldetail.Male.ToString();
-                                                    model.Female = polldetail.Female.ToString();
-                                                    model.Transgender = polldetail.Transgender.ToString();
-                                                    model.TotalAvailableMale = boothExists.Male.ToString();
-                                                    model.TotalAvailableFemale = boothExists.Female.ToString();
-                                                    model.TotalAvailableTransgender = boothExists.Transgender.ToString();
-                                                    model.ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId;
-                                                }
-                                                else
-                                                {
-                                                    model.IsGenderCapturedReqinVT = false;
-                                                }
-
-                                            }
-                                            else
-                                            {
-                                                string msg = "";
-                                                if (SlotRecord.IsLastSlot == true)
-                                                {
-                                                    msg = "Voter Turn Out Already Entered For Slot. Please Proceed For Queue.";
-                                                }
-                                                else
-                                                {
-
-                                                    // find next slot and print
-                                                    int nextSlotId = await GetNextSlot(slotsList);
-                                                    if (nextSlotId != 0)
-                                                    {
-
-                                                        var nextSlotRecord = await _context.SlotManagementMaster.Where(p => p.SlotManagementId == nextSlotId).FirstOrDefaultAsync();
-                                                        model = new VoterTurnOutPolledDetailViewModel()
-                                                        {
-                                                            BoothMasterId = boothExists.BoothMasterId,
-                                                            TotalVoters = boothExists.TotalVoters,
-                                                            VotesPolled = 0,
-                                                            VoteEnabled = false,
-                                                            ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId,
-                                                            Message = "Voter Turn Out Already Entered For Slot. Please enter values in Next Slot :" + nextSlotRecord.EndTime + " " + "T0" + " " + nextSlotRecord.LockTime
-
-                                                        };
-
-                                                        if (isGenderCptureRequired == true)
-                                                        {
-                                                            model.IsGenderCapturedReqinVT = true;
-                                                            model.Male = polldetail.Male.ToString();
-                                                            model.Female = polldetail.Female.ToString();
-                                                            model.Transgender = polldetail.Transgender.ToString();
-                                                            model.TotalAvailableMale = boothExists.Male.ToString();
-                                                            model.TotalAvailableFemale = boothExists.Female.ToString();
-                                                            model.TotalAvailableTransgender = boothExists.Transgender.ToString();
-                                                            model.ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId;
-                                                        }
-                                                        else
-                                                        {
-                                                            model.IsGenderCapturedReqinVT = false;
-                                                        }
-
-                                                    }
-
-                                                }
-
-                                                model = new VoterTurnOutPolledDetailViewModel()
-                                                {
-                                                    BoothMasterId = boothExists.BoothMasterId,
-                                                    TotalVoters = boothExists.TotalVoters,
-                                                    VotesPolled = polldetail.VotesPolled,
-                                                    VotesPolledRecivedTime = polldetail.VotesPolledRecivedTime,
-                                                    StartTime = SlotRecord.StartTime,
-                                                    EndTime = SlotRecord.EndTime,
-                                                    LockTime = SlotRecord.LockTime,
-                                                    VoteEnabled = false, // but freeze it if already entered for thi sslot
-                                                    IsLastSlot = SlotRecord.IsLastSlot,
-                                                    ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId,
-                                                    Message = msg
-                                                };
-                                                if (isGenderCptureRequired == true)
-                                                {
-                                                    model.IsGenderCapturedReqinVT = true;
-                                                    model.Male = polldetail.Male.ToString();
-                                                    model.Female = polldetail.Female.ToString();
-                                                    model.Transgender = polldetail.Transgender.ToString();
-                                                    model.TotalAvailableMale = boothExists.Male.ToString();
-                                                    model.TotalAvailableFemale = boothExists.Female.ToString();
-                                                    model.TotalAvailableTransgender = boothExists.Transgender.ToString();
-                                                    model.ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId;
-                                                }
-                                                else
-                                                {
-                                                    model.IsGenderCapturedReqinVT = false;
-                                                }
-                                            }
-                                        }
-                                        else
-                                        {
-                                            model = new VoterTurnOutPolledDetailViewModel()
-                                            {
-                                                BoothMasterId = boothExists.BoothMasterId,
-                                                TotalVoters = boothExists.TotalVoters,
-                                                VotesPolled = polldetail.VotesPolled,
-                                                VotesPolledRecivedTime = polldetail.VotesPolledRecivedTime,
-                                                StartTime = SlotRecord.StartTime,
-                                                EndTime = SlotRecord.EndTime,
-                                                LockTime = SlotRecord.LockTime,
-                                                IsLastSlot = SlotRecord.IsLastSlot,
-                                                VoteEnabled = false,
-                                                Message = "Voter Turn Out Closed, Kindly Proceed for Voter in Queue",
-                                                ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId
-                                            };
-
-                                            if (isGenderCptureRequired == true)
-                                            {
-
-                                                model.IsGenderCapturedReqinVT = true;
-                                                model.Male = polldetail.Male.ToString();
-                                                model.Female = polldetail.Female.ToString();
-                                                model.Transgender = polldetail.Transgender.ToString();
-                                                model.TotalAvailableMale = boothExists.Male.ToString();
-                                                model.TotalAvailableFemale = boothExists.Female.ToString();
-                                                model.TotalAvailableTransgender = boothExists.Transgender.ToString();
-                                                model.ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId;
-
-                                            }
-                                            else
-                                            {
-                                                model.IsGenderCapturedReqinVT = false;
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        model = new VoterTurnOutPolledDetailViewModel()
-                                        {
-                                            BoothMasterId = boothExists.BoothMasterId,
-                                            TotalVoters = boothExists.TotalVoters,
-                                            VotesPolled = 0,
-                                            VotesPolledRecivedTime = null,
-                                            StartTime = SlotRecord.StartTime,
-                                            EndTime = SlotRecord.EndTime,
-                                            LockTime = SlotRecord.LockTime,
-                                            IsLastSlot = SlotRecord.IsLastSlot,
-                                            VoteEnabled = true,
-                                            Message = "Slot is Available",
-                                            ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId
-                                        };
-                                        if (isGenderCptureRequired == true)
-                                        {
-                                            model.IsGenderCapturedReqinVT = true;
-                                            model.Male = null;
-                                            model.Female = null;
-                                            model.Transgender = null;
-                                            model.TotalAvailableMale = boothExists.Male.ToString();
-                                            model.TotalAvailableFemale = boothExists.Female.ToString();
-                                            model.TotalAvailableTransgender = boothExists.Transgender.ToString();
-                                            model.ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId;
-                                        }
-                                        else
-                                        {
-                                            model.IsGenderCapturedReqinVT = false;
-                                        }
-                                    }
-
-                                }
-                                else
-                                {
-                                    var getLastSlotRecord = await _context.SlotManagementMaster.Where(p => p.IsLastSlot == true && p.EventMasterId == 6).FirstOrDefaultAsync();
-                                    bool lastslotexceededtime = await TimeExceedLastSlot(getLastSlotRecord);
-                                    if (lastslotexceededtime == true)
-                                    {
-                                        if (polldetail != null)
-                                        {
-                                            model = new VoterTurnOutPolledDetailViewModel()
-                                            {
-                                                BoothMasterId = boothExists.BoothMasterId,
-                                                TotalVoters = boothExists.TotalVoters,
-                                                VotesPolled = polldetail.VotesPolled,
-                                                VotesPolledRecivedTime = polldetail.VotesPolledRecivedTime,
-                                                VoteEnabled = false,
-                                                Message = "Voter Turn Out Closed, Kindly Proceed for Voter in Queue",
-                                                ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId
-
-                                            };
-
-                                            if (isGenderCptureRequired == true)
-                                            {
-                                                model.IsGenderCapturedReqinVT = true;
-                                                model.Male = polldetail.Male.ToString();
-                                                model.Female = polldetail.Female.ToString();
-                                                model.Transgender = polldetail.Transgender.ToString();
-                                                model.TotalAvailableMale = boothExists.Male.ToString();
-                                                model.TotalAvailableFemale = boothExists.Female.ToString();
-                                                model.TotalAvailableTransgender = boothExists.Transgender.ToString();
-                                                model.ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId;
-                                            }
-                                            else
-                                            {
-                                                model.IsGenderCapturedReqinVT = false;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            model = new VoterTurnOutPolledDetailViewModel()
-                                            {
-                                                BoothMasterId = boothExists.BoothMasterId,
-                                                TotalVoters = boothExists.TotalVoters,
-                                                VotesPolled = 0,
-                                                VotesPolledRecivedTime = null,
-                                                VoteEnabled = false,
-                                                Message = "Voter Turn Out Closed, You have entered no values in the Slots. Kindly Proceed for Queue.",
-                                                ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId
-
-                                            };
-                                            if (isGenderCptureRequired == true)
-                                            {
-                                                model.IsGenderCapturedReqinVT = true;
-                                                model.TotalAvailableMale = boothExists.Male.ToString();
-                                                model.TotalAvailableFemale = boothExists.Female.ToString();
-                                                model.TotalAvailableTransgender = boothExists.Transgender.ToString();
-                                                model.ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId;
-                                            }
-                                            else
-                                            {
-                                                model.IsGenderCapturedReqinVT = false;
-                                            }
-                                        }
-                                    }
-                                    else
-
-                                    {
-                                        int nextSlotId = await GetNextSlot(slotsList);
-                                        if (nextSlotId != 0)
-                                        {
-
-                                            var nextSlotRecord = await _context.SlotManagementMaster.Where(p => p.SlotManagementId == nextSlotId).FirstOrDefaultAsync();
-                                            if (polldetail != null)
-                                            {
-                                                model = new VoterTurnOutPolledDetailViewModel()
-                                                {
-                                                    BoothMasterId = boothExists.BoothMasterId,
-                                                    TotalVoters = boothExists.TotalVoters,
-                                                    VotesPolled = polldetail.VotesPolled,
-                                                    VotesPolledRecivedTime = polldetail.VotesPolledRecivedTime,
-                                                    VoteEnabled = false,
-                                                    Message = "Slot not available. Next Slot Duration :" + nextSlotRecord.EndTime + " " + "T0" + " " + nextSlotRecord.LockTime,
-                                                    ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId
-
-                                                };
-                                                if (isGenderCptureRequired == true)
-                                                {
-                                                    model.IsGenderCapturedReqinVT = true;
-                                                    model.Male = polldetail.Male.ToString();
-                                                    model.Female = polldetail.Female.ToString();
-                                                    model.Transgender = polldetail.Transgender.ToString();
-                                                    model.TotalAvailableMale = boothExists.Male.ToString();
-                                                    model.TotalAvailableFemale = boothExists.Female.ToString();
-                                                    model.TotalAvailableTransgender = boothExists.Transgender.ToString();
-                                                    model.ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId;
-                                                }
-                                                else
-                                                {
-                                                    model.IsGenderCapturedReqinVT = false;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                model = new VoterTurnOutPolledDetailViewModel()
-                                                {
-                                                    BoothMasterId = boothExists.BoothMasterId,
-                                                    TotalVoters = boothExists.TotalVoters,
-                                                    VotesPolled = 0,
-                                                    VoteEnabled = false,
-                                                    Message = "Slot not available. Next Slot Duration :" + nextSlotRecord.EndTime + " " + "T0" + " " + nextSlotRecord.LockTime,
-                                                    ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId
-
-                                                };
-                                                if (isGenderCptureRequired == true)
-                                                {
-                                                    model.IsGenderCapturedReqinVT = true;
-                                                    //model.Male = polldetail.Male.ToString();
-                                                    //model.Female = polldetail.Female.ToString();
-                                                    //model.Transgender = polldetail.Transgender.ToString();
-                                                    model.TotalAvailableMale = boothExists.Male.ToString();
-                                                    model.TotalAvailableFemale = boothExists.Female.ToString();
-                                                    model.TotalAvailableTransgender = boothExists.Transgender.ToString();
-                                                    model.ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId;
-                                                }
-                                                else
-                                                {
-                                                    model.IsGenderCapturedReqinVT = false;
-                                                }
-                                            }
-                                        }
-                                        else
-                                        {
-                                            model = new VoterTurnOutPolledDetailViewModel()
-                                            {
-                                                BoothMasterId = boothExists.BoothMasterId,
-                                                TotalVoters = boothExists.TotalVoters,
-                                                VotesPolled = 0,
-                                                VoteEnabled = false,
-                                                Message = "Slot not available"
-
-                                            };
-                                            if (isGenderCptureRequired == true)
-                                            {
-                                                model.IsGenderCapturedReqinVT = true;
-                                                //model.Male = polldetail.Male.ToString();
-                                                //model.Female = polldetail.Female.ToString();
-                                                //model.Transgender = polldetail.Transgender.ToString();
-                                                model.TotalAvailableMale = boothExists.Male.ToString();
-                                                model.TotalAvailableFemale = boothExists.Female.ToString();
-                                                model.TotalAvailableTransgender = boothExists.Transgender.ToString();
-                                                model.ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId;
-                                            }
-                                            else
-                                            {
-                                                model.IsGenderCapturedReqinVT = false;
-                                            }
-
-                                        }
-
-
-                                    }
-
-                                    // check whether last slot entry done or not in polled detail
-
-                                }
-                            }
-
-                            else
-                            {
-                                //no slots in teh database
-                                model = new VoterTurnOutPolledDetailViewModel()
-                                {
-                                    BoothMasterId = boothExists.BoothMasterId,
-                                    TotalVoters = 0,
-                                    VotesPolled = 0,
-                                    VotesPolledRecivedTime = null,
-                                    VoteEnabled = false,
-                                    ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId,
-                                    Message = "Booth Record Not Found."
-
-                                };
-                                if (isGenderCptureRequired == true)
-                                {
-                                    model.IsGenderCapturedReqinVT = true;
-
-                                }
-                                else
-                                {
-                                    model.IsGenderCapturedReqinVT = false;
-                                }
-                            }
-
-                        }
-                        else
-                        {
-
-                            model = new VoterTurnOutPolledDetailViewModel()
-                            {
-                                BoothMasterId = boothExists.BoothMasterId,
-                                TotalVoters = boothExists.TotalVoters,
-                                VotesPolled = 0,
-                                VotesPolledRecivedTime = null,
-                                VoteEnabled = false,
-                                ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId,
-                                Message = "Poll not started, Please try after Poll start."
-
-                            };
-                            if (isGenderCptureRequired == true)
-                            {
-                                model.IsGenderCapturedReqinVT = true;
-                                //model.Male = polldetail.Male.ToString();
-                                //model.Female = polldetail.Female.ToString();
-                                //model.Transgender = polldetail.Transgender.ToString();
-                                model.TotalAvailableMale = boothExists.Male.ToString();
-                                model.TotalAvailableFemale = boothExists.Female.ToString();
-                                model.TotalAvailableTransgender = boothExists.Transgender.ToString();
-                                model.ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId;
-                            }
-                            else
-                            {
-                                model.IsGenderCapturedReqinVT = false;
-                            }
-                        }
-                    }
-
-
-
-
-                    else
-                    {
-                        model = new VoterTurnOutPolledDetailViewModel()
-                        {
-                            BoothMasterId = boothExists.BoothMasterId,
-                            TotalVoters = 0,
-                            VotesPolled = 0,
-                            VotesPolledRecivedTime = null,
-                            VoteEnabled = false,
-                            ElectionTypeMasterId = 0,
-                            Message = "Please Check you Previous Events of this booth,Election Info record Not Found."
-
-
-
-                        };
-
-
-                    }
-
-                }
-                else
-                {
-                    //no record found
-                    model = new VoterTurnOutPolledDetailViewModel()
-                    {
-                        BoothMasterId = boothExists.BoothMasterId,
-                        TotalVoters = 0,
-                        VotesPolled = 0,
-                        VotesPolledRecivedTime = null,
-                        VoteEnabled = false,
-                        Message = "Slots Not Exist in the database."
-
-
-
-                    };
+                    await _cacheService.SetDataAsync(cacheKeyBooth, getBooth,BharatTimeDynamic(0,0,0,10,0)); // Cache for 30 minutes
                 }
             }
-            catch (Exception ex)
+
+            if (getBooth == null)
             {
-                model = new VoterTurnOutPolledDetailViewModel()
-                {
-
-                    Message = ex.Message
-
-
-
-                };
+                return null; // Handle case when no booth is found
             }
-            return model;
+
+           
+            var currentEvent = await _cacheService.GetDataAsync<EventMaster>("GetVTEvent");
+
+            if (currentEvent == null)
+            {
+                // Fetch from database if not available in cache
+                currentEvent = await _context.EventMaster
+                                   .FirstOrDefaultAsync(d => d.StateMasterId == getBooth.StateMasterId
+                                                         && d.ElectionTypeMasterId == getBooth.ElectionTypeMasterId
+                                                         && d.EventABBR == "VT");
+
+                // Add to cache if found
+                if (currentEvent != null)
+                {
+                    await _cacheService.SetDataAsync("GetVTEvent", currentEvent, BharatTimeDynamic(0, 0, 0, 10, 0)); // Cache for 30 minutes
+                }
+            }
+
+            if (currentEvent == null)
+            {
+                return null; // Handle case when no current event is found
+            }
+
+            // Step 3: Fetch election info (not cached as it may be frequently updated)
+            var electionInfo = await _context.ElectionInfoMaster
+                                   .FirstOrDefaultAsync(d => d.BoothMasterId == boothMasterId
+                                                          && d.StateMasterId == getBooth.StateMasterId
+                                                          && d.ElectionTypeMasterId == getBooth.ElectionTypeMasterId);
+
+            if (electionInfo == null)
+            {
+                return null; // Handle case when no election info is found
+            }
+
+            // Step 4: Get voter slot availability
+            var getVoterSlotAvailable = await GetVoterSlotAvailable(getBooth.StateMasterId, getBooth.ElectionTypeMasterId);
+
+            if (getVoterSlotAvailable == null)
+            {
+                return null; // Handle case when no slot is available
+            }
+
+            // Step 5: Populate ViewModel and return
+            VoterTurnOutPolledDetailViewModel voterTurnOutPolledDetailViewModel = new VoterTurnOutPolledDetailViewModel
+            {
+                BoothMasterId = boothMasterId,
+                EventMasterId = getVoterSlotAvailable.EventMasterId,
+                EventABBR = currentEvent.EventABBR,
+                EventName = currentEvent.EventName,
+                EventSequence = currentEvent.EventSequence,
+                TotalVoters = getBooth.TotalVoters,
+                VotesPolled = electionInfo.FinalVote, // Assuming from election info
+                VotesPolledRecivedTime = electionInfo.VotingLastUpdate, // Assuming from election info
+                StartTime = getVoterSlotAvailable.StartTime, // Assuming from slot availability
+                EndTime = getVoterSlotAvailable.EndTime, // Assuming from slot availability
+                LockTime = getVoterSlotAvailable.LockTime, // Assuming from slot availability
+                IsLastSlot = getVoterSlotAvailable.IsLastSlot // Assuming from slot availability
+            };
+
+            return voterTurnOutPolledDetailViewModel;
         }
+
         public bool GetLastSlotEntryDone(int boothMasterId, int stateMasterId, int districtMasterId, int assemblyMasterid, int eventmasterid, int slotMgmtId)
         {
             bool islastentryDone = false;
@@ -6728,278 +6400,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         public async Task<Response> AddVoterTurnOut(AddVoterTurnOut addVoterTurnOut)
         {
-            PollDetail model;
-            try
-            {
-
-                var boothExists = await _context.BoothMaster.Where(p => p.BoothMasterId == Convert.ToInt32(addVoterTurnOut.boothMasterId)).FirstOrDefaultAsync();
-                var polldetail = await _context.PollDetails.Where(p => p.BoothMasterId == Convert.ToInt32(addVoterTurnOut.boothMasterId) && p.StateMasterId == boothExists.StateMasterId && p.DistrictMasterId == boothExists.DistrictMasterId).OrderByDescending(p => p.VotesPolledRecivedTime).FirstOrDefaultAsync();
-                var slotsList = await _context.SlotManagementMaster.Where(p => p.StateMasterId == boothExists.StateMasterId && p.EventMasterId == Convert.ToInt32(addVoterTurnOut.eventid)).OrderBy(p => p.SlotManagementId).ToListAsync();
-                var isGenderCptureRequired = await _context.StateMaster.Where(p => p.StateMasterId == boothExists.StateMasterId).Select(p => p.IsGenderCapturedinVoterTurnOut).FirstOrDefaultAsync();
-
-                if (boothExists is not null)
-                {
-                    var electionInfoRecord = await _context.ElectionInfoMaster.Where(p => p.StateMasterId == boothExists.StateMasterId && p.DistrictMasterId == boothExists.DistrictMasterId && p.AssemblyMasterId == boothExists.AssemblyMasterId && p.BoothMasterId == Convert.ToInt32(addVoterTurnOut.boothMasterId)).FirstOrDefaultAsync();
-                    if (electionInfoRecord is not null)
-                    {
-                        //if (isGenderCptureRequired != null)
-                        //{
-                        if (electionInfoRecord.IsPollStarted == true)
-                        {
-
-                            if (Convert.ToInt32(addVoterTurnOut.voterValue) <= boothExists.TotalVoters)
-                            {
-
-                                if (slotsList.Count() > 0) // any1 slot is there in poll table 
-                                {
-                                    // get end time  and  compare with curent time if current time greater than say proceed for queue
-                                    var slotlast = slotsList.OrderByDescending(p => p.SlotManagementId).FirstOrDefault();
-                                    bool lastslotexceededtime = await TimeExceedLastSlot(slotlast);
-                                    if (lastslotexceededtime == false)
-                                    {
-
-                                        int SlotRecordMasterId = await GetSlot(slotsList);
-                                        if (SlotRecordMasterId > 0)
-                                        {
-                                            var SlotRecord = await _context.SlotManagementMaster.Where(p => p.SlotManagementId == SlotRecordMasterId).FirstOrDefaultAsync();
-                                            if (polldetail is not null)
-                                            {
-                                                // check whether current time slot already entered or not
-
-                                                bool VoterTurnOutAlreadyExistsinSlot = await IsSlotAlreadyEntered(SlotRecord, polldetail.VotesPolledRecivedTime);
-
-                                                if (VoterTurnOutAlreadyExistsinSlot == false)
-                                                {
-                                                    if (Convert.ToInt32(addVoterTurnOut.voterValue) < polldetail.VotesPolled)
-                                                    {
-                                                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Voter Value cannot be less than Last Votes Polled!" };
-
-                                                    }
-                                                    else
-                                                    {
-                                                        model = new PollDetail()
-                                                        {
-                                                            SlotManagementId = SlotRecordMasterId,
-                                                            StateMasterId = boothExists.StateMasterId,
-                                                            DistrictMasterId = boothExists.DistrictMasterId,
-                                                            AssemblyMasterId = boothExists.AssemblyMasterId,
-                                                            BoothMasterId = Convert.ToInt32(addVoterTurnOut.boothMasterId),
-                                                            EventMasterId = Convert.ToInt32(addVoterTurnOut.eventid),
-                                                            VotesPolled = Convert.ToInt32(addVoterTurnOut.voterValue),
-                                                            VotesPolledRecivedTime = BharatDateTime(),
-                                                            ElectionTypeMasterId = addVoterTurnOut.ElectionTypeMasterId,
-                                                            //PCMasterId = _context.AssemblyMaster.Where(p => p.AssemblyMasterId == boothExists.AssemblyMasterId).Select(p => p.PCMasterId).FirstOrDefault(),
-                                                            UserType = "SO"
-                                                            //AddedBy=Soid  // find SO or ARO
-                                                        };
-                                                        if (isGenderCptureRequired == true)
-                                                        { // then check male female must have values
-                                                            if (Convert.ToInt32(addVoterTurnOut.Male) >= 0 && Convert.ToInt32(addVoterTurnOut.Female) >= 0 && Convert.ToInt32(addVoterTurnOut.Transgender) >= 0)
-
-                                                            {
-                                                                if (Convert.ToInt32(addVoterTurnOut.voterValue) == Convert.ToInt32(addVoterTurnOut.Male) + Convert.ToInt32(addVoterTurnOut.Female) + Convert.ToInt32(addVoterTurnOut.Transgender))
-                                                                {
-                                                                    // male is euql or less than vaailble male,f,yt voters
-                                                                    if (Convert.ToInt32(addVoterTurnOut.Male) <= boothExists.Male && Convert.ToInt32(addVoterTurnOut.Female) <= boothExists.Female && Convert.ToInt32(addVoterTurnOut.Transgender) <= boothExists.Transgender)
-                                                                    {
-                                                                        boothExists.Male.ToString();
-                                                                        model.Male = Convert.ToInt32(addVoterTurnOut.Male);
-                                                                        model.Female = Convert.ToInt32(addVoterTurnOut.Female); // Assuming this was intended to be Female
-                                                                        model.Transgender = Convert.ToInt32(addVoterTurnOut.Transgender);
-                                                                        model.ElectionTypeMasterId = addVoterTurnOut.ElectionTypeMasterId;
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "The tally of votes cast for males, females, and transgender individuals does not match the corresponding available counts." };
-
-                                                                    }
-
-                                                                }
-                                                                else
-                                                                {
-                                                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Voter Value Sum is not equal to Male,Female & Transgender Values" };
-
-                                                                }
-
-
-                                                            }
-                                                            else
-                                                            {
-
-                                                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Kindly fill Male Female & transgender in Voter Turn Out" };
-
-                                                            }
-                                                        }
-                                                        //else
-                                                        //{
-                                                        //    if (Convert.ToInt32(addVoterTurnOut.Male) >= 0 || Convert.ToInt32(addVoterTurnOut.Female) >= 0 || Convert.ToInt32(addVoterTurnOut.Transgender) >= 0)
-                                                        //    {
-                                                        //        return new Response { Status = RequestStatusEnum.OK, Message = " Male,Female & Transgender Values Cannot be entered as it is not defined in State!" };
-
-                                                        //    }
-
-                                                        //}
-                                                        _context.PollDetails.Add(model);
-                                                        electionInfoRecord.FinalVote = Convert.ToInt32(addVoterTurnOut.voterValue);
-                                                        electionInfoRecord.VotingLastUpdate = BharatDateTime();
-                                                        electionInfoRecord.ElectionTypeMasterId = addVoterTurnOut.ElectionTypeMasterId;
-                                                        _context.ElectionInfoMaster.Update(electionInfoRecord);
-                                                        await _context.SaveChangesAsync();
-                                                        return new Response { Status = RequestStatusEnum.OK, Message = "Voter Turn Out for " + boothExists.BoothName + " entered successfully!" };
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Voter Turn Out for " + boothExists.BoothName + " Already entered !" };
-
-                                                }
-
-                                            }
-                                            else
-                                            { // as it is insert  in poll detail but check votervalue should be greater than old value
-                                              //if (Convert.ToInt32(voterValue) > boothExists.TotalVoters)
-                                              //{
-                                                model = new PollDetail()
-                                                {
-                                                    SlotManagementId = SlotRecordMasterId,
-                                                    StateMasterId = boothExists.StateMasterId,
-                                                    DistrictMasterId = boothExists.DistrictMasterId,
-                                                    AssemblyMasterId = boothExists.AssemblyMasterId,
-                                                    BoothMasterId = Convert.ToInt32(addVoterTurnOut.boothMasterId),
-                                                    EventMasterId = Convert.ToInt32(addVoterTurnOut.eventid),
-                                                    VotesPolled = Convert.ToInt32(addVoterTurnOut.voterValue),
-                                                    VotesPolledRecivedTime = BharatDateTime(),
-                                                    ElectionTypeMasterId = addVoterTurnOut.ElectionTypeMasterId,
-                                                    UserType = "SO",
-                                                    //PCMasterId = _context.AssemblyMaster.Where(p => p.AssemblyMasterId == boothExists.AssemblyMasterId).Select(p => p.PCMasterId).FirstOrDefault(),
-
-                                                    //AddedBy=Soid  // find SO or ARO
-                                                };
-                                                if (isGenderCptureRequired == true)
-                                                { // then check male female must have values
-                                                    if (Convert.ToInt32(addVoterTurnOut.Male) >= 0 && Convert.ToInt32(addVoterTurnOut.Female) >= 0 && Convert.ToInt32(addVoterTurnOut.Transgender) >= 0)
-
-                                                    {
-                                                        if (Convert.ToInt32(addVoterTurnOut.voterValue) == Convert.ToInt32(addVoterTurnOut.Male) + Convert.ToInt32(addVoterTurnOut.Female) + Convert.ToInt32(addVoterTurnOut.Transgender))
-                                                        {
-                                                            // male is euql or less than vaailble male,f,yt voters
-                                                            if (Convert.ToInt32(addVoterTurnOut.Male) <= boothExists.Male && Convert.ToInt32(addVoterTurnOut.Female) <= boothExists.Female && Convert.ToInt32(addVoterTurnOut.Transgender) <= boothExists.Transgender)
-                                                            {
-                                                                boothExists.Male.ToString();
-                                                                model.Male = Convert.ToInt32(addVoterTurnOut.Male);
-                                                                model.Female = Convert.ToInt32(addVoterTurnOut.Female); // Assuming this was intended to be Female
-                                                                model.Transgender = Convert.ToInt32(addVoterTurnOut.Transgender);
-                                                                model.ElectionTypeMasterId = addVoterTurnOut.ElectionTypeMasterId;
-                                                            }
-                                                            else
-                                                            {
-                                                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "The tally of votes cast for males, females, and transgender individuals does not match the corresponding available counts." };
-
-                                                            }
-
-                                                        }
-                                                        else
-                                                        {
-                                                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Voter Value Sum is not equal to Male,Female & Transgender Values" };
-
-                                                        }
-
-                                                    }
-                                                    else
-                                                    {
-                                                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Kindly fill Male Female & transgender in Voter Turn Out" };
-
-                                                    }
-                                                }
-                                                //else
-                                                //{
-                                                //    if (Convert.ToInt32(addVoterTurnOut.Male) >= 0 || Convert.ToInt32(addVoterTurnOut.Female) >= 0 || Convert.ToInt32(addVoterTurnOut.Transgender) >= 0)
-                                                //    {
-                                                //        return new Response { Status = RequestStatusEnum.OK, Message = " Male,Female & Transgender Values Cannot be entered as it is not defined in State!" };
-
-                                                //    }
-
-                                                //}
-
-                                                _context.PollDetails.Add(model);
-                                                electionInfoRecord.FinalVote = Convert.ToInt32(addVoterTurnOut.voterValue);
-                                                electionInfoRecord.VotingLastUpdate = BharatDateTime();
-                                                electionInfoRecord.ElectionTypeMasterId = addVoterTurnOut.ElectionTypeMasterId;
-                                                _context.ElectionInfoMaster.Update(electionInfoRecord);
-                                                await _context.SaveChangesAsync();
-                                                return new Response { Status = RequestStatusEnum.OK, Message = "Voter Turn Out for " + boothExists.BoothName + " entered successfully!" };
-
-
-
-                                                //}
-                                                //else
-                                                //{
-                                                //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Voter Turn Out Value cannot be less than Last Added value" };
-                                                //}
-
-
-                                            }
-
-                                        }
-                                        else
-                                        {
-
-                                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Slot Not Available" };
-
-
-                                        }
-                                    }
-                                    else
-                                    {
-                                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Voter Turn Out Closed, Kindly Proceed for Voter in Queue" };
-                                    }
-                                }
-
-                                else
-                                {
-                                    //no slots in teh database
-                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Slots Not Exist in the database" };
-
-                                }
-
-                            }
-                            else
-                            {
-                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Polling should not be more than Total Voters!" };
-
-                            }
-
-                        }
-                        else
-                        {
-                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Poll not started, Please try after Poll start." };
-
-                        }
-                        //}
-                        //else
-                        //{
-                        //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Is Gender Capture not Found in the State" };
-
-                        //}
-                    }
-                    else
-                    {
-                        //no record found
-                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Election Info record Not Found" };
-                    }
-                }
-                else
-                {
-                    //no record found
-                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Booth Record Not Found" };
-
-                }
-            }
-            catch (Exception ex)
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
-            }
-
+            return null;
         }
 
         // for event activity Check Condition
@@ -7142,178 +6543,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         public async Task<FinalViewModel> GetFinalVotes(string boothMasterId)
         {
             FinalViewModel model = null;
-            try
-            {
-                var boothExists = await _context.BoothMaster.Where(p => p.BoothMasterId == Convert.ToInt32(boothMasterId)).FirstOrDefaultAsync();
-                //var electionInfoRecord = await _context.ElectionInfoMaster.Where(p => p.BoothMasterId == Convert.ToInt32(boothMasterId) && p.StateMasterId == boothExists.StateMasterId && p.DistrictMasterId == boothExists.DistrictMasterId).FirstOrDefaultAsync();
-                var polldetail = await _context.PollDetails.Where(p => p.BoothMasterId == Convert.ToInt32(boothMasterId) && p.StateMasterId == boothExists.StateMasterId && p.DistrictMasterId == boothExists.DistrictMasterId).OrderByDescending(p => p.VotesPolledRecivedTime).FirstOrDefaultAsync();
-                int lastVotespolled = 0;
-                if (polldetail != null)
-                {
-                    lastVotespolled = polldetail.VotesPolled;
-                }
-                if (boothExists is not null)
-                {
-                    var electionInfoRecord = await _context.ElectionInfoMaster.Where(p => p.StateMasterId == boothExists.StateMasterId && p.DistrictMasterId == boothExists.DistrictMasterId && p.AssemblyMasterId == boothExists.AssemblyMasterId && p.BoothMasterId == Convert.ToInt32(boothMasterId)).FirstOrDefaultAsync();
-                    if (electionInfoRecord is not null)
-                    {
-                        if (electionInfoRecord.VoterInQueue != null)
-                        {
-                            if (electionInfoRecord.IsPollEnded == false || electionInfoRecord.IsPollEnded == null)
-                            {
-                                bool FinalCanStart = await CanFinalValueStart(Convert.ToInt32(boothMasterId));
-                                if (FinalCanStart == true)
-                                {
 
-                                    model = new FinalViewModel()
-                                    {
-                                        BoothMasterId = boothExists.BoothMasterId,
-                                        TotalVoters = boothExists.TotalVoters,
-                                        LastVotesPolled = lastVotespolled,
-                                        //LastFinalVotesPolled = electionInfoRecord.FinalTVote,
-                                        VotesFinalPolledTime = electionInfoRecord.VotingLastUpdate,
-                                        VoteEnabled = true,
-                                        TotalAvailableMale = boothExists.Male.ToString(),
-                                        TotalAvailableFemale = boothExists.Female.ToString(),
-                                        TotalAvailableTransgender = boothExists.Transgender.ToString(),
-                                        Male = electionInfoRecord.Male.ToString(),
-                                        Female = electionInfoRecord.Female.ToString(),
-                                        Transgender = electionInfoRecord.Transgender.ToString(),
-                                        edc = electionInfoRecord.EDC.ToString(),
-                                        Message = "Final Value is Available",
-                                        ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId
-
-
-                                    };
-                                    // Check the condition
-                                    if (electionInfoRecord.IsFinalVote != null)
-                                    {
-                                        // Assign value if condition is true
-                                        model.LastFinalVotesPolled = electionInfoRecord.FinalVote;
-                                    }
-                                }
-
-                                else
-                                {
-                                    model = new FinalViewModel()
-                                    {
-                                        BoothMasterId = boothExists.BoothMasterId,
-                                        TotalVoters = boothExists.TotalVoters,
-                                        LastVotesPolled = lastVotespolled,
-                                        VotesFinalPolledTime = electionInfoRecord.VotingLastUpdate,
-                                        VoteEnabled = true,
-                                        TotalAvailableMale = boothExists.Male.ToString(),
-                                        TotalAvailableFemale = boothExists.Female.ToString(),
-                                        TotalAvailableTransgender = boothExists.Transgender.ToString(),
-                                        Male = electionInfoRecord.Male.ToString(),
-                                        Female = electionInfoRecord.Female.ToString(),
-                                        Transgender = electionInfoRecord.Transgender.ToString(),
-                                        Message = "Final Value is Available, Last Entered :" + electionInfoRecord.FinalVote,
-                                        ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId,
-                                        edc = electionInfoRecord.EDC.ToString()
-                                    };
-
-                                    // Check the condition
-                                    if (electionInfoRecord.IsFinalVote != null)
-                                    {
-                                        // Assign value if condition is true
-                                        model.LastFinalVotesPolled = electionInfoRecord.FinalVote;
-                                    }
-
-                                }
-
-                            }
-                            else
-                            {
-
-                                model = new FinalViewModel()
-                                {
-                                    BoothMasterId = boothExists.BoothMasterId,
-                                    TotalVoters = boothExists.TotalVoters,
-                                    LastVotesPolled = lastVotespolled,
-                                    LastFinalVotesPolled = electionInfoRecord.FinalVote,
-                                    TotalAvailableMale = boothExists.Male.ToString(),
-                                    TotalAvailableFemale = boothExists.Female.ToString(),
-                                    TotalAvailableTransgender = boothExists.Transgender.ToString(),
-                                    Male = electionInfoRecord.Male.ToString(),
-                                    Female = electionInfoRecord.Female.ToString(),
-                                    Transgender = electionInfoRecord.Transgender.ToString(),
-                                    VoteEnabled = false,
-                                    Message = "Final Value Not Available, Poll Already Ended",
-                                    ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId,
-                                    edc = electionInfoRecord.EDC.ToString()
-                                };
-                                // Check the condition
-                                if (electionInfoRecord.IsFinalVote != null)
-                                {
-                                    // Assign value if condition is true
-                                    model.LastFinalVotesPolled = electionInfoRecord.FinalVote;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            model = new FinalViewModel()
-                            {
-                                BoothMasterId = boothExists.BoothMasterId,
-                                TotalVoters = boothExists.TotalVoters,
-                                LastVotesPolled = lastVotespolled,
-                                LastFinalVotesPolled = null,
-                                VotesFinalPolledTime = null,
-                                ElectionTypeMasterId = 0,
-                                VoteEnabled = false,
-                                Message = "Final Value Not Available",
-                                edc = electionInfoRecord.EDC.ToString()
-
-
-                            };
-                        }
-
-
-
-                    }
-                    else
-                    {
-                        model = new FinalViewModel()
-                        {
-                            BoothMasterId = boothExists.BoothMasterId,
-                            TotalVoters = boothExists.TotalVoters,
-                            LastVotesPolled = null,
-                            LastFinalVotesPolled = null,
-                            VotesFinalPolledTime = null,
-                            TotalAvailableMale = boothExists.Male.ToString(),
-                            TotalAvailableFemale = boothExists.Female.ToString(),
-                            TotalAvailableTransgender = boothExists.Transgender.ToString(),
-                            Male = null,
-                            Female = null,
-                            Transgender = null,
-                            VoteEnabled = false,
-                            ElectionTypeMasterId = 0,
-                            Message = "Election Info Record Not Found, Pls Check Previous Events.",
-                            edc = electionInfoRecord.EDC.ToString()
-
-
-                        };
-                    }
-
-
-
-                }
-
-
-
-            }
-            catch (Exception ex)
-            {
-                model = new FinalViewModel()
-                {
-
-                    Message = ex.Message
-
-
-
-                };
-            }
             return model;
         }
         public async Task<int> GetSlot(List<SlotManagementMaster> slotLists)
@@ -8140,23 +7370,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             int lastpolldetail = 0;
 
 
-            var lastpolldetailCount = _context.PollDetails
-                                     .Where(d => d.StateMasterId == stateId && d.DistrictMasterId == districtId)
-                                     .GroupBy(d => d.BoothMasterId)
-                                     .Select(group => new
-                                     {
-                                         BoothMasterId = group.Key,
-                                         TotalVotesPolled = group.OrderByDescending(d => d.VotesPolledRecivedTime).FirstOrDefault().VotesPolled // Summing only the first record of each group
-                                     })
-                                     .Sum(result => result.TotalVotesPolled);
-            if (lastpolldetailCount == null)
-            {
-                lastpolldetail = 0;
-            }
-            else
-            {
-                lastpolldetail = lastpolldetailCount;
-            }
 
 
 
@@ -8168,23 +7381,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             int lastpolldetail = 0;
 
 
-            var lastpolldetailCount = _context.PollDetails
-                                     .Where(d => d.StateMasterId == stateId && d.PCMasterId == pcMasterId)
-                                     .GroupBy(d => d.BoothMasterId)
-                                     .Select(group => new
-                                     {
-                                         BoothMasterId = group.Key,
-                                         TotalVotesPolled = group.OrderByDescending(d => d.VotesPolledRecivedTime).FirstOrDefault().VotesPolled // Summing only the first record of each group
-                                     })
-                                     .Sum(result => result.TotalVotesPolled);
-            if (lastpolldetailCount == null)
-            {
-                lastpolldetail = 0;
-            }
-            else
-            {
-                lastpolldetail = lastpolldetailCount;
-            }
 
 
 
@@ -8194,35 +7390,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         public async Task<int> GetPollDetailById(int assemblyId, string type)
         {
             int lastpolldetail = 0;
-            if (assemblyId != 0 && assemblyId != null && type == "Assembly")
-            {
 
-                var lastpolldetailCount = _context.PollDetails
-                                         .Where(d => d.AssemblyMasterId == assemblyId)
-                                         .GroupBy(d => d.BoothMasterId)
-                                         .Select(group => new
-                                         {
-                                             BoothMasterId = group.Key,
-                                             TotalVotesPolled = group.OrderByDescending(d => d.VotesPolledRecivedTime).FirstOrDefault().VotesPolled // Summing only the first record of each group
-                                         })
-                                         .Sum(result => result.TotalVotesPolled);
-                if (lastpolldetailCount == null)
-                {
-                    lastpolldetail = 0;
-                }
-                else
-                {
-                    lastpolldetail = lastpolldetailCount;
-                }
-            }
-            else if (assemblyId != 0 && assemblyId != null && type == "District")
-            {
-
-
-
-
-
-            }
 
 
             return lastpolldetail;
@@ -8260,35 +7428,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         public async Task<int> TestMethod(int stateId, int districtId, int assemblyId, int pcMasterId)
         {
             int lastpolldetail = 0;
-            if (stateId != 0 && stateId != null && districtId == 0 && assemblyId == 0 && pcMasterId == 0)
-            {
 
-                var lastpolldetailCount = _context.PollDetails
-                                         .Where(d => d.StateMasterId == stateId)
-                                         .GroupBy(d => d.BoothMasterId)
-                                         .Select(group => new
-                                         {
-                                             BoothMasterId = group.Key,
-                                             TotalVotesPolled = group.OrderByDescending(d => d.VotesPolledRecivedTime).FirstOrDefault().VotesPolled // Summing only the first record of each group
-                                         })
-                                         .Sum(result => result.TotalVotesPolled);
-                if (lastpolldetailCount == null)
-                {
-                    lastpolldetail = 0;
-                }
-                else
-                {
-                    lastpolldetail = lastpolldetailCount;
-                }
-            }
-            else if (stateId != 0 && stateId != null && districtId == 0 && assemblyId == 0 && pcMasterId == 1)
-            {
-
-
-
-
-
-            }
 
 
             return lastpolldetail;
@@ -8843,7 +7983,9 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         public async Task<List<SlotManagementMaster>> GetEventSlotList(int stateMasterId, int electionTypeMasterId, int eventId)
         {
-            var slotList = await _context.SlotManagementMaster.Where(d => d.StateMasterId == stateMasterId && d.ElectionTypeMasterId == electionTypeMasterId && d.EventMasterId == eventId).ToListAsync();
+            var slotList = await _context.SlotManagementMaster.Where(d => d.StateMasterId == stateMasterId 
+                                                                    && d.ElectionTypeMasterId == electionTypeMasterId
+                                                                    && d.EventMasterId == eventId).ToListAsync();
             return slotList;
         }
         #endregion
@@ -14113,338 +13255,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         public async Task<List<VTReportModel>> GetSlotBasedVoterTurnOutReport(SlotVTReportModel boothReportModel)
         {
             List<VTReportModel> consolidateBoothReports = new List<VTReportModel>();
-            List<VTReportModel> FinalList = new List<VTReportModel>();
-            var state = _context.StateMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.StateStatus == true).Select(d => new { d.StateName, d.StateCode }).FirstOrDefault();
-
-            var district = new { DistrictName = "", DistrictCode = "" };
-            var pcMaster = new { PcName = "", PcCodeNo = "" };
-            var slotMaster = new { StartTime = new TimeOnly(), EndTime = new TimeOnly?(), LockTime = new TimeOnly?() };
-
-
-
-            if (boothReportModel.SlotMasterId > 0)
-            {
-                slotMaster = _context.SlotManagementMaster
-               .Where(d => d.SlotManagementId == boothReportModel.SlotMasterId)
-               .Select(d => new { d.StartTime, d.EndTime, d.LockTime })
-               .FirstOrDefault();
-            }
-            if (boothReportModel.DistrictMasterId is not 0)
-            {
-                district = _context.DistrictMaster
-                    .Where(d => d.DistrictMasterId == boothReportModel.DistrictMasterId && d.StateMasterId == boothReportModel.StateMasterId && d.DistrictStatus == true)
-                    .Select(d => new { d.DistrictName, d.DistrictCode })
-                    .FirstOrDefault();
-            }
-
-            if (boothReportModel.PCMasterId is not 0)
-            {
-                pcMaster = _context.ParliamentConstituencyMaster
-                    .Where(d => d.PCMasterId == boothReportModel.PCMasterId && d.PcStatus == true)
-                    .Select(d => new { d.PcName, d.PcCodeNo })
-                    .FirstOrDefault();
-            }
-            //State
-            if (boothReportModel.StateMasterId is not 0 && boothReportModel.DistrictMasterId is 0 && boothReportModel.AssemblyMasterId is 0 && boothReportModel.PCMasterId is 0)
-            {
-
-                var assemblyList = _context.AssemblyMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyStatus == true).Include(d => d.BoothMaster).ToList();
-
-                foreach (var assembly in assemblyList)
-                {
-                    VTReportModel report = new VTReportModel
-                    {
-                        // Populate your ConsolidateBoothReport properties here based on assembly data
-                        Header = $"{state.StateName}({state.StateCode})",
-                        Title = "State Slot Report" + $"({slotMaster.StartTime.ToString()} ) , ( {slotMaster.EndTime.ToString()} ) , ({slotMaster.LockTime.ToString()})",
-                        Type = "State",
-
-                        DistrictName = _context.DistrictMaster.Where(d => d.DistrictMasterId == assembly.DistrictMasterId && d.DistrictStatus == true).Select(d => d.DistrictName).FirstOrDefault(),
-
-                        MaleElectoral = assembly.BoothMaster.Select(d => d.Male).Sum(),
-                        FemaleElectoral = assembly.BoothMaster.Select(d => d.Female).Sum(),
-                        ThirdGenderElectoral = assembly.BoothMaster.Select(d => d.Transgender).Sum(),
-                        TotalElectoral = assembly.BoothMaster.Select(d => d.TotalVoters).Sum(),
-
-                        MaleVoters = _context.PollDetails.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.SlotManagementId == boothReportModel.SlotMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId)
-                         .GroupBy(d => d.BoothMasterId)
-                         .Select(group => new
-                         {
-                             BoothMasterId = group.Key,
-                             TotalMaleVoters = group.OrderByDescending(d => d.VotesPolledRecivedTime).FirstOrDefault().Male // Summing only the first record of each group
-                         })
-                         .Sum(result => result.TotalMaleVoters),
-                        FemaleVoters = _context.PollDetails.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.SlotManagementId == boothReportModel.SlotMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId)
-                         .GroupBy(d => d.BoothMasterId)
-                         .Select(group => new
-                         {
-                             BoothMasterId = group.Key,
-                             TotalFemaleVoters = group.OrderByDescending(d => d.VotesPolledRecivedTime).FirstOrDefault().Female // Summing only the first record of each group
-                         })
-                         .Sum(result => result.TotalFemaleVoters),
-                        ThirdGenderVoters = _context.PollDetails.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.SlotManagementId == boothReportModel.SlotMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId)
-                         .GroupBy(d => d.BoothMasterId)
-                         .Select(group => new
-                         {
-                             BoothMasterId = group.Key,
-                             TotalTransgenderVoters = group.OrderByDescending(d => d.VotesPolledRecivedTime).FirstOrDefault().Transgender // Summing only the first record of each group
-                         })
-                         .Sum(result => result.TotalTransgenderVoters),
-                        TotalVoters = _context.PollDetails.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.SlotManagementId == boothReportModel.SlotMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId)
-                       .GroupBy(d => d.BoothMasterId)
-                       .Select(group => new
-                       {
-                           BoothMasterId = group.Key,
-                           TotalVotesPolled = group.OrderByDescending(d => d.VotesPolledRecivedTime).FirstOrDefault().VotesPolled // Summing only the first record of each group
-                       })
-                       .Sum(result => result.TotalVotesPolled)
-                    };
-
-
-                    consolidateBoothReports.Add(report);
-                }
-                // add group by state districts
-                var districtGroupedReports = consolidateBoothReports
-         .GroupBy(report => report.DistrictName)
-         .Select(group => new VTReportModel
-         {
-             Header = $"{state.StateName}({state.StateCode})",
-             Title = $"{state.StateName}",
-             Type = "State",
-             DistrictName = group.Key,
-             MaleElectoral = group.Sum(report => report.MaleElectoral),
-             FemaleElectoral = group.Sum(report => report.FemaleElectoral),
-             ThirdGenderElectoral = group.Sum(report => report.ThirdGenderElectoral),
-             TotalElectoral = group.Sum(report => report.TotalElectoral),
-             MaleVoters = group.Sum(report => report.MaleVoters),
-             FemaleVoters = group.Sum(report => report.FemaleVoters),
-             ThirdGenderVoters = group.Sum(report => report.ThirdGenderVoters),
-             TotalVoters = group.Sum(report => report.TotalVoters)
-         })
-         .ToList();
-
-                // Now districtGroupedReports contains the grouped reports by district. You can add this to your main final list.
-                FinalList.AddRange(districtGroupedReports);
-
-
-                return districtGroupedReports;
-            }
-            //District
-            else if (boothReportModel.StateMasterId is not 0 && boothReportModel.DistrictMasterId is not 0 && boothReportModel.AssemblyMasterId is 0 && boothReportModel.PCMasterId is 0)
-            {
-                var assemblyList = _context.AssemblyMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId && d.AssemblyStatus == true).Include(d => d.BoothMaster).ToList();
-                foreach (var assembly in assemblyList)
-                {
-
-
-                    VTReportModel report = new VTReportModel
-                    {
-
-                        Header = $"{state.StateName}({state.StateCode}),{district.DistrictName}({district.DistrictCode})",
-                        Title = "District Slot Report" + $"({slotMaster.StartTime.ToString()} ) , ( {slotMaster.EndTime.ToString()} ) , ({slotMaster.LockTime.ToString()})",
-                        Type = "District",
-
-                        DistrictName = _context.DistrictMaster.Where(d => d.DistrictMasterId == assembly.DistrictMasterId && d.DistrictStatus == true).Select(d => d.DistrictName).FirstOrDefault(),
-                        AssemblyName = assembly.AssemblyName,
-                        AssemblyCode = assembly.AssemblyCode.ToString(),
-                        MaleElectoral = assembly.BoothMaster.Select(d => d.Male).Sum(),
-                        FemaleElectoral = assembly.BoothMaster.Select(d => d.Female).Sum(),
-                        ThirdGenderElectoral = assembly.BoothMaster.Select(d => d.Transgender).Sum(),
-                        TotalElectoral = assembly.BoothMaster.Select(d => d.TotalVoters).Sum(),
-
-                        MaleVoters = _context.PollDetails.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.SlotManagementId == boothReportModel.SlotMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId)
-                         .GroupBy(d => d.BoothMasterId)
-                         .Select(group => new
-                         {
-                             BoothMasterId = group.Key,
-                             TotalMaleVoters = group.OrderByDescending(d => d.VotesPolledRecivedTime).FirstOrDefault().Male // Summing only the first record of each group
-                         })
-                         .Sum(result => result.TotalMaleVoters),
-                        FemaleVoters = _context.PollDetails.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.SlotManagementId == boothReportModel.SlotMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId)
-                         .GroupBy(d => d.BoothMasterId)
-                         .Select(group => new
-                         {
-                             BoothMasterId = group.Key,
-                             TotalFemaleVoters = group.OrderByDescending(d => d.VotesPolledRecivedTime).FirstOrDefault().Female // Summing only the first record of each group
-                         })
-                         .Sum(result => result.TotalFemaleVoters),
-                        ThirdGenderVoters = _context.PollDetails.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.SlotManagementId == boothReportModel.SlotMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId)
-                         .GroupBy(d => d.BoothMasterId)
-                         .Select(group => new
-                         {
-                             BoothMasterId = group.Key,
-                             TotalTransgenderVoters = group.OrderByDescending(d => d.VotesPolledRecivedTime).FirstOrDefault().Transgender // Summing only the first record of each group
-                         })
-                         .Sum(result => result.TotalTransgenderVoters),
-                        TotalVoters = _context.PollDetails.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.SlotManagementId == boothReportModel.SlotMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId)
-                       .GroupBy(d => d.BoothMasterId)
-                       .Select(group => new
-                       {
-                           BoothMasterId = group.Key,
-                           TotalVotesPolled = group.OrderByDescending(d => d.VotesPolledRecivedTime).FirstOrDefault().VotesPolled // Summing only the first record of each group
-                       })
-                       .Sum(result => result.TotalVotesPolled)
-                    };
-                    consolidateBoothReports.Add(report);
-                }
-                return consolidateBoothReports;
-            }
-            //PC
-            else if (boothReportModel.StateMasterId is not 0 && boothReportModel.DistrictMasterId is 0 && boothReportModel.PCMasterId is not 0 && boothReportModel.AssemblyMasterId is 0)
-            {
-                var assemblyList = _context.AssemblyMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.PCMasterId == boothReportModel.PCMasterId && d.AssemblyStatus == true).Include(d => d.BoothMaster).ToList();
-                foreach (var assembly in assemblyList)
-                {
-                    VTReportModel report = new VTReportModel
-                    {
-                        // Populate your ConsolidateBoothReport properties here based on assembly data
-                        Header = $"{state.StateName}({state.StateCode}),{pcMaster.PcName}({pcMaster.PcCodeNo})",
-                        Title = $"{pcMaster.PcName}",
-                        Type = "State - Slot Report" + $"{slotMaster.StartTime.ToString()},({slotMaster.EndTime}),{slotMaster.LockTime})",
-
-                        AssemblyName = assembly.AssemblyName,
-                        AssemblyCode = assembly.AssemblyCode.ToString(),
-                        MaleElectoral = assembly.BoothMaster.Select(d => d.Male).Sum(),
-                        FemaleElectoral = assembly.BoothMaster.Select(d => d.Female).Sum(),
-                        ThirdGenderElectoral = assembly.BoothMaster.Select(d => d.Transgender).Sum(),
-                        TotalElectoral = assembly.BoothMaster.Select(d => d.TotalVoters).Sum(),
-
-                        MaleVoters = _context.PollDetails.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.SlotManagementId == boothReportModel.SlotMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId && d.PCMasterId == boothReportModel.PCMasterId)
-                         .GroupBy(d => d.BoothMasterId)
-                         .Select(group => new
-                         {
-                             BoothMasterId = group.Key,
-                             TotalMaleVoters = group.OrderByDescending(d => d.VotesPolledRecivedTime).FirstOrDefault().Male // Summing only the first record of each group
-                         })
-                         .Sum(result => result.TotalMaleVoters),
-                        FemaleVoters = _context.PollDetails.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.SlotManagementId == boothReportModel.SlotMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId && d.PCMasterId == boothReportModel.PCMasterId)
-                         .GroupBy(d => d.BoothMasterId)
-                         .Select(group => new
-                         {
-                             BoothMasterId = group.Key,
-                             TotalFemaleVoters = group.OrderByDescending(d => d.VotesPolledRecivedTime).FirstOrDefault().Female // Summing only the first record of each group
-                         })
-                         .Sum(result => result.TotalFemaleVoters),
-                        ThirdGenderVoters = _context.PollDetails.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.SlotManagementId == boothReportModel.SlotMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId && d.PCMasterId == boothReportModel.PCMasterId)
-                         .GroupBy(d => d.BoothMasterId)
-                         .Select(group => new
-                         {
-                             BoothMasterId = group.Key,
-                             TotalTransgenderVoters = group.OrderByDescending(d => d.VotesPolledRecivedTime).FirstOrDefault().Transgender // Summing only the first record of each group
-                         })
-                         .Sum(result => result.TotalTransgenderVoters),
-                        TotalVoters = _context.PollDetails.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.SlotManagementId == boothReportModel.SlotMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId && d.PCMasterId == boothReportModel.PCMasterId)
-                       .GroupBy(d => d.BoothMasterId)
-                       .Select(group => new
-                       {
-                           BoothMasterId = group.Key,
-                           TotalVotesPolled = group.OrderByDescending(d => d.VotesPolledRecivedTime).FirstOrDefault().VotesPolled // Summing only the first record of each group
-                       })
-                       .Sum(result => result.TotalVotesPolled)
-
-                    };
-                    consolidateBoothReports.Add(report);
-                }
-                return consolidateBoothReports;
-            }
-            //Assembly
-            else if (boothReportModel.AssemblyMasterId is not 0)
-            {
-                if (boothReportModel.DistrictMasterId is not 0)
-                {
-                    var assemblyRecords = _context.AssemblyMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId && d.AssemblyMasterId == boothReportModel.AssemblyMasterId && d.AssemblyStatus == true).Include(d => d.BoothMaster).ToList();
-                    foreach (var assembly in assemblyRecords)
-                    {
-                        VTReportModel report = new VTReportModel
-                        {
-
-                            Header = $"{state.StateName}({state.StateCode}),{district.DistrictName}({district.DistrictCode}),{assembly.AssemblyName}({assembly.AssemblyCode})",
-                            //Title = $"{assembly.AssemblyName}",
-                            Type = "Assembly",
-                            Title = "State Slot Report" + $"({slotMaster.StartTime.ToString()} ) , ( {slotMaster.EndTime.ToString()} ) , ({slotMaster.LockTime.ToString()})",
-                            AssemblyName = assembly.AssemblyName,
-                            AssemblyCode = assembly.AssemblyCode.ToString(),
-                            MaleElectoral = assembly.BoothMaster.Select(d => d.Male).Sum(),
-                            FemaleElectoral = assembly.BoothMaster.Select(d => d.Female).Sum(),
-                            ThirdGenderElectoral = assembly.BoothMaster.Select(d => d.Transgender).Sum(),
-                            TotalElectoral = assembly.BoothMaster.Select(d => d.TotalVoters).Sum(),
-
-                            MaleVoters = _context.PollDetails.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.SlotManagementId == boothReportModel.SlotMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId)
-                         .GroupBy(d => d.BoothMasterId)
-                         .Select(group => new
-                         {
-                             BoothMasterId = group.Key,
-                             TotalMaleVoters = group.OrderByDescending(d => d.VotesPolledRecivedTime).FirstOrDefault().Male // Summing only the first record of each group
-                         })
-                         .Sum(result => result.TotalMaleVoters),
-                            FemaleVoters = _context.PollDetails.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.SlotManagementId == boothReportModel.SlotMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId)
-                         .GroupBy(d => d.BoothMasterId)
-                         .Select(group => new
-                         {
-                             BoothMasterId = group.Key,
-                             TotalFemaleVoters = group.OrderByDescending(d => d.VotesPolledRecivedTime).FirstOrDefault().Female // Summing only the first record of each group
-                         })
-                         .Sum(result => result.TotalFemaleVoters),
-                            ThirdGenderVoters = _context.PollDetails.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.SlotManagementId == boothReportModel.SlotMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId)
-                         .GroupBy(d => d.BoothMasterId)
-                         .Select(group => new
-                         {
-                             BoothMasterId = group.Key,
-                             TotalTransgenderVoters = group.OrderByDescending(d => d.VotesPolledRecivedTime).FirstOrDefault().Transgender // Summing only the first record of each group
-                         })
-                         .Sum(result => result.TotalTransgenderVoters),
-                            TotalVoters = _context.PollDetails.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.SlotManagementId == boothReportModel.SlotMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId && d.DistrictMasterId == boothReportModel.DistrictMasterId)
-                       .GroupBy(d => d.BoothMasterId)
-                       .Select(group => new
-                       {
-                           BoothMasterId = group.Key,
-                           TotalVotesPolled = group.OrderByDescending(d => d.VotesPolledRecivedTime).FirstOrDefault().VotesPolled // Summing only the first record of each group
-                       })
-                       .Sum(result => result.TotalVotesPolled)
-
-                        };
-                        consolidateBoothReports.Add(report);
-                    }
-                    return consolidateBoothReports;
-                }
-                else
-                {
-                    var assembly = _context.AssemblyMaster.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.AssemblyMasterId == boothReportModel.AssemblyMasterId && d.AssemblyStatus == true).Include(d => d.BoothMaster).FirstOrDefault();
-                    foreach (var booth in assembly.BoothMaster)
-                    {
-                        VTReportModel report = new VTReportModel
-                        {
-                            // Populate your ConsolidateBoothReport properties here based on assembly data
-                            Header = $"{state.StateName}({state.StateCode}),{assembly.AssemblyName}({assembly.AssemblyCode})",
-                            //Title = $"{assembly.AssemblyName}",
-                            Title = "State Slot Report" + $"({slotMaster.StartTime.ToString()} ) , ( {slotMaster.EndTime.ToString()} ) , ({slotMaster.LockTime.ToString()})",
-                            Type = "Assembly",
-
-                            AssemblyName = assembly.AssemblyName,
-                            AssemblyCode = assembly.AssemblyCode.ToString(),
-                            BoothName = booth.BoothName,
-                            BoothCode = booth.BoothCode_No.ToString(),
-                            MaleElectoral = assembly.BoothMaster.Select(d => d.Male).Sum(),
-                            FemaleElectoral = assembly.BoothMaster.Select(d => d.Female).Sum(),
-                            ThirdGenderElectoral = assembly.BoothMaster.Select(d => d.Transgender).Sum(),
-                            TotalElectoral = assembly.BoothMaster.Select(d => d.TotalVoters).Sum(),
-
-
-
-                            MaleVoters = _context.PollDetails.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.SlotManagementId == boothReportModel.SlotMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId && d.BoothMasterId == booth.BoothMasterId).Sum(d => d.Male),
-                            FemaleVoters = _context.PollDetails.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.SlotManagementId == boothReportModel.SlotMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId && d.BoothMasterId == booth.BoothMasterId).Sum(d => d.Female),
-                            ThirdGenderVoters = _context.PollDetails.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.SlotManagementId == boothReportModel.SlotMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId && d.BoothMasterId == booth.BoothMasterId).Sum(d => d.Transgender),
-                            TotalVoters = _context.PollDetails.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.SlotManagementId == boothReportModel.SlotMasterId && d.AssemblyMasterId == assembly.AssemblyMasterId && d.BoothMasterId == booth.BoothMasterId).OrderByDescending(d => d.VotesPolledRecivedTime).Select(p => p.VotesPolled).FirstOrDefault()
-                        };
-                        consolidateBoothReports.Add(report);
-
-                    }
-                    return consolidateBoothReports;
-                }
-
-
-            }
-
 
             return consolidateBoothReports;
         }
