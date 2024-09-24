@@ -2205,6 +2205,7 @@ namespace EAMS_DAL.Repository
         #endregion
 
         #region Booth Master 
+
         public async Task<List<CombinedMaster>> GetBoothListById(string stateMasterId, string districtMasterId, string assemblyMasterId)
         {
             var isStateActive = _context.StateMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId)).FirstOrDefault();
@@ -3767,6 +3768,33 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             var boothRecord = await _context.BoothMaster.Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).Where(d => d.BoothMasterId == Convert.ToInt32(boothMasterId)).FirstOrDefaultAsync();
 
             return boothRecord;
+        }
+        public async Task<BoothDetailForVoterInQueue> GetBoothDetailForVoterInQueue(int boothMasterId)
+        {
+            // Fetch FinalVote from ElectionInfoMaster
+            var finalVote = await _context.ElectionInfoMaster
+                .Where(e => e.BoothMasterId == boothMasterId)
+                .Select(e => e.FinalVote)
+                .FirstOrDefaultAsync();
+
+            // Fetch TotalVoters from BoothMaster
+            var boothRecord = await _context.BoothMaster
+                .Where(d => d.BoothMasterId == boothMasterId)
+                .Select(b => new
+                {
+                    TotalVoters = b.TotalVoters
+                })
+                .FirstOrDefaultAsync();
+
+            // Create and populate the result object
+            BoothDetailForVoterInQueue boothDetailForVoterInQueue = new BoothDetailForVoterInQueue()
+            {
+                BoothMasterId = boothMasterId,
+                TotalVoters = boothRecord.TotalVoters,
+                RemainingVoters = (boothRecord.TotalVoters) - (finalVote)
+            };
+
+            return boothDetailForVoterInQueue;
         }
         #endregion
 
