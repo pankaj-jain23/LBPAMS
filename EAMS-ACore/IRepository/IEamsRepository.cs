@@ -162,7 +162,7 @@ namespace EAMS_ACore.IRepository
         Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(int boothMasterId );
         Task<Models.Queue> GetVoterInQueue(string boothMasterId);
         Task<VotesPolledPercentage> GetVotesPolledPercentage(ClaimsIdentity claimsIdentity);
-        Task<FinalViewModel> GetFinalVotes(string boothMasterId);
+        Task<FinalViewModel> GetFinalVotes(int boothMasterId);
         Task<Models.Queue> GetTotalRemainingVoters(string boothMasterId);
         Task<Response> AddVoterTurnOut(AddVoterTurnOut addVoterTurnOut);
 

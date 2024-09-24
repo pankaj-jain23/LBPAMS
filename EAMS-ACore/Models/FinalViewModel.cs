@@ -7,14 +7,11 @@
         public int? LastVotesPolled { get; set; }
         public int? LastFinalVotesPolled { get; set; }
         public DateTime? VotesFinalPolledTime { get; set; }
-
         public bool? VoteEnabled { get; set; }
         public string? Message { get; set; }
-
         public string? TotalAvailableMale { get; set; }
         public string? TotalAvailableFemale { get; set; }
-        public string? TotalAvailableTransgender { get; set; }
-
+        public string? TotalAvailableTransgender { get; set; } 
         public string? Male { get; set; }
         public string? Female { get; set; }
         public string? Transgender { get; set; }

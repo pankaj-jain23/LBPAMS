@@ -1224,6 +1224,7 @@ namespace EAMS.Controllers
                 return NotFound($"[{boothMasterId}] not exist");
             }
         }
+        
         [HttpGet]
         [Route("GetBoothDetailForVoterInQueue")]
         public async Task<IActionResult> GetBoothDetailForVoterInQueue(int boothMasterId)
@@ -2334,7 +2335,7 @@ namespace EAMS.Controllers
             }
             else
             {
-                return BadRequest(result);
+                return BadRequest( );
             }
 
         }
@@ -2419,7 +2420,7 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetFinalVotes")]
         [Authorize]
-        public async Task<IActionResult> GetFinalVotes(string boothMasterId)
+        public async Task<IActionResult> GetFinalVotes(int boothMasterId)
         {
 
             var result = await _EAMSService.GetFinalVotes(boothMasterId);

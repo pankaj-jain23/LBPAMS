@@ -646,7 +646,7 @@ namespace EAMS_BLL.Services
         }
 
 
-        public async Task<FinalViewModel> GetFinalVotes(string boothMasterId)
+        public async Task<FinalViewModel> GetFinalVotes(int boothMasterId)
 
         {
             return await _eamsRepository.GetFinalVotes(boothMasterId);
