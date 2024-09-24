@@ -86,6 +86,7 @@ namespace EAMS_ACore.IRepository
         Task<Response> ReleaseBooth(BoothMaster boothMaster);
         Task<Response> ReleaseBoothBLO(BoothMaster boothMaster);
         Task<BoothMaster> GetBoothById(string boothMasterId);
+        Task<BoothDetailForVoterInQueue> GetBoothDetailForVoterInQueue(int boothMasterId);
         #endregion
 
         #region Event Master
