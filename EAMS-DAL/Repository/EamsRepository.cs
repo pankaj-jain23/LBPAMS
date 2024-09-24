@@ -5709,7 +5709,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         private async Task<ServiceResponse> IsVoterSlotAvailable(int stateMasterId, int electionTypeMasterId)
         {
             // Fetch slot list from cache
-            var getSlotList = await _cacheService.GetDataAsync<List<SlotManagementMaster>>("GetNextEventList");
+            var getSlotList = await _cacheService.GetDataAsync<List<SlotManagementMaster>>($"GetNextEventList{electionTypeMasterId}");
 
             // If not in cache, retrieve from the database and update cache
             if (getSlotList == null)
@@ -5719,7 +5719,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                 d.ElectionTypeMasterId == electionTypeMasterId)
                     .ToListAsync();
 
-                await _cacheService.SetDataAsync("GetNextEventList", getSlotList, BharatTimeDynamic(0, 0, 0, 10, 0));
+                await _cacheService.SetDataAsync($"GetNextEventList{electionTypeMasterId}", getSlotList, BharatTimeDynamic(0, 0, 0, 10, 0));
             }
 
             // Get the current time
@@ -5752,10 +5752,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         private async Task<SlotManagementMaster> GetVoterSlotAvailable(int stateMasterId, int electionTypeMasterId)
         {
-            // Fetch slot list from cache
-            var getSlotList = await _cacheService.GetDataAsync<List<SlotManagementMaster>>("GetNextEventList");
+            var getSlotList = await _cacheService.GetDataAsync<List<SlotManagementMaster>>($"GetNextEventList{electionTypeMasterId}");
 
-            // If not in cache, retrieve from the database and update cache
             if (getSlotList == null)
             {
                 getSlotList = await _context.SlotManagementMaster
@@ -5763,7 +5761,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                 d.ElectionTypeMasterId == electionTypeMasterId)
                     .ToListAsync();
 
-                await _cacheService.SetDataAsync("GetNextEventList", getSlotList, BharatTimeDynamic(0, 0, 0, 10, 0));
+                await _cacheService.SetDataAsync($"GetNextEventList{electionTypeMasterId}", getSlotList, BharatTimeDynamic(0, 0, 0, 10, 0));
             }
 
             // Get the current time
@@ -6024,7 +6022,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 // Add to cache if found
                 if (getBooth != null)
                 {
-                    await _cacheService.SetDataAsync(cacheKeyBooth, getBooth,BharatTimeDynamic(0,0,0,10,0)); // Cache for 30 minutes
+                    await _cacheService.SetDataAsync(cacheKeyBooth, getBooth, BharatTimeDynamic(0, 0, 0, 10, 0)); // Cache for 30 minutes
                 }
             }
 
@@ -6033,7 +6031,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 return null; // Handle case when no booth is found
             }
 
-           
+
             var currentEvent = await _cacheService.GetDataAsync<EventMaster>("GetVTEvent");
 
             if (currentEvent == null)
@@ -8011,7 +8009,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         public async Task<List<SlotManagementMaster>> GetEventSlotList(int stateMasterId, int electionTypeMasterId, int eventId)
         {
-            var slotList = await _context.SlotManagementMaster.Where(d => d.StateMasterId == stateMasterId 
+            var slotList = await _context.SlotManagementMaster.Where(d => d.StateMasterId == stateMasterId
                                                                     && d.ElectionTypeMasterId == electionTypeMasterId
                                                                     && d.EventMasterId == eventId).ToListAsync();
             return slotList;
