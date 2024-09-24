@@ -24,6 +24,7 @@ namespace EAMS_ACore.Models
         public bool ElectionInfoStatus { get; set; }
         public string? FOUserId { get; set; }
         public string? AROUserId { get; set; }
+
         public bool IsPartyDispatched { get; set; }
         public DateTime? PartyDispatchedLastUpdate { get; set; }
 
@@ -36,42 +37,48 @@ namespace EAMS_ACore.Models
         public bool IsMockPollDone { get; set; }
         public DateTime? MockPollDoneLastUpdate { get; set; }
         public int? NoOfPollingAgents { get; set; }
+         
 
         public bool IsPollStarted { get; set; }
         public DateTime? PollStartedLastUpdate { get; set; }
 
-        public int? FinalTVote { get; set; }
-
-        public bool FinalTVoteStatus { get; set; }
-
-        public DateTime? VotingLastUpdate { get; set; }
-
-        public int? VoterInQueue { get; set; }
-        public DateTime? VoterInQueueLastUpdate { get; set; }
-
         public bool IsVoterTurnOut { get; set; }
         public DateTime? VotingTurnOutLastUpdate { get; set; }
+        public DateTime? VotingLastUpdate { get; set; }
+
+
+        public DateTime? VoterInQueueLastUpdate { get; set; }
+        public bool? IsVoterInQueue { get; set; }
+        public int? VoterInQueue { get; set; }
+
+
+
+        public int? FinalVote { get; set; }
+        public bool IsFinalVote { get; set; }
+        /**Male Female Transgender**/
+        public int? Male { get; set; }
+        public int? Female { get; set; }
+        public int? Transgender { get; set; } 
+        public int? EDC { get; set; }
+
 
         public bool IsPollEnded { get; set; }
         public DateTime? IsPollEndedLastUpdate { get; set; }
+
         public bool IsMCESwitchOff { get; set; }
         public DateTime? MCESwitchOffLastUpdate { get; set; }
+
         public bool IsPartyDeparted { get; set; }
         public DateTime? PartyDepartedLastUpdate { get; set; }
+
         public bool IsPartyReachedCollectionCenter { get; set; }
         public DateTime? PartyReachedCollectionCenterLastUpdate { get; set; }
 
         public bool IsEVMDeposited { get; set; }
         public DateTime? EVMDepositedLastUpdate { get; set; }
 
-        /**Male Female Transgender**/
-        public int? Male { get; set; }
-        public int? Female { get; set; }
-        public int? Transgender { get; set; }
+    
 
-        public int? EDC { get; set; }
-
-        public bool? IsQueueUndo { get; set; }
        
         
     }

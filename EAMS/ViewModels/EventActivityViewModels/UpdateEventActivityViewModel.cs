@@ -8,7 +8,8 @@
         public string EventABBR { get; set; }
         public string EventName { get; set; }
         public int EventSequence { get; set; }
-        public bool EventStatus { get; set; } 
-
+        public bool EventStatus { get; set; }
+        public int? NoOfPollingAgents { get; set; }
+        public int? VoterInQueue { get; set; }
     }
 }

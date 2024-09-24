@@ -4295,7 +4295,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                             BoothName = soTotalBooths.BoothName + "-" + boothName,
                             BoothCode = soTotalBooths.BoothCode_No,
                             //UpdateStatus = isFinalVotes
-                            UpdateStatus = electioInfoRecord.FinalTVoteStatus
+                            UpdateStatus = electioInfoRecord.IsFinalVote
                         };
                         eventwiseboothlist.Add(model);
                     }
@@ -4640,7 +4640,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 case "8":
                     //return electioInfoRecord.FinalTVote != null && electioInfoRecord.FinalTVote > 0;
                     //return electioInfoRecord.IsPollEnded != null;
-                    return electioInfoRecord.FinalTVoteStatus;
+                    return electioInfoRecord.IsFinalVote;
 
                 case "9":
                     return electioInfoRecord.IsPollEnded;
@@ -4672,7 +4672,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 {// mut check if poll ended then no color
 
                     //if (electioInfoRecord.VoterInQueue == null)
-                    if (electioInfoRecord.VoterInQueue == null && electioInfoRecord.IsQueueUndo != true)
+                    if (electioInfoRecord.VoterInQueue == null && electioInfoRecord.IsVoterInQueue != true)
                     {
                         var polldetail_byUser = await _context.PollDetails.Where(p => p.BoothMasterId == electioInfoRecord.BoothMasterId).OrderByDescending(p => p.VotesPolledRecivedTime).FirstOrDefaultAsync();
                         var slotsListofTurnOut = await _context.SlotManagementMaster.Where(p => p.StateMasterId == electioInfoRecord.StateMasterId && p.EventMasterId == Convert.ToInt32(eventid)).OrderBy(p => p.SlotManagementId).ToListAsync();
@@ -6405,8 +6405,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             if (roles == "SuperAdmin" || roles == "ECI" || roles == "StateAdmin")
             {
                 var totalVotersSum = _context.BoothMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId)).Sum(p => p.TotalVoters);
-                var sumOfFinalTVoteSum = _context.ElectionInfoMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId)).Sum(p => p.FinalTVote);
-                var finalIsTrueSum = _context.ElectionInfoMaster.Where(p => p.FinalTVoteStatus == true && p.StateMasterId == Convert.ToInt32(stateMasterId)).Sum(p => p.FinalTVote);
+                var sumOfFinalTVoteSum = _context.ElectionInfoMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId)).Sum(p => p.FinalVote);
+                var finalIsTrueSum = _context.ElectionInfoMaster.Where(p => p.IsFinalVote == true && p.StateMasterId == Convert.ToInt32(stateMasterId)).Sum(p => p.FinalVote);
 
 
                 totalVoters.Add(totalVotersSum);
@@ -6419,9 +6419,9 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 var totalVotersSum = _context.BoothMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId))
                    .Sum(p => p.TotalVoters);
                 var sumOfFinalTVoteSum = _context.ElectionInfoMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId))
-                   .Sum(p => p.FinalTVote);
-                var finalIsTrueSum = _context.ElectionInfoMaster.Where(d => d.FinalTVoteStatus == true && d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId))
-                    .Sum(p => p.FinalTVote);
+                   .Sum(p => p.FinalVote);
+                var finalIsTrueSum = _context.ElectionInfoMaster.Where(d => d.IsFinalVote == true && d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId))
+                    .Sum(p => p.FinalVote);
 
 
                 totalVoters.Add(totalVotersSum);
@@ -6447,9 +6447,9 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             {
 
                 var totalVotersSum = _context.BoothMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId)).Sum(p => p.TotalVoters);
-                var sumOfFinalTVoteSum = _context.ElectionInfoMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId)).Sum(p => p.FinalTVote);
-                var finalIsTrueSum = _context.ElectionInfoMaster.Where(d => d.FinalTVoteStatus == true && d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId))
-                    .Sum(p => p.FinalTVote);
+                var sumOfFinalTVoteSum = _context.ElectionInfoMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId)).Sum(p => p.FinalVote);
+                var finalIsTrueSum = _context.ElectionInfoMaster.Where(d => d.IsFinalVote == true && d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId))
+                    .Sum(p => p.FinalVote);
 
 
                 totalVoters.Add(totalVotersSum);
@@ -6810,7 +6810,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
                                                         //}
                                                         _context.PollDetails.Add(model);
-                                                        electionInfoRecord.FinalTVote = Convert.ToInt32(addVoterTurnOut.voterValue);
+                                                        electionInfoRecord.FinalVote = Convert.ToInt32(addVoterTurnOut.voterValue);
                                                         electionInfoRecord.VotingLastUpdate = BharatDateTime();
                                                         electionInfoRecord.ElectionTypeMasterId = addVoterTurnOut.ElectionTypeMasterId;
                                                         _context.ElectionInfoMaster.Update(electionInfoRecord);
@@ -6892,7 +6892,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                                 //}
 
                                                 _context.PollDetails.Add(model);
-                                                electionInfoRecord.FinalTVote = Convert.ToInt32(addVoterTurnOut.voterValue);
+                                                electionInfoRecord.FinalVote = Convert.ToInt32(addVoterTurnOut.voterValue);
                                                 electionInfoRecord.VotingLastUpdate = BharatDateTime();
                                                 electionInfoRecord.ElectionTypeMasterId = addVoterTurnOut.ElectionTypeMasterId;
                                                 _context.ElectionInfoMaster.Update(electionInfoRecord);
@@ -7072,7 +7072,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             var electionInfo = _context.ElectionInfoMaster.Where(p => p.BoothMasterId == boothMasterId && p.StateMasterId == boothExists.StateMasterId && p.DistrictMasterId == boothExists.DistrictMasterId).FirstOrDefault();
             // var slotRecord = _context.SlotManagementMaster.Where(p => p.StateMasterId == boothExists.StateMasterId && p.EventMasterId == eventmasterid).OrderByDescending(p => p.SlotManagementId).ToList();
             //if (electionInfo != null && electionInfo.FinalTVote == null)
-            if (electionInfo != null && (electionInfo.FinalTVoteStatus == null || electionInfo.FinalTVoteStatus == false))
+            if (electionInfo != null && (electionInfo.IsFinalVote == null || electionInfo.IsFinalVote == false))
             {
                 finalCanStart = true;
             }
@@ -7156,10 +7156,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
                                     };
                                     // Check the condition
-                                    if (electionInfoRecord.FinalTVoteStatus != null)
+                                    if (electionInfoRecord.IsFinalVote != null)
                                     {
                                         // Assign value if condition is true
-                                        model.LastFinalVotesPolled = electionInfoRecord.FinalTVote;
+                                        model.LastFinalVotesPolled = electionInfoRecord.FinalVote;
                                     }
                                 }
 
@@ -7178,16 +7178,16 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                         Male = electionInfoRecord.Male.ToString(),
                                         Female = electionInfoRecord.Female.ToString(),
                                         Transgender = electionInfoRecord.Transgender.ToString(),
-                                        Message = "Final Value is Available, Last Entered :" + electionInfoRecord.FinalTVote,
+                                        Message = "Final Value is Available, Last Entered :" + electionInfoRecord.FinalVote,
                                         ElectionTypeMasterId = electionInfoRecord.ElectionTypeMasterId,
                                         edc = electionInfoRecord.EDC.ToString()
                                     };
 
                                     // Check the condition
-                                    if (electionInfoRecord.FinalTVoteStatus != null)
+                                    if (electionInfoRecord.IsFinalVote != null)
                                     {
                                         // Assign value if condition is true
-                                        model.LastFinalVotesPolled = electionInfoRecord.FinalTVote;
+                                        model.LastFinalVotesPolled = electionInfoRecord.FinalVote;
                                     }
 
                                 }
@@ -7201,7 +7201,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                     BoothMasterId = boothExists.BoothMasterId,
                                     TotalVoters = boothExists.TotalVoters,
                                     LastVotesPolled = lastVotespolled,
-                                    LastFinalVotesPolled = electionInfoRecord.FinalTVote,
+                                    LastFinalVotesPolled = electionInfoRecord.FinalVote,
                                     TotalAvailableMale = boothExists.Male.ToString(),
                                     TotalAvailableFemale = boothExists.Female.ToString(),
                                     TotalAvailableTransgender = boothExists.Transgender.ToString(),
@@ -7214,10 +7214,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                     edc = electionInfoRecord.EDC.ToString()
                                 };
                                 // Check the condition
-                                if (electionInfoRecord.FinalTVoteStatus != null)
+                                if (electionInfoRecord.IsFinalVote != null)
                                 {
                                     // Assign value if condition is true
-                                    model.LastFinalVotesPolled = electionInfoRecord.FinalTVote;
+                                    model.LastFinalVotesPolled = electionInfoRecord.FinalVote;
                                 }
                             }
                         }
@@ -8204,7 +8204,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             {
                 var finalVotesValue = await _context.ElectionInfoMaster
                     .Where(p => p.AssemblyMasterId == keyMasterId)
-                    .Select(p => p.FinalTVote)
+                    .Select(p => p.FinalVote)
                     .FirstOrDefaultAsync();
 
                 finalVotes = finalVotesValue ?? 0;
@@ -8283,7 +8283,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         public async Task<int?> GetfromFinalVotes(int boothMasterId)
         {
             int? finalVotes = 0;
-            var finalVotesValue = _context.ElectionInfoMaster.FirstOrDefault(p => p.BoothMasterId == boothMasterId).FinalTVote;
+            var finalVotesValue = _context.ElectionInfoMaster.FirstOrDefault(p => p.BoothMasterId == boothMasterId).FinalVote;
             if (finalVotesValue == null)
             {
                 finalVotes = 0;
@@ -12247,12 +12247,12 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             // Calculate total final votes
             var totalFinalVotesCount = await _context.ElectionInfoMaster
-                 .Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId) && d.FinalTVoteStatus == true)
-                .SumAsync(d => d.FinalTVote);
+                 .Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId) && d.IsFinalVote == true)
+                .SumAsync(d => d.FinalVote);
 
             // Calculate total EDC votes
             var eDCVoteCount = await _context.ElectionInfoMaster
-               .Where(d => d.FinalTVoteStatus == true && d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId))
+               .Where(d => d.IsFinalVote == true && d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId))
                .SumAsync(d => d.EDC);
 
 
