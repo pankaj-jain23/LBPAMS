@@ -36,7 +36,13 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
+        
         public string? GPVoterPdfPath
+        {
+            get;
+            set;
+        }
+        public string WardRange
         {
             get;
             set;
@@ -102,6 +108,11 @@ namespace EAMS_ACore.Models.PublicModels
 
         }
         public string? GPVoterPdfPath
+        {
+            get;
+            set;
+        }
+        public string WardRange
         {
             get;
             set;

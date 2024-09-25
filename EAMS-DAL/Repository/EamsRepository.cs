@@ -16495,6 +16495,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             {
                 existing.GPVoterPdfPath = existing.GPVoterPdfPath;
             }
+            existing.WardRange = gpVoterPdf.WardRange;
             _context.GPVoter.Update(existing);
             await _context.SaveChangesAsync();
 
@@ -16545,6 +16546,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                           AssemblyName = j.AssemblyMaster.AssemblyName,
                           FourthLevelHMasterId = flh.FourthLevelHMasterId,
                           FourthLevelHName = flh.HierarchyName,
+                          WardRange = j.GPVoter.WardRange,
                           GPVoterStatus = j.GPVoter.GPVoterStatus
                       })
                 .FirstOrDefaultAsync(); // Return a single GPVoterList object
@@ -16588,6 +16590,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                           AssemblyName = j.AssemblyMaster.AssemblyName,
                           FourthLevelHMasterId = flh.FourthLevelHMasterId,
                           FourthLevelHName = flh.HierarchyName,
+                          WardRange = j.GPVoter.WardRange,
                           GPVoterStatus = j.GPVoter.GPVoterStatus
                       })
                 .ToListAsync();

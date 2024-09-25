@@ -3,6 +3,7 @@ using System;
 using EAMS_DAL.DBContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EAMS_DAL.Migrations
 {
     [DbContext(typeof(EamsContext))]
-    partial class EamsContextModelSnapshot : ModelSnapshot
+    [Migration("20240925094911_AddFieldinGPVoters")]
+    partial class AddFieldinGPVoters
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1705,7 +1708,11 @@ namespace EAMS_DAL.Migrations
                     b.Property<int?>("StateMasterId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("WardRange")
+                    b.Property<string>("WardRangeFrom")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("WardRangeTo")
                         .IsRequired()
                         .HasColumnType("text");
 

@@ -928,7 +928,6 @@ namespace EAMS.Helper
 
             CreateMap<GPVoterViewModel, GPVoter>()
              .ForMember(dest => dest.GPVoterPdfPath, opt => opt.Ignore())
-
             .ReverseMap();
 
             CreateMap<UpdateGPVoterViewModel, GPVoter>()

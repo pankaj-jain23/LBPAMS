@@ -507,7 +507,7 @@ namespace EAMS.Controllers
             const long MaxFileSize = 7 * 1024 * 1024; // 7 MB in bytes
 
             // Check if the file exceeds the maximum size
-            if (updateGPVoterViewModel.GPVoterPdf.Length > MaxFileSize)
+            if (updateGPVoterViewModel.GPVoterPdf != null && updateGPVoterViewModel.GPVoterPdf.Length > MaxFileSize)
             {
                 return BadRequest($"File size exceeds the 7 MB limit.");
             }
@@ -548,11 +548,6 @@ namespace EAMS.Controllers
 
                 // Update GPVoterPath with the new file name
                 mappedData.GPVoterPdfPath = Path.Combine("GPVoter", fileName).Replace("\\", "/");
-            }
-            else
-            {
-                // If no new file is uploaded, retain the existing file path
-                mappedData.GPVoterPdfPath = existingGPVoter.GPVoterPdfPath;
             }
 
             // Update the timestamp for when the record was updated

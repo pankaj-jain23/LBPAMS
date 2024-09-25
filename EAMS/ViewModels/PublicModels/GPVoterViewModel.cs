@@ -23,12 +23,17 @@
             get;
             set;
         }
+        
         public IFormFile? GPVoterPdf
         {
             get;
             set;
         }
-       
+        public string WardRange
+        {
+            get;
+            set;
+        }
         public bool GPVoterStatus { get; set; }
     }
     public class UpdateGPVoterViewModel
@@ -60,6 +65,11 @@
             set;
         }
         public IFormFile? GPVoterPdf
+        {
+            get;
+            set;
+        }
+        public string WardRange
         {
             get;
             set;
