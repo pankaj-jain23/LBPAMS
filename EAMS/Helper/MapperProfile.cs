@@ -457,7 +457,7 @@ namespace EAMS.Helper
 
             #region Event Activity
 
-            CreateMap<UpdateEventActivityViewModel, UpdateEventActivity>() 
+            CreateMap<UpdateEventActivityViewModel, UpdateEventActivity>()
          .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
          .ForMember(dest => dest.EventMasterId, opt => opt.MapFrom(src => src.EventMasterId))
          .ForMember(dest => dest.EventABBR, opt => opt.MapFrom(src => src.EventABBR))
@@ -466,9 +466,8 @@ namespace EAMS.Helper
          .ForMember(dest => dest.EventStatus, opt => opt.MapFrom(src => src.EventStatus))
          .ForMember(dest => dest.NoOfPollingAgents, opt => opt.MapFrom(src => src.NoOfPollingAgents))
          .ForMember(dest => dest.VoterInQueue, opt => opt.MapFrom(src => src.VoterInQueue))
- 
+          .ReverseMap();
 
-                     .ReverseMap();
             CreateMap<UpdateVTEventActivityViewModel, UpdateEventActivity>()
             .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
             .ForMember(dest => dest.EventMasterId, opt => opt.MapFrom(src => src.EventMasterId))
@@ -479,6 +478,18 @@ namespace EAMS.Helper
             .ForMember(dest => dest.VotesPolled, opt => opt.MapFrom(src => src.VotesPolled))
 
             .ReverseMap();
+            CreateMap<UpdateFinalVoteEventActivityViewModel, UpdateEventActivity>()
+        .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
+        .ForMember(dest => dest.EventMasterId, opt => opt.MapFrom(src => src.EventMasterId))
+        .ForMember(dest => dest.EventABBR, opt => opt.MapFrom(src => src.EventABBR))
+        .ForMember(dest => dest.EventName, opt => opt.MapFrom(src => src.EventName))
+        .ForMember(dest => dest.EventSequence, opt => opt.MapFrom(src => src.EventSequence))
+        .ForMember(dest => dest.EventStatus, opt => opt.MapFrom(src => src.EventStatus)) 
+        .ForMember(dest => dest.FinalMaleVotes, opt => opt.MapFrom(src => src.FinalMaleVotes)) 
+        .ForMember(dest => dest.FinalFeMaleVotes, opt => opt.MapFrom(src => src.FinalFeMaleVotes)) 
+        .ForMember(dest => dest.FinalTransgenderVotes, opt => opt.MapFrom(src => src.FinalTransgenderVotes)) 
+
+        .ReverseMap();
             #endregion
 
             #region SlotManagement

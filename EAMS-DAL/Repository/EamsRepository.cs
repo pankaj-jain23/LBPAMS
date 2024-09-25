@@ -24,6 +24,7 @@ using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using System.Data;
 using System.Globalization;
+using System.Reflection;
 using System.Security.Claims;
 
 
@@ -2123,7 +2124,7 @@ namespace EAMS_DAL.Repository
                 var electionInfo = electionInfoRecords
                     .FirstOrDefault(e => e.BoothMasterId == booth.BoothMasterId && e.ElectionTypeMasterId == booth.ElectionTypeMasterId);
 
-                if (electionInfo != null && electionInfo.IsPartyDispatched == true)
+                if (electionInfo != null)
                 {
                     var updateEventActivity = new UpdateEventActivity
                     {
@@ -2133,14 +2134,27 @@ namespace EAMS_DAL.Repository
                         ElectionTypeMasterId = booth.ElectionTypeMasterId,
                         EventMasterId = electionInfo.EventMasterId,
                         EventSequence = electionInfo.EventSequence,
-                        EventABBR = electionInfo.EventABBR
-                    };
+                        EventABBR = electionInfo.EventABBR,
+                        EventStatus= electionInfo.EventStatus
 
-                    var getNextEvent = await GetNextEvent(updateEventActivity);
-                    booth.EventMasterId = getNextEvent.EventMasterId;
-                    booth.EventSequence = getNextEvent.EventSequence;
-                    booth.EventABBR = getNextEvent.EventABBR;
-                    booth.EventName = getNextEvent.EventName;
+                    };
+                    if (electionInfo.EventStatus == true)
+                    {
+                        var eventInfo = await GetNextEvent(updateEventActivity);
+
+                        booth.EventMasterId = eventInfo.EventMasterId;
+                        booth.EventSequence = eventInfo.EventSequence;
+                        booth.EventABBR = eventInfo.EventABBR;
+                        booth.EventName = eventInfo.EventName;
+                    }
+                    else
+                    {
+                        booth.EventMasterId = electionInfo.EventMasterId;
+                        booth.EventSequence = electionInfo.EventSequence;
+                        booth.EventABBR = electionInfo.EventABBR;
+                        booth.EventName = electionInfo.EventName;
+
+                    }
                 }
                 else
                 {
@@ -5032,6 +5046,53 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             // Return the next event (or null if none found)
             return checkEventActivity;
         }
+        public async Task<CheckEventActivity> GetPreviousEvent(UpdateEventActivity updateEventActivity)
+        {
+            // Try to retrieve the event list from cache
+            var eventList = await _cacheService.GetDataAsync<List<EventMaster>>("GetEventList");
+
+            // If cache is empty, retrieve from repository and set it in cache
+            if (eventList == null || !eventList.Any())
+            {
+                eventList = await GetEventListById(updateEventActivity.StateMasterId, updateEventActivity.ElectionTypeMasterId);
+                await _cacheService.SetDataAsync("GetEventList", eventList, DateTimeOffset.Now.AddMinutes(5)); // Cache for 5 minutes
+            }
+
+            // Sort the event list by sequence in ascending order
+            var sortedEventList = eventList.OrderBy(e => e.EventSequence).ToList();
+
+            // Find the current event based on EventABBR and EventSequence
+            var currentEvent = sortedEventList.FirstOrDefault(e => e.EventABBR == updateEventActivity.EventABBR && e.EventSequence == updateEventActivity.EventSequence);
+
+            if (currentEvent == null)
+            {
+                // If the current event is not found, handle the error (return null or throw exception)
+                return null;
+            }
+
+            // Check previous events for status
+            var previousEvent = sortedEventList.Take(sortedEventList.IndexOf(currentEvent))
+                                               .LastOrDefault(e => e.Status == true);
+            if (previousEvent == null)
+            {
+                // If the current event is not found, handle the error (return null or throw exception)
+                return null;
+            }
+
+            CheckEventActivity checkEventActivity = new CheckEventActivity();
+            checkEventActivity.StateMasterId = updateEventActivity.StateMasterId;
+            checkEventActivity.DistrictMasterId = updateEventActivity.DistrictMasterId;
+            checkEventActivity.AssemblyMasterId = updateEventActivity.AssemblyMasterId;
+            checkEventActivity.BoothMasterId = updateEventActivity.BoothMasterId;
+            checkEventActivity.ElectionTypeMasterId = updateEventActivity.ElectionTypeMasterId;
+            checkEventActivity.EventMasterId = previousEvent.EventMasterId;
+            checkEventActivity.EventABBR = previousEvent.EventABBR;
+            checkEventActivity.EventName = previousEvent.EventName;
+            checkEventActivity.EventSequence = previousEvent.EventSequence;
+            checkEventActivity.EventStatus = previousEvent.Status;
+            // Return the first previous event with Status = true (or null if none found)
+            return checkEventActivity;
+        }
 
         public async Task<ElectionInfoMaster> EventUpdationStatus(ElectionInfoMaster electionInfoMaster)
         {
@@ -5064,7 +5125,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.ElectionInfoStatus = updateEventActivity.EventStatus;
                 result.IsPartyDispatched = updateEventActivity.EventStatus;
                 result.PartyDispatchedLastUpdate = BharatDateTime();
-
+                result.EventStatus = updateEventActivity.EventStatus;
                 _context.ElectionInfoMaster.Update(result);
             }
             // If the record does not exist, create a new one
@@ -5083,6 +5144,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     EventName = updateEventActivity.EventName,
                     ElectionInfoStatus = updateEventActivity.EventStatus,
                     IsPartyDispatched = updateEventActivity.EventStatus,
+                    EventStatus = updateEventActivity.EventStatus,
                     PartyDispatchedLastUpdate = BharatDateTime()
                 };
 
@@ -5121,7 +5183,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.ElectionInfoStatus = updateEventActivity.EventStatus;
                 result.IsPartyReached = updateEventActivity.EventStatus;
                 result.PartyReachedLastUpdate = BharatDateTime();
-
+                result.EventStatus = updateEventActivity.EventStatus;
                 _context.ElectionInfoMaster.Update(result);
             }
 
@@ -5156,6 +5218,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.IsSetupOfPolling = updateEventActivity.EventStatus;
                 result.SetupOfPollingLastUpdate = BharatDateTime();
                 result.EventName = updateEventActivity.EventName;
+                result.EventStatus = updateEventActivity.EventStatus;
                 _context.ElectionInfoMaster.Update(result);
             }
 
@@ -5188,9 +5251,11 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.EventSequence = updateEventActivity.EventSequence;
                 result.EventABBR = updateEventActivity.EventABBR;
                 result.ElectionInfoStatus = updateEventActivity.EventStatus;
+                result.NoOfPollingAgents = updateEventActivity.NoOfPollingAgents;
                 result.IsMockPollDone = updateEventActivity.EventStatus;
                 result.MockPollDoneLastUpdate = BharatDateTime();
                 result.EventName = updateEventActivity.EventName;
+                result.EventStatus = updateEventActivity.EventStatus;
                 _context.ElectionInfoMaster.Update(result);
             }
 
@@ -5226,6 +5291,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.IsPollStarted = updateEventActivity.EventStatus;
                 result.PollStartedLastUpdate = BharatDateTime();
                 result.EventName = updateEventActivity.EventName;
+                result.EventStatus = updateEventActivity.EventStatus;
                 _context.ElectionInfoMaster.Update(result);
             }
 
@@ -5243,6 +5309,24 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         public async Task<ServiceResponse> VoterTurnOut(UpdateEventActivity updateEventActivity)
         {
+            var totalVoters = await _context.BoothMaster
+      .Where(d => d.StateMasterId == updateEventActivity.StateMasterId &&
+                  d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                  d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                  d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                  d.BoothMasterId == updateEventActivity.BoothMasterId)
+      .Select(d => d.TotalVoters)
+      .FirstOrDefaultAsync();
+
+            if (updateEventActivity.VotesPolled > totalVoters)
+            {
+                return new ServiceResponse
+                {
+                    IsSucceed = false,
+                    Message = "The number of votes polled exceeds the total registered voters. Please verify the input."
+                };
+            }
+
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
                 d.StateMasterId == updateEventActivity.StateMasterId &&
@@ -5251,7 +5335,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
                 d.BoothMasterId == updateEventActivity.BoothMasterId
             );
-
+            
             var pollDetail = await _context.PollDetails.Where(d =>
                 d.StateMasterId == updateEventActivity.StateMasterId &&
                 d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
@@ -5291,7 +5375,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.VotingLastUpdate = BharatDateTime();
                 result.FinalVote = updateEventActivity.VotesPolled;
                 result.EventName = updateEventActivity.EventName;
-
+                result.EventStatus = updateEventActivity.EventStatus;
                 // Check if a PollDetail already exists within the current Slot's EndTime and LockTime
                 bool pollDetailExists = await _context.PollDetails.AnyAsync(p =>
                                      p.SlotManagementId == getLatestSlot.SlotManagementId &&
@@ -5307,6 +5391,12 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 {
                     PollDetail newPollDetail = new PollDetail()
                     {
+                        StateMasterId=updateEventActivity.StateMasterId,
+                        DistrictMasterId=updateEventActivity.DistrictMasterId,
+                        AssemblyMasterId=updateEventActivity.AssemblyMasterId,
+                        BoothMasterId=updateEventActivity.BoothMasterId,
+                        ElectionTypeMasterId=updateEventActivity.ElectionTypeMasterId,
+                       
                         EventMasterId = updateEventActivity.EventMasterId,
                         EventSequence = updateEventActivity.EventSequence,
                         EventABBR = updateEventActivity.EventABBR,
@@ -5364,6 +5454,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.IsVoterTurnOut = updateEventActivity.EventStatus;
                 result.VoterInQueueLastUpdate = BharatDateTime();
                 result.EventName = updateEventActivity.EventName;
+                result.EventStatus = updateEventActivity.EventStatus;
                 _context.ElectionInfoMaster.Update(result);
             }
 
@@ -5396,9 +5487,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.EventSequence = updateEventActivity.EventSequence;
                 result.EventABBR = updateEventActivity.EventABBR;
                 result.ElectionInfoStatus = updateEventActivity.EventStatus;
-                //result.IsPartyDispatched = updateEventActivity.EventStatus;
-                //result.PartyDispatchedLastUpdate = BharatDateTime();
+                result.IsFinalVote = updateEventActivity.EventStatus;
+                result.FinalVoteLastUpdate = BharatDateTime();
                 result.EventName = updateEventActivity.EventName;
+                result.EventStatus = updateEventActivity.EventStatus;
                 _context.ElectionInfoMaster.Update(result);
             }
 
@@ -5434,6 +5526,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.IsPollEnded = updateEventActivity.EventStatus;
                 result.IsPollEndedLastUpdate = BharatDateTime();
                 result.EventName = updateEventActivity.EventName;
+
+                result.EventStatus = updateEventActivity.EventStatus;
                 _context.ElectionInfoMaster.Update(result);
             }
 
@@ -5469,6 +5563,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.IsMCESwitchOff = updateEventActivity.EventStatus;
                 result.MCESwitchOffLastUpdate = BharatDateTime();
                 result.EventName = updateEventActivity.EventName;
+                result.EventStatus = updateEventActivity.EventStatus;
                 _context.ElectionInfoMaster.Update(result);
             }
 
@@ -5504,6 +5599,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.IsPartyDeparted = updateEventActivity.EventStatus;
                 result.PartyDepartedLastUpdate = BharatDateTime();
                 result.EventName = updateEventActivity.EventName;
+                result.EventStatus = updateEventActivity.EventStatus;
                 _context.ElectionInfoMaster.Update(result);
             }
 
@@ -5539,6 +5635,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.IsPartyReachedCollectionCenter = updateEventActivity.EventStatus;
                 result.PartyReachedCollectionCenterLastUpdate = BharatDateTime();
                 result.EventName = updateEventActivity.EventName;
+                result.EventStatus = updateEventActivity.EventStatus;
                 _context.ElectionInfoMaster.Update(result);
             }
 
@@ -5574,6 +5671,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.IsEVMDeposited = updateEventActivity.EventStatus;
                 result.EVMDepositedLastUpdate = BharatDateTime();
                 result.EventName = updateEventActivity.EventName;
+                result.EventStatus = updateEventActivity.EventStatus;
                 _context.ElectionInfoMaster.Update(result);
             }
 
@@ -5888,7 +5986,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 d.BoothMasterId == checkEventActivity.BoothMasterId
             );
 
-            if (result is not null && result.IsPartyReached == true)
+            if (result is not null && result.IsFinalVote == true)
             {
                 return new ServiceResponse()
                 {
@@ -5901,7 +5999,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 return new ServiceResponse()
                 {
                     IsSucceed = false,
-                    Message = "Party Not Arrived Yet"
+                    Message = "Final Vote Not Done Yet"
                 };
 
             }
@@ -5931,7 +6029,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 return new ServiceResponse()
                 {
                     IsSucceed = false,
-                    Message = "Party Not Ended Yet"
+                    Message = "Poll Not Ended Yet"
                 };
 
             }
@@ -6638,7 +6736,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         public async Task<FinalViewModel> GetFinalVotes(int boothMasterId)
         {
-            FinalViewModel model = null;
             // Step 1: Try to fetch BoothMaster details from cache
             var cacheKeyBooth = $"GetFinalBoothMaster_{boothMasterId}";
             var getBooth = await _cacheService.GetDataAsync<BoothMaster>(cacheKeyBooth);
@@ -6653,7 +6750,11 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                     BoothMasterId = d.BoothMasterId,
                                     StateMasterId = d.StateMasterId,
                                     ElectionTypeMasterId = d.ElectionTypeMasterId,
-                                    TotalVoters = d.TotalVoters
+                                    TotalVoters = d.TotalVoters,
+                                    Male = d.Male,
+                                    Female = d.Female,
+                                    Transgender = d.Transgender
+
                                 })
                                 .FirstOrDefaultAsync();
 
@@ -6702,42 +6803,42 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             {
                 return null; // Handle case when no election info is found
             }
+            var votesPolled = await _context.PollDetails
+                .Where(d => d.StateMasterId == electionInfo.StateMasterId
+                            && d.DistrictMasterId == electionInfo.DistrictMasterId
+                            && d.AssemblyMasterId == electionInfo.AssemblyMasterId
+                            && d.BoothMasterId == electionInfo.BoothMasterId
+                            && d.ElectionTypeMasterId == electionInfo.ElectionTypeMasterId
+                            && d.EventABBR == currentEvent.EventABBR
+                            && d.EventSequence == currentEvent.EventSequence
+                            && d.EventMasterId == currentEvent.EventMasterId)
+                .OrderByDescending(d => d.PollDetailMasterId) // Ensure ordering before using LastOrDefault
+                .LastOrDefaultAsync();
 
-            // Step 4: Get voter slot availability
-            var getVoterSlotAvailable = await GetVoterSlotAvailable(getBooth.StateMasterId, getBooth.ElectionTypeMasterId);
-
-
-
+            if(votesPolled is null || electionInfo is null && electionInfo.IsVoterInQueue==false)
+            {
+                return null;
+            }
             // Step 5: Populate ViewModel and return
-            VoterTurnOutPolledDetailViewModel voterTurnOutPolledDetailViewModel = new VoterTurnOutPolledDetailViewModel
+            FinalViewModel finalViewModel = new FinalViewModel
             {
                 BoothMasterId = boothMasterId,
-                EventMasterId = electionInfo.EventMasterId,
-                EventABBR = currentEvent.EventABBR,
-                EventName = currentEvent.EventName,
-                EventSequence = currentEvent.EventSequence,
+                ElectionTypeMasterId = getBooth.ElectionTypeMasterId,
                 TotalVoters = getBooth.TotalVoters,
-                VotesPolled = electionInfo.FinalVote,
-                VotesPolledRecivedTime = electionInfo.VotingLastUpdate
-
+                LastVotesPolled = votesPolled.VotesPolled,
+                TotalAvailableMale = getBooth.Male,
+                TotalAvailableFemale = getBooth.Female,
+                TotalAvailableTransgender = getBooth.Transgender,
+                Male = electionInfo.Male,
+                Female = electionInfo.Female,
+                Transgender = electionInfo.Transgender,
+                LastFinalVotesPolled = electionInfo.FinalVote,
+                VotesFinalPolledTime = electionInfo.FinalVoteLastUpdate
             };
-            if (getVoterSlotAvailable == null)
-            {
 
-                voterTurnOutPolledDetailViewModel.IsSlotAvailable = false;
-                voterTurnOutPolledDetailViewModel.Message = "Slot Not Available";
-
-            }
-            else
-            {
-                voterTurnOutPolledDetailViewModel.StartTime = getVoterSlotAvailable.StartTime;
-                voterTurnOutPolledDetailViewModel.EndTime = getVoterSlotAvailable.EndTime;
-                voterTurnOutPolledDetailViewModel.LockTime = getVoterSlotAvailable.LockTime;
-                voterTurnOutPolledDetailViewModel.IsSlotAvailable = true;
-                voterTurnOutPolledDetailViewModel.Message = "Slot  Available";
-            }
-            return model;
+            return finalViewModel;
         }
+
         public async Task<int> GetSlot(List<SlotManagementMaster> slotLists)
         {
             int slotId = 0;

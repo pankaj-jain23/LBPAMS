@@ -21,6 +21,7 @@ namespace EAMS_ACore.Models
         public int EventSequence { get; set; }
         public string EventName { get; set; }
         public string EventABBR { get; set; }
+        public bool EventStatus { get; set; }
         public bool ElectionInfoStatus { get; set; }
         public string? FOUserId { get; set; }
         public string? AROUserId { get; set; }
@@ -54,6 +55,7 @@ namespace EAMS_ACore.Models
 
 
         public int? FinalVote { get; set; }
+        public DateTime? FinalVoteLastUpdate { get; set; }
         public bool IsFinalVote { get; set; }
         /**Male Female Transgender**/
         public int? Male { get; set; }

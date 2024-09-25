@@ -2282,7 +2282,45 @@ namespace EAMS.Controllers
             // Map view model to entity
             var mappedData = _mapper.Map<UpdateEventActivity>(updateEventActivityViewModel);
 
-            // Set IDs from claims
+            mappedData.StateMasterId = stateMasterId;
+            mappedData.DistrictMasterId = districtMasterId;
+            mappedData.AssemblyMasterId = assemblyMasterId;
+            mappedData.ElectionTypeMasterId = electionTypeMasterId;
+
+            var result = await _EAMSService.UpdateEventActivity(mappedData);
+            if (result.IsSucceed == true)
+            {
+                return Ok(result.Message);
+            }
+            else
+            {
+                return BadRequest(result.Message);
+            }
+
+        }
+
+        [HttpPut]
+        [Route("UpdateFinalVoteEventActivity")]
+        [Authorize]
+        public async Task<IActionResult> UpdateFinalVoteEventActivity(UpdateFinalVoteEventActivityViewModel updateEventActivityViewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Invalid model state.");
+            }
+
+            // Extract the required claims
+            if (!TryGetClaimValue(User, "StateMasterId", out int stateMasterId) ||
+                !TryGetClaimValue(User, "DistrictMasterId", out int districtMasterId) ||
+                !TryGetClaimValue(User, "AssemblyMasterId", out int assemblyMasterId) ||
+                !TryGetClaimValue(User, "ElectionTypeMasterId", out int electionTypeMasterId))
+            {
+                return BadRequest("Missing or invalid claims.");
+            }
+
+            // Map view model to entity
+            var mappedData = _mapper.Map<UpdateEventActivity>(updateEventActivityViewModel);
+
             mappedData.StateMasterId = stateMasterId;
             mappedData.DistrictMasterId = districtMasterId;
             mappedData.AssemblyMasterId = assemblyMasterId;
@@ -2430,7 +2468,7 @@ namespace EAMS.Controllers
             }
             else
             {
-                return BadRequest();
+                return BadRequest("Final Vote is not active");
             }
 
         }

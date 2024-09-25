@@ -151,6 +151,7 @@ namespace EAMS_ACore.IRepository
         #endregion
 
         Task<CheckEventActivity> GetNextEvent(UpdateEventActivity updateEventActivity);
+        Task<CheckEventActivity> GetPreviousEvent(UpdateEventActivity updateEventActivity);
         Task<List<BoothEvents>> GetBoothEventListById(int stateMasterId, int electionTypeMasterId, int boothMasterId);
 
         Task<bool> CanPollStart(int boothMasterId, int eventid);

@@ -390,7 +390,7 @@ namespace EAMS_BLL.Services
         public async Task<ServiceResponse> UpdateEventActivity(UpdateEventActivity updateEventActivity)
         {
             // Get the previous event status
-            var previousEventStatus = await GetPreviousEvent(updateEventActivity);
+            var previousEventStatus = await _eamsRepository. GetPreviousEvent(updateEventActivity);
             var nextEvent = await _eamsRepository.GetNextEvent(updateEventActivity);
             // If no previous event exists, update the activity directly only for Party Dispatch Case
             if (previousEventStatus == null)
@@ -446,53 +446,7 @@ namespace EAMS_BLL.Services
             return await UpdateEventsActivity(updateEventActivity);
         }
 
-        private async Task<CheckEventActivity> GetPreviousEvent(UpdateEventActivity updateEventActivity)
-        {
-            // Try to retrieve the event list from cache
-            var eventList = await _cacheService.GetDataAsync<List<EventMaster>>("GetEventList");
-
-            // If cache is empty, retrieve from repository and set it in cache
-            if (eventList == null || !eventList.Any())
-            {
-                eventList = await _eamsRepository.GetEventListById(updateEventActivity.StateMasterId, updateEventActivity.ElectionTypeMasterId);
-                await _cacheService.SetDataAsync("GetEventList", eventList, DateTimeOffset.Now.AddMinutes(5)); // Cache for 5 minutes
-            }
-
-            // Sort the event list by sequence in ascending order
-            var sortedEventList = eventList.OrderBy(e => e.EventSequence).ToList();
-
-            // Find the current event based on EventABBR and EventSequence
-            var currentEvent = sortedEventList.FirstOrDefault(e => e.EventABBR == updateEventActivity.EventABBR && e.EventSequence == updateEventActivity.EventSequence);
-
-            if (currentEvent == null)
-            {
-                // If the current event is not found, handle the error (return null or throw exception)
-                return null;
-            }
-
-            // Check previous events for status
-            var previousEvent = sortedEventList.Take(sortedEventList.IndexOf(currentEvent))
-                                               .LastOrDefault(e => e.Status == true);
-            if (previousEvent == null)
-            {
-                // If the current event is not found, handle the error (return null or throw exception)
-                return null;
-            }
-
-            CheckEventActivity checkEventActivity = new CheckEventActivity();
-            checkEventActivity.StateMasterId = updateEventActivity.StateMasterId;
-            checkEventActivity.DistrictMasterId = updateEventActivity.DistrictMasterId;
-            checkEventActivity.AssemblyMasterId = updateEventActivity.AssemblyMasterId;
-            checkEventActivity.BoothMasterId = updateEventActivity.BoothMasterId;
-            checkEventActivity.ElectionTypeMasterId = updateEventActivity.ElectionTypeMasterId;
-            checkEventActivity.EventMasterId = previousEvent.EventMasterId;
-            checkEventActivity.EventABBR = previousEvent.EventABBR;
-            checkEventActivity.EventSequence = previousEvent.EventSequence;
-            checkEventActivity.EventStatus = previousEvent.Status;
-            // Return the first previous event with Status = true (or null if none found)
-            return checkEventActivity;
-        }
-
+         
         private async Task<ServiceResponse> IsEventActivityDone(CheckEventActivity checkEventActivity)
         {
             ServiceResponse response = null;

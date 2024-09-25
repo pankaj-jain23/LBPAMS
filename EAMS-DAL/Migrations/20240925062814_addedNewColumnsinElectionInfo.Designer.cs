@@ -3,6 +3,7 @@ using System;
 using EAMS_DAL.DBContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EAMS_DAL.Migrations
 {
     [DbContext(typeof(EamsContext))]
-    partial class EamsContextModelSnapshot : ModelSnapshot
+    [Migration("20240925062814_addedNewColumnsinElectionInfo")]
+    partial class addedNewColumnsinElectionInfo
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -657,9 +660,6 @@ namespace EAMS_DAL.Migrations
 
                     b.Property<int>("EventSequence")
                         .HasColumnType("integer");
-
-                    b.Property<bool>("EventStatus")
-                        .HasColumnType("boolean");
 
                     b.Property<string>("FOUserId")
                         .HasColumnType("text");
