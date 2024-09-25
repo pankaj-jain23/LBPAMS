@@ -49,7 +49,7 @@ namespace EAMS_ACore.Models
 
 
         public DateTime? VoterInQueueLastUpdate { get; set; }
-        public bool? IsVoterInQueue { get; set; }
+        public bool IsVoterInQueue { get; set; }
         public int? VoterInQueue { get; set; }
 
 

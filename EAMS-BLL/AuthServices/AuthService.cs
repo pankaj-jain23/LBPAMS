@@ -434,7 +434,7 @@ namespace EAMS_BLL.AuthServices
         {
             var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
 
-            var expireAccessToken = DateTime.UtcNow.AddHours(4);
+            var expireAccessToken = BharatTimeDynamic(0,0,4,0,0);
 
 
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -501,7 +501,7 @@ namespace EAMS_BLL.AuthServices
         {
             // Implement your business logic to check whether the refresh token is still valid.
             // You might consider checking against the current date, or additional custom conditions.
-            return refreshTokenExpiryTime > DateTime.Now;
+            return refreshTokenExpiryTime > BharatDateTime();
         }
         #endregion
 

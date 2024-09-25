@@ -2026,7 +2026,9 @@ namespace EAMS_DAL.Repository
         public async Task<List<CombinedMaster>> GetBoothListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
         {
 
-            var boothlist = from bt in _context.BoothMaster.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.AssignedTo == foId.ToString())
+            var boothlist = from bt in _context.BoothMaster.Where(d => d.StateMasterId == stateMasterId
+                            && d.DistrictMasterId == districtMasterId
+                            && d.AssemblyMasterId == assemblyMasterId && d.AssignedTo == foId.ToString())
                             join fourthLevelH in _context.FourthLevelH on bt.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
                             join asem in _context.AssemblyMaster
                             on bt.AssemblyMasterId equals asem.AssemblyMasterId
@@ -2119,12 +2121,13 @@ namespace EAMS_DAL.Repository
             }
 
             // Step 4: Update each booth's event data
+            // Convert electionInfoRecords to a dictionary for faster lookups by BoothMasterId and ElectionTypeMasterId
+            var electionInfoDict = electionInfoRecords.ToDictionary(e => (e.BoothMasterId, e.ElectionTypeMasterId));
+
             foreach (var booth in boothListResult)
             {
-                var electionInfo = electionInfoRecords
-                    .FirstOrDefault(e => e.BoothMasterId == booth.BoothMasterId && e.ElectionTypeMasterId == booth.ElectionTypeMasterId);
-
-                if (electionInfo != null)
+                // Try to find matching electionInfo in the dictionary
+                if (electionInfoDict.TryGetValue((booth.BoothMasterId, booth.ElectionTypeMasterId), out var electionInfo))
                 {
                     var updateEventActivity = new UpdateEventActivity
                     {
@@ -2136,12 +2139,11 @@ namespace EAMS_DAL.Repository
                         EventSequence = electionInfo.EventSequence,
                         EventABBR = electionInfo.EventABBR,
                         EventStatus = electionInfo.EventStatus
-
                     };
+
                     if (electionInfo.EventStatus == true)
                     {
                         var eventInfo = await GetNextEvent(updateEventActivity);
-
                         booth.EventMasterId = eventInfo.EventMasterId;
                         booth.EventSequence = eventInfo.EventSequence;
                         booth.EventABBR = eventInfo.EventABBR;
@@ -2149,15 +2151,16 @@ namespace EAMS_DAL.Repository
                     }
                     else
                     {
+                        // Set booth event info from electionInfo if status is not true
                         booth.EventMasterId = electionInfo.EventMasterId;
                         booth.EventSequence = electionInfo.EventSequence;
                         booth.EventABBR = electionInfo.EventABBR;
                         booth.EventName = electionInfo.EventName;
-
                     }
                 }
                 else
                 {
+                    // Assign values from getFirstEvent if no matching electionInfo is found
                     booth.EventMasterId = getFirstEvent.EventMasterId;
                     booth.EventSequence = getFirstEvent.EventSequence;
                     booth.EventABBR = getFirstEvent.EventABBR;
@@ -4944,10 +4947,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                             eventStatus = getElectionInfoRecord.IsVoterTurnOut;
                             break;
                         case "VQ": // Voter In Queue
-                            eventStatus = getElectionInfoRecord.IsVoterTurnOut;
+                            eventStatus = getElectionInfoRecord.IsVoterInQueue;
                             break;
                         case "FV": // Final Votes Polled
-                            eventStatus = getElectionInfoRecord.IsVoterTurnOut;
+                            eventStatus = getElectionInfoRecord.IsFinalVote;
                             break;
                         case "PE": // Poll Ended
                             eventStatus = getElectionInfoRecord.IsPollEnded;
@@ -5309,6 +5312,22 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         public async Task<ServiceResponse> VoterTurnOut(UpdateEventActivity updateEventActivity)
         {
+            // Get the latest slot from the SlotManagementMaster table
+            var getLatestSlot = await GetVoterSlotAvailable(updateEventActivity.StateMasterId, updateEventActivity.ElectionTypeMasterId);
+            //var currentTime = DateTimeOffset.Now;
+
+            //// Check if current time falls between EndTime and LockTime, if both are available
+            //bool isWithinTimeWindow = getLatestSlot.EndTime.HasValue && getLatestSlot.LockTime.HasValue &&
+            //                          currentTime.TimeOfDay >= getLatestSlot.EndTime.Value.ToTimeSpan() &&
+            //                          currentTime.TimeOfDay <= getLatestSlot.LockTime.Value.ToTimeSpan();
+            if (getLatestSlot is null)
+            {
+                return new ServiceResponse
+                {
+                    IsSucceed = false,
+                    Message = "Current time is not within the allowed voting window"
+                };
+            }
             var totalVoters = await _context.BoothMaster
       .Where(d => d.StateMasterId == updateEventActivity.StateMasterId &&
                   d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
@@ -5328,38 +5347,35 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
 
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
-            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+
+
+            bool pollDetail = await _context.PollDetails.AnyAsync(d =>
                 d.StateMasterId == updateEventActivity.StateMasterId &&
                 d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
                 d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
                 d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
                 d.BoothMasterId == updateEventActivity.BoothMasterId
+                && d.SlotManagementId == getLatestSlot.SlotManagementId
             );
 
-            var pollDetail = await _context.PollDetails.Where(d =>
-                d.StateMasterId == updateEventActivity.StateMasterId &&
-                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
-                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
-                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
-                d.BoothMasterId == updateEventActivity.BoothMasterId
-            ).ToListAsync();
 
-            // Get the latest slot from the SlotManagementMaster table
-            var getLatestSlot = await GetVoterSlotAvailable(updateEventActivity.StateMasterId, updateEventActivity.ElectionTypeMasterId);
-            //var currentTime = DateTimeOffset.Now;
-
-            //// Check if current time falls between EndTime and LockTime, if both are available
-            //bool isWithinTimeWindow = getLatestSlot.EndTime.HasValue && getLatestSlot.LockTime.HasValue &&
-            //                          currentTime.TimeOfDay >= getLatestSlot.EndTime.Value.ToTimeSpan() &&
-            //                          currentTime.TimeOfDay <= getLatestSlot.LockTime.Value.ToTimeSpan();
-            if (getLatestSlot is null)
+            if (pollDetail)
             {
+
                 return new ServiceResponse
                 {
                     IsSucceed = false,
-                    Message = "Current time is not within the allowed voting window"
+                    Message = "Already Entered for this Slot"
                 };
             }
+
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+             d.StateMasterId == updateEventActivity.StateMasterId &&
+             d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+             d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+             d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+             d.BoothMasterId == updateEventActivity.BoothMasterId
+         );
             if (result is not null)
             {
                 // Update the existing ElectionInfoMaster record
@@ -5367,34 +5383,23 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.EventSequence = updateEventActivity.EventSequence;
                 result.EventABBR = updateEventActivity.EventABBR;
                 result.ElectionInfoStatus = updateEventActivity.EventStatus;
+                result.EventStatus = false;
                 if (getLatestSlot != null && getLatestSlot.IsLastSlot == true)
                 {
                     result.IsVoterTurnOut = true;
+                    result.EventStatus = true;
+
                 }
                 result.VotingTurnOutLastUpdate = BharatDateTime();
                 result.VotingLastUpdate = BharatDateTime();
                 result.FinalVote = updateEventActivity.VotesPolled;
                 result.EventName = updateEventActivity.EventName;
-                result.EventStatus = updateEventActivity.EventStatus;
                 // Check if a PollDetail already exists within the current Slot's EndTime and LockTime
-                bool pollDetailExists = await _context.PollDetails.AnyAsync(p =>
-                                     p.SlotManagementId == getLatestSlot.SlotManagementId &&
-                                     p.VotesPolledRecivedTime.HasValue && // Ensure VotesPolledRecivedTime is not null
-                                     getLatestSlot.EndTime.HasValue && getLatestSlot.LockTime.HasValue && // Ensure EndTime and LockTime are not null
-                                     p.VotesPolledRecivedTime.Value.TimeOfDay >= getLatestSlot.EndTime.Value.ToTimeSpan() &&
-                                     p.VotesPolledRecivedTime.Value.TimeOfDay <= getLatestSlot.LockTime.Value.ToTimeSpan()
-                                 );
 
 
-                // If no pollDetail exists within the time window, insert a new PollDetail
-                if (pollDetailExists == false)
-                {
-                    return new ServiceResponse
-                    {
-                        IsSucceed = false,
-                        Message = "Already Entered for this Slot"
-                    };
-                }
+
+
+
                 PollDetail newPollDetail = new PollDetail()
                 {
                     StateMasterId = updateEventActivity.StateMasterId,
@@ -5402,7 +5407,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     AssemblyMasterId = updateEventActivity.AssemblyMasterId,
                     BoothMasterId = updateEventActivity.BoothMasterId,
                     ElectionTypeMasterId = updateEventActivity.ElectionTypeMasterId,
-
                     EventMasterId = updateEventActivity.EventMasterId,
                     EventSequence = updateEventActivity.EventSequence,
                     EventABBR = updateEventActivity.EventABBR,
@@ -5448,7 +5452,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.EventSequence = updateEventActivity.EventSequence;
                 result.EventABBR = updateEventActivity.EventABBR;
                 result.ElectionInfoStatus = updateEventActivity.EventStatus;
-                result.IsVoterTurnOut = updateEventActivity.EventStatus;
+                result.IsVoterInQueue = updateEventActivity.EventStatus;
                 result.VoterInQueueLastUpdate = BharatDateTime();
                 result.EventName = updateEventActivity.EventName;
                 result.EventStatus = updateEventActivity.EventStatus;
@@ -5468,6 +5472,44 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         public async Task<ServiceResponse> FinalVotesPolled(UpdateEventActivity updateEventActivity)
         {
+                        var boothMaster = await _context.BoothMaster
+                   .Where(d => d.StateMasterId == updateEventActivity.StateMasterId &&
+                               d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                               d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                               d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                               d.BoothMasterId == updateEventActivity.BoothMasterId)
+                   .Select(d => new
+                   {
+                       d.Male,
+                       d.Female,
+                       d.Transgender
+                   })
+                   .FirstOrDefaultAsync();
+
+                        string warningMessage = string.Empty;
+
+                        if (updateEventActivity.FinalMaleVotes > boothMaster.Male)
+                        {
+                            warningMessage += "The number of male votes exceeds the total registered male voters. ";
+                        }
+                        if (updateEventActivity.FinalFeMaleVotes > boothMaster.Female)
+                        {
+                            warningMessage += "The number of female votes exceeds the total registered female voters. ";
+                        }
+                        if (updateEventActivity.FinalTransgenderVotes > boothMaster.Transgender)
+                        {
+                            warningMessage += "The number of transgender votes exceeds the total registered transgender voters. ";
+                        }
+
+                        if (!string.IsNullOrEmpty(warningMessage))
+                        {
+                            return new ServiceResponse
+                            {
+                                IsSucceed = false,
+                                Message = warningMessage.Trim()
+                            };
+                        }
+
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
                 d.StateMasterId == updateEventActivity.StateMasterId &&
