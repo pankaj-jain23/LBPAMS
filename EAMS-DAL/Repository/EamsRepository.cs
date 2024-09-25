@@ -2135,7 +2135,7 @@ namespace EAMS_DAL.Repository
                         EventMasterId = electionInfo.EventMasterId,
                         EventSequence = electionInfo.EventSequence,
                         EventABBR = electionInfo.EventABBR,
-                        EventStatus= electionInfo.EventStatus
+                        EventStatus = electionInfo.EventStatus
 
                     };
                     if (electionInfo.EventStatus == true)
@@ -5335,7 +5335,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
                 d.BoothMasterId == updateEventActivity.BoothMasterId
             );
-            
+
             var pollDetail = await _context.PollDetails.Where(d =>
                 d.StateMasterId == updateEventActivity.StateMasterId &&
                 d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
@@ -5387,36 +5387,33 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
 
                 // If no pollDetail exists within the time window, insert a new PollDetail
-                if (!pollDetailExists)
-                {
-                    PollDetail newPollDetail = new PollDetail()
-                    {
-                        StateMasterId=updateEventActivity.StateMasterId,
-                        DistrictMasterId=updateEventActivity.DistrictMasterId,
-                        AssemblyMasterId=updateEventActivity.AssemblyMasterId,
-                        BoothMasterId=updateEventActivity.BoothMasterId,
-                        ElectionTypeMasterId=updateEventActivity.ElectionTypeMasterId,
-                       
-                        EventMasterId = updateEventActivity.EventMasterId,
-                        EventSequence = updateEventActivity.EventSequence,
-                        EventABBR = updateEventActivity.EventABBR,
-                        VotesPolledRecivedTime = BharatDateTime(),
-                        VotesPolled = updateEventActivity.VotesPolled,
-                        EventName = updateEventActivity.EventName,
-                        SlotManagementId = getLatestSlot.SlotManagementId,
-                    };
-
-                    _context.PollDetails.Add(newPollDetail);
-                }
-                else
+                if (pollDetailExists == false)
                 {
                     return new ServiceResponse
                     {
                         IsSucceed = false,
                         Message = "Already Entered for this Slot"
                     };
-
                 }
+                PollDetail newPollDetail = new PollDetail()
+                {
+                    StateMasterId = updateEventActivity.StateMasterId,
+                    DistrictMasterId = updateEventActivity.DistrictMasterId,
+                    AssemblyMasterId = updateEventActivity.AssemblyMasterId,
+                    BoothMasterId = updateEventActivity.BoothMasterId,
+                    ElectionTypeMasterId = updateEventActivity.ElectionTypeMasterId,
+
+                    EventMasterId = updateEventActivity.EventMasterId,
+                    EventSequence = updateEventActivity.EventSequence,
+                    EventABBR = updateEventActivity.EventABBR,
+                    VotesPolledRecivedTime = BharatDateTime(),
+                    VotesPolled = updateEventActivity.VotesPolled,
+                    EventName = updateEventActivity.EventName,
+                    SlotManagementId = getLatestSlot.SlotManagementId,
+                };
+
+                _context.PollDetails.Add(newPollDetail);
+
 
                 // Update ElectionInfoMaster in the context
                 _context.ElectionInfoMaster.Update(result);
@@ -6815,7 +6812,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 .OrderByDescending(d => d.PollDetailMasterId) // Ensure ordering before using LastOrDefault
                 .LastOrDefaultAsync();
 
-            if(votesPolled is null || electionInfo is null && electionInfo.IsVoterInQueue==false)
+            if (votesPolled is null || electionInfo is null && electionInfo.IsVoterInQueue == false)
             {
                 return null;
             }
