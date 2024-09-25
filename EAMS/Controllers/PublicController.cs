@@ -342,7 +342,7 @@ namespace EAMS.Controllers
         {
             const long MaxFileSize = 7 * 1024 * 1024; // 7 MB in bytes
             // Check if the file exceeds the maximum size
-            if (updateUnOpposedViewModel.NominationPdf.Length > MaxFileSize)
+            if (updateUnOpposedViewModel.NominationPdf !=null && updateUnOpposedViewModel.NominationPdf.Length > MaxFileSize)
             {
                 return BadRequest($"File size exceeds the 7 MB limit.");
             }
