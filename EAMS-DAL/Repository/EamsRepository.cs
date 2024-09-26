@@ -1818,7 +1818,7 @@ namespace EAMS_DAL.Repository
             return foList;
         }
 
-        public async Task<SectorOfficerProfile> GetSectorOfficerProfile2(string soId)
+        public async Task<FieldOfficerProfile> GetSectorOfficerProfile2(string soId)
         {
             //var sectorOfficerProfile = await (from so in _context.SectorOfficerMaster
             //                                  where so.SOMasterId == Convert.ToInt32(soId)
@@ -1847,33 +1847,66 @@ namespace EAMS_DAL.Repository
         }
 
 
-        public async Task<SectorOfficerProfile> GetSectorOfficerProfile(string soId)
+        //public async Task<FieldOfficerProfile> GetFieldOfficerProfile(string foId)
+        //{
+        //    var foRecord = _context.FieldOfficerMaster.Where(d => d.FieldOfficerMasterId == Convert.ToInt32(foId) && d.FieldOfficerStatus == true).FirstOrDefault();
+        //    var foAssembly = _context.AssemblyMaster.Where(d => d.AssemblyMasterId == foRecord.AssemblyMasterId && d.StateMasterId == foRecord.StateMasterId).FirstOrDefault();
+        //    var foDistrict = _context.DistrictMaster.Where(d => d.DistrictMasterId == foAssembly.DistrictMasterId && d.StateMasterId == foAssembly.StateMasterId).FirstOrDefault();
+        //    var foState = _context.StateMaster.Where(d => d.StateMasterId == foDistrict.StateMasterId).FirstOrDefault();
+        //    var electionType = _context.ElectionTypeMaster.Where(d => d.ElectionTypeMasterId == foDistrict.StateMasterId).FirstOrDefault();
+        //    FieldOfficerProfile fieldOfficerProfile = new FieldOfficerProfile()
+        //    {
+        //        StateMasterId = foRecord.StateMasterId,
+        //        StateName = foState.StateName,
+        //        DistrictMasterId = foRecord.DistrictMasterId,
+        //        DistrictName = foDistrict.DistrictName,
+        //        AssemblyMasterId = foRecord.AssemblyMasterId,
+        //        AssemblyName = foAssembly.AssemblyName,
+        //        FoName = foRecord.FieldOfficerOfficeName,
+        //        OfficerRole = "FO",
+        //        ElectionTypeMasterId= foRecord.ElectionTypeMasterId,
+        //        ElectionTypeName = electionType.ElectionType,
+        //        BoothNo = _context.BoothMaster.Where(p => p.AssignedTo == foId).OrderBy(p => Convert.ToInt32(p.BoothCode_No)).Select(p => p.BoothCode_No.ToString()).ToList()
+
+
+        //    };
+        //    return fieldOfficerProfile;
+        //}
+        public async Task<FieldOfficerProfile> GetFieldOfficerProfile(string foId)
         {
-            //var soRecord = _context.SectorOfficerMaster.Where(d => d.SOMasterId == Convert.ToInt32(soId) && d.SoStatus == true).FirstOrDefault();
-            //var soAssembly = _context.AssemblyMaster.Where(d => d.AssemblyCode == soRecord.SoAssemblyCode && d.StateMasterId == soRecord.StateMasterId).FirstOrDefault();
-            //var soDistrict = _context.DistrictMaster.Where(d => d.DistrictMasterId == soAssembly.DistrictMasterId && d.StateMasterId == soAssembly.StateMasterId).FirstOrDefault();
-            //var soState = _context.StateMaster.Where(d => d.StateMasterId == soDistrict.StateMasterId).FirstOrDefault();
-            ////var soState = _context.ElectionTypeMaster.Where(d => d.ElectionTypeMasterId == soDistrict.StateMasterId).FirstOrDefault();
-            //SectorOfficerProfile sectorOfficerProfile = new SectorOfficerProfile()
-            //{
-            //    StateName = soState.StateName,
-            //    DistrictName = soDistrict.DistrictName,
-            //    AssemblyName = soAssembly.AssemblyName,
-            //    AssemblyCode = soAssembly.AssemblyCode.ToString(),
-            //    SoName = soRecord.SoName,
-            //    OfficerRole = "SO",
-            //    //ElectionTypeMasterId=
-            //    //ElectionType = soRecord.ElectionTypeMasterId == 1 ? "LS" : (soRecord.ElectionTypeMasterId == 2 ? "VS" : null),
-            //    //BoothNo = _context.BoothMaster.Where(p => p.AssignedTo == soId).Select(p => p.BoothCode_No.ToString()).ToList().OrderBy(p=>p.)
-            //    BoothNo = _context.BoothMaster.Where(p => p.AssignedTo == soId).OrderBy(p => Convert.ToInt32(p.BoothCode_No)).Select(p => p.BoothCode_No.ToString()).ToList()
 
+            // Use a join to fetch the Field Officer along with related data
+            var fieldOfficerProfile = await (from fo in _context.FieldOfficerMaster
+                                             join asm in _context.AssemblyMaster
+                                             on fo.AssemblyMasterId equals asm.AssemblyMasterId
+                                             join dist in _context.DistrictMaster
+                                             on asm.DistrictMasterId equals dist.DistrictMasterId
+                                             join state in _context.StateMaster
+                                             on dist.StateMasterId equals state.StateMasterId
+                                             join electionType in _context.ElectionTypeMaster
+                                             on fo.ElectionTypeMasterId equals electionType.ElectionTypeMasterId
+                                             where fo.FieldOfficerMasterId == Convert.ToInt32(foId) && fo.FieldOfficerStatus == true
+                                             select new FieldOfficerProfile
+                                             {
+                                                 StateMasterId = state.StateMasterId,
+                                                 StateName = state.StateName,
+                                                 DistrictMasterId = dist.DistrictMasterId,
+                                                 DistrictName = dist.DistrictName,
+                                                 AssemblyMasterId = asm.AssemblyMasterId,
+                                                 AssemblyName = asm.AssemblyName,
+                                                 FoName = fo.FieldOfficerOfficeName,
+                                                 Role = "FO",
+                                                 ElectionTypeMasterId = fo.ElectionTypeMasterId,
+                                                 ElectionTypeName = electionType.ElectionType,
+                                                 BoothNo = _context.BoothMaster
+                                                         .Where(b => b.AssignedTo == foId)
+                                                         .OrderBy(b => Convert.ToInt32(b.BoothCode_No))
+                                                         .Select(b => b.BoothCode_No.ToString())
+                                                         .ToList()
+                                             }).FirstOrDefaultAsync();
 
-            //};
-            //return sectorOfficerProfile;
-            return null;
+            return fieldOfficerProfile;
         }
-
-
 
         public async Task<Response> AddFieldOfficer(FieldOfficerMaster fieldOfficerViewModel)
         {
@@ -14277,7 +14310,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 return null;
             }
         }
-        public async Task<SectorOfficerProfile> GetBLOOfficerProfile(string bloMasterId)
+        public async Task<FieldOfficerProfile> GetBLOOfficerProfile(string bloMasterId)
         {
             int bloIdInt = Convert.ToInt32(bloMasterId);
 
@@ -14286,15 +14319,15 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                 join state in _context.StateMaster on blo.StateMasterId equals state.StateMasterId
                                 join district in _context.DistrictMaster on blo.DistrictMasterId equals district.DistrictMasterId
                                 join assembly in _context.AssemblyMaster on blo.AssemblyMasterId equals assembly.AssemblyMasterId
-                                select new SectorOfficerProfile
+                                select new FieldOfficerProfile
                                 {
                                     StateName = state.StateName,
                                     DistrictName = district.DistrictName,
                                     AssemblyName = assembly.AssemblyName,
-                                    AssemblyCode = assembly.AssemblyCode.ToString(),
-                                    SoName = blo.BLOName,
-                                    OfficerRole = "BLO",
-                                    ElectionType = "LS",
+                                    //AssemblyCode = assembly.AssemblyCode.ToString(),
+                                    FoName = blo.BLOName,
+                                    Role = "BLO",
+                                    //ElectionType = "LS",
                                     // Uncomment and modify the following line if BoothNo is required
                                     BoothNo = _context.BoothMaster.Where(p => p.AssignedToBLO == bloMasterId).OrderBy(p => p.BoothCode_No).Select(p => p.BoothCode_No.ToString()).ToList()
                                 }).FirstOrDefaultAsync();

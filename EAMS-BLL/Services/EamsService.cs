@@ -192,11 +192,11 @@ namespace EAMS_BLL.Services
             return await _eamsRepository.AppNotDownload(stateMasterId);
         }
 
-        public async Task<SectorOfficerProfile> GetSectorOfficerProfile(string Id, string role)
+        public async Task<FieldOfficerProfile> GetFieldOfficerProfile(string Id, string role)
         {
-            if (role == "SO")
+            if (role == "FO")
             {
-                return await _eamsRepository.GetSectorOfficerProfile(Id);
+                return await _eamsRepository.GetFieldOfficerProfile(Id);
             }
             else
             {

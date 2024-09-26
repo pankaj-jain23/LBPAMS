@@ -58,8 +58,8 @@ namespace EAMS_ACore.IRepository
         Task<List<FieldOfficerMaster>> GetFieldOfficersListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
 
 
-        Task<SectorOfficerProfile> GetSectorOfficerProfile(string soId);
-        Task<SectorOfficerProfile> GetBLOOfficerProfile(string soId);
+        Task<FieldOfficerProfile> GetFieldOfficerProfile(string foId);
+        Task<FieldOfficerProfile> GetBLOOfficerProfile(string soId);
         Task<Response> AddFieldOfficer(FieldOfficerMaster fieldOfficerViewModel);
         Task<Response> AddBLOOfficer(BLOMaster bLOMaster);
         Task<Response> UpdateFieldOfficer(FieldOfficerMaster fieldOfficerViewModel);

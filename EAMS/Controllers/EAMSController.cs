@@ -632,21 +632,21 @@ namespace EAMS.Controllers
         }
 
         [HttpGet]
-        [Route("GetSectorOfficerProfile")]
+        [Route("GetFieldOfficerProfile")]
         [Authorize]
-        public async Task<IActionResult> GetSectorOfficerProfile()
+        public async Task<IActionResult> GetFieldOfficerProfile()
         {
-            var soIdClaim = User.Claims.FirstOrDefault(c => c.Type == "SoId")?.Value;
+            var foIdClaim = User.Claims.FirstOrDefault(c => c.Type == "FieldOfficerMasterId")?.Value;
             var bloMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "BLOMasterId")?.Value;
-            if (soIdClaim is not null)
+            if (foIdClaim is not null)
             {
-                var soList = await _EAMSService.GetSectorOfficerProfile(soIdClaim, "SO");  // Corrected to await the asynchronous method
+                var foList = await _EAMSService.GetFieldOfficerProfile(foIdClaim, "FO");  // Corrected to await the asynchronous method
 
-                if (soList != null)
+                if (foList != null)
                 {
                     var data = new
                     {
-                        data = soList
+                        data = foList
                     };
                     return Ok(data);
                 }
@@ -657,7 +657,7 @@ namespace EAMS.Controllers
             }
             else
             {
-                var bloList = await _EAMSService.GetSectorOfficerProfile(bloMasterIdClaim, "BLO");  // Corrected to await the asynchronous method
+                var bloList = await _EAMSService.GetFieldOfficerProfile(bloMasterIdClaim, "BLO");  // Corrected to await the asynchronous method
 
                 if (bloList != null)
                 {
