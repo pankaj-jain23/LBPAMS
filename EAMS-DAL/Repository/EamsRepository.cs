@@ -5472,43 +5472,43 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         public async Task<ServiceResponse> FinalVotesPolled(UpdateEventActivity updateEventActivity)
         {
-                        var boothMaster = await _context.BoothMaster
-                   .Where(d => d.StateMasterId == updateEventActivity.StateMasterId &&
-                               d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
-                               d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
-                               d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
-                               d.BoothMasterId == updateEventActivity.BoothMasterId)
-                   .Select(d => new
-                   {
-                       d.Male,
-                       d.Female,
-                       d.Transgender
-                   })
-                   .FirstOrDefaultAsync();
+            var boothMaster = await _context.BoothMaster
+       .Where(d => d.StateMasterId == updateEventActivity.StateMasterId &&
+                   d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                   d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                   d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                   d.BoothMasterId == updateEventActivity.BoothMasterId)
+       .Select(d => new
+       {
+           d.Male,
+           d.Female,
+           d.Transgender
+       })
+       .FirstOrDefaultAsync();
 
-                        string warningMessage = string.Empty;
+            string warningMessage = string.Empty;
 
-                        if (updateEventActivity.FinalMaleVotes > boothMaster.Male)
-                        {
-                            warningMessage += "The number of male votes exceeds the total registered male voters. ";
-                        }
-                        if (updateEventActivity.FinalFeMaleVotes > boothMaster.Female)
-                        {
-                            warningMessage += "The number of female votes exceeds the total registered female voters. ";
-                        }
-                        if (updateEventActivity.FinalTransgenderVotes > boothMaster.Transgender)
-                        {
-                            warningMessage += "The number of transgender votes exceeds the total registered transgender voters. ";
-                        }
+            if (updateEventActivity.FinalMaleVotes > boothMaster.Male)
+            {
+                warningMessage += "The number of male votes exceeds the total registered male voters. ";
+            }
+            if (updateEventActivity.FinalFeMaleVotes > boothMaster.Female)
+            {
+                warningMessage += "The number of female votes exceeds the total registered female voters. ";
+            }
+            if (updateEventActivity.FinalTransgenderVotes > boothMaster.Transgender)
+            {
+                warningMessage += "The number of transgender votes exceeds the total registered transgender voters. ";
+            }
 
-                        if (!string.IsNullOrEmpty(warningMessage))
-                        {
-                            return new ServiceResponse
-                            {
-                                IsSucceed = false,
-                                Message = warningMessage.Trim()
-                            };
-                        }
+            if (!string.IsNullOrEmpty(warningMessage))
+            {
+                return new ServiceResponse
+                {
+                    IsSucceed = false,
+                    Message = warningMessage.Trim()
+                };
+            }
 
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
@@ -16497,31 +16497,67 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         #endregion
 
         #region GPVoter
+
         public async Task<ServiceResponse> AddGPVoterDetails(GPVoter gpVoterPdf)
         {
-            var existing = await _context.GPVoter.FirstOrDefaultAsync(k => k.FourthLevelHMasterId == gpVoterPdf.FourthLevelHMasterId);
+            var existing = await _context.GPVoter
+                .Where(k => k.FourthLevelHMasterId == gpVoterPdf.FourthLevelHMasterId)
+                .ToListAsync();
 
-            if (existing != null)
+            if (existing.Any())
             {
-                return new ServiceResponse { IsSucceed = false, Message = "GP Voter Pdf Already Exist" };
+                var newRange = gpVoterPdf.WardRange.Split(',').Select(int.Parse).OrderBy(x => x).ToArray();
+                int newMin = newRange[0], newMax = newRange[1];
+
+                if (existing.Any(voter =>
+                {
+                    var range = voter.WardRange.Split(',').Select(int.Parse).OrderBy(x => x).ToArray();
+                    return !(newMax < range[0] || newMin > range[1]);
+                }))
+                {
+                    return new ServiceResponse { IsSucceed = false, Message = "Ward Range overlaps with an existing range" };
+                }
             }
+
             _context.GPVoter.Add(gpVoterPdf);
-            _context.SaveChanges();
-
-
+            await _context.SaveChangesAsync();
             return new ServiceResponse { IsSucceed = true, Message = "Successfully added" };
         }
-
         public async Task<ServiceResponse> UpdateGPVoterDetails(GPVoter gpVoterPdf)
         {
             var existing = await _context.GPVoter.FirstOrDefaultAsync(k => k.GPVoterMasterId == gpVoterPdf.GPVoterMasterId);
 
             if (existing == null)
             {
-                return new ServiceResponse { IsSucceed = false, Message = "GP Voter Pdf not found" };
+                return new ServiceResponse { IsSucceed = false, Message = "GP Voter Pdf not found." };
             }
 
-            // Update properties of the existing Kyc entity
+            // Split the new ward range
+            var newRange = gpVoterPdf.WardRange.Split(',').Select(int.Parse).OrderBy(x => x).ToArray();
+            int newMin = newRange[0], 
+                newMax = newRange[1];
+
+            if (gpVoterPdf.WardRange != existing.WardRange)
+            {
+                // If WardRange is the same, check for overlap with existing GPVoters
+                var overlappingVoters = await _context.GPVoter
+                    .Where(k => k.FourthLevelHMasterId == gpVoterPdf.FourthLevelHMasterId &&
+                                k.StateMasterId == gpVoterPdf.StateMasterId &&
+                                k.DistrictMasterId == gpVoterPdf.DistrictMasterId &&
+                                k.AssemblyMasterId == gpVoterPdf.AssemblyMasterId)
+                    .ToListAsync();
+
+                if (overlappingVoters.Any(voter =>
+                {
+                    var range = voter.WardRange.Split(',').Select(int.Parse).OrderBy(x => x).ToArray();
+                    return !(newMax < range[0] || newMin > range[1]); // Check for overlap
+                }))
+                {
+                    // Return failure if there is an overlap
+                    return new ServiceResponse { IsSucceed = false, Message = "Existing data overlaps with the new Ward Range." };
+                }
+            }
+
             existing.StateMasterId = gpVoterPdf.StateMasterId;
             existing.DistrictMasterId = gpVoterPdf.DistrictMasterId;
             existing.AssemblyMasterId = gpVoterPdf.AssemblyMasterId;
@@ -16535,10 +16571,11 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 existing.GPVoterPdfPath = existing.GPVoterPdfPath;
             }
             existing.WardRange = gpVoterPdf.WardRange;
+
             _context.GPVoter.Update(existing);
             await _context.SaveChangesAsync();
 
-            return new ServiceResponse { IsSucceed = true, Message = "GP Voter Pdf updated successfully" };
+            return new ServiceResponse { IsSucceed = true, Message = "GP Voter Pdf updated successfully." };
         }
 
         public async Task<GPVoterList> GetGPVoterById(int gpVoterMasterId)
