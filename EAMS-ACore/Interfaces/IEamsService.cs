@@ -330,13 +330,13 @@ namespace EAMS_ACore.Interfaces
         #endregion
 
         #region ResultDeclaration
-        Task<ServiceResponse> AddResultDeclarationDetails(ResultDeclaration resultDeclaration);
+        Task<ServiceResponse> AddResultDeclarationDetails(List<ResultDeclaration> resultDeclaration);
         Task<Response> UpdateResultDeclarationDetails(ResultDeclaration resultDeclaration);
         Task<ResultDeclaration> GetResultDeclarationById(int resultDeclarationMasterId);
         Task<ServiceResponse> DeleteResultDeclarationById(int resultDeclarationMasterId);
+        Task<List<ResultDeclaration>> GetResultDeclarationListById(ResultDeclarationList resultDeclarationList);
+        Task<List<ResultDeclarationList>> GetResultDeclarationListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId);
         Task<List<ResultDeclarationList>> GetPanchayatWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId);
-
-        //Task<List<ResultDeclaration>> GetPanchayatWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId);
         Task<List<ResultDeclarationList>> GetBlockWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId);
         Task<List<ResultDeclarationList>> GetDistrictWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId);
         #endregion

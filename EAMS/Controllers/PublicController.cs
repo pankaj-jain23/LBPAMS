@@ -1,11 +1,15 @@
 ﻿using AutoMapper;
 using EAMS.ViewModels;
 using EAMS.ViewModels.PublicModels;
+using EAMS.ViewModels.ReportViewModel;
 using EAMS_ACore;
 using EAMS_ACore.HelperModels;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.Models.PublicModels;
+using EAMS_ACore.ReportModels;
+using EAMS_BLL.Services;
 using LBPAMS.ViewModels.PublicModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EAMS.Controllers
@@ -342,7 +346,7 @@ namespace EAMS.Controllers
         {
             const long MaxFileSize = 7 * 1024 * 1024; // 7 MB in bytes
             // Check if the file exceeds the maximum size
-            if (updateUnOpposedViewModel.NominationPdf !=null && updateUnOpposedViewModel.NominationPdf.Length > MaxFileSize)
+            if (updateUnOpposedViewModel.NominationPdf != null && updateUnOpposedViewModel.NominationPdf.Length > MaxFileSize)
             {
                 return BadRequest($"File size exceeds the 7 MB limit.");
             }
@@ -629,22 +633,52 @@ namespace EAMS.Controllers
         #region ResultDeclaration 
 
         [HttpPost("AddResultDeclarationDetails")]
-        public async Task<IActionResult> AddResultDeclarationDetails([FromForm] ResultDeclarationViewModel resultDeclarationViewModel)
+        public async Task<IActionResult> AddResultDeclarationDetails(List<ResultDeclarationViewModel> resultDeclarationViewModel)
         {
-            var mappedData = _mapper.Map<ResultDeclaration>(resultDeclarationViewModel);
-            mappedData.ResultDecCreatedAt = DateTime.UtcNow;
-            mappedData.ResultDecUpdatedAt = DateTime.UtcNow;
-            mappedData.ResultDecDeletedAt = DateTime.UtcNow;
+            if (resultDeclarationViewModel == null || !resultDeclarationViewModel.Any())
+            {
+                return BadRequest("No data provided.");
+            }
+
+            // Retrieve claims efficiently
+            var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
+
+            int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
+            int districtMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("DistrictMasterId"));
+            int assemblyMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AssemblyMasterId"));
+            int fourthLevelMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("FourthLevelMasterId"));
+            int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
+            //int stateMasterId = 1;
+            //int districtMasterId =2;
+            //int assemblyMasterId = 3;
+            //int fourthLevelMasterId = 4;
+            //int electionTypeMasterId =1;
+
+            // Map ViewModel to Entity
+            var mappedData = _mapper.Map<List<ResultDeclaration>>(resultDeclarationViewModel);
+
+            // Assign common values
+            mappedData.ForEach(resultDeclaration =>
+            {
+                resultDeclaration.StateMasterId = stateMasterId;
+                resultDeclaration.DistrictMasterId = districtMasterId;
+                resultDeclaration.AssemblyMasterId = assemblyMasterId;
+                resultDeclaration.FourthLevelHMasterId = fourthLevelMasterId;
+                resultDeclaration.ElectionTypeMasterId = electionTypeMasterId;
+            });
+
+            // Save the mapped data
             var result = await _eamsService.AddResultDeclarationDetails(mappedData);
 
-            // Check if adding GP Voter details was successful
+            // Handle the result
             if (!result.IsSucceed)
             {
                 return BadRequest(result.Message);
-
             }
+
             return Ok(result.Message);
         }
+
 
 
         [HttpPut("UpdateResultDeclarationDetails")]
@@ -721,6 +755,27 @@ namespace EAMS.Controllers
             }
         }
 
+        [HttpGet("GetResultDeclarationListById")]
+        public async Task<IActionResult> GetResultDeclarationListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId)
+        {
+            var result = await _eamsService.GetResultDeclarationListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId, psZonePanchayatMasterId);
+
+            if (result.Count != 0 || result != null)
+            {
+                var data = new
+                {
+                    count = result.Count,
+                    resultDeclaration = result.Where(k => k.ResultDeclarationMasterId != 0).ToList(),
+
+                };
+                return Ok(data);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
         [HttpGet("GetPanchayatWiseResults")]
         public async Task<IActionResult> GetPanchayatWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId)
         {
@@ -741,7 +796,7 @@ namespace EAMS.Controllers
                 return NotFound();
             }
         }
-      
+
         [HttpGet("GetBlockWiseResults")]
         public async Task<IActionResult> GetBlockWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
@@ -762,7 +817,7 @@ namespace EAMS.Controllers
                 return NotFound();
             }
         }
-       
+
         [HttpGet("GetDistrictWiseResults")]
         public async Task<IActionResult> GetDistrictWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId)
         {

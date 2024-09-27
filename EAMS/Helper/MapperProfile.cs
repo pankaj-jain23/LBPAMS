@@ -484,10 +484,10 @@ namespace EAMS.Helper
         .ForMember(dest => dest.EventABBR, opt => opt.MapFrom(src => src.EventABBR))
         .ForMember(dest => dest.EventName, opt => opt.MapFrom(src => src.EventName))
         .ForMember(dest => dest.EventSequence, opt => opt.MapFrom(src => src.EventSequence))
-        .ForMember(dest => dest.EventStatus, opt => opt.MapFrom(src => src.EventStatus)) 
-        .ForMember(dest => dest.FinalMaleVotes, opt => opt.MapFrom(src => src.FinalMaleVotes)) 
-        .ForMember(dest => dest.FinalFeMaleVotes, opt => opt.MapFrom(src => src.FinalFeMaleVotes)) 
-        .ForMember(dest => dest.FinalTransgenderVotes, opt => opt.MapFrom(src => src.FinalTransgenderVotes)) 
+        .ForMember(dest => dest.EventStatus, opt => opt.MapFrom(src => src.EventStatus))
+        .ForMember(dest => dest.FinalMaleVotes, opt => opt.MapFrom(src => src.FinalMaleVotes))
+        .ForMember(dest => dest.FinalFeMaleVotes, opt => opt.MapFrom(src => src.FinalFeMaleVotes))
+        .ForMember(dest => dest.FinalTransgenderVotes, opt => opt.MapFrom(src => src.FinalTransgenderVotes))
 
         .ReverseMap();
             #endregion
@@ -938,14 +938,10 @@ namespace EAMS.Helper
 
             #region ResultDeclarationViewModel  ResultDeclaration 
             CreateMap<ResultDeclarationViewModel, ResultDeclaration>()
-     .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
-     .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
-     .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
-     .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
-     .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
+     .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
+     .ForMember(dest => dest.CandidateId, opt => opt.MapFrom(src => src.CandidateId))
+     .ForMember(dest => dest.CandidateType, opt => opt.MapFrom(src => src.CandidateType))
      .ForMember(dest => dest.GPPanchayatWardsMasterId, opt => opt.MapFrom(src => src.GPPanchayatWardsMasterId))
-     .ForMember(dest => dest.CandidateName, opt => opt.MapFrom(src => src.CandidateName))
-     .ForMember(dest => dest.FatherName, opt => opt.MapFrom(src => src.FatherName))
      .ForMember(dest => dest.VoteMargin, opt => opt.MapFrom(src => src.VoteMargin))
      .ForMember(dest => dest.ResultDecStatus, opt => opt.MapFrom(src => src.ResultDecStatus))
      .ReverseMap();

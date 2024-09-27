@@ -15,28 +15,33 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
-        public int? StateMasterId
+        public int StateMasterId
         {
             get;
             set;
         }
-        public int? DistrictMasterId
+        public int DistrictMasterId
         {
             get;
             set;
         }
-        public int? ElectionTypeMasterId
+        public int ElectionTypeMasterId
         {
             get;
             set;
         }
-        public int? AssemblyMasterId //ZP
+        public int AssemblyMasterId //ZP
         {
             get;
             set;
         }
-        public int? FourthLevelHMasterId // GPSarpanch // MCorp //MC //NP
+        public int FourthLevelHMasterId // GPSarpanch // MCorp //MC //NP
 
+        {
+            get;
+            set;
+        }
+        public int? BoothMasterId  
         {
             get;
             set;
@@ -46,6 +51,7 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
+        public int CandidateId { get; set; }
         public string CandidateName
         {
             get;
@@ -61,6 +67,8 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
+        public int CandidateType { get; set; }
+        public bool IsWinner { get; set; }
         public DateTime? ResultDecCreatedAt { get; set; }
         public DateTime? ResultDecUpdatedAt { get; set; }
         public DateTime? ResultDecDeletedAt { get; set; }

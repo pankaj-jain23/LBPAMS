@@ -2091,7 +2091,7 @@ namespace EAMS_DAL.Repository
                                 BoothCode_No = bt.BoothCode_No,
                                 IsAssigned = bt.IsAssigned,
                                 FieldOfficerMasterId = foId,
-                                IsBoothInterrupted=bt.IsBoothInterrupted
+                                IsBoothInterrupted = bt.IsBoothInterrupted
 
 
                             };
@@ -5396,7 +5396,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         {
             // Get the latest slot from the SlotManagementMaster table
             var getLatestSlot = await GetVoterSlotAvailable(updateEventActivity.StateMasterId, updateEventActivity.ElectionTypeMasterId);
-            var getLastSlot = await GetLastSlot(updateEventActivity.StateMasterId, updateEventActivity.EventMasterId,updateEventActivity.ElectionTypeMasterId);
+            var getLastSlot = await GetLastSlot(updateEventActivity.StateMasterId, updateEventActivity.EventMasterId, updateEventActivity.ElectionTypeMasterId);
             //var currentTime = DateTimeOffset.Now;
 
             //// Check if current time falls between EndTime and LockTime, if both are available
@@ -6344,10 +6344,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             {
                 return null; // Handle case when no election info is found
             }
-           
+
 
             // Step 4: Get voter slot availability
-            var getVoterSlotAvailable = await GetVoterSlotAvailable(getBooth.StateMasterId, getBooth.ElectionTypeMasterId); 
+            var getVoterSlotAvailable = await GetVoterSlotAvailable(getBooth.StateMasterId, getBooth.ElectionTypeMasterId);
             // Step 5: Populate ViewModel and return
             VoterTurnOutPolledDetailViewModel voterTurnOutPolledDetailViewModel = new VoterTurnOutPolledDetailViewModel
             {
@@ -6400,10 +6400,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
             return voterTurnOutPolledDetailViewModel;
         }
-        private async  Task<SlotManagementMaster> GetLastSlot( int stateMasterId, int eventmasterid, int electionTypeMasterId )
+        private async Task<SlotManagementMaster> GetLastSlot(int stateMasterId, int eventmasterid, int electionTypeMasterId)
         {
 
-            var lastSlot = _context.SlotManagementMaster.Where(p => p.StateMasterId == stateMasterId&& p.EventMasterId == eventmasterid && p.ElectionTypeMasterId == electionTypeMasterId&&p.IsLastSlot==true).FirstOrDefault();
+            var lastSlot = _context.SlotManagementMaster.Where(p => p.StateMasterId == stateMasterId && p.EventMasterId == eventmasterid && p.ElectionTypeMasterId == electionTypeMasterId && p.IsLastSlot == true).FirstOrDefault();
 
             if (lastSlot == null)
             {
@@ -16828,10 +16828,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         #endregion
 
         #region ResultDeclaration
-        public async Task<ServiceResponse> AddResultDeclarationDetails(ResultDeclaration resultDeclaration)
+        public async Task<ServiceResponse> AddResultDeclarationDetails(List<ResultDeclaration> resultDeclaration)
         {
 
-            _context.ResultDeclaration.Add(resultDeclaration);
+            _context.ResultDeclaration.AddRange(resultDeclaration);
             _context.SaveChanges();
 
 
@@ -17053,6 +17053,18 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return resultList;
         }
+        public async Task<List<ResultDeclarationList>> GetResultDeclarationListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId)
+        {
+            throw new NotImplementedException();
+        }
+        #endregion
+
+
+
+
+
+
+
 
         #region Common DateTime Methods
 
@@ -17102,7 +17114,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         }
 
-        #endregion
         #endregion
 
     }

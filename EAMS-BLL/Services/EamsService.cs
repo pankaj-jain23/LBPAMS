@@ -2702,10 +2702,26 @@ namespace EAMS_BLL.Services
         #endregion
 
         #region ResultDeclaration
-        public async Task<ServiceResponse> AddResultDeclarationDetails(ResultDeclaration resultDeclaration)
+        public async Task<ServiceResponse> AddResultDeclarationDetails(List<ResultDeclaration> resultDeclaration)
         {
+            if (resultDeclaration != null && resultDeclaration.Any())
+            {
+                // Find the record with the highest VoteMargin
+                var winner = resultDeclaration
+                    .Where(r => !string.IsNullOrEmpty(r.VoteMargin)) // Ensure VoteMargin is not null or empty
+                    .OrderByDescending(r => int.Parse(r.VoteMargin)) // Convert VoteMargin to int and order by highest
+                    .FirstOrDefault();
+
+                if (winner != null)
+                {
+                    // Set IsWinner to true for the highest VoteMargin record
+                    winner.IsWinner = true;
+                }
+            }
+
             return await _eamsRepository.AddResultDeclarationDetails(resultDeclaration);
         }
+
         public async Task<Response> UpdateResultDeclarationDetails(ResultDeclaration resultDeclaration)
         {
             return await _eamsRepository.UpdateResultDeclarationDetails(resultDeclaration);
@@ -2732,6 +2748,16 @@ namespace EAMS_BLL.Services
         public async Task<List<ResultDeclarationList>> GetDistrictWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId)
         {
             return await _eamsRepository.GetDistrictWiseResults(stateMasterId, districtMasterId, electionTypeMasterId);
+        }
+
+        public Task<List<ResultDeclaration>> GetResultDeclarationListById(ResultDeclarationList resultDeclarationList)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<List<ResultDeclarationList>> GetResultDeclarationListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId)
+        {
+            return await _eamsRepository.GetResultDeclarationListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId, psZonePanchayatMasterId);
         }
         #endregion
 
