@@ -8397,12 +8397,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             // Handle case where no record is found
             if (pollInterruptionRecord == null)
             {
-                return new PollInterruption
-                {
-                    BoothMasterId = Convert.ToInt32(boothMasterId),
-                    Flag = "Fresh",
-                    IsPollInterrupted = false
-                };
+                return null;
             }
 
             return pollInterruptionRecord;
