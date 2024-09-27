@@ -9,7 +9,7 @@ namespace EAMS_ACore.Models
         public int StateMasterId { get; set; }
         public int DistrictMasterId { get; set; }
         public int AssemblyMasterId { get; set; }
-        public int? PCMasterId { get; set; }
+        public int ElectionTypeMasterId { get; set; }
         public int BoothMasterId { get; set; }
         public int InterruptionType { get; set; }
         public string? OldCU { get; set; }
@@ -40,6 +40,7 @@ namespace EAMS_ACore.Models
         public int StateMasterId { get; set; }
         public int DistrictMasterId { get; set; }
         public int AssemblyMasterId { get; set; }
+        public int ElectionTypeMasterId { get; set; }
         public int BoothMasterId { get; set; }
         public int InterruptionType { get; set; }
         public string OldCU { get; set; }
@@ -68,8 +69,8 @@ namespace EAMS_ACore.Models
         public string? PollInterruptionMasterId { get; set; }
         public string? StateMasterId { get; set; }
         public string? DistrictMasterId { get; set; }
-        public string? PCMasterId { get; set; }
         public string? AssemblyMasterId { get; set; }
+        public string? ElectionTypeMasterId { get; set; }
         public string? BoothMasterId { get; set; }
     }
 }

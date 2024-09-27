@@ -2722,25 +2722,10 @@ namespace EAMS.Controllers
         [Authorize]
         public async Task<IActionResult> GetPollInterruptionbyId(string boothMasterId)
         {
-            PollInterruption? data = await _EAMSService.GetPollInterruptionbyId(boothMasterId);
-            PollInterruption pollInterruptionData = new PollInterruption();
-            if (data == null)
-            {
-
-                pollInterruptionData.BoothMasterId = Convert.ToInt32(boothMasterId);
-                pollInterruptionData.Flag = "Fresh";
-                pollInterruptionData.IsPollInterrupted = false;
-
-            }
-            else
-            {
-                pollInterruptionData = data;
-
-            }
-
+            PollInterruption pollInterruptionData = await _EAMSService.GetPollInterruptionbyId(boothMasterId);
             return Ok(pollInterruptionData);
-
         }
+
 
 
         [HttpGet]
@@ -2757,8 +2742,6 @@ namespace EAMS.Controllers
             {
                 return BadRequest("No Data Found !");
             }
-
-
         }
 
         [HttpGet]

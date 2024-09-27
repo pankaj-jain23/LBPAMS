@@ -284,7 +284,7 @@ public class DatabaseListenerService : BackgroundService
             PollInterruptionMasterId = pollInterruptionMasterId,
             StateMasterId = stateMasterId,
             DistrictMasterId = districtMasterId,
-            PCMasterId = pcMasterId,
+            //PCMasterId = pcMasterId,
             AssemblyMasterId = assemblyMasterId,
             BoothMasterId = boothMasterId
 

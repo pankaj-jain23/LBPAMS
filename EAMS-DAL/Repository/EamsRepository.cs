@@ -8382,11 +8382,32 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             return new Response { Status = RequestStatusEnum.OK, Message = "Poll Interruption Added Successfully." };
 
         }
+        //public async Task<PollInterruption> GetPollInterruptionData(string boothMasterId)
+        //{
+        //    var pollInterruptionRecord = await _context.PollInterruptions.Where(d => d.BoothMasterId == Convert.ToInt32(boothMasterId)).OrderByDescending(p => p.PollInterruptionId).FirstOrDefaultAsync();
+        //    return pollInterruptionRecord;
+        //}
         public async Task<PollInterruption> GetPollInterruptionData(string boothMasterId)
         {
-            var pollInterruptionRecord = await _context.PollInterruptions.Where(d => d.BoothMasterId == Convert.ToInt32(boothMasterId)).OrderByDescending(p => p.PollInterruptionId).FirstOrDefaultAsync();
+            var pollInterruptionRecord = await _context.PollInterruptions
+                .Where(d => d.BoothMasterId == Convert.ToInt32(boothMasterId))
+                .OrderByDescending(p => p.PollInterruptionId)
+                .FirstOrDefaultAsync();
+
+            // Handle case where no record is found
+            if (pollInterruptionRecord == null)
+            {
+                return new PollInterruption
+                {
+                    BoothMasterId = Convert.ToInt32(boothMasterId),
+                    Flag = "Fresh",
+                    IsPollInterrupted = false
+                };
+            }
+
             return pollInterruptionRecord;
         }
+
         public async Task<List<PollInterruptionHistoryModel>> GetPollInterruptionHistoryById(string boothMasterId)
         {
             var query = from pollInterruption in _context.PollInterruptions
@@ -8401,7 +8422,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                             boothMaster.BoothName,
                             boothMaster.StateMasterId,
                             boothMaster.DistrictMasterId,
-                            pollInterruption.PCMasterId,
+                            //pollInterruption.PCMasterId,
 
                             pollInterruption.OldBU,
                             pollInterruption.OldCU,
@@ -8425,7 +8446,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 BoothName = p.BoothName,
                 StateMasterId = p.StateMasterId,
                 DistrictMasterId = p.DistrictMasterId,
-                PCMasterId = p.PCMasterId,
+                //PCMasterId = p.PCMasterId,
                 IsPollInterrupted = p.IsPollInterrupted,
                 InterruptionReason = Enum.GetName(typeof(InterruptionReason), p.InterruptionType),
                 StopTime = p.StopTime,
@@ -8474,7 +8495,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                  AssemblyMasterId = pi.AssemblyMasterId,
                                  AssemblyName = am.AssemblyName,
                                  BoothMasterId = bm.BoothMasterId,
-                                 PCMasterId = pi.PCMasterId,
+                                 //PCMasterId = pi.PCMasterId,
                                  BoothName = bm.BoothName + "(" + bm.BoothCode_No + ")",
                                  CreatedAt = pi.CreatedAt,
                                  InterruptionType = pi.InterruptionType,
@@ -8504,7 +8525,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                  AssemblyMasterId = pi.AssemblyMasterId,
                                  AssemblyName = am.AssemblyName,
                                  BoothMasterId = bm.BoothMasterId,
-                                 PCMasterId = pi.PCMasterId,
+                                 //PCMasterId = pi.PCMasterId,
                                  BoothName = bm.BoothName + "(" + bm.BoothCode_No + ")",
                                  CreatedAt = pi.CreatedAt,
                                  InterruptionType = pi.InterruptionType,
@@ -8534,7 +8555,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                  AssemblyMasterId = pi.AssemblyMasterId,
                                  AssemblyName = am.AssemblyName,
                                  BoothMasterId = bm.BoothMasterId,
-                                 PCMasterId = pi.PCMasterId,
+                                 //PCMasterId = pi.PCMasterId,
                                  BoothName = bm.BoothName + "(" + bm.BoothCode_No + ")",
                                  CreatedAt = pi.CreatedAt,
                                  InterruptionType = pi.InterruptionType,
@@ -8563,7 +8584,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                  AssemblyMasterId = pi.AssemblyMasterId,
                                  AssemblyName = am.AssemblyName,
                                  BoothMasterId = bm.BoothMasterId,
-                                 PCMasterId = pi.PCMasterId,
+                                 //PCMasterId = pi.PCMasterId,
                                  BoothName = bm.BoothName + "(" + bm.BoothCode_No + ")",
                                  CreatedAt = pi.CreatedAt,
                                  InterruptionType = pi.InterruptionType,
@@ -8583,7 +8604,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                              join di in _context.DistrictMaster on pi.DistrictMasterId equals di.DistrictMasterId
                              join am in _context.AssemblyMaster on pi.AssemblyMasterId equals am.AssemblyMasterId
                              join bm in _context.BoothMaster on new { pi.BoothMasterId, am.AssemblyMasterId } equals new { bm.BoothMasterId, bm.AssemblyMasterId }
-                             where pi.StateMasterId == Convert.ToInt16(sid) && pi.PCMasterId == Convert.ToInt16(pcid)
+                             where pi.StateMasterId == Convert.ToInt16(sid)
                              orderby pi.AssemblyMasterId, pi.BoothMasterId, pi.CreatedAt descending
                              select new PollInterruptionDashboard
                              {
@@ -8593,7 +8614,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                  AssemblyMasterId = pi.AssemblyMasterId,
                                  AssemblyName = am.AssemblyName,
                                  BoothMasterId = bm.BoothMasterId,
-                                 PCMasterId = pi.PCMasterId,
+                                 //PCMasterId = pi.PCMasterId,
                                  BoothName = bm.BoothName + "(" + bm.BoothCode_No + ")",
                                  CreatedAt = pi.CreatedAt,
                                  InterruptionType = pi.InterruptionType,
@@ -8627,7 +8648,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                      AssemblyMasterId = pi.AssemblyMasterId,
                                      AssemblyName = am.AssemblyName,
                                      BoothMasterId = bm.BoothMasterId,
-                                     PCMasterId = pi.PCMasterId,
+                                     //PCMasterId = pi.PCMasterId,
                                      BoothName = bm.BoothName,
                                      CreatedAt = pi.CreatedAt,
                                      InterruptionType = pi.InterruptionType,
@@ -8724,7 +8745,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 {
 
                     var latestRecordsCount = await _context.PollInterruptions
-                           .Where(pi => pi.StateMasterId == Convert.ToInt32(sid) && pi.PCMasterId == Convert.ToInt16(pcid))
+                           .Where(pi => pi.StateMasterId == Convert.ToInt32(sid))
                            .GroupBy(pi => new { pi.AssemblyMasterId, pi.BoothMasterId })
                            .Select(groupedResult => groupedResult.OrderByDescending(r => r.CreatedAt).FirstOrDefault())
                             .Where(pi => pi.IsPollInterrupted == true)
@@ -8784,7 +8805,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                  AssemblyMasterId = pi.AssemblyMasterId,
                                  AssemblyName = am.AssemblyName,
                                  BoothMasterId = bm.BoothMasterId,
-                                 PCMasterId = pi.PCMasterId,
+                                 //PCMasterId = pi.PCMasterId,
                                  BoothName = bm.BoothName,
                                  CreatedAt = pi.CreatedAt,
                                  InterruptionType = pi.InterruptionType,

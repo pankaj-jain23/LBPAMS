@@ -778,7 +778,7 @@ namespace EAMS_BLL.Services
                                                     DistrictMasterId = boothMasterRecord.DistrictMasterId,
                                                     AssemblyMasterId = boothMasterRecord.AssemblyMasterId,
                                                     BoothMasterId = boothMasterRecord.BoothMasterId,
-                                                    PCMasterId = asembrecord.PCMasterId,
+                                                    //PCMasterId = asembrecord.PCMasterId,
 
                                                 };
                                                 if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.EVMFault)
@@ -878,7 +878,7 @@ namespace EAMS_BLL.Services
                                             DistrictMasterId = boothMasterRecord.DistrictMasterId,
                                             AssemblyMasterId = boothMasterRecord.AssemblyMasterId,
                                             BoothMasterId = boothMasterRecord.BoothMasterId,
-                                            PCMasterId = asembrecord.PCMasterId,
+                                            //PCMasterId = asembrecord.PCMasterId,
                                         };
                                         if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.EVMFault)
                                         {
@@ -973,7 +973,7 @@ namespace EAMS_BLL.Services
                                                             DistrictMasterId = pollInterruptionRecord.DistrictMasterId,
                                                             AssemblyMasterId = pollInterruptionRecord.AssemblyMasterId,
                                                             BoothMasterId = pollInterruptionRecord.BoothMasterId,
-                                                            PCMasterId = asembrecord.PCMasterId,
+                                                            //PCMasterId = asembrecord.PCMasterId,
                                                         };
                                                         if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.EVMFault)
 
@@ -1078,7 +1078,7 @@ namespace EAMS_BLL.Services
                                                     DistrictMasterId = boothMasterRecord.DistrictMasterId,
                                                     AssemblyMasterId = boothMasterRecord.AssemblyMasterId,
                                                     BoothMasterId = boothMasterRecord.BoothMasterId,
-                                                    PCMasterId = asembrecord.PCMasterId,
+                                                    //PCMasterId = asembrecord.PCMasterId,
                                                 };
                                                 if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.EVMFault)
 
@@ -1174,7 +1174,7 @@ namespace EAMS_BLL.Services
                                                     DistrictMasterId = pollInterruptionRecord.DistrictMasterId,
                                                     AssemblyMasterId = pollInterruptionRecord.AssemblyMasterId,
                                                     BoothMasterId = pollInterruptionRecord.BoothMasterId,
-                                                    PCMasterId = asembrecord.PCMasterId,
+                                                    //PCMasterId = asembrecord.PCMasterId,
                                                 };
                                                 if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.EVMFault)
 
@@ -1293,7 +1293,7 @@ namespace EAMS_BLL.Services
                                                 DistrictMasterId = boothMasterRecord.DistrictMasterId,
                                                 AssemblyMasterId = boothMasterRecord.AssemblyMasterId,
                                                 BoothMasterId = boothMasterRecord.BoothMasterId,
-                                                PCMasterId = asembrecord.PCMasterId,
+                                                //PCMasterId = asembrecord.PCMasterId,
 
                                             };
                                             if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.EVMFault)
@@ -1393,7 +1393,7 @@ namespace EAMS_BLL.Services
                                         DistrictMasterId = boothMasterRecord.DistrictMasterId,
                                         AssemblyMasterId = boothMasterRecord.AssemblyMasterId,
                                         BoothMasterId = boothMasterRecord.BoothMasterId,
-                                        PCMasterId = asembrecord.PCMasterId,
+                                        //PCMasterId = asembrecord.PCMasterId,
                                     };
                                     if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.EVMFault)
                                     {
@@ -1488,7 +1488,7 @@ namespace EAMS_BLL.Services
                                                         DistrictMasterId = pollInterruptionRecord.DistrictMasterId,
                                                         AssemblyMasterId = pollInterruptionRecord.AssemblyMasterId,
                                                         BoothMasterId = pollInterruptionRecord.BoothMasterId,
-                                                        PCMasterId = asembrecord.PCMasterId,
+                                                        //PCMasterId = asembrecord.PCMasterId,
                                                     };
                                                     if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.EVMFault)
 
@@ -1593,7 +1593,7 @@ namespace EAMS_BLL.Services
                                                 DistrictMasterId = boothMasterRecord.DistrictMasterId,
                                                 AssemblyMasterId = boothMasterRecord.AssemblyMasterId,
                                                 BoothMasterId = boothMasterRecord.BoothMasterId,
-                                                PCMasterId = asembrecord.PCMasterId,
+                                                //PCMasterId = asembrecord.PCMasterId,
                                             };
                                             if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.EVMFault)
 
@@ -1689,7 +1689,7 @@ namespace EAMS_BLL.Services
                                                 DistrictMasterId = pollInterruptionRecord.DistrictMasterId,
                                                 AssemblyMasterId = pollInterruptionRecord.AssemblyMasterId,
                                                 BoothMasterId = pollInterruptionRecord.BoothMasterId,
-                                                PCMasterId = asembrecord.PCMasterId,
+                                                //PCMasterId = asembrecord.PCMasterId,
                                             };
                                             if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.EVMFault)
 
@@ -1858,7 +1858,6 @@ namespace EAMS_BLL.Services
 
         //    }
         //}
-
 
         public Task<PollInterruption> GetPollInterruptionbyId(string boothMasterId)
         {
