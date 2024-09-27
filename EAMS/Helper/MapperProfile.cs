@@ -522,7 +522,7 @@ namespace EAMS.Helper
             #region InterruptionViewModel PollInterruption
             CreateMap<InterruptionViewModel, PollInterruption>()
                 .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.boothMasterId))
-                .ForMember(dest => dest.InterruptionType, opt => opt.MapFrom(src => src.Reason))
+                .ForMember(dest => dest.InterruptionType, opt => opt.MapFrom(src => src.InterruptionType))
 
                 .ForMember(dest => dest.StopTime, opt => opt.MapFrom(src => string.IsNullOrEmpty(src.stopTime) ? null : (TimeOnly?)TimeOnly.Parse(src.stopTime)))
                  .ForMember(dest => dest.ResumeTime, opt => opt.MapFrom(src => string.IsNullOrEmpty(src.ResumeTime) ? null : (TimeOnly?)TimeOnly.Parse(src.ResumeTime)))
