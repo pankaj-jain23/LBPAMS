@@ -517,9 +517,9 @@ namespace EAMS_BLL.AuthServices
         #endregion
 
         #region GetDashboardProfile && UpdateDashboardProfile
-        public async Task<DashBoardProfile> GetDashboardProfile(string UserID, int? stateMasterId)
+        public async Task<DashBoardProfile> GetDashboardProfile(string userID, int? stateMasterId)
         {
-            return await _authRepository.GetDashboardProfile(UserID, stateMasterId);
+            return await _authRepository.GetDashboardProfile(userID, stateMasterId);
         }
         public async Task<ServiceResponse> UpdateDashboardProfile(string UserID, UpdateDashboardProfile updateDashboardProfile)
         {

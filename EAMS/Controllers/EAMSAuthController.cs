@@ -276,9 +276,9 @@ namespace EAMS.Controllers
         [Authorize] 
         public async Task<IActionResult> GetDashboardProfile()
         {
-            var soId = User.Claims.FirstOrDefault(c => c.Type == "UserId").Value;
-            var soMasterId = Convert.ToInt32(User.Claims.FirstOrDefault(c => c.Type == "StateMasterId").Value);
-            var userRecord = await _authService.GetDashboardProfile(soId, soMasterId);
+            var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId").Value;
+            var stateMasterId = Convert.ToInt32(User.Claims.FirstOrDefault(c => c.Type == "StateMasterId").Value);
+            var userRecord = await _authService.GetDashboardProfile(userId, stateMasterId);
 
             if (userRecord is not null)
 

@@ -562,11 +562,8 @@ namespace EAMS_DAL.AuthRepository
             var getElection = await GetElectionTypeById(userRecord.ElectionTypeMasterId);
 
             // Fetch the state only once
-            var state = _context.StateMaster
-                .Include(d => d.DistrictMasters)
-                    .ThenInclude(dm => dm.AssemblyMaster)
-                        .ThenInclude(am => am.FourthLevelH)
-                .FirstOrDefault(d => d.StateMasterId == userRecord.StateMasterId);
+            var state =await _context.StateMaster 
+                .FirstOrDefaultAsync(d => d.StateMasterId == userRecord.StateMasterId);
 
             // Initialize common fields
             var dashboardProfile = new DashBoardProfile
@@ -589,8 +586,8 @@ namespace EAMS_DAL.AuthRepository
             }
             else if (roles.Contains("DistrictAdmin"))
             {
-                var district = _context.DistrictMaster
-                    .FirstOrDefault(d => d.StateMasterId == userRecord.StateMasterId && d.DistrictMasterId == userRecord.DistrictMasterId);
+                var district =await _context.DistrictMaster
+                    .FirstOrDefaultAsync(d => d.StateMasterId == userRecord.StateMasterId && d.DistrictMasterId == userRecord.DistrictMasterId);
 
                 if (district != null)
                 {
@@ -614,10 +611,10 @@ namespace EAMS_DAL.AuthRepository
             }
             else if (roles.Contains("SubLocalBodiesAdmin"))
             {
-                var fourthLevelH = _context.FourthLevelH
+                var fourthLevelH =await _context.FourthLevelH
                     .Include(f => f.DistrictMaster)
                     .Include(f => f.AssemblyMaster)
-                    .FirstOrDefault(f => f.StateMasterId == userRecord.StateMasterId &&
+                    .FirstOrDefaultAsync(f => f.StateMasterId == userRecord.StateMasterId &&
                                          f.DistrictMasterId == userRecord.DistrictMasterId &&
                                          f.AssemblyMasterId == userRecord.AssemblyMasterId &&
                                          f.FourthLevelHMasterId == userRecord.FourthLevelHMasterId);

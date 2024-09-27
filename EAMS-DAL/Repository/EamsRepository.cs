@@ -24,6 +24,7 @@ using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using System.Data;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
 
@@ -2089,7 +2090,8 @@ namespace EAMS_DAL.Repository
                                 IsStatus = bt.BoothStatus,
                                 BoothCode_No = bt.BoothCode_No,
                                 IsAssigned = bt.IsAssigned,
-                                FieldOfficerMasterId = foId
+                                FieldOfficerMasterId = foId,
+                                IsBoothInterrupted=bt.IsBoothInterrupted
 
 
                             };
@@ -2132,7 +2134,10 @@ namespace EAMS_DAL.Repository
                                 BoothCode_No = bt.BoothCode_No,
                                 IsAssigned = bt.IsAssigned,
                                 FieldOfficerMasterId = foId,
-                                ElectionTypeMasterId = bt.ElectionTypeMasterId
+                                ElectionTypeMasterId = bt.ElectionTypeMasterId,
+                                IsBoothInterrupted = bt.IsBoothInterrupted,
+                                IsVTInterrupted = bt.IsVTInterrupted
+
                             };
 
             var boothListResult = await boothlist.ToListAsync();
@@ -2714,22 +2719,52 @@ namespace EAMS_DAL.Repository
                 if (recordExistOfMasterIds == true)
 
                 {
-                    if (boothMaster.BoothNoAuxy == "0" +
-                        "")
+                    var auxList = new List<string>()
+                    {"0",
+                    "A",
+                        "B",
+                        "C",
+                        "D",
+                        "E"
+                    };
+                    if (auxList.Any(aux => boothMaster.BoothNoAuxy.Contains(aux)))
                     {
                         bool checkBoothName = false;
+                        bool isExistAux = false;
+
                         if (boothMaster.ElectionTypeMasterId == 2) // for panchayat samiti chekc pszonepachat table
                         {
+                            isExistAux = await _context.BoothMaster.AnyAsync(d =>
+                                           d.StateMasterId == boothMaster.StateMasterId &&
+                                           d.DistrictMasterId == boothMaster.DistrictMasterId &&
+                                           d.AssemblyMasterId == boothMaster.AssemblyMasterId &&
+                                           d.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId &&
+                                           d.BoothNoAuxy.Equals(boothMaster.BoothCode_No)
+                                           && d.PSZonePanchayatMasterId == boothMaster.PSZonePanchayatMasterId);
+                            if (isExistAux is true)
+                                return new Response { Status = RequestStatusEnum.BadRequest, Message = $"The booth Auxiliary- {boothMaster.BoothNoAuxy} already exists. " };
+
                             checkBoothName = await _context.BoothMaster.AnyAsync(d =>
                                              d.StateMasterId == boothMaster.StateMasterId &&
                                              d.DistrictMasterId == boothMaster.DistrictMasterId &&
                                              d.AssemblyMasterId == boothMaster.AssemblyMasterId &&
                                              d.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId &&
                                              d.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId &&
-                                             d.BoothCode_No.Equals(boothMaster.BoothCode_No) && d.PSZonePanchayatMasterId == boothMaster.PSZonePanchayatMasterId);
+                                             d.BoothCode_No.Equals(boothMaster.BoothCode_No)
+                                             && d.PSZonePanchayatMasterId == boothMaster.PSZonePanchayatMasterId);
                         }
                         else
                         {
+                            isExistAux = await _context.BoothMaster.AnyAsync(d =>
+                                           d.StateMasterId == boothMaster.StateMasterId &&
+                                           d.DistrictMasterId == boothMaster.DistrictMasterId &&
+                                           d.AssemblyMasterId == boothMaster.AssemblyMasterId &&
+                                           d.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId &&
+                                           d.BoothNoAuxy.Equals(boothMaster.BoothNoAuxy)
+                                           && d.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId);
+                            if (isExistAux is true)
+                                return new Response { Status = RequestStatusEnum.BadRequest, Message = $"The booth AUXY  {boothMaster.BoothNoAuxy} already exists. " };
+
                             checkBoothName = await _context.BoothMaster.AnyAsync(d =>
                                              d.StateMasterId == boothMaster.StateMasterId &&
                                              d.DistrictMasterId == boothMaster.DistrictMasterId &&
@@ -2740,7 +2775,7 @@ namespace EAMS_DAL.Repository
                         }
 
                         if (checkBoothName is true)
-                            return new Response { Status = RequestStatusEnum.BadRequest, Message = $"The booth Code {boothMaster.BoothCode_No} already exists. You can proceed with an auxiliary booth instead." };
+                            return new Response { Status = RequestStatusEnum.BadRequest, Message = $"The booth Code {boothMaster.BoothCode_No} already exists. You can proceed with an auxiliary booth instead of {boothMaster.BoothNoAuxy} " };
                         else
                             //
                             if (boothMaster.ElectionTypeMasterId == 1)//gram
@@ -3136,6 +3171,17 @@ namespace EAMS_DAL.Repository
         //}
         public async Task<Response> UpdateBooth(BoothMaster boothMaster)
         {
+            bool isExistAux = false;
+            isExistAux = await _context.BoothMaster.AnyAsync(d =>
+                                      d.StateMasterId == boothMaster.StateMasterId &&
+                                      d.DistrictMasterId == boothMaster.DistrictMasterId &&
+                                      d.AssemblyMasterId == boothMaster.AssemblyMasterId &&
+                                      d.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId &&
+                                      d.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId &&
+                                      d.BoothNoAuxy.Equals(boothMaster.BoothCode_No));
+            if (isExistAux is true)
+                return new Response { Status = RequestStatusEnum.BadRequest, Message = $"The booth Auxiliary- {boothMaster.BoothNoAuxy} already exists. " };
+
             if (boothMaster.BoothName != string.Empty)
             {
                 var existingbooth = await _context.BoothMaster.FirstOrDefaultAsync(so => so.BoothMasterId == boothMaster.BoothMasterId);
@@ -3176,9 +3222,10 @@ namespace EAMS_DAL.Repository
                                             {
                                                 var existingBooths = await _context.BoothMaster.Where(p =>
 
-    p.StateMasterId == boothMaster.StateMasterId &&
-    p.AssemblyMasterId == boothMaster.AssemblyMasterId &&
-    p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId).ToListAsync();
+                                                        p.StateMasterId == boothMaster.StateMasterId &&
+                                                        p.AssemblyMasterId == boothMaster.AssemblyMasterId &&
+                                                        p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId
+                                                        && p.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId).ToListAsync();
 
                                                 if (existingBooths.Any())
                                                 {
@@ -3297,9 +3344,10 @@ namespace EAMS_DAL.Repository
                                                 {
                                                     var existingBooths = await _context.BoothMaster.Where(p =>
 
-        p.StateMasterId == boothMaster.StateMasterId &&
-        p.AssemblyMasterId == boothMaster.AssemblyMasterId &&
-        p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId).ToListAsync();
+                                                p.StateMasterId == boothMaster.StateMasterId &&
+                                                p.AssemblyMasterId == boothMaster.AssemblyMasterId &&
+                                                p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId
+                                                && p.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId).ToListAsync();
 
                                                     if (existingBooths.Any())
                                                     {
@@ -3433,9 +3481,10 @@ namespace EAMS_DAL.Repository
                                                 {
                                                     var existingBooths = await _context.BoothMaster.Where(p =>
 
-        p.StateMasterId == boothMaster.StateMasterId &&
-        p.AssemblyMasterId == boothMaster.AssemblyMasterId &&
-        p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId).ToListAsync();
+                                                    p.StateMasterId == boothMaster.StateMasterId &&
+                                                    p.AssemblyMasterId == boothMaster.AssemblyMasterId &&
+                                                    p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId
+                                                    && p.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId).ToListAsync();
 
                                                     if (existingBooths.Any())
                                                     {
@@ -5347,6 +5396,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         {
             // Get the latest slot from the SlotManagementMaster table
             var getLatestSlot = await GetVoterSlotAvailable(updateEventActivity.StateMasterId, updateEventActivity.ElectionTypeMasterId);
+            var getLastSlot = await GetLastSlot(updateEventActivity.StateMasterId, updateEventActivity.EventMasterId,updateEventActivity.ElectionTypeMasterId);
             //var currentTime = DateTimeOffset.Now;
 
             //// Check if current time falls between EndTime and LockTime, if both are available
@@ -6294,12 +6344,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             {
                 return null; // Handle case when no election info is found
             }
+           
 
             // Step 4: Get voter slot availability
-            var getVoterSlotAvailable = await GetVoterSlotAvailable(getBooth.StateMasterId, getBooth.ElectionTypeMasterId);
-
-
-
+            var getVoterSlotAvailable = await GetVoterSlotAvailable(getBooth.StateMasterId, getBooth.ElectionTypeMasterId); 
             // Step 5: Populate ViewModel and return
             VoterTurnOutPolledDetailViewModel voterTurnOutPolledDetailViewModel = new VoterTurnOutPolledDetailViewModel
             {
@@ -6315,6 +6363,26 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 VotesPolledRecivedTime = electionInfo.VotingLastUpdate
 
             };
+            var getLastSlot = await GetLastSlot(electionInfo.StateMasterId, electionInfo.EventMasterId, electionInfo.ElectionTypeMasterId);
+
+            if (getLastSlot.IsLastSlot == true && getLastSlot.LockTime.HasValue)
+            {
+                // Get the current time in TimeOnly format
+                var currentTime = TimeOnly.FromDateTime(DateTime.Now);
+
+                // Compare LockTime with the current time
+                bool checkTimeExceeded = getLastSlot.LockTime.Value < currentTime;
+
+                if (checkTimeExceeded)
+                {
+                    voterTurnOutPolledDetailViewModel.IsSlotAvailable = false;
+                    voterTurnOutPolledDetailViewModel.Message = "Kindly Proceed for Voter In Queue ";
+                    electionInfo.IsVoterTurnOut = true;
+                    _context.Update(electionInfo);
+                    _context.SaveChanges();
+                    return voterTurnOutPolledDetailViewModel;
+                }
+            }
             if (getVoterSlotAvailable == null)
             {
 
@@ -6331,6 +6399,26 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 voterTurnOutPolledDetailViewModel.Message = "Slot  Available";
             }
             return voterTurnOutPolledDetailViewModel;
+        }
+        private async  Task<SlotManagementMaster> GetLastSlot( int stateMasterId, int eventmasterid, int electionTypeMasterId )
+        {
+
+            var lastSlot = _context.SlotManagementMaster.Where(p => p.StateMasterId == stateMasterId&& p.EventMasterId == eventmasterid && p.ElectionTypeMasterId == electionTypeMasterId&&p.IsLastSlot==true).FirstOrDefault();
+
+            if (lastSlot == null)
+            {
+                return null;
+
+            }
+            else
+            {
+                return lastSlot;
+
+
+
+            }
+
+
         }
 
         public bool GetLastSlotEntryDone(int boothMasterId, int stateMasterId, int districtMasterId, int assemblyMasterid, int eventmasterid, int slotMgmtId)
@@ -16588,7 +16676,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             // Split the new ward range
             var newRange = gpVoterPdf.WardRange.Split(',').Select(int.Parse).OrderBy(x => x).ToArray();
-            int newMin = newRange[0], 
+            int newMin = newRange[0],
                 newMax = newRange[1];
 
             if (gpVoterPdf.WardRange != existing.WardRange)

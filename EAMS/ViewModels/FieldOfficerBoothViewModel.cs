@@ -23,7 +23,9 @@
         public string? EventName { get; set; }
         public string? EventABBR { get; set; }
         public int EventSequence { get; set; }
-        public bool EventStatus { get; set; }
+        public bool EventStatus { get; set; } 
+        public bool IsBoothInterrupted { get; set; }
+        public bool IsVTInterrupted { get; set; }//Voter Turnout Event 
 
     }
 }

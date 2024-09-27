@@ -109,9 +109,8 @@ namespace EAMS_ACore
         public DateTime? AssignedOnTime { get; set; }
         public bool IsAssigned { get; set; }
         public int? LocationMasterId { get; set; }
-        public bool IsPSOFormDone { get; set; } 
+        public bool IsPSOFormDone { get; set; }
         public bool IsPrimaryBooth { get; set; }
-
         public bool IsBoothInterrupted { get; set; }
         public bool IsVTInterrupted { get; set; }//Voter Turnout Event 
 

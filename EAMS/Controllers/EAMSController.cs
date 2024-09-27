@@ -163,10 +163,10 @@ namespace EAMS.Controllers
         {
             try
             {
-                var getState = await _cacheService.GetDataAsync<List<StateMasterViewModel>>("GetState");
+                //var getState = await _cacheService.GetDataAsync<List<StateMasterViewModel>>("GetState");
 
-                if (getState == null)
-                {
+                //if (getState == null)
+                //{
                     // Cache miss, fetch data from the service
                     var stateList = await _EAMSService.GetState();
                     var mappedData = _mapper.Map<List<StateMasterViewModel>>(stateList);
@@ -180,15 +180,15 @@ namespace EAMS.Controllers
                         data = mappedData
                     };
                     return Ok(data);
-                }
+                //}
 
-                // Cache hit
-                var dataFromCache = new
-                {
-                    count = getState.Count,
-                    data = getState
-                };
-                return Ok(dataFromCache);
+                //// Cache hit
+                //var dataFromCache = new
+                //{
+                //    count = getState.Count,
+                //    data = getState
+                //};
+                //return Ok(dataFromCache);
             }
             catch (Exception ex)
             {
@@ -752,7 +752,27 @@ namespace EAMS.Controllers
             };
             return Ok(data);
         }
-
+        /// <summary>
+        /// For Poll Interuption Booth List
+        /// </summary>
+        /// <param name="stateMasterId"></param>
+        /// <param name="districtMasterId"></param>
+        /// <param name="assemblyMasterId"></param>
+        /// <param name="foId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("GetPIBoothListByFoId")]
+        public async Task<IActionResult> GetPIBoothListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
+        {
+            var boothList = await _EAMSService.GetBoothListByFoId(stateMasterId, districtMasterId, assemblyMasterId, foId);  // Corrected to await the asynchronous method
+            var mappedData = _mapper.Map<List<FieldOfficerBoothViewModel>>(boothList); 
+            var data = new
+            {
+                Count = mappedData.Count, 
+                Data = mappedData.OrderBy(p => Int32.Parse(p.BoothCode_No)), 
+            };
+            return Ok(data);
+        }
 
         /// <summary this api for Mobile App>
         [HttpGet]
