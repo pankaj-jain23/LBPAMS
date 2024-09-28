@@ -972,7 +972,7 @@ namespace EAMS.Helper
             #endregion
 
             #region ResultDeclarationViewModel  ResultDeclaration 
-            CreateMap<ResultDeclarationViewModel, ResultDeclaration>()
+            CreateMap<ResultDeclarationListViewModel, ResultDeclaration>()
      .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
      .ForMember(dest => dest.CandidateId, opt => opt.MapFrom(src => src.CandidateId))
      .ForMember(dest => dest.CandidateType, opt => opt.MapFrom(src => src.CandidateType))

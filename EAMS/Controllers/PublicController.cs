@@ -633,9 +633,9 @@ namespace EAMS.Controllers
         #region ResultDeclaration 
 
         [HttpPost("AddResultDeclarationDetails")]
-        public async Task<IActionResult> AddResultDeclarationDetails(List<ResultDeclarationViewModel> resultDeclarationViewModel)
+        public async Task<IActionResult> AddResultDeclarationDetails(ResultDeclarationViewModel resultDeclarationViewModel)
         {
-            if (resultDeclarationViewModel == null || !resultDeclarationViewModel.Any())
+            if (resultDeclarationViewModel == null || !resultDeclarationViewModel.resultDeclarationLists.Any())
             {
                 return BadRequest("No data provided.");
             }
@@ -647,15 +647,9 @@ namespace EAMS.Controllers
             int districtMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("DistrictMasterId"));
             int assemblyMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AssemblyMasterId"));
             int fourthLevelMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("FourthLevelMasterId"));
-            int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
-            //int stateMasterId = 1;
-            //int districtMasterId =2;
-            //int assemblyMasterId = 3;
-            //int fourthLevelMasterId = 4;
-            //int electionTypeMasterId =1;
-
+            int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId")); 
             // Map ViewModel to Entity
-            var mappedData = _mapper.Map<List<ResultDeclaration>>(resultDeclarationViewModel);
+            var mappedData = _mapper.Map<List<ResultDeclaration>>(resultDeclarationViewModel.resultDeclarationLists);
 
             // Assign common values
             mappedData.ForEach(resultDeclaration =>

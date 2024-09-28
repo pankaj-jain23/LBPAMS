@@ -1,7 +1,12 @@
 ﻿namespace LBPAMS.ViewModels.PublicModels
 {
+
     public class ResultDeclarationViewModel
-    { 
+    {
+        public  List<ResultDeclarationListViewModel> resultDeclarationLists { get; set; }
+    }
+    public class ResultDeclarationListViewModel
+    {
         public int CandidateId { get; set; }//KYC or UNopposed
         public int? BoothMasterId { get; set; }
         public int? GPPanchayatWardsMasterId { get; set; }
@@ -13,6 +18,7 @@
         }
         public bool ResultDecStatus { get; set; }
     }
+
     public class UpdateResultDeclarationViewModel
     {
         public int? ResultDeclarationMasterId

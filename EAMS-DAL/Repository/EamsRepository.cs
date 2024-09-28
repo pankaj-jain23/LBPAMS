@@ -1908,7 +1908,7 @@ namespace EAMS_DAL.Repository
 
             return fieldOfficerProfile;
         }
-       
+
         public async Task<Response> AddFieldOfficer(FieldOfficerMaster fieldOfficerViewModel)
         {
             // Check if FieldOfficer with the same mobile number, election type, and state already exists
@@ -2008,7 +2008,7 @@ namespace EAMS_DAL.Repository
                 Message = "Field Officer updated successfully"
             };
         }
-        
+
 
         public async Task<Response> UpdateFieldOfficerValidate(FieldOfficerMaster updatedFieldOfficer)
         {
@@ -2057,7 +2057,7 @@ namespace EAMS_DAL.Repository
                 Message = "Field Officer updated successfully"
             };
         }
-        
+
         /// <summary this api for Portal>
         public async Task<List<CombinedMaster>> GetBoothListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
         {
@@ -2258,7 +2258,7 @@ namespace EAMS_DAL.Repository
             return foRecord;
         }
 
-        
+
 
         #endregion
         #region AROResult
@@ -2934,19 +2934,9 @@ namespace EAMS_DAL.Repository
                     if (auxList.Any(aux => boothMaster.BoothNoAuxy.Contains(aux)))
                     {
                         bool checkBoothName = false;
-                        bool isExistAux = false;
 
                         if (boothMaster.ElectionTypeMasterId == 2) // for panchayat samiti chekc pszonepachat table
                         {
-                            isExistAux = await _context.BoothMaster.AnyAsync(d =>
-                                           d.StateMasterId == boothMaster.StateMasterId &&
-                                           d.DistrictMasterId == boothMaster.DistrictMasterId &&
-                                           d.AssemblyMasterId == boothMaster.AssemblyMasterId &&
-                                           d.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId &&
-                                           d.BoothNoAuxy.Equals(boothMaster.BoothCode_No)
-                                           && d.PSZonePanchayatMasterId == boothMaster.PSZonePanchayatMasterId);
-                            if (isExistAux is true)
-                                return new Response { Status = RequestStatusEnum.BadRequest, Message = $"The booth Auxiliary- {boothMaster.BoothNoAuxy} already exists. " };
 
                             checkBoothName = await _context.BoothMaster.AnyAsync(d =>
                                              d.StateMasterId == boothMaster.StateMasterId &&
@@ -2959,15 +2949,6 @@ namespace EAMS_DAL.Repository
                         }
                         else
                         {
-                            isExistAux = await _context.BoothMaster.AnyAsync(d =>
-                                           d.StateMasterId == boothMaster.StateMasterId &&
-                                           d.DistrictMasterId == boothMaster.DistrictMasterId &&
-                                           d.AssemblyMasterId == boothMaster.AssemblyMasterId &&
-                                           d.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId &&
-                                           d.BoothNoAuxy.Equals(boothMaster.BoothNoAuxy)
-                                           && d.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId);
-                            if (isExistAux is true)
-                                return new Response { Status = RequestStatusEnum.BadRequest, Message = $"The booth AUXY  {boothMaster.BoothNoAuxy} already exists. " };
 
                             checkBoothName = await _context.BoothMaster.AnyAsync(d =>
                                              d.StateMasterId == boothMaster.StateMasterId &&
@@ -3375,17 +3356,7 @@ namespace EAMS_DAL.Repository
         //}
         public async Task<Response> UpdateBooth(BoothMaster boothMaster)
         {
-            bool isExistAux = false;
-            isExistAux = await _context.BoothMaster.AnyAsync(d =>
-                                      d.StateMasterId == boothMaster.StateMasterId &&
-                                      d.DistrictMasterId == boothMaster.DistrictMasterId &&
-                                      d.AssemblyMasterId == boothMaster.AssemblyMasterId &&
-                                      d.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId &&
-                                      d.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId &&
-                                      d.BoothNoAuxy.Equals(boothMaster.BoothCode_No));
-            if (isExistAux is true)
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = $"The booth Auxiliary- {boothMaster.BoothNoAuxy} already exists. " };
-
+          
             if (boothMaster.BoothName != string.Empty)
             {
                 var existingbooth = await _context.BoothMaster.FirstOrDefaultAsync(so => so.BoothMasterId == boothMaster.BoothMasterId);
@@ -16701,7 +16672,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 return null;
             }
         }
-        public async Task<List<GPPanchayatWards>> GetPanchListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId,int gpPanchayatWardsMasterId)
+        public async Task<List<GPPanchayatWards>> GetPanchListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId)
         {
             var getPsZone = await _context.GPPanchayatWards.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.FourthLevelHMasterId == FourthLevelHMasterId && d.GPPanchayatWardsMasterId == gpPanchayatWardsMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).ToListAsync();
             if (getPsZone != null)
@@ -17139,7 +17110,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 return new ServiceResponse { IsSucceed = true, Message = "Record Deleted successfully" };
             }
         }
-        public async Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(int stateMasterId,int districtMasterId,int electionTypeMasterId,int assemblyMasterId,int fourthLevelHMasterId)
+        public async Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
             // Query Kyc Table
             var kycCandidates = await (from k in _context.Kyc

@@ -73,6 +73,7 @@ namespace EAMS_ACore.IRepository
         /// </summary>
         Task<FieldOfficerMasterList> GetFieldOfficerById(int FieldOfficerMasterId);
         #endregion
+
         #region AROResult
         Task<Response> AddAROResult(AROResultMaster aROResultMaster);
         Task<Response> UpdateAROResult(AROResultMaster aROResultMaster);
@@ -80,6 +81,7 @@ namespace EAMS_ACore.IRepository
         Task<AROResultMasterList> GetAROResultById(int aROMasterId);
 
         #endregion
+
         #region Booth Master
         Task<List<CombinedMaster>> GetBoothListById(string stateMasterId, string districtMasterId, string assemblyMasterId);
         Task<List<CombinedMaster>> GetBoothListByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
@@ -199,6 +201,7 @@ namespace EAMS_ACore.IRepository
         Task<Response> AddEventSlot(List<SlotManagementMaster> addEventSlot);
         Task<List<SlotManagementMaster>> GetEventSlotList(int stateMasterId, int electionTypeMasterId, int eventId);
         #endregion
+
         Task<List<UserList>> GetUserList(string soName, string type);
 
         #region PollInterruption Interruption

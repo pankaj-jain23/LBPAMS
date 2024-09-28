@@ -128,6 +128,7 @@ namespace EAMS.Controllers
                 return StatusCode(500, "Internal Server Error");
             }
         }
+
         [HttpGet]
         [Route("GetRoles")]
         [Authorize]

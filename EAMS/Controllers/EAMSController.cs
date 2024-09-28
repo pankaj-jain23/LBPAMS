@@ -4184,7 +4184,9 @@ namespace EAMS.Controllers
         }
 
         #endregion
+
         #region AROResult
+
         [HttpPost]
         [Route("AddAROResult")]
         public async Task<IActionResult> AddAROResult(AROResultMasterViewModel fieldOfficerViewModel)
@@ -4264,6 +4266,7 @@ namespace EAMS.Controllers
             }
 
         }
+
         #endregion
     }
 }
