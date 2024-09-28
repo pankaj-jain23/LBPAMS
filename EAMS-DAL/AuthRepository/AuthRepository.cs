@@ -433,6 +433,11 @@ namespace EAMS_DAL.AuthRepository
 
              
         }
+        public async Task<AROResultMaster> ValidateMobileForARO(ValidateMobile validateMobile)
+        {
+            return await _context.AROResultMaster
+                .FirstOrDefaultAsync(d => d.AROMobile == validateMobile.MobileNumber && d.IsStatus == true);
+        }
 
 
         public async Task<ServiceResponse> SectorOfficerMasterRecord(FieldOfficerMaster sectorOfficerMaster)

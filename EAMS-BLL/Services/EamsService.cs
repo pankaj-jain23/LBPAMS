@@ -203,10 +203,7 @@ namespace EAMS_BLL.Services
                 return await _eamsRepository.GetBLOOfficerProfile(Id);
             }
         }
-        public async Task<Response> AddAROResult(AROResultMaster aROResultMaster)
-        {
-            return await _eamsRepository.AddAROResult(aROResultMaster);
-        }
+       
         public async Task<Response> AddFieldOfficer(FieldOfficerMaster fieldOfficerViewModel)
         {
             return await _eamsRepository.AddFieldOfficer(fieldOfficerViewModel);
@@ -219,6 +216,7 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.UpdateFieldOfficer(fieldOfficerViewModel);
         }
+        
         public async Task<Response> UpdateBLOOfficer(BLOMaster bLOMaster)
         {
             return await _eamsRepository.UpdateBLOOfficer(bLOMaster);
@@ -239,8 +237,22 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetFieldOfficerById(FieldOfficerMasterId);
         }
+       
         #endregion
-
+        #region AROResult
+        public async Task<Response> AddAROResult(AROResultMaster aROResultMaster)
+        {
+            return await _eamsRepository.AddAROResult(aROResultMaster);
+        }
+        public async Task<Response> UpdateAROResult(AROResultMaster aROResultMaster)
+        {
+            return await _eamsRepository.UpdateAROResult(aROResultMaster);
+        }
+        public async Task<AROResultMasterList> GetAROResultById(int aROMasterId)
+        {
+            return await _eamsRepository.GetAROResultById(aROMasterId);
+        }
+        #endregion
         #region Booth Master
 
         public async Task<List<CombinedMaster>> GetBoothListById(string stateMasterId, string districtMasterId, string assemblyMasterId)

@@ -407,6 +407,22 @@ namespace EAMS.Helper
               .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
               .ReverseMap();
             #endregion
+
+            #region UpdateAROResultViewModel AROResultMaster
+            CreateMap<UpdateAROResultViewModel, AROResultMaster>()
+              .ForMember(dest => dest.AROMasterId, opt => opt.MapFrom(src => src.AROMasterId))
+              .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+              .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+              .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+              .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
+              .ForMember(dest => dest.AROName, opt => opt.MapFrom(src => src.AROName))
+              .ForMember(dest => dest.AROOfficeName, opt => opt.MapFrom(src => src.AROOfficeName))
+              .ForMember(dest => dest.AROMobile, opt => opt.MapFrom(src => src.AROMobile))
+              .ForMember(dest => dest.ARODesignation, opt => opt.MapFrom(src => src.ARODesignation))
+              .ForMember(dest => dest.IsStatus, opt => opt.MapFrom(src => src.IsStatus))
+              .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+              .ReverseMap();
+            #endregion
             #region SectorOfficerBoothViewModel CombinedMaster
             CreateMap<FieldOfficerBoothViewModel, CombinedMaster>()
                 .ForMember(dest => dest.StateId, opt => opt.MapFrom(src => src.StateMasterId))

@@ -1908,36 +1908,7 @@ namespace EAMS_DAL.Repository
 
             return fieldOfficerProfile;
         }
-        public async Task<Response> AddAROResult(AROResultMaster aROResultMaster)
-        {
-            // Check if FieldOfficer with the same mobile number, election type, and state already exists
-            var existingOfficerMobile = await _context.AROResultMaster
-                                                .FirstOrDefaultAsync(d => d.AROMobile == aROResultMaster.AROMobile
-                                                                         && d.ElectionTypeMasterId == aROResultMaster.ElectionTypeMasterId
-                                                                         && d.StateMasterId == aROResultMaster.StateMasterId);
-
-
-            // If more than two officers already exist with the same mobile number for this election type, return an error response
-            if (existingOfficerMobile is not null)
-            {
-                return new Response
-                {
-                    Status = RequestStatusEnum.BadRequest,
-                    Message = $"ARO User {aROResultMaster.AROName} Already Exists in this election "
-                };
-            }
-
-            // If no duplicates exist, add the new FieldOfficer and save changes
-            _context.AROResultMaster.Add(aROResultMaster);
-            await _context.SaveChangesAsync();
-
-            // Return success response
-            return new Response
-            {
-                Status = RequestStatusEnum.OK,
-                Message = "ARO added successfully"
-            };
-        }
+       
         public async Task<Response> AddFieldOfficer(FieldOfficerMaster fieldOfficerViewModel)
         {
             // Check if FieldOfficer with the same mobile number, election type, and state already exists
@@ -2037,6 +2008,7 @@ namespace EAMS_DAL.Repository
                 Message = "Field Officer updated successfully"
             };
         }
+        
 
         public async Task<Response> UpdateFieldOfficerValidate(FieldOfficerMaster updatedFieldOfficer)
         {
@@ -2085,6 +2057,7 @@ namespace EAMS_DAL.Repository
                 Message = "Field Officer updated successfully"
             };
         }
+        
         /// <summary this api for Portal>
         public async Task<List<CombinedMaster>> GetBoothListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
         {
@@ -2285,9 +2258,211 @@ namespace EAMS_DAL.Repository
             return foRecord;
         }
 
+        
 
         #endregion
+        #region AROResult
+        public async Task<Response> AddAROResult(AROResultMaster aROResultMaster)
+        {
+            // Check if FieldOfficer with the same mobile number, election type, and state already exists
+            var existingOfficerMobile = await _context.AROResultMaster
+                                                .FirstOrDefaultAsync(d => d.AROMobile == aROResultMaster.AROMobile
+                                                                         && d.ElectionTypeMasterId == aROResultMaster.ElectionTypeMasterId
+                                                                         && d.StateMasterId == aROResultMaster.StateMasterId);
 
+
+            // If more than two officers already exist with the same mobile number for this election type, return an error response
+            if (existingOfficerMobile is not null)
+            {
+                return new Response
+                {
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = $"ARO User {aROResultMaster.AROName} Already Exists in this election "
+                };
+            }
+
+            // If no duplicates exist, add the new FieldOfficer and save changes
+            _context.AROResultMaster.Add(aROResultMaster);
+            await _context.SaveChangesAsync();
+
+            // Return success response
+            return new Response
+            {
+                Status = RequestStatusEnum.OK,
+                Message = "ARO added successfully"
+            };
+        }
+
+        public async Task<AROResultMasterList> GetAROResultById(int aROMasterId)
+        {
+            var aroRecord = await _context.AROResultMaster
+                .Where(aro => aro.AROMasterId == aROMasterId)
+                .Join(_context.StateMaster,
+                      aro => aro.StateMasterId,
+                      sm => sm.StateMasterId,
+                      (aro, sm) => new { AROResultMaster = aro, StateMaster = sm })
+                .Join(_context.DistrictMaster,
+                      joined => joined.AROResultMaster.DistrictMasterId,
+                      dm => dm.DistrictMasterId,
+                      (joined, dm) => new { joined.AROResultMaster, joined.StateMaster, DistrictMaster = dm })
+                .Join(_context.AssemblyMaster,
+                      joined => joined.AROResultMaster.AssemblyMasterId,
+                      am => am.AssemblyMasterId,
+                      (joined, am) => new { joined.AROResultMaster, joined.StateMaster, joined.DistrictMaster, AssemblyMaster = am })
+                .Join(_context.FourthLevelH,
+                      joined => joined.AROResultMaster.FourthLevelHMasterId,
+                      flh => flh.FourthLevelHMasterId,
+                      (joined, flh) => new { joined.AROResultMaster, joined.StateMaster, joined.DistrictMaster, joined.AssemblyMaster, FourthLevelH = flh })
+                .Join(_context.ElectionTypeMaster,
+                      joined => joined.AROResultMaster.ElectionTypeMasterId,
+                      etm => etm.ElectionTypeMasterId,
+                      (joined, etm) => new AROResultMasterList
+                      {
+                          AROMasterId = joined.AROResultMaster.AROMasterId,
+                          StateMasterId = joined.StateMaster.StateMasterId,
+                          StateName = joined.StateMaster.StateName,
+                          DistrictMasterId = joined.DistrictMaster.DistrictMasterId,
+                          DistrictName = joined.DistrictMaster.DistrictName,
+                          AssemblyMasterId = joined.AssemblyMaster.AssemblyMasterId,
+                          AssemblyCode = joined.AssemblyMaster.AssemblyCode,
+                          AssemblyName = joined.AssemblyMaster.AssemblyName,
+                          FourthLevelHMasterId = joined.FourthLevelH.FourthLevelHMasterId,
+                          HierarchyName = joined.FourthLevelH.HierarchyName,
+                          AROName = joined.AROResultMaster.AROName,
+                          ARODesignation = joined.AROResultMaster.ARODesignation,
+                          AROOfficeName = joined.AROResultMaster.AROOfficeName,
+                          AROMobile = joined.AROResultMaster.AROMobile,
+                          IsStatus = joined.AROResultMaster.IsStatus,
+                          OTPGeneratedTime = joined.AROResultMaster.OTPGeneratedTime,
+                          OTP = joined.AROResultMaster.OTP,
+                          OTPExpireTime = joined.AROResultMaster.OTPExpireTime,
+                          OTPAttempts = joined.AROResultMaster.OTPAttempts,
+                          IsLocked = joined.AROResultMaster.IsLocked,
+                          ElectionTypeMasterId = joined.AROResultMaster.ElectionTypeMasterId,
+                          ElectionTypeName = etm.ElectionType
+                      })
+                .FirstOrDefaultAsync();
+
+            return aroRecord;
+        }
+        public async Task<Response> UpdateAROResult(AROResultMaster aROResultMaster)
+        {
+            // Fetch the existing officer and check for uniqueness of the mobile number in one query
+            var existingOfficer = await _context.AROResultMaster
+                .Where(d => d.AROMasterId == aROResultMaster.AROMasterId)
+                .Select(d => new
+                {
+                    Officer = d,
+                    IsMobileDuplicate = _context.AROResultMaster.Any(m =>
+                        m.AROMobile == aROResultMaster.AROMobile
+                        && m.AROMasterId != d.AROMasterId && m.ElectionTypeMasterId == aROResultMaster.ElectionTypeMasterId),
+                    ExistingOfficerWithSameMobile = _context.FieldOfficerMaster.FirstOrDefault(m =>
+                        m.FieldOfficerMobile == aROResultMaster.AROMobile
+                        && m.ElectionTypeMasterId == aROResultMaster.ElectionTypeMasterId
+                        && m.StateMasterId == aROResultMaster.StateMasterId
+                        && m.DistrictMasterId == aROResultMaster.DistrictMasterId && m.ElectionTypeMasterId == aROResultMaster.ElectionTypeMasterId && m.ElectionTypeMasterId == aROResultMaster.ElectionTypeMasterId)
+                })
+                .FirstOrDefaultAsync();
+
+            if (existingOfficer == null)
+            {
+                return new Response
+                {
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = "No Record Found"
+                };
+            }
+
+
+
+            if (aROResultMaster.AROMobile != existingOfficer.Officer.AROMobile
+                && existingOfficer.IsMobileDuplicate)
+            {
+                return new Response
+                {
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = "Mobile Number Already Exists"
+                };
+            }
+
+            // Map updated fields from updatedFieldOfficer to the existing officer
+            existingOfficer.Officer.StateMasterId = aROResultMaster.StateMasterId;
+            existingOfficer.Officer.DistrictMasterId = aROResultMaster.DistrictMasterId;
+            existingOfficer.Officer.AssemblyMasterId = aROResultMaster.AssemblyMasterId;
+            existingOfficer.Officer.FourthLevelHMasterId = aROResultMaster.FourthLevelHMasterId;
+            existingOfficer.Officer.AROName = aROResultMaster.AROName;
+            existingOfficer.Officer.AROMobile = aROResultMaster.AROMobile;
+            existingOfficer.Officer.ARODesignation = aROResultMaster.ARODesignation;
+            existingOfficer.Officer.AROOfficeName = aROResultMaster.AROOfficeName;
+            existingOfficer.Officer.AROUpdatedAt = BharatDateTime();
+            existingOfficer.Officer.IsStatus = aROResultMaster.IsStatus;
+            existingOfficer.Officer.OTPGeneratedTime = aROResultMaster.OTPGeneratedTime;
+            existingOfficer.Officer.OTP = aROResultMaster.OTP;
+            existingOfficer.Officer.OTPExpireTime = aROResultMaster.OTPExpireTime;
+            existingOfficer.Officer.OTPAttempts = aROResultMaster.OTPAttempts;
+            existingOfficer.Officer.RefreshToken = aROResultMaster.RefreshToken;
+            existingOfficer.Officer.RefreshTokenExpiryTime = aROResultMaster.RefreshTokenExpiryTime;
+            existingOfficer.Officer.AppPin = aROResultMaster.AppPin;
+            existingOfficer.Officer.IsLocked = aROResultMaster.IsLocked;
+            existingOfficer.Officer.ElectionTypeMasterId = aROResultMaster.ElectionTypeMasterId;
+
+            _context.AROResultMaster.Update(existingOfficer.Officer);
+            await _context.SaveChangesAsync();
+
+            return new Response
+            {
+                Status = RequestStatusEnum.OK,
+                Message = "Field Officer updated successfully"
+            };
+        }
+        public async Task<Response> UpdateAROValidate(AROResultMaster aROResultMaster)
+        {
+            // Check if the record exists based on the FieldOfficerMasterId
+            var existingOfficer = await _context.AROResultMaster
+                                                .FirstOrDefaultAsync(d => d.AROMasterId == aROResultMaster.AROMasterId);
+
+            if (existingOfficer == null)
+            {
+                // Return a response if the record is not found
+                return new Response
+                {
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = "No Record Found"
+                };
+            }
+
+            // Map all fields from updatedFieldOfficer to existingOfficer
+            existingOfficer.StateMasterId = aROResultMaster.StateMasterId;
+            existingOfficer.DistrictMasterId = aROResultMaster.DistrictMasterId;
+            existingOfficer.AssemblyMasterId = aROResultMaster.AssemblyMasterId;
+            existingOfficer.AROName = aROResultMaster.AROName;
+            existingOfficer.ARODesignation = aROResultMaster.ARODesignation;
+            existingOfficer.AROOfficeName = aROResultMaster.AROOfficeName;
+            existingOfficer.AROMobile = aROResultMaster.AROMobile;
+            existingOfficer.AROUpdatedAt = BharatDateTime(); // Set the updated time to the current time
+            existingOfficer.IsStatus = aROResultMaster.IsStatus;
+            existingOfficer.OTPGeneratedTime = aROResultMaster.OTPGeneratedTime;
+            existingOfficer.OTP = aROResultMaster.OTP;
+            existingOfficer.OTPExpireTime = aROResultMaster.OTPExpireTime;
+            existingOfficer.OTPAttempts = aROResultMaster.OTPAttempts;
+            existingOfficer.RefreshToken = aROResultMaster.RefreshToken;
+            existingOfficer.RefreshTokenExpiryTime = aROResultMaster.RefreshTokenExpiryTime;
+            existingOfficer.AppPin = aROResultMaster.AppPin;
+            existingOfficer.IsLocked = aROResultMaster.IsLocked;
+            existingOfficer.ElectionTypeMasterId = aROResultMaster.ElectionTypeMasterId;
+
+            _context.AROResultMaster.Update(aROResultMaster);
+
+            _context.SaveChanges();
+
+            // Return a success response
+            return new Response
+            {
+                Status = RequestStatusEnum.OK,
+                Message = "Field Officer updated successfully"
+            };
+        }
+        #endregion
         #region Booth Master 
 
         public async Task<List<CombinedMaster>> GetBoothListById(string stateMasterId, string districtMasterId, string assemblyMasterId)

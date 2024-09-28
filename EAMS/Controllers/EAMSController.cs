@@ -4184,7 +4184,7 @@ namespace EAMS.Controllers
         }
 
         #endregion
-        #region
+        #region AROResult
         [HttpPost]
         [Route("AddAROResult")]
         public async Task<IActionResult> AddAROResult(AROResultMasterViewModel fieldOfficerViewModel)
@@ -4215,7 +4215,55 @@ namespace EAMS.Controllers
             }
         }
 
+        [HttpPut]
+        [Route("UpdateAROResult")]
+        public async Task<IActionResult> UpdateAROResult(UpdateAROResultViewModel updateAROResultViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                var mappedData = _mapper.Map<AROResultMaster>(updateAROResultViewModel);
 
+                var result = await _EAMSService.UpdateAROResult(mappedData);
+                switch (result.Status)
+                {
+                    case RequestStatusEnum.OK:
+                        return Ok(result.Message);
+                    case RequestStatusEnum.BadRequest:
+                        return BadRequest(result.Message);
+                    case RequestStatusEnum.NotFound:
+                        return NotFound(result.Message);
+
+                    default:
+                        return StatusCode(500, "Internal Server Error");
+                }
+
+
+
+            }
+            else
+            {
+                return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
+            }
+        }
+
+        [HttpGet]
+        [Route("GetAROResultById")]
+        public async Task<IActionResult> GetAROResultById(int aROMasterId)
+        {
+            var foRecord = await _EAMSService.GetAROResultById(aROMasterId);
+            if (foRecord != null)
+            {
+
+
+
+                return Ok(foRecord);
+            }
+            else
+            {
+                return NotFound($"[{aROMasterId}] not exist");
+            }
+
+        }
         #endregion
     }
 }

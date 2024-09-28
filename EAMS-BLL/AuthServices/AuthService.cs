@@ -200,7 +200,9 @@ namespace EAMS_BLL.AuthServices
         public async Task<Response> ValidateMobile(ValidateMobile validateMobile)
         {
             var foRecords = await _authRepository.ValidateMobile(validateMobile);
-            if (foRecords == null)
+            var aroRecords = await _authRepository.ValidateMobileForARO(validateMobile);
+
+            if (foRecords == null && aroRecords == null)
             {
                 return new Response()
                 {
@@ -209,66 +211,193 @@ namespace EAMS_BLL.AuthServices
                 };
             }
 
-
             // Check if OTP is empty or not 6 digits
             if (string.IsNullOrEmpty(validateMobile.Otp) || validateMobile.Otp.Length != 6)
             {
-                // Generate a new OTP and update the field officer's record
-                foRecords.OTP = GenerateOTP();
-                foRecords.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 0, 60);  // Set OTP expiration time
-                foRecords.OTPAttempts = foRecords.OTPAttempts + 1;
-
-
-                var updateFO = await _eamsRepository.UpdateFieldOfficerValidate(foRecords);
-                // Check if OTP send was successful
-                if (updateFO.Status == RequestStatusEnum.OK)
+                if (foRecords != null)
                 {
-                    // await _authRepository.UpdateUserAsync(fieldOfficer);  // Ensure the field officer's record is updated with OTP
-                    return new Response { Status = RequestStatusEnum.OK, Message = $"OTP Sent on your number {foRecords.OTP}" };
-                }
+                    // Generate a new OTP and update the field officer's record
+                    foRecords.OTP = GenerateOTP();
+                    foRecords.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 0, 60);
+                    foRecords.OTPAttempts += 1;
 
-                // OTP send failed
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Failed to send OTP" };
+                    var updateFO = await _eamsRepository.UpdateFieldOfficerValidate(foRecords);
+                    if (updateFO.Status == RequestStatusEnum.OK)
+                    {
+                        return new Response { Status = RequestStatusEnum.OK, Message = $"OTP Sent on your number {foRecords.OTP}" };
+                    }
+                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Failed to send OTP" };
+                }
+                else if (aroRecords != null)
+                {
+                    // Generate a new OTP and update the ARO's record
+                    aroRecords.OTP = GenerateOTP();
+                    aroRecords.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 0, 60);
+                    aroRecords.OTPAttempts += 1;
+
+                    var updateARO = await _eamsRepository.UpdateAROValidate(aroRecords);
+                    if (updateARO.Status == RequestStatusEnum.OK)
+                    {
+                        return new Response { Status = RequestStatusEnum.OK, Message = $"OTP Sent on your number {aroRecords.OTP}" };
+                    }
+                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Failed to send OTP" };
+                }
             }
 
             // Validate OTP and expiration time
-            if (foRecords.OTP == validateMobile.Otp && BharatDateTime() <= foRecords.OTPExpireTime)
+            if (foRecords != null && foRecords.OTP == validateMobile.Otp && BharatDateTime() <= foRecords.OTPExpireTime)
             {
                 foRecords.OTPAttempts = 0;
                 foRecords.RefreshToken = GenerateRefreshToken();
                 foRecords.RefreshTokenExpiryTime = BharatTimeDynamic(0, 7, 0, 0, 0);
 
                 var updateFO = await _eamsRepository.UpdateFieldOfficerValidate(foRecords);
-
-
                 if (updateFO.Status == RequestStatusEnum.BadRequest)
                 {
                     return new Response { Status = RequestStatusEnum.BadRequest, Message = "Failed to update mobile number" };
                 }
-                var authClaims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, foRecords.FieldOfficerName),
-                    new Claim(ClaimTypes.MobilePhone, foRecords.FieldOfficerMobile),
-                    new Claim(ClaimTypes.Role,"FO"),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                    new Claim("ElectionTypeMasterId",foRecords.ElectionTypeMasterId.ToString()),
-                    new Claim("FieldOfficerMasterId", foRecords.FieldOfficerMasterId.ToString()),
-                    new Claim("StateMasterId", foRecords.StateMasterId.ToString()),
-                    new Claim("DistrictMasterId", foRecords.DistrictMasterId.ToString()),
-                    new Claim("AssemblyMasterId", foRecords.AssemblyMasterId.ToString())
 
-                };
+                var authClaims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, foRecords.FieldOfficerName),
+            new Claim(ClaimTypes.MobilePhone, foRecords.FieldOfficerMobile),
+            new Claim(ClaimTypes.Role, "FO"),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim("ElectionTypeMasterId", foRecords.ElectionTypeMasterId.ToString()),
+            new Claim("FieldOfficerMasterId", foRecords.FieldOfficerMasterId.ToString()),
+            new Claim("StateMasterId", foRecords.StateMasterId.ToString()),
+            new Claim("DistrictMasterId", foRecords.DistrictMasterId.ToString()),
+            new Claim("AssemblyMasterId", foRecords.AssemblyMasterId.ToString())
+        };
+
                 var token = GenerateToken(authClaims);
 
-                return new Response { Status = RequestStatusEnum.OK, Message = "Mobile number updated successfully", AccessToken = token,RefreshToken=foRecords.RefreshToken };
+                return new Response
+                {
+                    Status = RequestStatusEnum.OK,
+                    Message = "Mobile number updated successfully",
+                    AccessToken = token,
+                    RefreshToken = foRecords.RefreshToken
+                };
+            }
+            else if (aroRecords != null && aroRecords.OTP == validateMobile.Otp && BharatDateTime() <= aroRecords.OTPExpireTime)
+            {
+                aroRecords.OTPAttempts = 0;
+                aroRecords.RefreshToken = GenerateRefreshToken();
+                aroRecords.RefreshTokenExpiryTime = BharatTimeDynamic(0, 7, 0, 0, 0);
+
+                var updateARO = await _eamsRepository.UpdateAROValidate(aroRecords);
+                if (updateARO.Status == RequestStatusEnum.BadRequest)
+                {
+                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Failed to update mobile number" };
+                }
+
+                var authClaims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, aroRecords.AROName),
+            new Claim(ClaimTypes.MobilePhone, aroRecords.AROMobile),
+            new Claim(ClaimTypes.Role, "ARO"),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim("ElectionTypeMasterId", aroRecords.ElectionTypeMasterId.ToString()),
+            new Claim("AROMasterId", aroRecords.AROMasterId.ToString()),
+            new Claim("StateMasterId", aroRecords.StateMasterId.ToString()),
+            new Claim("DistrictMasterId", aroRecords.DistrictMasterId.ToString()),
+            new Claim("AssemblyMasterId", aroRecords.AssemblyMasterId?.ToString()),
+            new Claim("FourthLevelHMasterId", aroRecords.FourthLevelHMasterId?.ToString())
+        };
+
+                var token = GenerateToken(authClaims);
+
+                return new Response
+                {
+                    Status = RequestStatusEnum.OK,
+                    Message = "Mobile number updated successfully",
+                    AccessToken = token,
+                    RefreshToken = aroRecords.RefreshToken
+                };
             }
 
             // OTP validation failed
-            return new Response { Status = RequestStatusEnum.BadRequest, Message = "OTP Expired or Invalid" };
-
-
-
+            return new Response
+            {
+                Status = RequestStatusEnum.BadRequest,
+                Message = "OTP Expired or Invalid"
+            };
         }
+
+        //public async Task<Response> ValidateMobile(ValidateMobile validateMobile)
+        //{
+        //    var foRecords = await _authRepository.ValidateMobile(validateMobile);
+        //    var aroRecords = await _authRepository.ValidateMobileForARO(validateMobile);
+        //    if (foRecords == null && aroRecords == null)
+        //    {
+        //        return new Response()
+        //        {
+        //            Status = RequestStatusEnum.BadRequest,
+        //            Message = "Mobile Number doesn't Exist"
+        //        };
+        //    }
+
+
+        //    // Check if OTP is empty or not 6 digits
+        //    if (string.IsNullOrEmpty(validateMobile.Otp) || validateMobile.Otp.Length != 6)
+        //    {
+        //        // Generate a new OTP and update the field officer's record
+        //        foRecords.OTP = GenerateOTP();
+        //        foRecords.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 0, 60);  // Set OTP expiration time
+        //        foRecords.OTPAttempts = foRecords.OTPAttempts + 1;
+
+
+        //        var updateFO = await _eamsRepository.UpdateFieldOfficerValidate(foRecords);
+        //        // Check if OTP send was successful
+        //        if (updateFO.Status == RequestStatusEnum.OK)
+        //        {
+        //            // await _authRepository.UpdateUserAsync(fieldOfficer);  // Ensure the field officer's record is updated with OTP
+        //            return new Response { Status = RequestStatusEnum.OK, Message = $"OTP Sent on your number {foRecords.OTP}" };
+        //        }
+
+        //        // OTP send failed
+        //        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Failed to send OTP" };
+        //    }
+
+        //    // Validate OTP and expiration time
+        //    if (foRecords.OTP == validateMobile.Otp && BharatDateTime() <= foRecords.OTPExpireTime)
+        //    {
+        //        foRecords.OTPAttempts = 0;
+        //        foRecords.RefreshToken = GenerateRefreshToken();
+        //        foRecords.RefreshTokenExpiryTime = BharatTimeDynamic(0, 7, 0, 0, 0);
+
+        //        var updateFO = await _eamsRepository.UpdateFieldOfficerValidate(foRecords);
+
+
+        //        if (updateFO.Status == RequestStatusEnum.BadRequest)
+        //        {
+        //            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Failed to update mobile number" };
+        //        }
+        //        var authClaims = new List<Claim>
+        //        {
+        //            new Claim(ClaimTypes.Name, foRecords.FieldOfficerName),
+        //            new Claim(ClaimTypes.MobilePhone, foRecords.FieldOfficerMobile),
+        //            new Claim(ClaimTypes.Role,"FO"),
+        //            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        //            new Claim("ElectionTypeMasterId",foRecords.ElectionTypeMasterId.ToString()),
+        //            new Claim("FieldOfficerMasterId", foRecords.FieldOfficerMasterId.ToString()),
+        //            new Claim("StateMasterId", foRecords.StateMasterId.ToString()),
+        //            new Claim("DistrictMasterId", foRecords.DistrictMasterId.ToString()),
+        //            new Claim("AssemblyMasterId", foRecords.AssemblyMasterId.ToString())
+
+        //        };
+        //        var token = GenerateToken(authClaims);
+
+        //        return new Response { Status = RequestStatusEnum.OK, Message = "Mobile number updated successfully", AccessToken = token,RefreshToken=foRecords.RefreshToken };
+        //    }
+
+        //    // OTP validation failed
+        //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "OTP Expired or Invalid" };
+
+
+
+        //}
 
 
         public static string GenerateOTP(int length = 6)
@@ -429,12 +558,12 @@ namespace EAMS_BLL.AuthServices
 
             return _Token;
         }
-     
+
         private string GenerateToken(IEnumerable<Claim> claims)
         {
             var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
 
-            var expireAccessToken = BharatTimeDynamic(0,0,4,0,0);
+            var expireAccessToken = BharatTimeDynamic(0, 0, 4, 0, 0);
 
 
             var tokenDescriptor = new SecurityTokenDescriptor

@@ -57,7 +57,6 @@ namespace EAMS_ACore.Interfaces
         Task<FieldOfficerProfile> GetFieldOfficerProfile(string Id, string role);
 
         Task<Response> AddFieldOfficer(FieldOfficerMaster fieldOfficerViewModel);
-        Task<Response> AddAROResult(AROResultMaster aROResultMaster);
         Task<Response> AddBLOOfficer(BLOMaster bLOMaster);
         Task<Response> UpdateFieldOfficer(FieldOfficerMaster fieldOfficerViewModel);
         Task<Response> UpdateBLOOfficer(BLOMaster bLOMaster);
@@ -69,7 +68,12 @@ namespace EAMS_ACore.Interfaces
         /// </summary>
         Task<FieldOfficerMasterList> GetFieldOfficerById(int FieldOfficerMasterId);
         #endregion
+        #region AROResult
+        Task<Response> AddAROResult(AROResultMaster aROResultMaster);
+        Task<Response> UpdateAROResult(AROResultMaster aROResultMaster);
+        Task<AROResultMasterList> GetAROResultById(int aROMasterId);
 
+        #endregion
         #region BoothMaster
         Task<List<CombinedMaster>> GetBoothListById(string stateMasterId, string districtMasterId, string assemblyMasterId);
         Task<List<CombinedMaster>> GetBoothListByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
