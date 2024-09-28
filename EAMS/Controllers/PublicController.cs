@@ -689,7 +689,11 @@ namespace EAMS.Controllers
             int assemblyMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AssemblyMasterId"));
             int fourthLevelHMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("FourthLevelMasterId"));
             int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
-           
+            //int stateMasterId = 1;
+            //int districtMasterId = 1;
+            //int assemblyMasterId = 1;
+            //int fourthLevelHMasterId = 13548;
+            //int electionTypeMasterId = 1;
             var result = await _eamsService.GetSarpanchListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId);
 
             if (result.Count != 0 || result != null)

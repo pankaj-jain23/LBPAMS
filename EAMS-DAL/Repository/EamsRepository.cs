@@ -16485,6 +16485,18 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
             }
         }
+        public async Task<List<GPPanchayatWards>> GetPanchayatWardforRO(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        {
+            var getPsZone = await _context.GPPanchayatWards.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.FourthLevelHMasterId == fourthLevelHMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).ToListAsync();
+            if (getPsZone != null)
+            {
+                return getPsZone;
+            }
+            else
+            {
+                return null;
+            }
+        }
         public async Task<List<GPPanchayatWards>> GetGPPanchayatWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId)
         {
             var getPsZone = await _context.GPPanchayatWards.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.FourthLevelHMasterId == FourthLevelHMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).ToListAsync();
@@ -16940,7 +16952,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                                  CandidateId = u.UnOpposedMasterId,
                                                  CandidateName = u.CandidateName,
                                                  FatherName = u.FatherName,
-                                                 CandidateType = CandidateTypeEnum.UnOppessed.ToString() // Candidate from UnOpposed table
+                                                 CandidateType = CandidateTypeEnum.UnOppossed.ToString() // Candidate from UnOpposed table
                                              }).ToListAsync();
 
             // Combine both lists

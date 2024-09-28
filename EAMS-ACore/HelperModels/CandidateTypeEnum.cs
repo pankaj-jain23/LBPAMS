@@ -9,6 +9,6 @@ namespace EAMS_ACore.HelperModels
     public enum CandidateTypeEnum
     {
         Kyc = 1,
-        UnOppessed = 2,
+        UnOppossed = 2,
     }
 }
