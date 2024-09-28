@@ -17509,6 +17509,87 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             }
         }
+
+
+        public async Task<List<CombinedPanchayatMaster>> GetUnassignedPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        {
+            var boothList = from ft in _context.FourthLevelH
+                                .Where(d => d.StateMasterId == stateMasterId
+                                            && d.DistrictMasterId == districtMasterId
+                                            && d.AssemblyMasterId == assemblyMasterId
+                                            && d.HierarchyStatus == true) // FourthLevelH status check
+                            join asem in _context.AssemblyMaster
+                                .Where(a => a.AssemblyStatus == true) // AssemblyMaster status check
+                            on ft.AssemblyMasterId equals asem.AssemblyMasterId
+                            join dist in _context.DistrictMaster
+                                .Where(d => d.DistrictStatus == true) // DistrictMaster status check
+                            on asem.DistrictMasterId equals dist.DistrictMasterId
+                            join state in _context.StateMaster
+                                .Where(s => s.StateStatus == true) // StateMaster status check
+                            on dist.StateMasterId equals state.StateMasterId
+                            join elec in _context.ElectionTypeMaster
+                                .Where(e => e.ElectionStatus == true) // ElectionTypeMaster status check
+                            on ft.ElectionTypeMasterId equals elec.ElectionTypeMasterId
+                            select new CombinedPanchayatMaster
+                            {
+                                StateId = stateMasterId,
+                                DistrictId = dist.DistrictMasterId,
+                                AssemblyId = asem.AssemblyMasterId,
+                                AssemblyName = asem.AssemblyName,
+                                AssemblyCode = asem.AssemblyCode,
+                                FourthLevelHMasterId = ft.FourthLevelHMasterId,
+                                HierarchyName = ft.HierarchyName,
+                                IsAssigned = ft.IsAssigned,
+                                IsStatus = ft.HierarchyStatus,
+                                ElectionTypeMasterId = ft.ElectionTypeMasterId,
+                                ElectionTypeName = elec.ElectionType,
+                            };
+
+            return await boothList.AsNoTracking().ToListAsync();
+        }
+
+
+        public async Task<List<CombinedPanchayatMaster>> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelMasterId, string foId)
+        {
+            var boothList = from ft in _context.FourthLevelH
+                                .Where(d => d.StateMasterId == stateMasterId
+                                            && d.DistrictMasterId == districtMasterId
+                                            && d.AssemblyMasterId == assemblyMasterId
+                                            && d.FourthLevelHMasterId == fourthLevelMasterId
+                                            && d.AssignedTo == foId
+                                            && d.HierarchyStatus == true) // Filter FourthLevelH by status and assigned officer ID
+                            join asem in _context.AssemblyMaster
+                                .Where(a => a.AssemblyStatus == true) // Filter AssemblyMaster by status
+                            on ft.AssemblyMasterId equals asem.AssemblyMasterId
+                            join dist in _context.DistrictMaster
+                                .Where(d => d.DistrictStatus == true) // Filter DistrictMaster by status
+                            on asem.DistrictMasterId equals dist.DistrictMasterId
+                            join state in _context.StateMaster
+                                .Where(s => s.StateStatus == true) // Filter StateMaster by status
+                            on dist.StateMasterId equals state.StateMasterId
+                            join elec in _context.ElectionTypeMaster
+                                .Where(e => e.ElectionStatus == true) // Filter ElectionTypeMaster by status
+                            on ft.ElectionTypeMasterId equals elec.ElectionTypeMasterId
+                            select new CombinedPanchayatMaster
+                            {
+                                StateId = stateMasterId,
+                                DistrictId = dist.DistrictMasterId,
+                                AssemblyId = asem.AssemblyMasterId,
+                                AssemblyName = asem.AssemblyName,
+                                AssemblyCode = asem.AssemblyCode,
+                                FourthLevelHMasterId = ft.FourthLevelHMasterId,
+                                HierarchyName = ft.HierarchyName,
+                                IsAssigned = ft.IsAssigned,
+                                IsStatus = ft.HierarchyStatus,
+                                ElectionTypeMasterId = ft.ElectionTypeMasterId,
+                                ElectionTypeName = elec.ElectionType,
+                            };
+
+            // Use AsNoTracking for better performance
+            return await boothList.AsNoTracking().ToListAsync();
+        }
+
+
         #endregion
     }
 }

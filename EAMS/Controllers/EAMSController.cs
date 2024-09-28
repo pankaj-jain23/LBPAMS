@@ -4239,8 +4239,7 @@ namespace EAMS.Controllers
         }
 
         #endregion
-
-
+         
         #region  RO Panchayat Mapping
         [HttpPost]
         [Route("PanchayatMapping")]
@@ -4345,6 +4344,22 @@ namespace EAMS.Controllers
             {
                 return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
             }
+        }
+
+        [HttpGet]
+        [Route("GetPanchayatListByROId")]
+        public async Task<IActionResult> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelMasterId, string roId)
+        {
+            var panchayatList = await _EAMSService.GetPanchayatListByROId(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId, roId);  
+            var getUnassignedPanchayatList = await _EAMSService.GetUnassignedPanchayatListById(stateMasterId, districtMasterId, assemblyMasterId);  
+            var data = new
+            {
+                AssignedCount = panchayatList.Count,
+                UnAssignedCount = getUnassignedPanchayatList.Count,
+                Assigned = panchayatList,
+                Unassigned = getUnassignedPanchayatList
+            };
+            return Ok(data);
         }
         #endregion
     }

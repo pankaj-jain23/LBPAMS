@@ -28,4 +28,17 @@
         public bool IsVTInterrupted { get; set; }//Voter Turnout Event 
 
     }
+    public class ROPanchayatViewModel
+    {
+
+        public int StateMasterId { get; set; }
+        public int DistrictMasterId { get; set; }
+        public int AssemblyMasterId { get; set; }
+        public int FieldOfficerMasterId { get; set; }
+        public int? FourthLevelHMasterId  { get;  set;  }
+        public string? FourthLevelHName { get; set; } 
+        public bool IsAssigned { get; set; }
+        public int ElectionTypeMasterId { get; set; } 
+
+    }
 }

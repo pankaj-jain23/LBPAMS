@@ -204,6 +204,7 @@ namespace EAMS_ACore.Interfaces
 
         Task<List<AssemblyWisePendingBooth>> GetAssemblyWisePendingReports(string stateMasterId);
         #endregion
+
         Task<List<VTPSReportReportModel>> GetVoterTurnOutPollingStationReports(BoothReportModel boothReportModel);
         Task<List<VTReportModel>> GetVoterTurnOutConsolidatedReports(BoothReportModel boothReportModel);
         //Task<List<VTReportModel>> GetSlotBasedVoterTurnOutReport(SlotVTReportModel boothReportModel);
@@ -224,7 +225,6 @@ namespace EAMS_ACore.Interfaces
         #endregion
 
         Task<List<CombinedMaster>> AppNotDownload(string stateMasterId);
-
         Task<List<VoterTurnOutSlotWise>> GetVoterTurnOutSlotBasedReport(string stateMasterId);
         Task<List<AssemblyVoterTurnOutSlotWise>> GetSlotVTReporttAssemblyWise(string stateMasterId, string districtMasterId);
         Task<List<BoothWiseVoterTurnOutSlotWise>> GetSlotVTReportBoothWise(string stateId, string districtId, string assemblyId);
@@ -352,8 +352,9 @@ namespace EAMS_ACore.Interfaces
 
         #region PanchaytaMapping
         Task<Response> PanchayatMapping(List<FourthLevelH> fourthLevels);
-
         Task<Response> ReleasePanchayat(FourthLevelH fourthLevels);
+        Task<List<CombinedPanchayatMaster>> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId,int fourthLevelMasterId, string foId);
+        Task<List<CombinedPanchayatMaster>> GetUnassignedPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
         #endregion
     }
 }
