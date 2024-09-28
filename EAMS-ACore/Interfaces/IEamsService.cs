@@ -68,12 +68,14 @@ namespace EAMS_ACore.Interfaces
         /// </summary>
         Task<FieldOfficerMasterList> GetFieldOfficerById(int FieldOfficerMasterId);
         #endregion
+
         #region AROResult
         Task<Response> AddAROResult(AROResultMaster aROResultMaster);
         Task<Response> UpdateAROResult(AROResultMaster aROResultMaster);
         Task<AROResultMasterList> GetAROResultById(int aROMasterId);
 
         #endregion
+
         #region BoothMaster
         Task<List<CombinedMaster>> GetBoothListById(string stateMasterId, string districtMasterId, string assemblyMasterId);
         Task<List<CombinedMaster>> GetBoothListByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
@@ -349,5 +351,10 @@ namespace EAMS_ACore.Interfaces
         Task<List<ResultDeclarationList>> GetDistrictWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId);
         #endregion
 
+        #region PanchaytaMapping
+        Task<Response> PanchayatMapping(List<FourthLevelH> fourthLevels);
+
+        Task<Response> ReleasePanchayat(FourthLevelH fourthLevels);
+        #endregion
     }
 }

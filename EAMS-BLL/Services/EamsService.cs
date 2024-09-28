@@ -239,6 +239,7 @@ namespace EAMS_BLL.Services
         }
        
         #endregion
+
         #region AROResult
         public async Task<Response> AddAROResult(AROResultMaster aROResultMaster)
         {
@@ -253,6 +254,7 @@ namespace EAMS_BLL.Services
             return await _eamsRepository.GetAROResultById(aROMasterId);
         }
         #endregion
+
         #region Booth Master
 
         public async Task<List<CombinedMaster>> GetBoothListById(string stateMasterId, string districtMasterId, string assemblyMasterId)
@@ -2793,5 +2795,15 @@ namespace EAMS_BLL.Services
 
         #endregion
 
+        #region PancahyatMapping
+        public async Task<Response> PanchayatMapping(List<FourthLevelH> fourthLevels)
+        {
+            return await _eamsRepository.PanchayatMapping(fourthLevels);
+        }
+        public async Task<Response> ReleasePanchayat(FourthLevelH fourthLevels)
+        {
+            return await _eamsRepository.ReleasePanchayat(fourthLevels);
+        }
+        #endregion
     }
 }

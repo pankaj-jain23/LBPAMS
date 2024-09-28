@@ -2190,6 +2190,8 @@ namespace EAMS.Controllers
             }
 
         }
+ 
+        
         [HttpPut]
         [Route("UpdateGPPanchayatWards")]
         [Authorize]
@@ -4218,6 +4220,114 @@ namespace EAMS.Controllers
 
         }
 
+        #endregion
+
+
+        #region  RO Panchayat Mapping
+        [HttpPost]
+        [Route("PanchayatMapping")]
+        [Authorize]
+        public async Task<IActionResult> PanchayatMapping(PanchayatMappingViewModel panchayatMappingViewModel)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    if (panchayatMappingViewModel.FourthLevelHMasterId != null && panchayatMappingViewModel.FourthLevelHMasterId.Any() && panchayatMappingViewModel.IsAssigned == true && !string.IsNullOrWhiteSpace(panchayatMappingViewModel.AssignedTo))
+                    {
+
+                        List<FourthLevelH> fourthLevels = new List<FourthLevelH>();
+
+                        foreach (var fLevelMasterId in panchayatMappingViewModel.FourthLevelHMasterId)
+                        {
+                            var fHMaster = new FourthLevelH
+                            {
+                                FourthLevelHMasterId = fLevelMasterId,
+                                StateMasterId = panchayatMappingViewModel.StateMasterId,
+                                DistrictMasterId = panchayatMappingViewModel.DistrictMasterId,
+                                AssemblyMasterId = panchayatMappingViewModel.AssemblyMasterId,
+                                AssignedBy = panchayatMappingViewModel.AssignedBy,
+                                AssignedTo = panchayatMappingViewModel.AssignedTo,
+                                IsAssigned = panchayatMappingViewModel.IsAssigned,
+                                ElectionTypeMasterId = panchayatMappingViewModel.ElectionTypeMasterId,
+                            };
+
+                            fourthLevels.Add(fHMaster);
+                        }
+
+                        var result = await _EAMSService.PanchayatMapping(fourthLevels);
+                        switch (result.Status)
+                        {
+                            case RequestStatusEnum.OK:
+                                return Ok(result.Message);
+                            case RequestStatusEnum.BadRequest:
+                                return BadRequest(result.Message);
+                            case RequestStatusEnum.NotFound:
+                                return NotFound(result.Message);
+
+                            default:
+                                return StatusCode(500, "Internal Server Error");
+                        }
+                    }
+                    else
+                    {
+                        return BadRequest(new Response { Status = RequestStatusEnum.BadRequest, Message = "Please Check the Parameters" });
+                    }
+
+                }
+                else
+                {
+                    return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
+                }
+
+
+            }
+
+            catch (Exception ex)
+            {
+                _logger.LogError($"BoothMapping: {ex.Message}");
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
+
+        [HttpPut]
+        [Route("ReleasePanchayat")]
+        [Authorize]
+        public async Task<IActionResult> ReleasePanchayat(BoothReleaseViewModel boothReleaseViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var mapperdata = _mapper.Map<BoothMaster>(boothReleaseViewModel);
+                    var boothReleaseResponse = await _EAMSService.ReleaseBooth(mapperdata);
+
+                    switch (boothReleaseResponse.Status)
+                    {
+                        case RequestStatusEnum.OK:
+                            return Ok(boothReleaseResponse.Message);
+                        case RequestStatusEnum.BadRequest:
+                            return BadRequest(boothReleaseResponse.Message);
+                        case RequestStatusEnum.NotFound:
+                            return NotFound(boothReleaseResponse.Message);
+
+                        default:
+                            return StatusCode(500, "Internal Server Error");
+                    }
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return BadRequest(ex.Message);
+                }
+
+            }
+
+
+            else
+            {
+                return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
+            }
+        }
         #endregion
     }
 }

@@ -16,13 +16,13 @@ namespace EAMS.Controllers
     {
         private readonly IAuthService _authService;
         private readonly IMapper _mapper;
-        private readonly ILogger<EAMSAuthController> _logger; 
-        public EAMSAuthController(IAuthService authService, IMapper mapper, ILogger<EAMSAuthController> logger )
+        private readonly ILogger<EAMSAuthController> _logger;
+        public EAMSAuthController(IAuthService authService, IMapper mapper, ILogger<EAMSAuthController> logger)
         {
             _authService = authService;
             _mapper = mapper;
             _logger = logger;
-            
+
         }
 
         #region Register
@@ -59,7 +59,7 @@ namespace EAMS.Controllers
         #endregion
 
         #region Login
-     
+
 
         [HttpPost]
         [Route("login")]
@@ -274,7 +274,7 @@ namespace EAMS.Controllers
         #region DashBoardProfile
         [HttpGet]
         [Route("GetDashboardProfile")]
-        [Authorize] 
+        [Authorize]
         public async Task<IActionResult> GetDashboardProfile()
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId").Value;
@@ -506,6 +506,27 @@ namespace EAMS.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while updating the mobile number.");
             }
         }
+        #endregion
+
+
+        #region  GetROUserListByAssemblyId
+        [HttpGet]
+        [Route("GetROUserListByAssemblyId")]
+        public async Task<IActionResult> GetROUserListByAssemblyId(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        {
+            // Get the list of RO users based on the provided parameters
+            var roUserList = await _authService.GetROUserListByAssemblyId(stateMasterId, districtMasterId, assemblyMasterId);
+
+            // If no users found, return 404 Not Found
+            if (roUserList == null || !roUserList.Any())
+            {
+                return NotFound(new { Message = "No users with the role RO found for the specified parameters." });
+            }
+
+            // Return the list of RO users with a 200 OK response
+            return Ok(roUserList);
+        }
+
         #endregion
     }
 }

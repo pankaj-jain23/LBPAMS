@@ -865,6 +865,41 @@ namespace EAMS_BLL.AuthServices
 
             return new ServiceResponse { IsSucceed = false, Message = "OTP Expired or Invalid" };
         }
+
+
+        #endregion
+
+
+        #region
+        public async Task<List<ROUserList>> GetROUserListByAssemblyId(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        {
+            // Get all users with the role "RO"
+            var roRoleUsers = await _userManager.GetUsersInRoleAsync("RO");
+
+            // Filter by state, district, and assembly master ID
+            var filteredUsers = roRoleUsers
+                .Where(u => u.StateMasterId == stateMasterId
+                            && u.DistrictMasterId == districtMasterId
+                            && u.AssemblyMasterId == assemblyMasterId)
+                .Select(d => new ROUserList
+                {
+                    StateMasterId = d.StateMasterId,
+                    DistrictMasterId = d.DistrictMasterId,
+                    AssemblyMasterId = d.AssemblyMasterId,
+                    ElectionTypeMasterId = d.ElectionTypeMasterId,
+                    FourthLevelHMasterId = d.FourthLevelHMasterId,
+                    UserName = d.UserName,
+                    Id = d.Id,
+                    PhoneNumber = d.PhoneNumber
+                    
+                })
+                .ToList();
+
+            return filteredUsers;
+        }
+
+
+
         #endregion
     }
 }

@@ -404,5 +404,10 @@ namespace EAMS_ACore.IRepository
         Task<List<ResultDeclarationList>> GetResultDeclarationListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId);
 
         #endregion
+        #region PanchaytaMapping
+        Task<Response> PanchayatMapping(List<FourthLevelH> fourthLevels);
+
+        Task<Response> ReleasePanchayat(FourthLevelH fourthLevels);
+        #endregion
     }
 }

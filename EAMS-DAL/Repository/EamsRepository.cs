@@ -10486,6 +10486,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 DistrictName = d.DistrictMaster.DistrictName,
                 AssemblyName = d.AssemblyMaster.AssemblyName,
                 HierarchyName = d.FourthLevelH.HierarchyName,
+                HierarchyCategory=d.GPPanchayatWardsCategory,
                 //TotalNumberOfBooths = d.FourthLevelH.BoothMaster.Count,
                 //TotalNumberOfBoothsEntered = d.AssemblyMaster.TotalBooths,
                 // Male = d.Male,
@@ -16675,7 +16676,15 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         public async Task<List<GPPanchayatWards>> GetPanchListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId)
         {
-            var getPsZone = await _context.GPPanchayatWards.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.FourthLevelHMasterId == FourthLevelHMasterId && d.GPPanchayatWardsMasterId == gpPanchayatWardsMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).ToListAsync();
+            var getPsZone = await _context.GPPanchayatWards.Where(d => d.StateMasterId == stateMasterId 
+            && d.DistrictMasterId == districtMasterId
+            && d.AssemblyMasterId == assemblyMasterId
+            && d.FourthLevelHMasterId == FourthLevelHMasterId
+            && d.GPPanchayatWardsMasterId == gpPanchayatWardsMasterId)
+                .Include(d => d.StateMaster)
+                .Include(d => d.DistrictMaster)
+                .Include(d => d.AssemblyMaster)
+                .Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).ToListAsync();
             if (getPsZone != null)
             {
                 return getPsZone;
@@ -17395,5 +17404,15 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         #endregion
 
+        #region PanchaytaMapping
+        public async Task<Response> PanchayatMapping(List<FourthLevelH> fourthLevels)
+        {
+            return null;
+        }
+        public async Task<Response> ReleasePanchayat(FourthLevelH fourthLevels)
+        {
+            return null;
+        }
+        #endregion
     }
 }

@@ -27,6 +27,6 @@ namespace EAMS_ACore.AuthInterfaces
         Task<ServiceResponse> UpdateUserDetail(string userId, string mobileNumber, string? otp);
         Task<ServiceResponse> UpdateFieldOfficerDetail(string mobileNumber, int? otp);
 
-
+        Task<List<ROUserList>> GetROUserListByAssemblyId(int stateMasterId, int districtMasterId, int assemblyMasterId);
     }
 }
