@@ -1,6 +1,12 @@
-﻿namespace EAMS_ACore.Models
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace EAMS_ACore.Models
 {
-    public class FieldOfficerProfile
+    internal class AROProfile
     {
         public int? StateMasterId
         {
@@ -19,7 +25,6 @@
             get;
             set;
         }
-
         public string AssemblyName { get; set; }
         public int? FourthLevelHMasterId
         {
@@ -27,10 +32,11 @@
             set;
         }
         public string? HierarchyName { get; set; }
-        public string FoName { get; set; }
+        public string AROName { get; set; }
         public string Role { get; set; }
         public List<string> BoothNo { get; set; }
         public int ElectionTypeMasterId { get; set; }
         public string ElectionTypeName { get; set; }
+
     }
 }

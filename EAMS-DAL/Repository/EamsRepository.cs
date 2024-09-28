@@ -1895,7 +1895,7 @@ namespace EAMS_DAL.Repository
                                                  DistrictName = dist.DistrictName,
                                                  AssemblyMasterId = asm.AssemblyMasterId,
                                                  AssemblyName = asm.AssemblyName,
-                                                 FoName = fo.FieldOfficerOfficeName,
+                                                 FoName = fo.FieldOfficerName,
                                                  Role = "FO",
                                                  ElectionTypeMasterId = fo.ElectionTypeMasterId,
                                                  ElectionTypeName = electionType.ElectionType,
@@ -1908,6 +1908,48 @@ namespace EAMS_DAL.Repository
 
             return fieldOfficerProfile;
         }
+        public async Task<FieldOfficerProfile> GetAROProfile(string aroId)
+        {
+            // Convert aroId to integer for comparison
+            int aroMasterId = Convert.ToInt32(aroId);
+
+            var fieldOfficerProfile = await (from fo in _context.AROResultMaster
+                                             join asm in _context.AssemblyMaster
+                                             on fo.AssemblyMasterId equals asm.AssemblyMasterId
+                                             join dist in _context.DistrictMaster
+                                             on asm.DistrictMasterId equals dist.DistrictMasterId
+                                             join state in _context.StateMaster
+                                             on dist.StateMasterId equals state.StateMasterId
+                                             join electionType in _context.ElectionTypeMaster
+                                             on fo.ElectionTypeMasterId equals electionType.ElectionTypeMasterId
+                                             join fourthLevelH in _context.FourthLevelH
+                                             on fo.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
+                                             where fo.AROMasterId == aroMasterId
+                                             && fo.IsStatus == true
+                                             select new FieldOfficerProfile
+                                             {
+                                                 StateMasterId = state.StateMasterId,
+                                                 StateName = state.StateName,
+                                                 DistrictMasterId = dist.DistrictMasterId,
+                                                 DistrictName = dist.DistrictName,
+                                                 AssemblyMasterId = asm.AssemblyMasterId,
+                                                 AssemblyName = asm.AssemblyName,
+                                                 FourthLevelHMasterId = fo.FourthLevelHMasterId,
+                                                 HierarchyName = fourthLevelH.HierarchyName,
+                                                 FoName = fo.AROName,
+                                                 Role = "ARO",
+                                                 ElectionTypeMasterId = fo.ElectionTypeMasterId,
+                                                 ElectionTypeName = electionType.ElectionType,
+                                                 BoothNo = _context.BoothMaster
+                                                    .Where(b => b.AssignedTo == aroId && b.IsPrimaryBooth == true)
+                                                    .Select(b => $"{b.BoothName} {b.BoothCode_No}")
+                                                    .ToList()
+                                             }).FirstOrDefaultAsync();
+
+            return fieldOfficerProfile;
+        }
+
+
 
         public async Task<Response> AddFieldOfficer(FieldOfficerMaster fieldOfficerViewModel)
         {
@@ -16666,8 +16708,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             var getWard = await _context.GPPanchayatWards.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.FourthLevelHMasterId == fourthLevelHMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).ToListAsync();
             if (getWard != null)
             {
-<<<<<<< Updated upstream
-                return getPsZone;
+                return getWard;
             }
             else
             {
@@ -16688,9 +16729,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             if (getPsZone != null)
             {
                 return getPsZone;
-=======
-                return getWard;
->>>>>>> Stashed changes
             }
             else
             {

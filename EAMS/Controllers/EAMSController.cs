@@ -638,6 +638,7 @@ namespace EAMS.Controllers
         {
             var foIdClaim = User.Claims.FirstOrDefault(c => c.Type == "FieldOfficerMasterId")?.Value;
             var bloMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "BLOMasterId")?.Value;
+            var aroMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "AROMasterId")?.Value;
             if (foIdClaim is not null)
             {
                 var foList = await _EAMSService.GetFieldOfficerProfile(foIdClaim, "FO");  // Corrected to await the asynchronous method
@@ -655,7 +656,7 @@ namespace EAMS.Controllers
                     return BadRequest("No Record Found");
                 }
             }
-            else
+            else if(bloMasterIdClaim is not null)
             {
                 var bloList = await _EAMSService.GetFieldOfficerProfile(bloMasterIdClaim, "BLO");  // Corrected to await the asynchronous method
 
@@ -664,6 +665,23 @@ namespace EAMS.Controllers
                     var data = new
                     {
                         data = bloList
+                    };
+                    return Ok(data);
+                }
+                else
+                {
+                    return BadRequest("No Record Found");
+                }
+            }
+            else
+            {
+                var aroList = await _EAMSService.GetFieldOfficerProfile(aroMasterIdClaim, "ARO");  // Corrected to await the asynchronous method
+
+                if (aroList != null)
+                {
+                    var data = new
+                    {
+                        data = aroList
                     };
                     return Ok(data);
                 }
@@ -2123,7 +2141,7 @@ namespace EAMS.Controllers
             int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
             int districtMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("DistrictMasterId"));
             int assemblyMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AssemblyMasterId"));
-            int fourthLevelHMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("FourthLevelMasterId"));
+            int fourthLevelHMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("FourthLevelHMasterId"));
             int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
 
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && fourthLevelHMasterId != null)

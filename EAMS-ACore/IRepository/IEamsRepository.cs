@@ -60,6 +60,7 @@ namespace EAMS_ACore.IRepository
 
         Task<FieldOfficerProfile> GetFieldOfficerProfile(string foId);
         Task<FieldOfficerProfile> GetBLOOfficerProfile(string soId);
+        Task<FieldOfficerProfile> GetAROProfile(string aroId);
         Task<Response> AddFieldOfficer(FieldOfficerMaster fieldOfficerViewModel);
         Task<Response> AddBLOOfficer(BLOMaster bLOMaster);
         Task<Response> UpdateFieldOfficer(FieldOfficerMaster fieldOfficerViewModel);

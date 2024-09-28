@@ -198,9 +198,13 @@ namespace EAMS_BLL.Services
             {
                 return await _eamsRepository.GetFieldOfficerProfile(Id);
             }
-            else
+            else if(role == "BLO")
             {
                 return await _eamsRepository.GetBLOOfficerProfile(Id);
+            }
+            else
+            {
+                return await _eamsRepository.GetAROProfile(Id);
             }
         }
        
