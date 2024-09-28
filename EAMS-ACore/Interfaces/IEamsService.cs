@@ -318,8 +318,7 @@ namespace EAMS_ACore.Interfaces
 
         #region GPPanchayatWards
         Task<Response> AddGPPanchayatWards(GPPanchayatWards gpPanchayatWardshWards);
-        Task<List<GPPanchayatWards>> GetPanchayatWardforRO(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
-        Task<List<GPPanchayatWards>> GetPanchListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId);
+        Task<List<GPPanchayatWards>> GetPanchayatWardforAROResult(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
         Task<List<GPPanchayatWards>> GetGPPanchayatWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId);
         Task<Response> UpdateGPPanchayatWards(GPPanchayatWards gpPanchayatWards);
         Task<GPPanchayatWards> GetGPPanchayatWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId);
@@ -343,6 +342,7 @@ namespace EAMS_ACore.Interfaces
         Task<ServiceResponse> DeleteResultDeclarationById(int resultDeclarationMasterId);
         Task<List<ResultDeclaration>> GetResultDeclarationListById(ResultDeclarationList resultDeclarationList);
         Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId);
+        Task<List<CandidateListForResultDeclaration>> GetPanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gPPanchayatWardsMasterId);
         Task<List<ResultDeclarationList>> GetResultDeclarationListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId);
         Task<List<ResultDeclarationList>> GetPanchayatWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId);
         Task<List<ResultDeclarationList>> GetBlockWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId);

@@ -674,6 +674,7 @@ namespace EAMS.Controllers
         }
 
         [HttpGet("GetSarpanchListById")]
+        [Authorize]
         public async Task<IActionResult> GetSarpanchListById()
         {
             var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
@@ -683,11 +684,6 @@ namespace EAMS.Controllers
             int assemblyMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AssemblyMasterId"));
             int fourthLevelHMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("FourthLevelMasterId"));
             int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
-            //int stateMasterId = 1;
-            //int districtMasterId = 1;
-            //int assemblyMasterId = 1;
-            //int fourthLevelHMasterId = 13548;
-            //int electionTypeMasterId = 1;
             var result = await _eamsService.GetSarpanchListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId);
 
             if (result.Count != 0 || result != null)
@@ -706,6 +702,35 @@ namespace EAMS.Controllers
             }
         }
 
+        [HttpGet("GetPanchListById")]
+        [Authorize]
+        public async Task<IActionResult> GetPanchListById(int gPPanchayatWardsMasterId)
+        {
+            var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
+
+            int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
+            int districtMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("DistrictMasterId"));
+            int assemblyMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AssemblyMasterId"));
+            int fourthLevelHMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("FourthLevelMasterId"));
+            int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
+
+            var result = await _eamsService.GetPanchListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId, gPPanchayatWardsMasterId);
+
+            if (result.Count != 0 || result != null)
+            {
+                var data = new
+                {
+                    count = result.Count,
+                    resultDeclaration = result.Where(k => k.CandidateId != 0).ToList(),
+
+                };
+                return Ok(data);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
         [HttpPut("UpdateResultDeclarationDetails")]
         public async Task<IActionResult> UpdateResultDeclarationDetails(UpdateResultDeclarationViewModel updateResultDeclarationViewModel)
         {

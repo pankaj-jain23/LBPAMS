@@ -16660,11 +16660,12 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
             }
         }
-        public async Task<List<GPPanchayatWards>> GetPanchayatWardforRO(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        public async Task<List<GPPanchayatWards>> GetPanchayatWardforAROResult(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
-            var getPsZone = await _context.GPPanchayatWards.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.FourthLevelHMasterId == fourthLevelHMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).ToListAsync();
-            if (getPsZone != null)
+            var getWard = await _context.GPPanchayatWards.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.FourthLevelHMasterId == fourthLevelHMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).ToListAsync();
+            if (getWard != null)
             {
+<<<<<<< Updated upstream
                 return getPsZone;
             }
             else
@@ -16678,6 +16679,9 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             if (getPsZone != null)
             {
                 return getPsZone;
+=======
+                return getWard;
+>>>>>>> Stashed changes
             }
             else
             {
@@ -17147,7 +17151,45 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return combinedList;
         }
+        public async Task<List<CandidateListForResultDeclaration>> GetPanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gPPanchayatWardsMasterId)
+        {
+            // Query Kyc Table
+            var kycCandidates = await (from k in _context.Kyc
+                                       where k.StateMasterId == stateMasterId &&
+                                             k.DistrictMasterId == districtMasterId &&
+                                             k.ElectionTypeMasterId == electionTypeMasterId &&
+                                             k.AssemblyMasterId == assemblyMasterId &&
+                                             k.FourthLevelHMasterId == fourthLevelHMasterId &&
+                                             k.GPPanchayatWardsMasterId == gPPanchayatWardsMasterId
+                                       select new CandidateListForResultDeclaration
+                                       {
+                                           CandidateId = k.KycMasterId,
+                                           CandidateName = k.CandidateName,
+                                           FatherName = k.FatherName,
+                                           CandidateType = CandidateTypeEnum.Kyc.ToString() // Candidate from Kyc table
+                                       }).ToListAsync();
 
+            // Query UnOpposed Table
+            var unOpposedCandidates = await (from u in _context.UnOpposed
+                                             where u.StateMasterId == stateMasterId &&
+                                                   u.DistrictMasterId == districtMasterId &&
+                                                   u.ElectionTypeMasterId == electionTypeMasterId &&
+                                                   u.AssemblyMasterId == assemblyMasterId &&
+                                                   u.FourthLevelHMasterId == fourthLevelHMasterId &&
+                                                   u.GPPanchayatWardsMasterId == gPPanchayatWardsMasterId
+                                             select new CandidateListForResultDeclaration
+                                             {
+                                                 CandidateId = u.UnOpposedMasterId,
+                                                 CandidateName = u.CandidateName,
+                                                 FatherName = u.FatherName,
+                                                 CandidateType = CandidateTypeEnum.UnOppossed.ToString() // Candidate from UnOpposed table
+                                             }).ToListAsync();
+
+            // Combine both lists
+            var combinedList = kycCandidates.Concat(unOpposedCandidates).ToList();
+
+            return combinedList;
+        }
         public async Task<List<ResultDeclarationList>> GetPanchayatWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId)
         {
             var resultList = await _context.ResultDeclaration

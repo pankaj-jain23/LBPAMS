@@ -2672,9 +2672,9 @@ namespace EAMS_BLL.Services
 
             return await _eamsRepository.AddGPPanchayatWards(gpPanchayatWards);
         }
-        public async Task<List<GPPanchayatWards>> GetPanchayatWardforRO(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        public async Task<List<GPPanchayatWards>> GetPanchayatWardforAROResult(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
-            return await _eamsRepository.GetPanchayatWardforRO(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);
+            return await _eamsRepository.GetPanchayatWardforAROResult(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);
         }
         public async Task<Response> UpdateGPPanchayatWards(GPPanchayatWards gpPanchayatWards)
         {
@@ -2756,9 +2756,10 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetSarpanchListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId);
         }
-        public async Task<List<GPPanchayatWards>> GetPanchListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId)
+
+        public async Task<List<CandidateListForResultDeclaration>> GetPanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gPPanchayatWardsMasterId)
         {
-            return await _eamsRepository.GetPanchListById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, gpPanchayatWardsMasterId);
+            return await _eamsRepository.GetPanchListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId,gPPanchayatWardsMasterId);
         }
         public async Task<List<ResultDeclarationList>> GetPanchayatWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId)
         {
