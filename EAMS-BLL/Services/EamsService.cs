@@ -2735,6 +2735,11 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.DeleteResultDeclarationById(resultDeclarationMasterId);
         }
+
+        public async Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        {
+            return await _eamsRepository.GetSarpanchListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId);
+        }
         public async Task<List<ResultDeclarationList>> GetPanchayatWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId)
         {
             return await _eamsRepository.GetPanchayatWiseResults(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId, gpPanchayatWardsMasterId);
@@ -2759,6 +2764,7 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetResultDeclarationListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId, psZonePanchayatMasterId);
         }
+
         #endregion
 
     }

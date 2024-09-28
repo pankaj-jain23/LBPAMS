@@ -679,7 +679,34 @@ namespace EAMS.Controllers
             return Ok(result.Message);
         }
 
+        [HttpGet("GetSarpanchListById")]
+        public async Task<IActionResult> GetSarpanchListById()
+        {
+            var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
 
+            int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
+            int districtMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("DistrictMasterId"));
+            int assemblyMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AssemblyMasterId"));
+            int fourthLevelHMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("FourthLevelMasterId"));
+            int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
+           
+            var result = await _eamsService.GetSarpanchListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId);
+
+            if (result.Count != 0 || result != null)
+            {
+                var data = new
+                {
+                    count = result.Count,
+                    resultDeclaration = result.Where(k => k.CandidateId != 0).ToList(),
+
+                };
+                return Ok(data);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
 
         [HttpPut("UpdateResultDeclarationDetails")]
         public async Task<IActionResult> UpdateResultDeclarationDetails(UpdateResultDeclarationViewModel updateResultDeclarationViewModel)

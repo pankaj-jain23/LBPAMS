@@ -16911,6 +16911,44 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 return new ServiceResponse { IsSucceed = true, Message = "Record Deleted successfully" };
             }
         }
+        public async Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(int stateMasterId,int districtMasterId,int electionTypeMasterId,int assemblyMasterId,int fourthLevelHMasterId)
+        {
+            // Query Kyc Table
+            var kycCandidates = await (from k in _context.Kyc
+                                       where k.StateMasterId == stateMasterId &&
+                                             k.DistrictMasterId == districtMasterId &&
+                                             k.ElectionTypeMasterId == electionTypeMasterId &&
+                                             k.AssemblyMasterId == assemblyMasterId &&
+                                             k.FourthLevelHMasterId == fourthLevelHMasterId
+                                       select new CandidateListForResultDeclaration
+                                       {
+                                           CandidateId = k.KycMasterId,
+                                           CandidateName = k.CandidateName,
+                                           FatherName = k.FatherName,
+                                           CandidateType = CandidateTypeEnum.Kyc.ToString() // Candidate from Kyc table
+                                       }).ToListAsync();
+
+            // Query UnOpposed Table
+            var unOpposedCandidates = await (from u in _context.UnOpposed
+                                             where u.StateMasterId == stateMasterId &&
+                                                   u.DistrictMasterId == districtMasterId &&
+                                                   u.ElectionTypeMasterId == electionTypeMasterId &&
+                                                   u.AssemblyMasterId == assemblyMasterId &&
+                                                   u.FourthLevelHMasterId == fourthLevelHMasterId
+                                             select new CandidateListForResultDeclaration
+                                             {
+                                                 CandidateId = u.UnOpposedMasterId,
+                                                 CandidateName = u.CandidateName,
+                                                 FatherName = u.FatherName,
+                                                 CandidateType = CandidateTypeEnum.UnOppessed.ToString() // Candidate from UnOpposed table
+                                             }).ToListAsync();
+
+            // Combine both lists
+            var combinedList = kycCandidates.Concat(unOpposedCandidates).ToList();
+
+            return combinedList;
+        }
+
         public async Task<List<ResultDeclarationList>> GetPanchayatWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId)
         {
             var resultList = await _context.ResultDeclaration

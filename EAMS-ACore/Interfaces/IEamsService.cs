@@ -335,6 +335,7 @@ namespace EAMS_ACore.Interfaces
         Task<ResultDeclaration> GetResultDeclarationById(int resultDeclarationMasterId);
         Task<ServiceResponse> DeleteResultDeclarationById(int resultDeclarationMasterId);
         Task<List<ResultDeclaration>> GetResultDeclarationListById(ResultDeclarationList resultDeclarationList);
+        Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId);
         Task<List<ResultDeclarationList>> GetResultDeclarationListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId);
         Task<List<ResultDeclarationList>> GetPanchayatWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId);
         Task<List<ResultDeclarationList>> GetBlockWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId);

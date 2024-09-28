@@ -8,5 +8,26 @@ namespace EAMS_ACore.Models
 {
     public class CandidateListForResultDeclaration
     {
+        public int? CandidateId
+        {
+            get;
+            set;
+        }
+       
+        public string CandidateName
+        {
+            get;
+            set;
+        }
+        public string FatherName
+        {
+            get;
+            set;
+        }
+        public string CandidateType
+        {
+            get;
+            set;
+        }
     }
 }
