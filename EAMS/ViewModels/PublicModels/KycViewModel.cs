@@ -66,6 +66,11 @@
             get;
             set;
         }
+        public bool IsUnOppossed
+        {
+            get;
+            set;
+        }
 
     }
     public class UpdateKycViewModel
@@ -140,6 +145,10 @@
             get;
             set;
         }
-
+        public bool IsUnOppossed
+        {
+            get;
+            set;
+        }
     }
 }

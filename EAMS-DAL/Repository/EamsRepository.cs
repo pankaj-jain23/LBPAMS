@@ -586,6 +586,23 @@ namespace EAMS_DAL.Repository
                     string messageSpWard = spWards.GPPanchayatWardsStatus ? "Ward Activated Successfully" : "Ward Deactivated Successfully";
                     return new ServiceResponse { IsSucceed = true, Message = messageSpWard };
 
+
+                case "KYC":
+                    var kyc = await _context.Kyc
+                        .Where(d => d.KycMasterId == Convert.ToInt32(updateMasterStatus.Id))
+                        .FirstOrDefaultAsync();
+
+                    if (kyc == null)
+                    {
+                        return new ServiceResponse { IsSucceed = false, Message = "Record Not Found." };
+                    }
+
+                    kyc.IsUnOppossed = updateMasterStatus.IsStatus;
+                    _context.Kyc.Update(kyc);
+                    await _context.SaveChangesAsync();
+
+                    string kycmessage = kyc.IsUnOppossed ? "IsUnOppossed Activated Successfully" : "IsUnOppossed Deactivated Successfully";
+                    return new ServiceResponse { IsSucceed = true, Message = kycmessage };
                 default:
                     return new ServiceResponse
                     {
@@ -15757,6 +15774,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             existingKyc.GPPanchayatWardsMasterId = kyc.GPPanchayatWardsMasterId;
             existingKyc.CandidateName = kyc.CandidateName;
             existingKyc.FatherName = kyc.FatherName;
+            existingKyc.IsUnOppossed = kyc.IsUnOppossed;
             if (!string.IsNullOrEmpty(kyc.NominationPdfPath))
             {
                 existingKyc.NominationPdfPath = kyc.NominationPdfPath;
@@ -15813,6 +15831,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                               CandidateType = k.GPPanchayatWardsMasterId == 0 ? "Sarpanch" : "Panch",
                               CandidateName = k.CandidateName,
                               FatherName = k.FatherName,
+                              IsUnOppossed = k.IsUnOppossed,
                               NominationPdfPath = $"{baseUrl}{k.NominationPdfPath}",
                           };
 
@@ -15861,6 +15880,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     PSZonePanchayatName = panchayat.PSZonePanchayatName,
                     CandidateName = kyc.CandidateName,
                     FatherName = kyc.FatherName,
+                    IsUnOppossed = kyc.IsUnOppossed,
                     NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}"
                 };
 
@@ -15899,6 +15919,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     GPPanchayatWardsName = gpWard.GPPanchayatWardsName,
                     CandidateName = kyc.CandidateName,
                     FatherName = kyc.FatherName,
+                    IsUnOppossed = kyc.IsUnOppossed,
                     NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}"
                 };
 
@@ -15935,6 +15956,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     FourthLevelHName = fourthLevel.HierarchyName,
                     CandidateName = kyc.CandidateName,
                     FatherName = kyc.FatherName,
+                    IsUnOppossed = kyc.IsUnOppossed,
                     NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}"
                 };
 
@@ -15968,6 +15990,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     AssemblyName = assemblyMaster.AssemblyName,
                     CandidateName = kyc.CandidateName,
                     FatherName = kyc.FatherName,
+                    IsUnOppossed = kyc.IsUnOppossed,
                     NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}"
                 };
 
@@ -17172,29 +17195,12 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                              k.FourthLevelHMasterId == fourthLevelHMasterId
                                        select new CandidateListForResultDeclaration
                                        {
-                                           CandidateId = k.KycMasterId,
+                                           KycMasterId = k.KycMasterId,
                                            CandidateName = k.CandidateName,
                                            FatherName = k.FatherName,
-                                           CandidateType = CandidateTypeEnum.Kyc.ToString() // Candidate from Kyc table
+                                           IsUnOppossed = k.IsUnOppossed
                                        }).ToListAsync();
-
-            // Query UnOpposed Table
-            var unOpposedCandidates = await (from u in _context.UnOpposed
-                                             where u.StateMasterId == stateMasterId &&
-                                                   u.DistrictMasterId == districtMasterId &&
-                                                   u.ElectionTypeMasterId == electionTypeMasterId &&
-                                                   u.AssemblyMasterId == assemblyMasterId &&
-                                                   u.FourthLevelHMasterId == fourthLevelHMasterId
-                                             select new CandidateListForResultDeclaration
-                                             {
-                                                 CandidateId = u.UnOpposedMasterId,
-                                                 CandidateName = u.CandidateName,
-                                                 FatherName = u.FatherName,
-                                                 CandidateType = CandidateTypeEnum.UnOppossed.ToString() // Candidate from UnOpposed table
-                                             }).ToListAsync();
-
-            // Combine both lists
-            var combinedList = kycCandidates.Concat(unOpposedCandidates).ToList();
+            var combinedList = kycCandidates.ToList();
 
             return combinedList;
         }
@@ -17210,30 +17216,13 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                              k.GPPanchayatWardsMasterId == gPPanchayatWardsMasterId
                                        select new CandidateListForResultDeclaration
                                        {
-                                           CandidateId = k.KycMasterId,
+                                           KycMasterId = k.KycMasterId,
                                            CandidateName = k.CandidateName,
                                            FatherName = k.FatherName,
-                                           CandidateType = CandidateTypeEnum.Kyc.ToString() // Candidate from Kyc table
+                                           IsUnOppossed = k.IsUnOppossed
                                        }).ToListAsync();
 
-            // Query UnOpposed Table
-            var unOpposedCandidates = await (from u in _context.UnOpposed
-                                             where u.StateMasterId == stateMasterId &&
-                                                   u.DistrictMasterId == districtMasterId &&
-                                                   u.ElectionTypeMasterId == electionTypeMasterId &&
-                                                   u.AssemblyMasterId == assemblyMasterId &&
-                                                   u.FourthLevelHMasterId == fourthLevelHMasterId &&
-                                                   u.GPPanchayatWardsMasterId == gPPanchayatWardsMasterId
-                                             select new CandidateListForResultDeclaration
-                                             {
-                                                 CandidateId = u.UnOpposedMasterId,
-                                                 CandidateName = u.CandidateName,
-                                                 FatherName = u.FatherName,
-                                                 CandidateType = CandidateTypeEnum.UnOppossed.ToString() // Candidate from UnOpposed table
-                                             }).ToListAsync();
-
-            // Combine both lists
-            var combinedList = kycCandidates.Concat(unOpposedCandidates).ToList();
+            var combinedList = kycCandidates.ToList();
 
             return combinedList;
         }

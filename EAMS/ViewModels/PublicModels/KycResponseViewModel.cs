@@ -72,6 +72,11 @@
             get;
             set;
         }
+        public bool IsUnOppossed
+        {
+            get;
+            set;
+        }
     }
 
 }

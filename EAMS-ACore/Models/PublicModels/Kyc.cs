@@ -62,6 +62,11 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
+        public bool IsUnOppossed
+        {
+            get;
+            set;
+        }
         public string? Option1
         {
 
@@ -190,6 +195,10 @@ namespace EAMS_ACore.Models.PublicModels
 
             get; set;
         }
-
+        public bool IsUnOppossed
+        {
+            get;
+            set;
+        }
     }
 }

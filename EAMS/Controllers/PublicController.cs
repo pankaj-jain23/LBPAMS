@@ -99,6 +99,7 @@ namespace EAMS.Controllers
                 GPPanchayatWardsMasterId = kyc.GPPanchayatWardsMasterId,
                 CandidateName = kyc.CandidateName,
                 FatherName = kyc.FatherName,
+                IsUnOppossed = kyc.IsUnOppossed,
                 NominationPdfPath = !string.IsNullOrEmpty(kyc.NominationPdfPath)
                     ? $"{baseUrl}/{Path.GetFileName(kyc.NominationPdfPath)}"
                     : null,
@@ -691,7 +692,7 @@ namespace EAMS.Controllers
                 var data = new
                 {
                     count = result.Count,
-                    resultDeclaration = result.Where(k => k.CandidateId != 0).ToList(),
+                    resultDeclaration = result.Where(k => k.KycMasterId != 0).ToList(),
 
                 };
                 return Ok(data);
@@ -721,7 +722,7 @@ namespace EAMS.Controllers
                 var data = new
                 {
                     count = result.Count,
-                    resultDeclaration = result.Where(k => k.CandidateId != 0).ToList(),
+                    resultDeclaration = result.Where(k => k.KycMasterId != 0).ToList(),
 
                 };
                 return Ok(data);

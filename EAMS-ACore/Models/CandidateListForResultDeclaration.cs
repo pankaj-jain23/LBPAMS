@@ -8,7 +8,7 @@ namespace EAMS_ACore.Models
 {
     public class CandidateListForResultDeclaration
     {
-        public int? CandidateId
+        public int? KycMasterId
         {
             get;
             set;
@@ -24,7 +24,7 @@ namespace EAMS_ACore.Models
             get;
             set;
         }
-        public string CandidateType
+        public bool IsUnOppossed
         {
             get;
             set;
