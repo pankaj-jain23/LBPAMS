@@ -506,8 +506,7 @@ namespace EAMS.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while updating the mobile number.");
             }
         }
-        #endregion
-
+        #endregion 
 
         #region  GetROUserListByAssemblyId
         [HttpGet]

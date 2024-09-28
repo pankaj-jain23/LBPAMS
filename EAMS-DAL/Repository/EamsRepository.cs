@@ -3398,7 +3398,7 @@ namespace EAMS_DAL.Repository
         //}
         public async Task<Response> UpdateBooth(BoothMaster boothMaster)
         {
-          
+
             if (boothMaster.BoothName != string.Empty)
             {
                 var existingbooth = await _context.BoothMaster.FirstOrDefaultAsync(so => so.BoothMasterId == boothMaster.BoothMasterId);
@@ -10528,7 +10528,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 DistrictName = d.DistrictMaster.DistrictName,
                 AssemblyName = d.AssemblyMaster.AssemblyName,
                 HierarchyName = d.FourthLevelH.HierarchyName,
-                HierarchyCategory=d.GPPanchayatWardsCategory,
+                HierarchyCategory = d.GPPanchayatWardsCategory,
                 //TotalNumberOfBooths = d.FourthLevelH.BoothMaster.Count,
                 //TotalNumberOfBoothsEntered = d.AssemblyMaster.TotalBooths,
                 // Male = d.Male,
@@ -16717,7 +16717,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         public async Task<List<GPPanchayatWards>> GetPanchListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId)
         {
-            var getPsZone = await _context.GPPanchayatWards.Where(d => d.StateMasterId == stateMasterId 
+            var getPsZone = await _context.GPPanchayatWards.Where(d => d.StateMasterId == stateMasterId
             && d.DistrictMasterId == districtMasterId
             && d.AssemblyMasterId == assemblyMasterId
             && d.FourthLevelHMasterId == FourthLevelHMasterId
@@ -17387,11 +17387,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
 
 
-
-
-
-
-
         #region Common DateTime Methods
 
 
@@ -17445,11 +17440,85 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         #region PanchaytaMapping
         public async Task<Response> PanchayatMapping(List<FourthLevelH> fourthLevels)
         {
-            return null;
+            foreach (var fourthLevel in fourthLevels)
+            {
+                var existingPanchayat = await _context.FourthLevelH.FirstOrDefaultAsync(b =>
+                    b.StateMasterId == fourthLevel.StateMasterId &&
+                    b.DistrictMasterId == fourthLevel.DistrictMasterId &&
+                    b.AssemblyMasterId == fourthLevel.AssemblyMasterId &&
+                    b.FourthLevelHMasterId == fourthLevel.FourthLevelHMasterId &&
+                    b.ElectionTypeMasterId == fourthLevel.ElectionTypeMasterId);
+
+                if (existingPanchayat == null)
+                {
+                    return new Response { Status = RequestStatusEnum.NotFound, Message = "Panchayat Not Found" };
+                }
+
+                if (!existingPanchayat.HierarchyStatus)
+                {
+                    return new Response { Status = RequestStatusEnum.NotFound, Message = "Panchayat is Not Active" };
+                }
+
+                //// Check for Field Officer asynchronously
+                //var foExists = await _context.FieldOfficerMaster
+                //    .AnyAsync(p => p.FieldOfficerMasterId == Convert.ToInt32(boothMaster.AssignedTo));
+
+                //if (!foExists)
+                //{
+                //    return new Response { Status = RequestStatusEnum.NotFound, Message = "Field Officer Not Found" };
+                //}
+
+                // Update booth assignment details
+                existingPanchayat.AssignedBy = fourthLevel.AssignedBy;
+                existingPanchayat.AssignedTo = fourthLevel.AssignedTo;
+                existingPanchayat.IsAssigned = fourthLevel.IsAssigned;
+
+                _context.FourthLevelH.Update(existingPanchayat);
+            }
+
+            await _context.SaveChangesAsync();
+
+            return new Response { Status = RequestStatusEnum.OK, Message = "Panchayat successfully mapped" };
         }
         public async Task<Response> ReleasePanchayat(FourthLevelH fourthLevels)
         {
-            return null;
+            if (fourthLevels.FourthLevelHMasterId != null || fourthLevels.IsAssigned == false)
+            {
+
+
+                var existingPanchayat = await _context.FourthLevelH.FirstOrDefaultAsync(so => so.FourthLevelHMasterId == fourthLevels.FourthLevelHMasterId
+                && so.StateMasterId == fourthLevels.StateMasterId
+                                            && so.DistrictMasterId == so.DistrictMasterId && so.AssemblyMasterId == fourthLevels.AssemblyMasterId);
+                if (existingPanchayat == null)
+                {
+                    return new Response { Status = RequestStatusEnum.NotFound, Message = "Panchayat Record not found." };
+                }
+                else
+                {
+                    if (existingPanchayat.IsAssigned == true)
+                    {
+                        existingPanchayat.AssignedBy = string.Empty;
+                        existingPanchayat.AssignedTo = string.Empty;
+                        existingPanchayat.IsAssigned = fourthLevels.IsAssigned;
+                        _context.FourthLevelH.Update(existingPanchayat);
+                        await _context.SaveChangesAsync();
+
+                        return new Response { Status = RequestStatusEnum.OK, Message = "Panchayat " + existingPanchayat.HierarchyName.Trim() + " Unassigned successfully!" };
+                    }
+                    else
+                    {
+                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Panchayat " + existingPanchayat.HierarchyName.Trim() + " already Unassigned!" };
+                    }
+                }
+
+
+
+            }
+            else
+            {
+                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Record not found!" };
+
+            }
         }
         #endregion
     }
