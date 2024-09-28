@@ -1908,7 +1908,36 @@ namespace EAMS_DAL.Repository
 
             return fieldOfficerProfile;
         }
+        public async Task<Response> AddAROResult(AROResultMaster aROResultMaster)
+        {
+            // Check if FieldOfficer with the same mobile number, election type, and state already exists
+            var existingOfficerMobile = await _context.AROResultMaster
+                                                .FirstOrDefaultAsync(d => d.AROMobile == aROResultMaster.AROMobile
+                                                                         && d.ElectionTypeMasterId == aROResultMaster.ElectionTypeMasterId
+                                                                         && d.StateMasterId == aROResultMaster.StateMasterId);
 
+
+            // If more than two officers already exist with the same mobile number for this election type, return an error response
+            if (existingOfficerMobile is not null)
+            {
+                return new Response
+                {
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = $"ARO User {aROResultMaster.AROName} Already Exists in this election "
+                };
+            }
+
+            // If no duplicates exist, add the new FieldOfficer and save changes
+            _context.AROResultMaster.Add(aROResultMaster);
+            await _context.SaveChangesAsync();
+
+            // Return success response
+            return new Response
+            {
+                Status = RequestStatusEnum.OK,
+                Message = "ARO added successfully"
+            };
+        }
         public async Task<Response> AddFieldOfficer(FieldOfficerMaster fieldOfficerViewModel)
         {
             // Check if FieldOfficer with the same mobile number, election type, and state already exists
@@ -16488,6 +16517,18 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         public async Task<List<GPPanchayatWards>> GetPanchayatWardforRO(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
             var getPsZone = await _context.GPPanchayatWards.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.FourthLevelHMasterId == fourthLevelHMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).ToListAsync();
+            if (getPsZone != null)
+            {
+                return getPsZone;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public async Task<List<GPPanchayatWards>> GetPanchListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId,int gpPanchayatWardsMasterId)
+        {
+            var getPsZone = await _context.GPPanchayatWards.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.FourthLevelHMasterId == FourthLevelHMasterId && d.GPPanchayatWardsMasterId == gpPanchayatWardsMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).ToListAsync();
             if (getPsZone != null)
             {
                 return getPsZone;

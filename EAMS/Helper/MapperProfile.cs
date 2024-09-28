@@ -393,7 +393,20 @@ namespace EAMS.Helper
               .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
               .ReverseMap();
             #endregion
-
+            #region AROResultMasterViewModel AROResultMaster
+            CreateMap<AROResultMasterViewModel, AROResultMaster>()
+              .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+              .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+              .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+              .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
+              .ForMember(dest => dest.AROName, opt => opt.MapFrom(src => src.AROName))
+              .ForMember(dest => dest.AROOfficeName, opt => opt.MapFrom(src => src.AROOfficeName))
+              .ForMember(dest => dest.AROMobile, opt => opt.MapFrom(src => src.AROMobile))
+              .ForMember(dest => dest.ARODesignation, opt => opt.MapFrom(src => src.ARODesignation))
+              .ForMember(dest => dest.IsStatus, opt => opt.MapFrom(src => src.IsStatus))
+              .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+              .ReverseMap();
+            #endregion
             #region SectorOfficerBoothViewModel CombinedMaster
             CreateMap<FieldOfficerBoothViewModel, CombinedMaster>()
                 .ForMember(dest => dest.StateId, opt => opt.MapFrom(src => src.StateMasterId))
@@ -922,6 +935,12 @@ namespace EAMS.Helper
                    .ForMember(dest => dest.FourthLevelHName, opt => opt.MapFrom(src => src.FourthLevelH.HierarchyName))
 
           .ReverseMap();
+
+            CreateMap<GPPanchayatWards, GPPanchListViewModel>()
+                  .ForMember(dest => dest.GPPanchayatWardsMasterId, opt => opt.MapFrom(src => src.GPPanchayatWardsMasterId))
+                  .ForMember(dest => dest.GPPanchayatWardsName, opt => opt.MapFrom(src => src.GPPanchayatWardsName))
+                  .ForMember(dest => dest.GPPanchayatWardsCode, opt => opt.MapFrom(src => src.GPPanchayatWardsCode))
+         .ReverseMap();
             #endregion
 
             #region GPVoterViewModel GPVoter

@@ -38,7 +38,7 @@
             get;
             set;
         }
-       
+
 
         public string? GPPanchayatWardsCategory { get; set; }
 
@@ -87,7 +87,7 @@
             get;
             set;
         }
-        
+
         public string? GPPanchayatWardsCategory { get; set; }
 
         public bool IsStatus { get; set; }
@@ -135,9 +135,15 @@
             set;
         }
         public string FourthLevelHName { get; set; }
-       
+
         public string? GPPanchayatWardsCategory { get; set; }
 
         public bool IsStatus { get; set; }
+    }
+    public class GPPanchListViewModel
+    {
+        public int GPPanchayatWardsMasterId { get; set; }
+        public string GPPanchayatWardsName { get; set; }
+        public int GPPanchayatWardsCode { get; set; }
     }
 }

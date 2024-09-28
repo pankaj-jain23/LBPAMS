@@ -203,6 +203,10 @@ namespace EAMS_BLL.Services
                 return await _eamsRepository.GetBLOOfficerProfile(Id);
             }
         }
+        public async Task<Response> AddAROResult(AROResultMaster aROResultMaster)
+        {
+            return await _eamsRepository.AddAROResult(aROResultMaster);
+        }
         public async Task<Response> AddFieldOfficer(FieldOfficerMaster fieldOfficerViewModel)
         {
             return await _eamsRepository.AddFieldOfficer(fieldOfficerViewModel);
@@ -2740,6 +2744,10 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetSarpanchListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId);
         }
+        public async Task<List<GPPanchayatWards>> GetPanchListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId)
+        {
+            return await _eamsRepository.GetPanchListById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, gpPanchayatWardsMasterId);
+        }
         public async Task<List<ResultDeclarationList>> GetPanchayatWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId)
         {
             return await _eamsRepository.GetPanchayatWiseResults(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId, gpPanchayatWardsMasterId);
@@ -2765,9 +2773,9 @@ namespace EAMS_BLL.Services
             return await _eamsRepository.GetResultDeclarationListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId, psZonePanchayatMasterId);
         }
 
-        public Task<List<GPPanchayatWards>> GetGPPanchayatWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId)
+        public async Task<List<GPPanchayatWards>> GetGPPanchayatWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId)
         {
-            throw new NotImplementedException();
+            return await _eamsRepository.GetGPPanchayatWardsListById(stateMasterId, districtMasterId, assemblyMasterId, FourthLevelHMasterId);
         }
 
         #endregion

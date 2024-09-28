@@ -57,6 +57,7 @@ namespace EAMS_ACore.Interfaces
         Task<FieldOfficerProfile> GetFieldOfficerProfile(string Id, string role);
 
         Task<Response> AddFieldOfficer(FieldOfficerMaster fieldOfficerViewModel);
+        Task<Response> AddAROResult(AROResultMaster aROResultMaster);
         Task<Response> AddBLOOfficer(BLOMaster bLOMaster);
         Task<Response> UpdateFieldOfficer(FieldOfficerMaster fieldOfficerViewModel);
         Task<Response> UpdateBLOOfficer(BLOMaster bLOMaster);
@@ -314,6 +315,7 @@ namespace EAMS_ACore.Interfaces
         #region GPPanchayatWards
         Task<Response> AddGPPanchayatWards(GPPanchayatWards gpPanchayatWardshWards);
         Task<List<GPPanchayatWards>> GetPanchayatWardforRO(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
+        Task<List<GPPanchayatWards>> GetPanchListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId);
         Task<List<GPPanchayatWards>> GetGPPanchayatWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId);
         Task<Response> UpdateGPPanchayatWards(GPPanchayatWards gpPanchayatWards);
         Task<GPPanchayatWards> GetGPPanchayatWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId);
