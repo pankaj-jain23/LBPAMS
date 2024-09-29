@@ -257,6 +257,10 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetAROResultById(aROMasterId);
         }
+        public async Task<List<AROResultMaster>> GetAROListById (int stateMasterId, int districtMasterId, int assemblyMasterId)
+        {
+            return await _eamsRepository.GetAROListById(stateMasterId, districtMasterId, assemblyMasterId);
+        }
         #endregion
 
         #region Booth Master

@@ -895,6 +895,30 @@ namespace EAMS_DAL.Repository
                         return new ServiceResponse { IsSucceed = false, Message = "Sector Officer Record Not Found." };
                     }
 
+                case "AROMaster":
+                    var isAROExist = await _context.AROResultMaster.Where(d => d.AROMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
+                    if (isAROExist != null)
+                    {
+                        var panchayatAllocated = await _context.FourthLevelH.Where(p => p.AssignedTo == isAROExist.AROMasterId.ToString()).ToListAsync();
+                        if (panchayatAllocated.Count == 0)
+                        {
+                            // isSOExist.SoStatus = updateMasterStatus.IsStatus;
+                            _context.AROResultMaster.Remove(isAROExist);
+                            await _context.SaveChangesAsync();
+                            return new ServiceResponse { IsSucceed = true, Message = "ARO Deleted Successfully" };
+                        }
+                        else
+                        {
+                            return new ServiceResponse { IsSucceed = false, Message = "Panchayat Assigned to this ARO, kindly release them !" };
+
+                        }
+                    }
+
+                    else
+                    {
+                        return new ServiceResponse { IsSucceed = false, Message = "ARO Officer Record Not Found." };
+                    }
+
                 case "LocationMaster":
                     var locationMaster = await _context.PollingLocationMaster.Where(d => d.LocationMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
 
@@ -974,6 +998,7 @@ namespace EAMS_DAL.Repository
                     {
                         return new ServiceResponse { IsSucceed = false, Message = "Sector Officer Record Not Found." };
                     }
+
                 default:
                     return new ServiceResponse
                     {
@@ -2113,7 +2138,7 @@ namespace EAMS_DAL.Repository
                 Message = "Field Officer updated successfully"
             };
         }
-      
+
         /// <summary this api for Portal>
         public async Task<List<CombinedMaster>> GetBoothListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
         {
@@ -2519,7 +2544,13 @@ namespace EAMS_DAL.Repository
                 Message = "ARO updated successfully"
             };
         }
-        
+        public async Task<List<AROResultMaster>> GetAROListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        {
+            var aroList = await _context.AROResultMaster.Where(d => d.StateMasterId == stateMasterId
+            && d.DistrictMasterId == districtMasterId
+            && d.AssemblyMasterId == assemblyMasterId).ToListAsync();
+            return aroList;
+        }
         #endregion
 
         #region Booth Master 
@@ -16390,7 +16421,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             {
                 return null;
             }
-        } 
+        }
 
         public async Task<Response> UpdateFourthLevelH(FourthLevelH fourthLevelH)
         {
@@ -17517,7 +17548,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                 .Where(d => d.StateMasterId == stateMasterId
                                             && d.DistrictMasterId == districtMasterId
                                             && d.AssemblyMasterId == assemblyMasterId
-                                            && d.HierarchyStatus == true &&d.IsAssigned==false) // FourthLevelH status check
+                                            && d.HierarchyStatus == true && d.IsAssigned == false) // FourthLevelH status check
                             join asem in _context.AssemblyMaster
                                 .Where(a => a.AssemblyStatus == true) // AssemblyMaster status check
                             on ft.AssemblyMasterId equals asem.AssemblyMasterId
@@ -17555,7 +17586,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             var boothList = from ft in _context.FourthLevelH
                                 .Where(d => d.StateMasterId == stateMasterId
                                             && d.DistrictMasterId == districtMasterId
-                                            && d.AssemblyMasterId == assemblyMasterId 
+                                            && d.AssemblyMasterId == assemblyMasterId
                                             && d.AssignedTo == roId
                                             && d.HierarchyStatus == true) // Filter FourthLevelH by status and assigned officer ID
                             join asem in _context.AssemblyMaster
@@ -17579,7 +17610,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                 AssemblyCode = asem.AssemblyCode,
                                 FourthLevelHMasterId = ft.FourthLevelHMasterId,
                                 HierarchyName = ft.HierarchyName,
-                                HierarchyCode=ft.HierarchyCode,
+                                HierarchyCode = ft.HierarchyCode,
                                 IsAssigned = ft.IsAssigned,
                                 IsStatus = ft.HierarchyStatus,
                                 ElectionTypeMasterId = ft.ElectionTypeMasterId,

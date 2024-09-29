@@ -4282,6 +4282,29 @@ namespace EAMS.Controllers
 
         }
 
+
+        [HttpGet]
+        [Route("GetAROListById")]
+        public async Task<IActionResult> GetAROListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        {
+            var aroList = await _EAMSService.GetAROListById(stateMasterId, districtMasterId, assemblyMasterId);  // Corrected to await the asynchronous method
+            if (aroList != null)
+            {
+                var data = new
+                {
+                    count = aroList.Count,
+                    data = aroList
+                };
+                return Ok(data);
+            }
+            else
+            {
+                return BadRequest("No Record Found");
+            }
+
+        }
+
+
         #endregion
 
         #region  RO Panchayat Mapping
