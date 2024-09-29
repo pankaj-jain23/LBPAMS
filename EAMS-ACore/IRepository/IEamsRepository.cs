@@ -79,7 +79,7 @@ namespace EAMS_ACore.IRepository
         Task<Response> AddAROResult(AROResultMaster aROResultMaster);
         Task<Response> UpdateAROResult(AROResultMaster aROResultMaster);
         Task<Response> UpdateAROValidate(AROResultMaster aROResultMaster);
-        Task<AROResultMasterList> GetAROResultById(int aROMasterId);
+        Task<AROResultMasterList> GetAROResultById(int aROMasterId); 
 
         #endregion
 
@@ -356,7 +356,7 @@ namespace EAMS_ACore.IRepository
 
         #region  FourthLevelH
         Task<Response> AddFourthLevelH(FourthLevelH fourthLevelH);
-        Task<List<FourthLevelH>> GetFourthLevelHListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
+        Task<List<FourthLevelH>> GetFourthLevelHListById(int stateMasterId, int districtMasterId, int assemblyMasterId); 
         Task<FourthLevelH> GetFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
         Task<Response> UpdateFourthLevelH(FourthLevelH fourthLevelH);
         Task<ServiceResponse> DeleteFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
@@ -409,7 +409,7 @@ namespace EAMS_ACore.IRepository
         #region PanchaytaMapping
         Task<Response> PanchayatMapping(List<FourthLevelH> fourthLevels); 
         Task<Response> ReleasePanchayat(FourthLevelH fourthLevels);
-        Task<List<CombinedPanchayatMaster>> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelMasterId, string foId);
+        Task<List<CombinedPanchayatMaster>> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId,  string roId);
         Task<List<CombinedPanchayatMaster>> GetUnassignedPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
         #endregion
     }

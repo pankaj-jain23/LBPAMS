@@ -2116,7 +2116,7 @@ namespace EAMS_DAL.Repository
                 Message = "Field Officer updated successfully"
             };
         }
-
+      
         /// <summary this api for Portal>
         public async Task<List<CombinedMaster>> GetBoothListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
         {
@@ -2320,6 +2320,7 @@ namespace EAMS_DAL.Repository
 
 
         #endregion
+
         #region AROResult
         public async Task<Response> AddAROResult(AROResultMaster aROResultMaster)
         {
@@ -2521,7 +2522,9 @@ namespace EAMS_DAL.Repository
                 Message = "Field Officer updated successfully"
             };
         }
+        
         #endregion
+
         #region Booth Master 
 
         public async Task<List<CombinedMaster>> GetBoothListById(string stateMasterId, string districtMasterId, string assemblyMasterId)
@@ -16390,7 +16393,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             {
                 return null;
             }
-        }
+        } 
 
         public async Task<Response> UpdateFourthLevelH(FourthLevelH fourthLevelH)
         {
@@ -17539,6 +17542,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                 AssemblyCode = asem.AssemblyCode,
                                 FourthLevelHMasterId = ft.FourthLevelHMasterId,
                                 HierarchyName = ft.HierarchyName,
+                                HierarchyCode = ft.HierarchyCode,
                                 IsAssigned = ft.IsAssigned,
                                 IsStatus = ft.HierarchyStatus,
                                 ElectionTypeMasterId = ft.ElectionTypeMasterId,
@@ -17549,14 +17553,13 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
 
 
-        public async Task<List<CombinedPanchayatMaster>> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelMasterId, string foId)
+        public async Task<List<CombinedPanchayatMaster>> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId, string roId)
         {
             var boothList = from ft in _context.FourthLevelH
                                 .Where(d => d.StateMasterId == stateMasterId
                                             && d.DistrictMasterId == districtMasterId
-                                            && d.AssemblyMasterId == assemblyMasterId
-                                            && d.FourthLevelHMasterId == fourthLevelMasterId
-                                            && d.AssignedTo == foId
+                                            && d.AssemblyMasterId == assemblyMasterId 
+                                            && d.AssignedTo == roId
                                             && d.HierarchyStatus == true) // Filter FourthLevelH by status and assigned officer ID
                             join asem in _context.AssemblyMaster
                                 .Where(a => a.AssemblyStatus == true) // Filter AssemblyMaster by status
@@ -17579,6 +17582,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                 AssemblyCode = asem.AssemblyCode,
                                 FourthLevelHMasterId = ft.FourthLevelHMasterId,
                                 HierarchyName = ft.HierarchyName,
+                                HierarchyCode=ft.HierarchyCode,
                                 IsAssigned = ft.IsAssigned,
                                 IsStatus = ft.HierarchyStatus,
                                 ElectionTypeMasterId = ft.ElectionTypeMasterId,

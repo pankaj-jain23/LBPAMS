@@ -82,6 +82,7 @@
             set;
         }
         public string? HierarchyName { get; set; }
+        public int HierarchyCode { get; set; }
         public bool IsAssigned { get; set; }
         public bool IsStatus { get; set; }
     }

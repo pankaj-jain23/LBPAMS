@@ -167,19 +167,19 @@ namespace EAMS.Controllers
 
                 //if (getState == null)
                 //{
-                    // Cache miss, fetch data from the service
-                    var stateList = await _EAMSService.GetState();
-                    var mappedData = _mapper.Map<List<StateMasterViewModel>>(stateList);
+                // Cache miss, fetch data from the service
+                var stateList = await _EAMSService.GetState();
+                var mappedData = _mapper.Map<List<StateMasterViewModel>>(stateList);
 
-                    // Optionally set data in cache
-                    await _cacheService.SetDataAsync("GetState", mappedData, DateTimeOffset.Now.AddMinutes(5)); // Example expiration
+                // Optionally set data in cache
+                await _cacheService.SetDataAsync("GetState", mappedData, DateTimeOffset.Now.AddMinutes(5)); // Example expiration
 
-                    var data = new
-                    {
-                        count = mappedData.Count,
-                        data = mappedData
-                    };
-                    return Ok(data);
+                var data = new
+                {
+                    count = mappedData.Count,
+                    data = mappedData
+                };
+                return Ok(data);
                 //}
 
                 //// Cache hit
@@ -656,7 +656,7 @@ namespace EAMS.Controllers
                     return BadRequest("No Record Found");
                 }
             }
-            else if(bloMasterIdClaim is not null)
+            else if (bloMasterIdClaim is not null)
             {
                 var bloList = await _EAMSService.GetFieldOfficerProfile(bloMasterIdClaim, "BLO");  // Corrected to await the asynchronous method
 
@@ -783,11 +783,11 @@ namespace EAMS.Controllers
         public async Task<IActionResult> GetPIBoothListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
         {
             var boothList = await _EAMSService.GetBoothListByFoId(stateMasterId, districtMasterId, assemblyMasterId, foId);  // Corrected to await the asynchronous method
-            var mappedData = _mapper.Map<List<FieldOfficerBoothViewModel>>(boothList); 
+            var mappedData = _mapper.Map<List<FieldOfficerBoothViewModel>>(boothList);
             var data = new
             {
-                Count = mappedData.Count, 
-                Data = mappedData.OrderBy(p => Int32.Parse(p.BoothCode_No)), 
+                Count = mappedData.Count,
+                Data = mappedData.OrderBy(p => Int32.Parse(p.BoothCode_No)),
             };
             return Ok(data);
         }
@@ -1262,7 +1262,7 @@ namespace EAMS.Controllers
                 return NotFound($"[{boothMasterId}] not exist");
             }
         }
-        
+
         [HttpGet]
         [Route("GetBoothDetailForVoterInQueue")]
         public async Task<IActionResult> GetBoothDetailForVoterInQueue(int boothMasterId)
@@ -1865,6 +1865,50 @@ namespace EAMS.Controllers
 
         }
 
+        [HttpGet("GetFourthLevelHListForRO")]
+        [Authorize]
+        public async Task<IActionResult> GetFourthLevelHListForRO()
+        {
+            var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
+            int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
+            int districtMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("DistrictMasterId"));
+            int assemblyMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AssemblyMasterId"));
+            int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
+            string roId = userClaims.GetValueOrDefault("Id");
+
+            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && roId != null)
+            {
+
+                var panchayatList = await _EAMSService.GetPanchayatListByROId(stateMasterId, districtMasterId, assemblyMasterId, roId);  // Corrected to await the asynchronous method
+                                                                                                                                         // var mappedData = _mapper.Map<List<FourthLevelH>, List<ListFourthLevelHViewModel>>(panchayatList);
+                if (panchayatList != null)
+                {
+                    var data = new
+                    {
+                        count = panchayatList.Count,
+                        data = panchayatList.ToList(),
+                        //data = boothList.OrderBy(p => Int32.Parse(p.BoothCode_No)).ToList(),
+
+                    };
+                    return Ok(data);
+
+                }
+                else
+                {
+                    return NotFound("Booth Not Found");
+
+                }
+
+
+            }
+            else
+            {
+
+                return BadRequest("State, District and Assembly Master Id's cannot be null");
+            }
+        }
+
+
         [HttpPut]
         [Route("UpdateFourthLevelH")]
         [Authorize]
@@ -2208,8 +2252,8 @@ namespace EAMS.Controllers
             }
 
         }
- 
-        
+
+
         [HttpPut]
         [Route("UpdateGPPanchayatWards")]
         [Authorize]
@@ -2338,7 +2382,7 @@ namespace EAMS.Controllers
             }
 
         }
-       
+
         [HttpPut]
         [Route("UpdateVTEventActivity")]
         [Authorize]
@@ -2444,7 +2488,7 @@ namespace EAMS.Controllers
         [Authorize]
         public async Task<IActionResult> GetLastUpdatedPollDetail(int boothMasterId)
         {
-         
+
             var result = await _EAMSService.GetLastUpdatedPollDetail(boothMasterId);
             if (result is not null)
             {
@@ -2452,7 +2496,7 @@ namespace EAMS.Controllers
             }
             else
             {
-                return BadRequest( );
+                return BadRequest();
             }
 
         }
@@ -2658,7 +2702,7 @@ namespace EAMS.Controllers
         }
         #endregion
 
-        #endregion  
+        #endregion
 
         #region Event Wise Booth Status
         [HttpGet]
@@ -4239,7 +4283,7 @@ namespace EAMS.Controllers
         }
 
         #endregion
-         
+
         #region  RO Panchayat Mapping
         [HttpPost]
         [Route("PanchayatMapping")]
@@ -4348,10 +4392,10 @@ namespace EAMS.Controllers
 
         [HttpGet]
         [Route("GetPanchayatListByROId")]
-        public async Task<IActionResult> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelMasterId, string roId)
+        public async Task<IActionResult> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId, string roId)
         {
-            var panchayatList = await _EAMSService.GetPanchayatListByROId(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId, roId);  
-            var getUnassignedPanchayatList = await _EAMSService.GetUnassignedPanchayatListById(stateMasterId, districtMasterId, assemblyMasterId);  
+            var panchayatList = await _EAMSService.GetPanchayatListByROId(stateMasterId, districtMasterId, assemblyMasterId, roId);
+            var getUnassignedPanchayatList = await _EAMSService.GetUnassignedPanchayatListById(stateMasterId, districtMasterId, assemblyMasterId);
             var data = new
             {
                 AssignedCount = panchayatList.Count,

@@ -537,13 +537,28 @@ namespace EAMS_DAL.AuthRepository
         }
         #endregion
 
-        #region GetSOByID
+        #region GetFOByID
         public async Task<FieldOfficerMaster> GetFOById(int foId)
         {
-            var foRecord = _context.FieldOfficerMaster.FirstOrDefault(d => d.FieldOfficerMasterId == foId);
+            var foRecord =await _context.FieldOfficerMaster.FirstOrDefaultAsync(d => d.FieldOfficerMasterId == foId);
             if (foRecord is not null)
             {
                 return foRecord;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        #endregion
+
+        #region GetFOByID
+        public async Task<AROResultMaster> GetAROById(int roId)
+        {
+            var roRecord = await _context.AROResultMaster.FirstOrDefaultAsync(d => d.AROMasterId == roId);
+            if (roRecord is not null)
+            {
+                return roRecord;
             }
             else
             {

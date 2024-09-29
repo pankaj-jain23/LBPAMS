@@ -31,6 +31,7 @@ namespace EAMS_ACore.IAuthRepository
      
         Task<ServiceResponse> CreateSOPin(CreateSOPin createSOPin, string soId);
         Task<FieldOfficerMaster> GetFOById(int foId);
+        Task<AROResultMaster> GetAROById(int roId);
         Task<DashBoardProfile> GetDashboardProfile(string userId, int? stateMasterId);
    
         Task<ServiceResponse> UpdateDashboardProfile(string userId, UpdateDashboardProfile updateDashboardProfile);

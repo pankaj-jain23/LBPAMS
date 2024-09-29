@@ -526,6 +526,48 @@ namespace EAMS_BLL.AuthServices
                     }
                 }
             }
+            else if (role.Contains("ARO"))
+            {
+                var rorMasterId = principal.Claims.FirstOrDefault(d => d.Type == "AROMasterId").Value;
+
+                var roRecords = await _authRepository.GetAROById(Convert.ToInt32(rorMasterId));
+                if (roRecords == null || roRecords.RefreshToken != model.RefreshToken || DateTime.Compare(roRecords.RefreshTokenExpiryTime, (DateTime)BharatDateTime()) <= 0)
+                {
+                    return new Token
+                    {
+                        Message = "Token Expired or Invalid Token"
+                    };
+                }
+                if (roRecords != null)
+                {
+
+                    roRecords.RefreshToken = GenerateRefreshToken();
+                    roRecords.RefreshTokenExpiryTime = BharatTimeDynamic(0, 7, 0, 0, 0);
+                    var updateUser = await _eamsRepository.UpdateAROValidate(roRecords);
+                    var authClaims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, roRecords.AROName),
+                    new Claim(ClaimTypes.MobilePhone, roRecords.AROMobile),
+                    new Claim(ClaimTypes.Role,"ARO"),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    new Claim("ElectionTypeMasterId",roRecords.ElectionTypeMasterId.ToString()),
+                    new Claim("AROMasterId", roRecords.AROMasterId.ToString()),
+                    new Claim("StateMasterId", roRecords.StateMasterId.ToString()),
+                    new Claim("DistrictMasterId", roRecords.DistrictMasterId.ToString()),
+                    new Claim("AssemblyMasterId", roRecords.AssemblyMasterId.ToString()),
+                    new Claim("FourthLevelHMasterId", roRecords.FourthLevelHMasterId.ToString())
+
+                };
+                    var getAccessToken = GenerateToken(authClaims);
+                    if (updateUser.Status == RequestStatusEnum.OK)
+                    {
+                        _Token.IsSucceed = true;
+                        _Token.Is2FA = true;
+                        _Token.AccessToken = getAccessToken;
+                        _Token.RefreshToken = roRecords.RefreshToken;
+                    }
+                }
+            }
             else
             {
                 var userId = principal.Claims.FirstOrDefault(d => d.Type == "UserId").Value;
@@ -891,7 +933,7 @@ namespace EAMS_BLL.AuthServices
                     UserName = d.UserName,
                     Id = d.Id,
                     PhoneNumber = d.PhoneNumber
-                    
+
                 })
                 .ToList();
 
