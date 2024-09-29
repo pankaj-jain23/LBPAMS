@@ -32,5 +32,6 @@
         public List<string> BoothNo { get; set; }
         public int ElectionTypeMasterId { get; set; }
         public string ElectionTypeName { get; set; }
+        public bool IsPrimaryBooth { get; set; }
     }
 }

@@ -910,11 +910,10 @@ namespace EAMS_BLL.Services
                 AssemblyMasterId = boothMasterRecord.AssemblyMasterId,
                 BoothMasterId = boothMasterRecord.BoothMasterId,
                 InterruptionType = pollInterruption.InterruptionType,
-                Flag = isStopformat && isResumeformat ? InterruptionCategory.Both.ToString() :
-               isStopformat ? InterruptionCategory.Stop.ToString() :
-               isResumeformat ? InterruptionCategory.Resume.ToString() : null,
+               // Flag = isStopformat && isResumeformat ? InterruptionCategory.Both.ToString() :
+               //isStopformat ? InterruptionCategory.Stop.ToString() :
+               //isResumeformat ? InterruptionCategory.Resume.ToString() : null,
                 CreatedAt = BharatDateTime(),
-                IsPollInterrupted = true,
                 Remarks = pollInterruption.Remarks,
                 ElectionTypeMasterId = pollInterruption.ElectionTypeMasterId
 
@@ -922,11 +921,15 @@ namespace EAMS_BLL.Services
             if (isStopformat == true)
             {
                 pollInterruptionData.StopTime= pollInterruption.StopTime;
+                pollInterruptionData.IsPollInterrupted = true;
+                pollInterruptionData.Flag = InterruptionCategory.Stop.ToString();
 
             }
             if (isResumeformat == true)
             {
                 pollInterruptionData.ResumeTime = pollInterruption.ResumeTime;
+                pollInterruptionData.IsPollInterrupted = false;
+                pollInterruptionData.Flag = InterruptionCategory.Resume.ToString();
             }
             if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.EVMFault)
             {

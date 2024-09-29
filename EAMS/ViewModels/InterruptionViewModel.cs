@@ -5,7 +5,7 @@ namespace EAMS.ViewModels
     {
 
         [Required(ErrorMessage = "BoothMaster Id is required")]
-        public string boothMasterId { get; set; }
+        public int boothMasterId { get; set; }
         public int ElectionTypeMasterId { get; set; }
         [Required(ErrorMessage = "Interruption Type is required")]
         public int InterruptionType { get; set; }

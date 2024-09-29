@@ -1927,9 +1927,6 @@ namespace EAMS_DAL.Repository
         }
         public async Task<FieldOfficerProfile> GetAROProfile(string aroId)
         {
-            // Convert aroId to integer for comparison
-            int aroMasterId = Convert.ToInt32(aroId);
-
             var fieldOfficerProfile = await (from fo in _context.AROResultMaster
                                              join asm in _context.AssemblyMaster
                                              on fo.AssemblyMasterId equals asm.AssemblyMasterId
@@ -1941,7 +1938,7 @@ namespace EAMS_DAL.Repository
                                              on fo.ElectionTypeMasterId equals electionType.ElectionTypeMasterId
                                              join fourthLevelH in _context.FourthLevelH
                                              on fo.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
-                                             where fo.AROMasterId == aroMasterId
+                                             where fo.AROMasterId == Convert.ToInt32(aroId)
                                              && fo.IsStatus == true
                                              select new FieldOfficerProfile
                                              {
@@ -2472,7 +2469,7 @@ namespace EAMS_DAL.Repository
             return new Response
             {
                 Status = RequestStatusEnum.OK,
-                Message = "Field Officer updated successfully"
+                Message = "ARO updated successfully"
             };
         }
         public async Task<Response> UpdateAROValidate(AROResultMaster aROResultMaster)
@@ -2519,7 +2516,7 @@ namespace EAMS_DAL.Repository
             return new Response
             {
                 Status = RequestStatusEnum.OK,
-                Message = "Field Officer updated successfully"
+                Message = "ARO updated successfully"
             };
         }
         
