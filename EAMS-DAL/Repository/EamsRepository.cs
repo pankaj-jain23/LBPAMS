@@ -17517,7 +17517,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                 .Where(d => d.StateMasterId == stateMasterId
                                             && d.DistrictMasterId == districtMasterId
                                             && d.AssemblyMasterId == assemblyMasterId
-                                            && d.HierarchyStatus == true) // FourthLevelH status check
+                                            && d.HierarchyStatus == true &&d.IsAssigned==false) // FourthLevelH status check
                             join asem in _context.AssemblyMaster
                                 .Where(a => a.AssemblyStatus == true) // AssemblyMaster status check
                             on ft.AssemblyMasterId equals asem.AssemblyMasterId

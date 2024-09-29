@@ -997,6 +997,7 @@ namespace EAMS.Helper
                  .ForMember(dest => dest.ResultDecStatus, opt => opt.MapFrom(src => src.ResultDecStatus))
                  .ReverseMap();
             #endregion
+
             #region EventByBoothViewModel  EventByBooth
             CreateMap<EventByBoothViewModel, EventByBooth>()
                 .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
@@ -1005,6 +1006,16 @@ namespace EAMS.Helper
                 .ForMember(dest => dest.EventSequence, opt => opt.MapFrom(src => src.EventSequence))
                 .ForMember(dest => dest.EventABBR, opt => opt.MapFrom(src => src.EventABBR))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ReverseMap();
+            #endregion
+
+            #region PanchayatReleaseViewModel  FourthLevel
+            CreateMap<PanchayatReleaseViewModel, FourthLevelH>()
+                .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+                .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+                .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+                .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
+                .ForMember(dest => dest.IsAssigned, opt => opt.MapFrom(src => src.IsAssigned)) 
                 .ReverseMap();
             #endregion
         }

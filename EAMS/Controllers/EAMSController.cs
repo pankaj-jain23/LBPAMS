@@ -1874,7 +1874,7 @@ namespace EAMS.Controllers
             int districtMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("DistrictMasterId"));
             int assemblyMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AssemblyMasterId"));
             int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
-            string roId = userClaims.GetValueOrDefault("Id");
+            string roId = userClaims.GetValueOrDefault("UserId");
 
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && roId != null)
             {
@@ -1904,7 +1904,7 @@ namespace EAMS.Controllers
             else
             {
 
-                return BadRequest("State, District and Assembly Master Id's cannot be null");
+                return BadRequest("Master Id's cannot be null");
             }
         }
 
@@ -4354,14 +4354,14 @@ namespace EAMS.Controllers
         [HttpPut]
         [Route("ReleasePanchayat")]
         [Authorize]
-        public async Task<IActionResult> ReleasePanchayat(BoothReleaseViewModel boothReleaseViewModel)
+        public async Task<IActionResult> ReleasePanchayat(PanchayatReleaseViewModel panchayatReleaseViewModel)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    var mapperdata = _mapper.Map<BoothMaster>(boothReleaseViewModel);
-                    var boothReleaseResponse = await _EAMSService.ReleaseBooth(mapperdata);
+                    var mapperdata = _mapper.Map<FourthLevelH>(panchayatReleaseViewModel);
+                    var boothReleaseResponse = await _EAMSService.ReleasePanchayat(mapperdata);
 
                     switch (boothReleaseResponse.Status)
                     {
