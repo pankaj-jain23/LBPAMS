@@ -292,6 +292,20 @@ namespace EAMS_DAL.Repository
                     {
                         return new ServiceResponse { IsSucceed = false, Message = "Field Officer Record Not Found." };
                     }
+                case "AROMaster":
+                    var isAROExist = await _context.AROResultMaster.Where(d => d.AROMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
+                    if (isAROExist != null)
+                    {
+                        isAROExist.IsStatus = updateMasterStatus.IsStatus;
+                        _context.AROResultMaster.Update(isAROExist);
+                        _context.SaveChanges();
+                        string aroMessage = isAROExist.IsStatus ? "ARO Activated Successfully" : "ARO Deactivated Successfully";
+                        return new ServiceResponse { IsSucceed = true, Message = aroMessage };
+                    }
+                    else
+                    {
+                        return new ServiceResponse { IsSucceed = false, Message = "Field Officer Record Not Found." };
+                    }
 
                 case "BoothMaster":
                     var isBoothExist = await _context.BoothMaster.Where(d => d.BoothMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
