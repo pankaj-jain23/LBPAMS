@@ -4274,7 +4274,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         public async Task<List<EventMaster>> GetEventListById(int stateMasterId, int electionTypeMasterId)
         {
             return await _context.EventMaster.Where(d => d.StateMasterId == stateMasterId
-            && d.ElectionTypeMasterId == electionTypeMasterId).OrderBy(d => d.EventSequence)
+            && d.ElectionTypeMasterId == electionTypeMasterId && d.Status == true).OrderBy(d => d.EventSequence)
             .ToListAsync();
 
 
@@ -6566,7 +6566,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             if (getBooth == null)
             {
                 // Fetch from database if not available in cache
-                getBooth = await _context.BoothMaster
+                getBooth = await _context.BoothMaster.AsNoTracking()
                                 .Where(d => d.BoothMasterId == boothMasterId)
                                 .Select(d => new BoothMaster
                                 {
@@ -6581,7 +6581,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 // Add to cache if found
                 if (getBooth != null)
                 {
-                    await _cacheService.SetDataAsync(cacheKeyBooth, getBooth, BharatTimeDynamic(0, 0, 0, 10, 0)); // Cache for 30 minutes
+                    await _cacheService.SetDataAsync(cacheKeyBooth, getBooth, DateTimeOffset.Now.AddMinutes(10)); // Cache for 30 minutes
                 }
             }
 
@@ -6596,15 +6596,22 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             if (currentEvent == null)
             {
                 // Fetch from database if not available in cache
-                currentEvent = await _context.EventMaster
-                                   .FirstOrDefaultAsync(d => d.StateMasterId == getBooth.StateMasterId
+                currentEvent = await _context.EventMaster.AsNoTracking()
+                                   .Where(d => d.StateMasterId == getBooth.StateMasterId
                                                          && d.ElectionTypeMasterId == getBooth.ElectionTypeMasterId
-                                                         && d.EventABBR == "VT");
+                                                         && d.EventABBR == "VT").Select(d=>new EventMaster
+                                                         {
+                                                             EventMasterId=d.EventMasterId,
+                                                             EventName=d.EventName,
+                                                             EventABBR=d.EventABBR,
+                                                             EventSequence=d.EventSequence
+                                                             
+                                                         }).FirstOrDefaultAsync();
 
                 // Add to cache if found
                 if (currentEvent != null)
                 {
-                    await _cacheService.SetDataAsync("GetVTEvent", currentEvent, BharatTimeDynamic(0, 0, 0, 10, 0)); // Cache for 30 minutes
+                    await _cacheService.SetDataAsync("GetVTEvent", currentEvent,DateTimeOffset.Now.AddMinutes(10)); // Cache for 30 minutes
                 }
             }
 
@@ -6657,7 +6664,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     voterTurnOutPolledDetailViewModel.IsSlotAvailable = false;
                     voterTurnOutPolledDetailViewModel.Message = "Kindly Proceed for Voter In Queue ";
                     electionInfo.IsVoterTurnOut = true;
-                    _context.Update(electionInfo);
+                    _context.ElectionInfoMaster.Update(electionInfo);
                     _context.SaveChanges();
                     return voterTurnOutPolledDetailViewModel;
                 }

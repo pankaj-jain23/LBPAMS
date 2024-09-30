@@ -615,7 +615,7 @@ namespace EAMS_DAL.AuthRepository
                     dashboardProfile.DistrictName = district.DistrictName;
                 }
             }
-            else if (roles.Contains("LocalBodiesAdmin"))
+            else if (roles.Contains("LocalBodiesAdmin") || roles.Contains("RO"))
             {
                 var assembly =await _context.AssemblyMaster.Include(a => a.DistrictMaster).Where(a => a.StateMasterId == userRecord.StateMasterId &&
                                                                            a.DistrictMasterId == userRecord.DistrictMasterId &&
