@@ -810,7 +810,7 @@ namespace EAMS.Controllers
             }
         }
 
-        [HttpGet("GetPanchayatWiseResults")]
+        [HttpGet("GetResultDeclarationsByElectionType")]
         public async Task<IActionResult> GetResultDeclarationsByElectionType(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId)
         {
             var result = await _eamsService.GetResultDeclarationsByElectionType(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId, gpPanchayatWardsMasterId);
