@@ -5675,7 +5675,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         {
             // Get the latest slot from the SlotManagementMaster table
             var getLatestSlot = await GetVoterSlotAvailable(updateEventActivity.StateMasterId, updateEventActivity.ElectionTypeMasterId);
-            var getLastSlot = await GetLastSlot(updateEventActivity.StateMasterId, updateEventActivity.EventMasterId, updateEventActivity.ElectionTypeMasterId);
+            var getLastSlot = await GetLastSlot(updateEventActivity.StateMasterId, updateEventActivity.ElectionTypeMasterId);
             //var currentTime = DateTimeOffset.Now;
 
             //// Check if current time falls between EndTime and LockTime, if both are available
@@ -6642,7 +6642,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 VotesPolledRecivedTime = electionInfo.VotingLastUpdate
 
             };
-            var getLastSlot = await GetLastSlot(electionInfo.StateMasterId, electionInfo.EventMasterId, electionInfo.ElectionTypeMasterId);
+            var getLastSlot = await GetLastSlot(electionInfo.StateMasterId,  electionInfo.ElectionTypeMasterId);
 
             if (getLastSlot.IsLastSlot == true && getLastSlot.LockTime.HasValue)
             {
@@ -6679,10 +6679,11 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
             return voterTurnOutPolledDetailViewModel;
         }
-        private async Task<SlotManagementMaster> GetLastSlot(int stateMasterId, int eventmasterid, int electionTypeMasterId)
+        private async Task<SlotManagementMaster> GetLastSlot(int stateMasterId, int electionTypeMasterId)
         {
 
-            var lastSlot = _context.SlotManagementMaster.Where(p => p.StateMasterId == stateMasterId && p.EventMasterId == eventmasterid && p.ElectionTypeMasterId == electionTypeMasterId && p.IsLastSlot == true).FirstOrDefault();
+            var lastSlot = _context.SlotManagementMaster.Where(p => p.StateMasterId == stateMasterId 
+            && p.ElectionTypeMasterId == electionTypeMasterId && p.IsLastSlot == true).FirstOrDefault();
 
             if (lastSlot == null)
             {
