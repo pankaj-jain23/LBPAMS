@@ -17229,6 +17229,23 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 return new ServiceResponse { IsSucceed = true, Message = "Record Deleted successfully" };
             }
         }
+        //public async Task<ResultDeclaration> GetResultDeclarationListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId)
+        //{
+        //    var resultDeclarations = await _context.ResultDeclaration
+        // .Where(d => d.StateMasterId == stateMasterId
+        //             && d.DistrictMasterId == districtMasterId
+        //             && d.ElectionTypeMasterId == electionTypeMasterId
+        //             && d.AssemblyMasterId == assemblyMasterId
+        //             && d.FourthLevelHMasterId == fourthLevelHMasterId)
+        // .ToListAsync();
+
+        //    if (!resultDeclarations.Any())
+        //    {
+        //        return null; // No results found
+        //    }
+
+        //    return resultDeclarations;
+        //}
         public async Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
             // Query Kyc Table
@@ -17271,152 +17288,278 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return combinedList;
         }
-        public async Task<List<ResultDeclarationList>> GetPanchayatWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId)
-        {
-            var resultList = await _context.ResultDeclaration
-                .Where(rd => rd.StateMasterId == stateMasterId &&
-                             rd.DistrictMasterId == districtMasterId &&
-                             rd.AssemblyMasterId == assemblyMasterId &&
-                             rd.FourthLevelHMasterId == fourthLevelHMasterId &&
-                             rd.GPPanchayatWardsMasterId == gpPanchayatWardsMasterId)
-                .Join(_context.StateMaster,
-                      rd => rd.StateMasterId,
-                      sm => sm.StateMasterId,
-                      (rd, sm) => new { ResultDeclaration = rd, StateMaster = sm })
-                .Join(_context.DistrictMaster,
-                      joined => joined.ResultDeclaration.DistrictMasterId,
-                      dm => dm.DistrictMasterId,
-                      (joined, dm) => new { joined.ResultDeclaration, joined.StateMaster, DistrictMaster = dm })
-                .Join(_context.ElectionTypeMaster,
-                      joined => joined.ResultDeclaration.ElectionTypeMasterId,
-                      etm => etm.ElectionTypeMasterId,
-                      (joined, etm) => new { joined.ResultDeclaration, joined.StateMaster, joined.DistrictMaster, ElectionTypeMaster = etm })
-                .Join(_context.AssemblyMaster,
-                      joined => joined.ResultDeclaration.AssemblyMasterId,
-                      am => am.AssemblyMasterId,
-                      (joined, am) => new { joined.ResultDeclaration, joined.StateMaster, joined.DistrictMaster, joined.ElectionTypeMaster, AssemblyMaster = am })
-                .Join(_context.FourthLevelH,
-                      joined => joined.ResultDeclaration.FourthLevelHMasterId,
-                      flh => flh.FourthLevelHMasterId,
-                      (joined, flh) => new { joined.ResultDeclaration, joined.StateMaster, joined.DistrictMaster, joined.ElectionTypeMaster, joined.AssemblyMaster, FourthLevelH = flh })
-                .Join(_context.GPPanchayatWards,
-                      joined => joined.ResultDeclaration.GPPanchayatWardsMasterId,
-                      gpw => gpw.GPPanchayatWardsMasterId,
-                      (joined, gpw) => new ResultDeclarationList
-                      {
-                          ResultDeclarationMasterId = joined.ResultDeclaration.ResultDeclarationMasterId,
-                          StateMasterId = joined.ResultDeclaration.StateMasterId,
-                          StateName = joined.StateMaster.StateName,
-                          DistrictMasterId = joined.ResultDeclaration.DistrictMasterId,
-                          DistrictName = joined.DistrictMaster.DistrictName,
-                          ElectionTypeMasterId = joined.ResultDeclaration.ElectionTypeMasterId,
-                          ElectionType = joined.ElectionTypeMaster.ElectionType,
-                          AssemblyMasterId = joined.ResultDeclaration.AssemblyMasterId,
-                          AssemblyName = joined.AssemblyMaster.AssemblyName,
-                          FourthLevelHMasterId = joined.ResultDeclaration.FourthLevelHMasterId,
-                          FourthLevelName = joined.FourthLevelH.HierarchyName,
-                          GPPanchayatWardsMasterId = joined.ResultDeclaration.GPPanchayatWardsMasterId,
-                          GPPanchayatWardsName = gpw.GPPanchayatWardsName,
-                          CandidateName = joined.ResultDeclaration.CandidateName,
-                          FatherName = joined.ResultDeclaration.FatherName,
-                          VoteMargin = joined.ResultDeclaration.VoteMargin,
-                          ResultDecStatus = joined.ResultDeclaration.ResultDecStatus
-                      })
-                .ToListAsync();
 
-            return resultList;
-        }
-        public async Task<List<ResultDeclarationList>> GetBlockWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        public async Task<List<ResultDeclarationList>> GetResultDeclarationsByElectionType(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId)
         {
-            var resultList = await _context.ResultDeclaration
+            // Define base query for ResultDeclaration
+            var query = _context.ResultDeclaration
                 .Where(rd => rd.StateMasterId == stateMasterId &&
                              rd.DistrictMasterId == districtMasterId &&
                              rd.ElectionTypeMasterId == electionTypeMasterId &&
-                             rd.AssemblyMasterId == assemblyMasterId &&
-                             rd.FourthLevelHMasterId == fourthLevelHMasterId)
-                .Join(_context.StateMaster,
-                      rd => rd.StateMasterId,
-                      sm => sm.StateMasterId,
-                      (rd, sm) => new { ResultDeclaration = rd, StateMaster = sm })
-                .Join(_context.DistrictMaster,
-                      joined => joined.ResultDeclaration.DistrictMasterId,
-                      dm => dm.DistrictMasterId,
-                      (joined, dm) => new { joined.ResultDeclaration, joined.StateMaster, DistrictMaster = dm })
-                .Join(_context.ElectionTypeMaster,
-                      joined => joined.ResultDeclaration.ElectionTypeMasterId,
-                      etm => etm.ElectionTypeMasterId,
-                      (joined, etm) => new { joined.ResultDeclaration, joined.StateMaster, joined.DistrictMaster, ElectionTypeMaster = etm })
-                .Join(_context.AssemblyMaster,
-                      joined => joined.ResultDeclaration.AssemblyMasterId,
-                      am => am.AssemblyMasterId,
-                      (joined, am) => new { joined.ResultDeclaration, joined.StateMaster, joined.DistrictMaster, joined.ElectionTypeMaster, AssemblyMaster = am })
-                .Join(_context.FourthLevelH,
-                      joined => joined.ResultDeclaration.FourthLevelHMasterId,
-                      flh => flh.FourthLevelHMasterId,
-                      (joined, flh) => new { joined.ResultDeclaration, joined.StateMaster, joined.DistrictMaster, joined.ElectionTypeMaster, joined.AssemblyMaster, FourthLevelH = flh })
-                .Select(result => new ResultDeclarationList
-                {
-                    ResultDeclarationMasterId = result.ResultDeclaration.ResultDeclarationMasterId,
-                    StateMasterId = result.ResultDeclaration.StateMasterId,
-                    StateName = result.StateMaster.StateName,
-                    DistrictMasterId = result.ResultDeclaration.DistrictMasterId,
-                    DistrictName = result.DistrictMaster.DistrictName,
-                    ElectionTypeMasterId = result.ResultDeclaration.ElectionTypeMasterId,
-                    ElectionType = result.ElectionTypeMaster.ElectionType,
-                    AssemblyMasterId = result.ResultDeclaration.AssemblyMasterId,
-                    AssemblyName = result.AssemblyMaster.AssemblyName,
-                    FourthLevelHMasterId = result.ResultDeclaration.FourthLevelHMasterId,
-                    FourthLevelName = result.FourthLevelH.HierarchyName,
-                    CandidateName = result.ResultDeclaration.CandidateName,
-                    FatherName = result.ResultDeclaration.FatherName,
-                    VoteMargin = result.ResultDeclaration.VoteMargin,
-                    ResultDecStatus = result.ResultDeclaration.ResultDecStatus
-                })
-                .ToListAsync();
+                             rd.AssemblyMasterId == assemblyMasterId);
 
-            return resultList;
-        }
+            // Apply additional filtering based on ElectionTypeMasterId
+            if (electionTypeMasterId == 1)
+            {
+                // "Gram Panchayats" requires FourthLevelHMasterId and GPPanchayatWardsMasterId
+                query = query.Where(rd => rd.FourthLevelHMasterId == fourthLevelHMasterId &&
+                                          rd.GPPanchayatWardsMasterId == gpPanchayatWardsMasterId);
+            }
+            else if (electionTypeMasterId == 2)
+            {
+                // "Zila Parishad" requires only State, District, and Assembly, already covered
+            }
+            else if (electionTypeMasterId == 3 || electionTypeMasterId == 4 || electionTypeMasterId == 5 || electionTypeMasterId == 6)
+            {
+                // "Panchayat Samiti", "Municipal Corporation", "Municipal Council", "Nagar Panchayat" require FourthLevelHMasterId
+                query = query.Where(rd => rd.FourthLevelHMasterId == fourthLevelHMasterId);
+            }
 
-        public async Task<List<ResultDeclarationList>> GetDistrictWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId)
-        {
+            // Perform the join operations
             var resultList = await _context.ResultDeclaration
-                .Where(rd => rd.StateMasterId == stateMasterId &&
-                             rd.DistrictMasterId == districtMasterId &&
-                             rd.ElectionTypeMasterId == electionTypeMasterId)
-                .Join(_context.StateMaster,
-                      rd => rd.StateMasterId,
-                      sm => sm.StateMasterId,
-                      (rd, sm) => new { ResultDeclaration = rd, StateMaster = sm })
-                .Join(_context.DistrictMaster,
-                      joined => joined.ResultDeclaration.DistrictMasterId,
-                      dm => dm.DistrictMasterId,
-                      (joined, dm) => new { joined.ResultDeclaration, joined.StateMaster, DistrictMaster = dm })
-                .Join(_context.ElectionTypeMaster,
-                      joined => joined.ResultDeclaration.ElectionTypeMasterId,
-                      etm => etm.ElectionTypeMasterId,
-                      (joined, etm) => new { joined.ResultDeclaration, joined.StateMaster, joined.DistrictMaster, ElectionTypeMaster = etm })
-                .Select(result => new ResultDeclarationList
-                {
-                    ResultDeclarationMasterId = result.ResultDeclaration.ResultDeclarationMasterId,
-                    StateMasterId = result.ResultDeclaration.StateMasterId,
-                    StateName = result.StateMaster.StateName,
-                    DistrictMasterId = result.ResultDeclaration.DistrictMasterId,
-                    DistrictName = result.DistrictMaster.DistrictName,
-                    ElectionTypeMasterId = result.ResultDeclaration.ElectionTypeMasterId,
-                    ElectionType = result.ElectionTypeMaster.ElectionType,
-                    CandidateName = result.ResultDeclaration.CandidateName,
-                    FatherName = result.ResultDeclaration.FatherName,
-                    VoteMargin = result.ResultDeclaration.VoteMargin,
-                    ResultDecStatus = result.ResultDeclaration.ResultDecStatus
-                })
-                .ToListAsync();
+        .Where(rd => rd.StateMasterId == stateMasterId &&
+                     rd.DistrictMasterId == districtMasterId &&
+                     rd.AssemblyMasterId == assemblyMasterId &&
+                     rd.FourthLevelHMasterId == fourthLevelHMasterId &&
+                     rd.GPPanchayatWardsMasterId == gpPanchayatWardsMasterId)
+        .Join(_context.StateMaster,
+              rd => rd.StateMasterId,
+              sm => sm.StateMasterId,
+              (rd, sm) => new { ResultDeclaration = rd, StateMaster = sm })
+        .Join(_context.DistrictMaster,
+              joined => joined.ResultDeclaration.DistrictMasterId,
+              dm => dm.DistrictMasterId,
+              (joined, dm) => new { joined.ResultDeclaration, joined.StateMaster, DistrictMaster = dm })
+        .Join(_context.ElectionTypeMaster,
+              joined => joined.ResultDeclaration.ElectionTypeMasterId,
+              etm => etm.ElectionTypeMasterId,
+              (joined, etm) => new { joined.ResultDeclaration, joined.StateMaster, joined.DistrictMaster, ElectionTypeMaster = etm })
+        .Join(_context.AssemblyMaster,
+              joined => joined.ResultDeclaration.AssemblyMasterId,
+              am => am.AssemblyMasterId,
+              (joined, am) => new { joined.ResultDeclaration, joined.StateMaster, joined.DistrictMaster, joined.ElectionTypeMaster, AssemblyMaster = am })
+        .Join(_context.FourthLevelH,
+              joined => joined.ResultDeclaration.FourthLevelHMasterId,
+              flh => flh.FourthLevelHMasterId,
+              (joined, flh) => new { joined.ResultDeclaration, joined.StateMaster, joined.DistrictMaster, joined.ElectionTypeMaster, joined.AssemblyMaster, FourthLevelH = flh })
+        .Join(_context.GPPanchayatWards,
+              joined => joined.ResultDeclaration.GPPanchayatWardsMasterId,
+              gpw => gpw.GPPanchayatWardsMasterId,
+              (joined, gpw) => new { joined.ResultDeclaration, joined.StateMaster, joined.DistrictMaster, joined.ElectionTypeMaster, joined.AssemblyMaster, joined.FourthLevelH, GPPanchayatWards = gpw })
+        .Join(_context.Kyc,
+              joined => joined.ResultDeclaration.CandidateId,
+              kyc => kyc.KycMasterId, // Joining with the Kyc table
+              (joined, kyc) => new ResultDeclarationList
+              {
+                  ResultDeclarationMasterId = joined.ResultDeclaration.ResultDeclarationMasterId,
+                  StateMasterId = joined.ResultDeclaration.StateMasterId,
+                  StateName = joined.StateMaster.StateName,
+                  DistrictMasterId = joined.ResultDeclaration.DistrictMasterId,
+                  DistrictName = joined.DistrictMaster.DistrictName,
+                  ElectionTypeMasterId = joined.ResultDeclaration.ElectionTypeMasterId,
+                  ElectionType = joined.ElectionTypeMaster.ElectionType,
+                  AssemblyMasterId = joined.ResultDeclaration.AssemblyMasterId,
+                  AssemblyName = joined.AssemblyMaster.AssemblyName,
+                  FourthLevelHMasterId = joined.ResultDeclaration.FourthLevelHMasterId,
+                  FourthLevelName = joined.FourthLevelH.HierarchyName,
+                  GPPanchayatWardsMasterId = joined.ResultDeclaration.GPPanchayatWardsMasterId,
+                  GPPanchayatWardsName = joined.GPPanchayatWards.GPPanchayatWardsName,
+                  CandidateId = joined.ResultDeclaration.CandidateId,
+                  CandidateName = kyc.CandidateName, // From Kyc table
+                  FatherName = kyc.FatherName,       // From Kyc table
+                  VoteMargin = joined.ResultDeclaration.VoteMargin,
+                  CandidateType = joined.ResultDeclaration.CandidateType,
+                  IsWinner = joined.ResultDeclaration.IsWinner,
+                  ResultDecStatus = joined.ResultDeclaration.ResultDecStatus
+              })
+        .ToListAsync();
+
 
             return resultList;
         }
-        public async Task<List<ResultDeclarationList>> GetResultDeclarationListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId)
-        {
-            throw new NotImplementedException();
-        }
+
+        //    public async Task<List<ResultDeclarationList>> GetBlockWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        //    {
+        //        var resultList = await _context.ResultDeclaration
+        //            .Where(rd => rd.StateMasterId == stateMasterId &&
+        //                         rd.DistrictMasterId == districtMasterId &&
+        //                         rd.ElectionTypeMasterId == electionTypeMasterId &&
+        //                         rd.AssemblyMasterId == assemblyMasterId &&
+        //                         rd.FourthLevelHMasterId == fourthLevelHMasterId)
+        //            .Join(_context.StateMaster,
+        //                  rd => rd.StateMasterId,
+        //                  sm => sm.StateMasterId,
+        //                  (rd, sm) => new { ResultDeclaration = rd, StateMaster = sm })
+        //            .Join(_context.DistrictMaster,
+        //                  joined => joined.ResultDeclaration.DistrictMasterId,
+        //                  dm => dm.DistrictMasterId,
+        //                  (joined, dm) => new { joined.ResultDeclaration, joined.StateMaster, DistrictMaster = dm })
+        //            .Join(_context.ElectionTypeMaster,
+        //                  joined => joined.ResultDeclaration.ElectionTypeMasterId,
+        //                  etm => etm.ElectionTypeMasterId,
+        //                  (joined, etm) => new { joined.ResultDeclaration, joined.StateMaster, joined.DistrictMaster, ElectionTypeMaster = etm })
+        //            .Join(_context.AssemblyMaster,
+        //                  joined => joined.ResultDeclaration.AssemblyMasterId,
+        //                  am => am.AssemblyMasterId,
+        //                  (joined, am) => new { joined.ResultDeclaration, joined.StateMaster, joined.DistrictMaster, joined.ElectionTypeMaster, AssemblyMaster = am })
+        //            .Join(_context.FourthLevelH,
+        //                  joined => joined.ResultDeclaration.FourthLevelHMasterId,
+        //                  flh => flh.FourthLevelHMasterId,
+        //                  (joined, flh) => new { joined.ResultDeclaration, joined.StateMaster, joined.DistrictMaster, joined.ElectionTypeMaster, joined.AssemblyMaster, FourthLevelH = flh })
+        //            .Select(result => new ResultDeclarationList
+        //            {
+        //                ResultDeclarationMasterId = result.ResultDeclaration.ResultDeclarationMasterId,
+        //                StateMasterId = result.ResultDeclaration.StateMasterId,
+        //                StateName = result.StateMaster.StateName,
+        //                DistrictMasterId = result.ResultDeclaration.DistrictMasterId,
+        //                DistrictName = result.DistrictMaster.DistrictName,
+        //                ElectionTypeMasterId = result.ResultDeclaration.ElectionTypeMasterId,
+        //                ElectionType = result.ElectionTypeMaster.ElectionType,
+        //                AssemblyMasterId = result.ResultDeclaration.AssemblyMasterId,
+        //                AssemblyName = result.AssemblyMaster.AssemblyName,
+        //                FourthLevelHMasterId = result.ResultDeclaration.FourthLevelHMasterId,
+        //                FourthLevelName = result.FourthLevelH.HierarchyName,
+        //                CandidateName = result.ResultDeclaration.CandidateName,
+        //                FatherName = result.ResultDeclaration.FatherName,
+        //                VoteMargin = result.ResultDeclaration.VoteMargin,
+        //                ResultDecStatus = result.ResultDeclaration.ResultDecStatus
+        //            })
+        //            .ToListAsync();
+
+        //        return resultList;
+        //    }
+
+        //    public async Task<List<ResultDeclarationList>> GetDistrictWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId)
+        //    {
+        //        var resultList = await _context.ResultDeclaration
+        //            .Where(rd => rd.StateMasterId == stateMasterId &&
+        //                         rd.DistrictMasterId == districtMasterId &&
+        //                         rd.ElectionTypeMasterId == electionTypeMasterId)
+        //            .Join(_context.StateMaster,
+        //                  rd => rd.StateMasterId,
+        //                  sm => sm.StateMasterId,
+        //                  (rd, sm) => new { ResultDeclaration = rd, StateMaster = sm })
+        //            .Join(_context.DistrictMaster,
+        //                  joined => joined.ResultDeclaration.DistrictMasterId,
+        //                  dm => dm.DistrictMasterId,
+        //                  (joined, dm) => new { joined.ResultDeclaration, joined.StateMaster, DistrictMaster = dm })
+        //            .Join(_context.ElectionTypeMaster,
+        //                  joined => joined.ResultDeclaration.ElectionTypeMasterId,
+        //                  etm => etm.ElectionTypeMasterId,
+        //                  (joined, etm) => new { joined.ResultDeclaration, joined.StateMaster, joined.DistrictMaster, ElectionTypeMaster = etm })
+        //            .Select(result => new ResultDeclarationList
+        //            {
+        //                ResultDeclarationMasterId = result.ResultDeclaration.ResultDeclarationMasterId,
+        //                StateMasterId = result.ResultDeclaration.StateMasterId,
+        //                StateName = result.StateMaster.StateName,
+        //                DistrictMasterId = result.ResultDeclaration.DistrictMasterId,
+        //                DistrictName = result.DistrictMaster.DistrictName,
+        //                ElectionTypeMasterId = result.ResultDeclaration.ElectionTypeMasterId,
+        //                ElectionType = result.ElectionTypeMaster.ElectionType,
+        //                CandidateName = result.ResultDeclaration.CandidateName,
+        //                FatherName = result.ResultDeclaration.FatherName,
+        //                VoteMargin = result.ResultDeclaration.VoteMargin,
+        //                ResultDecStatus = result.ResultDeclaration.ResultDecStatus
+        //            })
+        //            .ToListAsync();
+
+        //        return resultList;
+        //    }
+        //    public async Task<List<ResultDeclarationList>> GetResultDeclarationListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId)
+        //    {
+        //        var query = _context.BoothMaster
+        //            .AsQueryable();
+        //        string reportType = "";
+        //        ////State
+        //        //if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId == 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0 && boothReportModel.PSZonePanchayatMasterId == 0)
+        //        //{
+        //        //  query = query.Where(d => d.StateMasterId == boothReportModel.StateMasterId && d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId);
+        //        // query = query.Include(d => d.StateMaster);
+        //        //  reportType = "State";
+        //        //}
+        //        //District
+        //        if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0 && boothReportModel.PSZonePanchayatMasterId == 0)
+        //        {
+        //            query = query.Where(d => d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId
+        //            && d.StateMasterId == boothReportModel.StateMasterId
+        //            && d.DistrictMasterId == boothReportModel.DistrictMasterId);
+        //            query = query.Include(d => d.DistrictMaster);
+        //            reportType = "District";
+        //        }
+        //        //Assembly
+        //        if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId != 0 && boothReportModel.FourthLevelHMasterId == 0 && boothReportModel.PSZonePanchayatMasterId == 0)
+        //        {
+        //            query = query.Where(d => d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId
+        //            && d.StateMasterId == boothReportModel.StateMasterId
+        //            && d.DistrictMasterId == boothReportModel.DistrictMasterId &&
+        //              d.AssemblyMasterId == boothReportModel.AssemblyMasterId);
+        //            query = query.Include(d => d.AssemblyMaster);
+        //            reportType = "Local Bodies";
+        //        }
+        //        //FourthLevel
+        //        if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId != 0 && boothReportModel.FourthLevelHMasterId != 0 && boothReportModel.PSZonePanchayatMasterId == 0)
+        //        {
+        //            query = query.Where(d => d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId
+        //            && d.StateMasterId == boothReportModel.StateMasterId
+        //            && d.DistrictMasterId == boothReportModel.DistrictMasterId &&
+        //              d.AssemblyMasterId == boothReportModel.AssemblyMasterId
+        //            && d.FourthLevelHMasterId == boothReportModel.FourthLevelHMasterId);
+        //            query = query.Include(d => d.FourthLevelH);
+        //            reportType = "Sub Local Bodies";
+        //        }
+        //        //PSZonePanchayat
+        //        if (boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId != 0 && boothReportModel.FourthLevelHMasterId != 0 && boothReportModel.PSZonePanchayatMasterId != 0)
+        //        {
+        //            query = query.Where(d => d.ElectionTypeMasterId == boothReportModel.ElectionTypeMasterId
+        //            && d.StateMasterId == boothReportModel.StateMasterId
+        //            && d.DistrictMasterId == boothReportModel.DistrictMasterId &&
+        //              d.AssemblyMasterId == boothReportModel.AssemblyMasterId
+        //            && d.FourthLevelHMasterId == boothReportModel.FourthLevelHMasterId &&
+        //            d.PSZonePanchayatMasterId == boothReportModel.PSZonePanchayatMasterId);
+        //            query = query.Include(d => d.PsZonePanchayat);
+        //            reportType = "PSZonePanchayat";
+        //        }
+
+        //        return await query.Select(d => new ConsolidateBoothReport
+        //        {
+        //            Header = boothReportModel.PSZonePanchayatMasterId != 0
+        //        ? $"{d.StateMaster.StateName} ({d.StateMaster.StateCode}) {d.DistrictMaster.DistrictName} ({d.DistrictMaster.DistrictCode}) {d.AssemblyMaster.AssemblyName} ({d.AssemblyMaster.AssemblyCode}) {d.FourthLevelH.HierarchyName} ({d.FourthLevelH.HierarchyCode}) {d.PsZonePanchayat.PSZonePanchayatName} ({d.PsZonePanchayat.PSZonePanchayatCode})"
+        //        : boothReportModel.FourthLevelHMasterId != 0
+        //        ? $"{d.StateMaster.StateName} ({d.StateMaster.StateCode}) {d.DistrictMaster.DistrictName} ({d.DistrictMaster.DistrictCode}) {d.AssemblyMaster.AssemblyName} ({d.AssemblyMaster.AssemblyCode}) {d.FourthLevelH.HierarchyName} ({d.FourthLevelH.HierarchyCode})"
+        //        : boothReportModel.AssemblyMasterId != 0
+        //        ? $"{d.StateMaster.StateName} ({d.StateMaster.StateCode}) {d.DistrictMaster.DistrictName} ({d.DistrictMaster.DistrictCode}) {d.AssemblyMaster.AssemblyName} ({d.AssemblyMaster.AssemblyCode})"
+        //        : boothReportModel.DistrictMasterId != 0
+        //        ? $"{d.StateMaster.StateName} ({d.StateMaster.StateCode}) {d.DistrictMaster.DistrictName} ({d.DistrictMaster.DistrictCode})"
+        //        : $"{d.StateMaster.StateName} ({d.StateMaster.StateCode})",
+
+        //            Title = boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId == 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0 && boothReportModel.PSZonePanchayatMasterId == 0
+        //? d.DistrictMaster.DistrictName // Show DistrictName when only StateMasterId is provided
+        //: boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId == 0 && boothReportModel.FourthLevelHMasterId == 0 && boothReportModel.PSZonePanchayatMasterId == 0
+        //? d.DistrictMaster.DistrictName // Show DistrictName when State and District are provided
+        //: boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId != 0 && boothReportModel.FourthLevelHMasterId == 0 && boothReportModel.PSZonePanchayatMasterId == 0
+        //? d.AssemblyMaster.AssemblyName // Show AssemblyName when State, District, and Assembly are provided
+        //: boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId != 0 && boothReportModel.FourthLevelHMasterId != 0 && boothReportModel.PSZonePanchayatMasterId == 0
+        //? d.FourthLevelH.HierarchyName // Show FourthLevelH when State, District, Assembly, and FourthLevelH are provided
+        //: boothReportModel.StateMasterId != 0 && boothReportModel.DistrictMasterId != 0 && boothReportModel.AssemblyMasterId != 0 && boothReportModel.FourthLevelHMasterId != 0 && boothReportModel.PSZonePanchayatMasterId != 0
+        //? d.PsZonePanchayat.PSZonePanchayatName // Show PSZonePanchayat when all IDs are provided
+        //: d.StateMaster.StateName, // Default to StateName
+
+        //            Type = reportType,
+        //            Code = d.BoothCode_No.ToString(),
+        //            Name = d.BoothName,
+        //            DistrictName = d.DistrictMaster.DistrictName,
+        //            AssemblyName = d.AssemblyMaster.AssemblyName,
+        //            HierarchyName = d.FourthLevelH.HierarchyName,
+        //            PSZonePanchayatName = d.PsZonePanchayat.PSZonePanchayatName,
+        //            //TotalNumberOfBooths = d.FourthLevelH.BoothMaster.Count,
+        //            //TotalNumberOfBoothsEntered = d.AssemblyMaster.TotalBooths,
+        //            Male = d.Male,
+        //            Female = d.Female,
+        //            Trans = d.Transgender,
+        //            Total = d.TotalVoters,
+        //            IsStatus = d.BoothStatus
+        //        }).ToListAsync();
+        //    }
         #endregion
 
 

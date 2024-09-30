@@ -149,6 +149,7 @@ namespace EAMS_ACore.Models.PublicModels
             set;
 
         }
+        public int CandidateId { get; set; }
         public string CandidateName
         {
             get;
@@ -164,7 +165,8 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
-
+        public int CandidateType { get; set; }
+        public bool IsWinner { get; set; }
         public bool ResultDecStatus { get; set; }
     }
 }

@@ -634,6 +634,7 @@ namespace EAMS.Controllers
         #region ResultDeclaration 
 
         [HttpPost("AddResultDeclarationDetails")]
+        [Authorize]
         public async Task<IActionResult> AddResultDeclarationDetails(ResultDeclarationViewModel resultDeclarationViewModel)
         {
             if (resultDeclarationViewModel.resultDeclarationLists == null || !resultDeclarationViewModel.resultDeclarationLists.Any())
@@ -733,6 +734,7 @@ namespace EAMS.Controllers
             }
         }
         [HttpPut("UpdateResultDeclarationDetails")]
+        [Authorize]
         public async Task<IActionResult> UpdateResultDeclarationDetails(UpdateResultDeclarationViewModel updateResultDeclarationViewModel)
         {
             if (ModelState.IsValid)
@@ -762,6 +764,7 @@ namespace EAMS.Controllers
 
 
         [HttpGet("GetResultDeclarationById")]
+        [Authorize]
         public async Task<IActionResult> GetResultDeclarationById(int resultDeclarationMasterId)
         {
             if (resultDeclarationMasterId == null)
@@ -785,6 +788,7 @@ namespace EAMS.Controllers
         }
 
         [HttpDelete("DeleteResultDeclarationById")]
+        [Authorize]
         public async Task<IActionResult> DeleteResultDeclarationById(int resultDeclarationMasterId)
         {
             if (resultDeclarationMasterId == null)
@@ -806,73 +810,10 @@ namespace EAMS.Controllers
             }
         }
 
-        [HttpGet("GetResultDeclarationListById")]
-        public async Task<IActionResult> GetResultDeclarationListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId)
-        {
-            var result = await _eamsService.GetResultDeclarationListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId, psZonePanchayatMasterId);
-
-            if (result.Count != 0 || result != null)
-            {
-                var data = new
-                {
-                    count = result.Count,
-                    resultDeclaration = result.Where(k => k.ResultDeclarationMasterId != 0).ToList(),
-
-                };
-                return Ok(data);
-            }
-            else
-            {
-                return NotFound();
-            }
-        }
-
         [HttpGet("GetPanchayatWiseResults")]
-        public async Task<IActionResult> GetPanchayatWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId)
+        public async Task<IActionResult> GetResultDeclarationsByElectionType(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId)
         {
-            var result = await _eamsService.GetPanchayatWiseResults(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId, gpPanchayatWardsMasterId);
-
-            if (result.Count != 0 || result != null)
-            {
-                var data = new
-                {
-                    count = result.Count,
-                    resultDeclaration = result.Where(k => k.ResultDeclarationMasterId != 0).ToList(),
-
-                };
-                return Ok(data);
-            }
-            else
-            {
-                return NotFound();
-            }
-        }
-
-        [HttpGet("GetBlockWiseResults")]
-        public async Task<IActionResult> GetBlockWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
-        {
-            var result = await _eamsService.GetBlockWiseResults(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId);
-
-            if (result.Count != 0 || result != null)
-            {
-                var data = new
-                {
-                    count = result.Count,
-                    resultDeclaration = result.Where(k => k.ResultDeclarationMasterId != 0).ToList(),
-
-                };
-                return Ok(data);
-            }
-            else
-            {
-                return NotFound();
-            }
-        }
-
-        [HttpGet("GetDistrictWiseResults")]
-        public async Task<IActionResult> GetDistrictWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId)
-        {
-            var result = await _eamsService.GetDistrictWiseResults(stateMasterId, districtMasterId, electionTypeMasterId);
+            var result = await _eamsService.GetResultDeclarationsByElectionType(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId, gpPanchayatWardsMasterId);
 
             if (result.Count != 0 || result != null)
             {
