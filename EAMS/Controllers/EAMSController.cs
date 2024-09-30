@@ -2848,7 +2848,7 @@ namespace EAMS.Controllers
             var pollInterruptionData = await _EAMSService.GetPollInterruptionbyId(boothMasterId);
             if(pollInterruptionData is null)
             {
-                return BadRequest();
+                return Ok("No Poll Interruption");
             }
             return Ok(pollInterruptionData);
         }
