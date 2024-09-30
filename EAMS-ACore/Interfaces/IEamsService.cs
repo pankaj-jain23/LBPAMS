@@ -352,8 +352,9 @@ namespace EAMS_ACore.Interfaces
         #region PanchaytaMapping
         Task<Response> PanchayatMapping(List<FourthLevelH> fourthLevels);
         Task<Response> ReleasePanchayat(FourthLevelH fourthLevels);
+        Task<List<CombinedPanchayatMaster>> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId, string roId, string assginedType);
         Task<List<CombinedPanchayatMaster>> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId, string roId);
-        Task<List<CombinedPanchayatMaster>> GetUnassignedPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
+        Task<List<CombinedPanchayatMaster>> GetUnassignedPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, string assginedType);
         #endregion
     }
 }

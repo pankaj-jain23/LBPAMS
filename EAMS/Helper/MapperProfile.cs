@@ -1014,8 +1014,7 @@ namespace EAMS.Helper
                 .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
                 .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
                 .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
-                .ForMember(dest => dest.AssginedType, opt => opt.MapFrom(src => src.AssginedType))
-                .ForMember(dest => dest.IsAssigned, opt => opt.MapFrom(src => src.IsAssigned)) 
+                .ForMember(dest => dest.AssginedType, opt => opt.MapFrom(src => src.AssginedType)) 
                 .ReverseMap();
             #endregion
 

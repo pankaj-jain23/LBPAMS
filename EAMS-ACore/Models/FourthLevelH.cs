@@ -69,11 +69,11 @@ namespace EAMS_ACore.Models
         public bool HierarchyStatus { get; set; }
         public string? SecondLanguage { get; set; }
         public string? AssignedToRO { get; set; }
+        public bool IsAssignedRO { get; set; }
         public string? AssignedToARO { get; set; }
-        public string? AssignedBy { get; set; }
-        public bool IsAssigned { get; set; }
-
-
+        public bool IsAssignedARO { get; set; }
+        public string? ROAssignedBy { get; set; }
+        public string? AROAssignedBy { get; set; }
         public string AssginedType { get; set; }
         public virtual List<BoothMaster> BoothMaster
         {

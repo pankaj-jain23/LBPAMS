@@ -4332,11 +4332,16 @@ namespace EAMS.Controllers
                         StateMasterId = panchayatMappingViewModel.StateMasterId,
                         DistrictMasterId = panchayatMappingViewModel.DistrictMasterId,
                         AssemblyMasterId = panchayatMappingViewModel.AssemblyMasterId,
-                        AssignedBy = panchayatMappingViewModel.AssignedBy,
-                        IsAssigned = panchayatMappingViewModel.IsAssigned,
                         ElectionTypeMasterId = panchayatMappingViewModel.ElectionTypeMasterId,
+
+                        AROAssignedBy = panchayatMappingViewModel.AssignedBy == "ARO" ? panchayatMappingViewModel.AssignedBy : null,
+                        IsAssignedARO = panchayatMappingViewModel.AssignedBy == "ARO" ? panchayatMappingViewModel.IsAssigned : false,
                         AssignedToARO = panchayatMappingViewModel.AssginedType == "ARO" ? panchayatMappingViewModel.AssignedTo : null,
-                        AssignedToRO = panchayatMappingViewModel.AssginedType == "RO" ? panchayatMappingViewModel.AssignedTo : null
+
+                        ROAssignedBy = panchayatMappingViewModel.AssignedBy == "RO" ? panchayatMappingViewModel.AssignedBy : null,
+                        AssignedToRO = panchayatMappingViewModel.AssginedType == "RO" ? panchayatMappingViewModel.AssignedTo : null,
+                        IsAssignedRO = panchayatMappingViewModel.AssginedType == "RO" ? panchayatMappingViewModel.IsAssigned : false,
+
                     }).ToList();
 
                     var result = await _EAMSService.PanchayatMapping(fourthLevels);
@@ -4359,7 +4364,7 @@ namespace EAMS.Controllers
                    viewModel.IsAssigned && !string.IsNullOrWhiteSpace(viewModel.AssignedTo);
         }
 
-       
+
         [HttpPut]
         [Route("ReleasePanchayat")]
         [Authorize]
@@ -4369,10 +4374,18 @@ namespace EAMS.Controllers
             {
                 try
                 {
-                    var mapperdata = _mapper.Map<FourthLevelH>(panchayatReleaseViewModel); 
+                    var mapperdata = _mapper.Map<FourthLevelH>(panchayatReleaseViewModel);
+                    if (panchayatReleaseViewModel.AssginedType == "RO")
+                    {
+                        mapperdata.IsAssignedRO = panchayatReleaseViewModel.IsAssigned;
+                    }
+                    else
+                    {
+                        mapperdata.IsAssignedARO = panchayatReleaseViewModel.IsAssigned;
+                    }
                     var boothReleaseResponse = await _EAMSService.ReleasePanchayat(mapperdata);
 
-                  return  HandleResult(boothReleaseResponse);
+                    return HandleResult(boothReleaseResponse);
                 }
                 catch (InvalidOperationException ex)
                 {
@@ -4390,10 +4403,10 @@ namespace EAMS.Controllers
 
         [HttpGet]
         [Route("GetPanchayatListByROId")]
-        public async Task<IActionResult> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId, string roId)
+        public async Task<IActionResult> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId, string roId, string assginedType)
         {
-            var panchayatList = await _EAMSService.GetPanchayatListByROId(stateMasterId, districtMasterId, assemblyMasterId, roId);
-            var getUnassignedPanchayatList = await _EAMSService.GetUnassignedPanchayatListById(stateMasterId, districtMasterId, assemblyMasterId);
+            var panchayatList = await _EAMSService.GetPanchayatListByROId(stateMasterId, districtMasterId, assemblyMasterId, roId, assginedType);
+            var getUnassignedPanchayatList = await _EAMSService.GetUnassignedPanchayatListById(stateMasterId, districtMasterId, assemblyMasterId, assginedType);
             var data = new
             {
                 AssignedCount = panchayatList.Count,

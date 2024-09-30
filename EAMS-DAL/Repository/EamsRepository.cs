@@ -17229,7 +17229,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 return new ServiceResponse { IsSucceed = true, Message = "Record Deleted successfully" };
             }
         }
-       
+
         public async Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
             // Query Kyc Table
@@ -17351,7 +17351,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                   KycMasterId = joined.ResultDeclaration.KycMasterId,
                   CandidateName = kyc.CandidateName, // From Kyc table
                   FatherName = kyc.FatherName,       // From Kyc table
-                  VoteMargin = joined.ResultDeclaration.VoteMargin, 
+                  VoteMargin = joined.ResultDeclaration.VoteMargin,
                   IsWinner = joined.ResultDeclaration.IsWinner,
                   ResultDecStatus = joined.ResultDeclaration.ResultDecStatus
               })
@@ -17437,19 +17437,18 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 }
 
 
-                // Update booth assignment details
-                existingPanchayat.AssignedBy = fourthLevel.AssignedBy; 
-                existingPanchayat.IsAssigned = fourthLevel.IsAssigned;
                 // Update based on AssignedType (RO or ARO)
                 if (!string.IsNullOrWhiteSpace(fourthLevel.AssignedToRO))
                 {
-                    existingPanchayat.AssignedToRO = fourthLevel.AssignedToRO;  // Assign to RO
-                    existingPanchayat.AssignedToARO = null;  // Clear ARO assignment if any
+                    existingPanchayat.AssignedToRO = fourthLevel.AssignedToRO;
+                    existingPanchayat.IsAssignedRO = fourthLevel.IsAssignedRO;
+                    existingPanchayat.ROAssignedBy = fourthLevel.ROAssignedBy;
                 }
                 else if (!string.IsNullOrWhiteSpace(fourthLevel.AssignedToARO))
                 {
-                    existingPanchayat.AssignedToARO = fourthLevel.AssignedToARO;  // Assign to ARO
-                    existingPanchayat.AssignedToRO = null;  // Clear RO assignment if any
+                    existingPanchayat.AssignedToARO = fourthLevel.AssignedToARO;
+                    existingPanchayat.IsAssignedARO = fourthLevel.IsAssignedARO;
+                    existingPanchayat.AROAssignedBy = fourthLevel.AROAssignedBy;
                 }
                 _context.FourthLevelH.Update(existingPanchayat);
             }
@@ -17460,64 +17459,82 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         public async Task<Response> ReleasePanchayat(FourthLevelH fourthLevels)
         {
-            if (fourthLevels.FourthLevelHMasterId != null || fourthLevels.IsAssigned == false)
+            // Ensure the Panchayat ID is provided.
+            if (fourthLevels.FourthLevelHMasterId == 0)
             {
+                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Invalid request: FourthLevelHMasterId is missing." };
+            }
 
+            // Find the existing Panchayat record based on the provided IDs.
+            var existingPanchayat = await _context.FourthLevelH.FirstOrDefaultAsync(so =>
+                so.StateMasterId == fourthLevels.StateMasterId &&
+                so.DistrictMasterId == fourthLevels.DistrictMasterId &&
+                so.AssemblyMasterId == fourthLevels.AssemblyMasterId &&
+                 so.FourthLevelHMasterId == fourthLevels.FourthLevelHMasterId
+                );
 
-                var existingPanchayat = await _context.FourthLevelH.FirstOrDefaultAsync(so => so.FourthLevelHMasterId == fourthLevels.FourthLevelHMasterId
-                && so.StateMasterId == fourthLevels.StateMasterId
-                                            && so.DistrictMasterId == so.DistrictMasterId && so.AssemblyMasterId == fourthLevels.AssemblyMasterId);
-                if (existingPanchayat == null)
+            // If the Panchayat record is not found, return NotFound response.
+            if (existingPanchayat == null)
+            {
+                return new Response { Status = RequestStatusEnum.NotFound, Message = "Panchayat Record not found." };
+            }
+
+            // Check if the Panchayat is already unassigned.
+            if (!existingPanchayat.IsAssignedRO && !existingPanchayat.IsAssignedARO)
+            {
+                return new Response { Status = RequestStatusEnum.BadRequest, Message = $"Panchayat '{existingPanchayat.HierarchyName?.Trim()}' is already unassigned!" };
+            }
+
+            // Unassign the Panchayat based on AssignedType (RO or ARO).
+            if (fourthLevels.AssginedType == "RO")
+            {
+                if (existingPanchayat.IsAssignedRO)
                 {
-                    return new Response { Status = RequestStatusEnum.NotFound, Message = "Panchayat Record not found." };
+                    existingPanchayat.AssignedToRO = string.Empty; // Clear RO assignment
+                    existingPanchayat.ROAssignedBy = string.Empty; // Clear assigned by RO
+                    existingPanchayat.IsAssignedRO = false; // Mark as unassigned from RO
                 }
                 else
                 {
-                    if (existingPanchayat.IsAssigned == true)
-                    {
-                        existingPanchayat.AssignedBy = string.Empty; 
-                        existingPanchayat.IsAssigned = fourthLevels.IsAssigned;
-                        // Update based on AssignedType (RO or ARO)
-                        if (!string.IsNullOrWhiteSpace(fourthLevels.AssignedToRO))
-                        {
-                            existingPanchayat.AssignedToRO = fourthLevels.AssignedToRO;  // Assign to RO
-                            existingPanchayat.AssignedToARO = null;  // Clear ARO assignment if any
-                        }
-                        else if (!string.IsNullOrWhiteSpace(fourthLevels.AssignedToARO))
-                        {
-                            existingPanchayat.AssignedToARO = fourthLevels.AssignedToARO;  // Assign to ARO
-                            existingPanchayat.AssignedToRO = null;  // Clear RO assignment if any
-                        }
-                        _context.FourthLevelH.Update(existingPanchayat);
-                        await _context.SaveChangesAsync();
-
-                        return new Response { Status = RequestStatusEnum.OK, Message = "Panchayat " + existingPanchayat.HierarchyName.Trim() + " Unassigned successfully!" };
-                    }
-                    else
-                    {
-                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Panchayat " + existingPanchayat.HierarchyName.Trim() + " already Unassigned!" };
-                    }
+                    return new Response { Status = RequestStatusEnum.BadRequest, Message = $"Panchayat '{existingPanchayat.HierarchyName?.Trim()}' is not assigned to RO." };
                 }
-
-
-
+            }
+            else if (fourthLevels.AssginedType == "ARO")
+            {
+                if (existingPanchayat.IsAssignedARO)
+                {
+                    existingPanchayat.AssignedToARO = string.Empty; // Clear ARO assignment
+                    existingPanchayat.AROAssignedBy = string.Empty; // Clear assigned by ARO
+                    existingPanchayat.IsAssignedARO = false; // Mark as unassigned from ARO
+                }
+                else
+                {
+                    return new Response { Status = RequestStatusEnum.BadRequest, Message = $"Panchayat '{existingPanchayat.HierarchyName?.Trim()}' is not assigned to ARO." };
+                }
             }
             else
             {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Record not found!" };
-
+                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Invalid assignment type: Must be either RO or ARO." };
             }
+
+            // Update the database with the unassigned values.
+            _context.FourthLevelH.Update(existingPanchayat);
+            await _context.SaveChangesAsync();
+
+            return new Response { Status = RequestStatusEnum.OK, Message = $"Panchayat '{existingPanchayat.HierarchyName?.Trim()}' unassigned successfully!" };
         }
 
 
-        public async Task<List<CombinedPanchayatMaster>> GetUnassignedPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        public async Task<List<CombinedPanchayatMaster>> GetUnassignedPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, string assignedType)
         {
             var boothList = from ft in _context.FourthLevelH
-                                .Where(d => d.StateMasterId == stateMasterId
-                                            && d.DistrictMasterId == districtMasterId
-                                            && d.AssemblyMasterId == assemblyMasterId
-                                            && d.HierarchyStatus == true && d.IsAssigned == false) // FourthLevelH status check
-                            join asem in _context.AssemblyMaster
+                                 .Where(d => d.StateMasterId == stateMasterId
+                                && d.DistrictMasterId == districtMasterId
+                                && d.AssemblyMasterId == assemblyMasterId
+                                && d.HierarchyStatus == true 
+                                && ((assignedType == "RO" && string.IsNullOrEmpty(d.AssignedToRO)) // Check for RO
+                                    || (assignedType == "ARO" && string.IsNullOrEmpty(d.AssignedToARO)))) // Check for ARO
+                               join asem in _context.AssemblyMaster
                                 .Where(a => a.AssemblyStatus == true) // AssemblyMaster status check
                             on ft.AssemblyMasterId equals asem.AssemblyMasterId
                             join dist in _context.DistrictMaster
@@ -17538,57 +17555,115 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                 AssemblyCode = asem.AssemblyCode,
                                 FourthLevelHMasterId = ft.FourthLevelHMasterId,
                                 HierarchyName = ft.HierarchyName,
-                                HierarchyCode = ft.HierarchyCode,
-                                IsAssigned = ft.IsAssigned,
+                                HierarchyCode = ft.HierarchyCode, 
                                 IsStatus = ft.HierarchyStatus,
                                 ElectionTypeMasterId = ft.ElectionTypeMasterId,
                                 ElectionTypeName = elec.ElectionType,
+                                IsAssigned = assignedType == "RO" ? ft.IsAssignedRO : ft.IsAssignedARO, // Change as needed
                             };
 
             return await boothList.AsNoTracking().ToListAsync();
         }
 
+
+        public async Task<List<CombinedPanchayatMaster>> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId, string roId, string assignedType)
+        {
+            // Start the query for the boothList
+            var boothList = _context.FourthLevelH
+                .Where(d => d.StateMasterId == stateMasterId
+                            && d.DistrictMasterId == districtMasterId
+                            && d.AssemblyMasterId == assemblyMasterId
+                            && d.HierarchyStatus == true) // Filter FourthLevelH by status
+                .AsQueryable(); // Convert to IQueryable for further filtering
+
+            // Apply conditional filtering based on assignedType
+            if (assignedType == "RO")
+            {
+                boothList = boothList.Where(d => d.AssignedToRO == roId); // Filter for RO
+            }
+            else if (assignedType == "ARO")
+            {
+                boothList = boothList.Where(d => d.AssignedToARO == roId); // Filter for ARO
+            }
+
+            // Continue with joins and selection
+            var combinedList = from ft in boothList
+                               join asem in _context.AssemblyMaster
+                                   .Where(a => a.AssemblyStatus == true) // Filter AssemblyMaster by status
+                               on ft.AssemblyMasterId equals asem.AssemblyMasterId
+                               join dist in _context.DistrictMaster
+                                   .Where(d => d.DistrictStatus == true) // Filter DistrictMaster by status
+                               on asem.DistrictMasterId equals dist.DistrictMasterId
+                               join state in _context.StateMaster
+                                   .Where(s => s.StateStatus == true) // Filter StateMaster by status
+                               on dist.StateMasterId equals state.StateMasterId
+                               join elec in _context.ElectionTypeMaster
+                                   .Where(e => e.ElectionStatus == true) // Filter ElectionTypeMaster by status
+                               on ft.ElectionTypeMasterId equals elec.ElectionTypeMasterId
+                               select new CombinedPanchayatMaster
+                               {
+                                   StateId = stateMasterId,
+                                   DistrictId = dist.DistrictMasterId,
+                                   AssemblyId = asem.AssemblyMasterId,
+                                   AssemblyName = asem.AssemblyName,
+                                   AssemblyCode = asem.AssemblyCode,
+                                   FourthLevelHMasterId = ft.FourthLevelHMasterId,
+                                   HierarchyName = ft.HierarchyName,
+                                   HierarchyCode = ft.HierarchyCode,
+                                   IsAssigned= assignedType == "RO" ? ft.IsAssignedRO : ft.IsAssignedARO, // Change as needed
+                                   IsStatus = ft.HierarchyStatus,
+                                   ElectionTypeMasterId = ft.ElectionTypeMasterId,
+                                   ElectionTypeName = elec.ElectionType,
+                               };
+
+            // Use AsNoTracking for better performance
+            return await combinedList.AsNoTracking().ToListAsync();
+        }
 
         public async Task<List<CombinedPanchayatMaster>> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId, string roId)
         {
-            var boothList = from ft in _context.FourthLevelH
-                                .Where(d => d.StateMasterId == stateMasterId
-                                            && d.DistrictMasterId == districtMasterId
-                                            && d.AssemblyMasterId == assemblyMasterId
-                                            && d.AssignedToRO == roId
-                                            && d.HierarchyStatus == true) // Filter FourthLevelH by status and assigned officer ID
-                            join asem in _context.AssemblyMaster
-                                .Where(a => a.AssemblyStatus == true) // Filter AssemblyMaster by status
-                            on ft.AssemblyMasterId equals asem.AssemblyMasterId
-                            join dist in _context.DistrictMaster
-                                .Where(d => d.DistrictStatus == true) // Filter DistrictMaster by status
-                            on asem.DistrictMasterId equals dist.DistrictMasterId
-                            join state in _context.StateMaster
-                                .Where(s => s.StateStatus == true) // Filter StateMaster by status
-                            on dist.StateMasterId equals state.StateMasterId
-                            join elec in _context.ElectionTypeMaster
-                                .Where(e => e.ElectionStatus == true) // Filter ElectionTypeMaster by status
-                            on ft.ElectionTypeMasterId equals elec.ElectionTypeMasterId
-                            select new CombinedPanchayatMaster
-                            {
-                                StateId = stateMasterId,
-                                DistrictId = dist.DistrictMasterId,
-                                AssemblyId = asem.AssemblyMasterId,
-                                AssemblyName = asem.AssemblyName,
-                                AssemblyCode = asem.AssemblyCode,
-                                FourthLevelHMasterId = ft.FourthLevelHMasterId,
-                                HierarchyName = ft.HierarchyName,
-                                HierarchyCode = ft.HierarchyCode,
-                                IsAssigned = ft.IsAssigned,
-                                IsStatus = ft.HierarchyStatus,
-                                ElectionTypeMasterId = ft.ElectionTypeMasterId,
-                                ElectionTypeName = elec.ElectionType,
-                            };
+            // Start the query for the boothList
+            var boothList = _context.FourthLevelH
+                .Where(d => d.StateMasterId == stateMasterId
+                            && d.DistrictMasterId == districtMasterId
+                            && d.AssemblyMasterId == assemblyMasterId
+                            && d.HierarchyStatus == true
+                            &&d.AssignedToRO == roId) // Filter FourthLevelH by status
+                .AsQueryable(); // Convert to IQueryable for further filtering
+ 
+            // Continue with joins and selection
+            var combinedList = from ft in boothList
+                               join asem in _context.AssemblyMaster
+                                   .Where(a => a.AssemblyStatus == true) // Filter AssemblyMaster by status
+                               on ft.AssemblyMasterId equals asem.AssemblyMasterId
+                               join dist in _context.DistrictMaster
+                                   .Where(d => d.DistrictStatus == true) // Filter DistrictMaster by status
+                               on asem.DistrictMasterId equals dist.DistrictMasterId
+                               join state in _context.StateMaster
+                                   .Where(s => s.StateStatus == true) // Filter StateMaster by status
+                               on dist.StateMasterId equals state.StateMasterId
+                               join elec in _context.ElectionTypeMaster
+                                   .Where(e => e.ElectionStatus == true) // Filter ElectionTypeMaster by status
+                               on ft.ElectionTypeMasterId equals elec.ElectionTypeMasterId
+                               select new CombinedPanchayatMaster
+                               {
+                                   StateId = stateMasterId,
+                                   DistrictId = dist.DistrictMasterId,
+                                   AssemblyId = asem.AssemblyMasterId,
+                                   AssemblyName = asem.AssemblyName,
+                                   AssemblyCode = asem.AssemblyCode,
+                                   FourthLevelHMasterId = ft.FourthLevelHMasterId,
+                                   HierarchyName = ft.HierarchyName,
+                                   HierarchyCode = ft.HierarchyCode,
+                                   IsAssigned = ft.IsAssignedRO, // Change as needed
+                                   IsStatus = ft.HierarchyStatus,
+                                   ElectionTypeMasterId = ft.ElectionTypeMasterId,
+                                   ElectionTypeName = elec.ElectionType,
+                               };
 
             // Use AsNoTracking for better performance
-            return await boothList.AsNoTracking().ToListAsync();
+            return await combinedList.AsNoTracking().ToListAsync();
         }
-
 
         #endregion
     }
