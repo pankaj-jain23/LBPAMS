@@ -2845,7 +2845,11 @@ namespace EAMS.Controllers
         [Authorize]
         public async Task<IActionResult> GetPollInterruptionbyId(string boothMasterId)
         {
-            PollInterruption pollInterruptionData = await _EAMSService.GetPollInterruptionbyId(boothMasterId);
+            var pollInterruptionData = await _EAMSService.GetPollInterruptionbyId(boothMasterId);
+            if(pollInterruptionData is null)
+            {
+                return BadRequest();
+            }
             return Ok(pollInterruptionData);
         }
 
