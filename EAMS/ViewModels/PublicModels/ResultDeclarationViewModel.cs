@@ -7,10 +7,9 @@
     }
     public class ResultDeclarationListViewModel
     {
-        public int CandidateId { get; set; }//KYC or UNopposed
+        public int KycMasterId { get; set; } 
         public int? BoothMasterId { get; set; }
-        public int? GPPanchayatWardsMasterId { get; set; }
-        public int CandidateType { get; set; }//UNOppose/KYC
+        public int? GPPanchayatWardsMasterId { get; set; } 
         public int? VoteMargin
         {
             get;

@@ -913,7 +913,7 @@ namespace EAMS_DAL.Repository
                     var isAROExist = await _context.AROResultMaster.Where(d => d.AROMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
                     if (isAROExist != null)
                     {
-                        var panchayatAllocated = await _context.FourthLevelH.Where(p => p.AssignedTo == isAROExist.AROMasterId.ToString()).ToListAsync();
+                        var panchayatAllocated = await _context.FourthLevelH.Where(p => p.AssignedToARO == isAROExist.AROMasterId.ToString()).ToListAsync();
                         if (panchayatAllocated.Count == 0)
                         {
                             // isSOExist.SoStatus = updateMasterStatus.IsStatus;
@@ -2389,10 +2389,10 @@ namespace EAMS_DAL.Repository
             };
         }
 
-        public async Task<AROResultMasterList> GetAROResultById(int aROMasterId)
+        public async Task<AROResultMasterList> GetAROResultById(int aroMasterId)
         {
             var aroRecord = await _context.AROResultMaster
-                .Where(aro => aro.AROMasterId == aROMasterId)
+                .Where(aro => aro.AROMasterId == aroMasterId)
                 .Join(_context.StateMaster,
                       aro => aro.StateMasterId,
                       sm => sm.StateMasterId,
@@ -17331,7 +17331,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
               gpw => gpw.GPPanchayatWardsMasterId,
               (joined, gpw) => new { joined.ResultDeclaration, joined.StateMaster, joined.DistrictMaster, joined.ElectionTypeMaster, joined.AssemblyMaster, joined.FourthLevelH, GPPanchayatWards = gpw })
         .Join(_context.Kyc,
-              joined => joined.ResultDeclaration.CandidateId,
+              joined => joined.ResultDeclaration.KycMasterId,
               kyc => kyc.KycMasterId, // Joining with the Kyc table
               (joined, kyc) => new ResultDeclarationList
               {
@@ -17348,11 +17348,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                   FourthLevelName = joined.FourthLevelH.HierarchyName,
                   GPPanchayatWardsMasterId = joined.ResultDeclaration.GPPanchayatWardsMasterId,
                   GPPanchayatWardsName = joined.GPPanchayatWards.GPPanchayatWardsName,
-                  CandidateId = joined.ResultDeclaration.CandidateId,
+                  KycMasterId = joined.ResultDeclaration.KycMasterId,
                   CandidateName = kyc.CandidateName, // From Kyc table
                   FatherName = kyc.FatherName,       // From Kyc table
-                  VoteMargin = joined.ResultDeclaration.VoteMargin,
-                  CandidateType = joined.ResultDeclaration.CandidateType,
+                  VoteMargin = joined.ResultDeclaration.VoteMargin, 
                   IsWinner = joined.ResultDeclaration.IsWinner,
                   ResultDecStatus = joined.ResultDeclaration.ResultDecStatus
               })
@@ -17437,20 +17436,21 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     return new Response { Status = RequestStatusEnum.NotFound, Message = "Panchayat is Not Active" };
                 }
 
-                //// Check for Field Officer asynchronously
-                //var foExists = await _context.FieldOfficerMaster
-                //    .AnyAsync(p => p.FieldOfficerMasterId == Convert.ToInt32(boothMaster.AssignedTo));
-
-                //if (!foExists)
-                //{
-                //    return new Response { Status = RequestStatusEnum.NotFound, Message = "Field Officer Not Found" };
-                //}
 
                 // Update booth assignment details
-                existingPanchayat.AssignedBy = fourthLevel.AssignedBy;
-                existingPanchayat.AssignedTo = fourthLevel.AssignedTo;
+                existingPanchayat.AssignedBy = fourthLevel.AssignedBy; 
                 existingPanchayat.IsAssigned = fourthLevel.IsAssigned;
-
+                // Update based on AssignedType (RO or ARO)
+                if (!string.IsNullOrWhiteSpace(fourthLevel.AssignedToRO))
+                {
+                    existingPanchayat.AssignedToRO = fourthLevel.AssignedToRO;  // Assign to RO
+                    existingPanchayat.AssignedToARO = null;  // Clear ARO assignment if any
+                }
+                else if (!string.IsNullOrWhiteSpace(fourthLevel.AssignedToARO))
+                {
+                    existingPanchayat.AssignedToARO = fourthLevel.AssignedToARO;  // Assign to ARO
+                    existingPanchayat.AssignedToRO = null;  // Clear RO assignment if any
+                }
                 _context.FourthLevelH.Update(existingPanchayat);
             }
 
@@ -17475,9 +17475,19 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 {
                     if (existingPanchayat.IsAssigned == true)
                     {
-                        existingPanchayat.AssignedBy = string.Empty;
-                        existingPanchayat.AssignedTo = string.Empty;
+                        existingPanchayat.AssignedBy = string.Empty; 
                         existingPanchayat.IsAssigned = fourthLevels.IsAssigned;
+                        // Update based on AssignedType (RO or ARO)
+                        if (!string.IsNullOrWhiteSpace(fourthLevels.AssignedToRO))
+                        {
+                            existingPanchayat.AssignedToRO = fourthLevels.AssignedToRO;  // Assign to RO
+                            existingPanchayat.AssignedToARO = null;  // Clear ARO assignment if any
+                        }
+                        else if (!string.IsNullOrWhiteSpace(fourthLevels.AssignedToARO))
+                        {
+                            existingPanchayat.AssignedToARO = fourthLevels.AssignedToARO;  // Assign to ARO
+                            existingPanchayat.AssignedToRO = null;  // Clear RO assignment if any
+                        }
                         _context.FourthLevelH.Update(existingPanchayat);
                         await _context.SaveChangesAsync();
 
@@ -17545,7 +17555,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                 .Where(d => d.StateMasterId == stateMasterId
                                             && d.DistrictMasterId == districtMasterId
                                             && d.AssemblyMasterId == assemblyMasterId
-                                            && d.AssignedTo == roId
+                                            && d.AssignedToRO == roId
                                             && d.HierarchyStatus == true) // Filter FourthLevelH by status and assigned officer ID
                             join asem in _context.AssemblyMaster
                                 .Where(a => a.AssemblyStatus == true) // Filter AssemblyMaster by status

@@ -4265,19 +4265,20 @@ namespace EAMS.Controllers
 
         [HttpGet]
         [Route("GetAROResultById")]
-        public async Task<IActionResult> GetAROResultById(int aROMasterId)
+        public async Task<IActionResult> GetAROResultById(int aroMasterId)
         {
-            var foRecord = await _EAMSService.GetAROResultById(aROMasterId);
-            if (foRecord != null)
+            var foRecord = await _EAMSService.GetAROResultById(aroMasterId);
+            var mappedData = _mapper.Map<ResultListViewModel>(foRecord);
+            if (mappedData != null)
             {
 
 
 
-                return Ok(foRecord);
+                return Ok(mappedData);
             }
             else
             {
-                return NotFound($"[{aROMasterId}] not exist");
+                return NotFound($"[{mappedData}] not exist");
             }
 
         }
@@ -4315,58 +4316,35 @@ namespace EAMS.Controllers
         {
             try
             {
-                if (ModelState.IsValid)
+                if (!ModelState.IsValid)
                 {
-                    if (panchayatMappingViewModel.FourthLevelHMasterId != null && panchayatMappingViewModel.FourthLevelHMasterId.Any() && panchayatMappingViewModel.IsAssigned == true && !string.IsNullOrWhiteSpace(panchayatMappingViewModel.AssignedTo))
-                    {
-
-                        List<FourthLevelH> fourthLevels = new List<FourthLevelH>();
-
-                        foreach (var fLevelMasterId in panchayatMappingViewModel.FourthLevelHMasterId)
-                        {
-                            var fHMaster = new FourthLevelH
-                            {
-                                FourthLevelHMasterId = fLevelMasterId,
-                                StateMasterId = panchayatMappingViewModel.StateMasterId,
-                                DistrictMasterId = panchayatMappingViewModel.DistrictMasterId,
-                                AssemblyMasterId = panchayatMappingViewModel.AssemblyMasterId,
-                                AssignedBy = panchayatMappingViewModel.AssignedBy,
-                                AssignedTo = panchayatMappingViewModel.AssignedTo,
-                                IsAssigned = panchayatMappingViewModel.IsAssigned,
-                                ElectionTypeMasterId = panchayatMappingViewModel.ElectionTypeMasterId,
-                            };
-
-                            fourthLevels.Add(fHMaster);
-                        }
-
-                        var result = await _EAMSService.PanchayatMapping(fourthLevels);
-                        switch (result.Status)
-                        {
-                            case RequestStatusEnum.OK:
-                                return Ok(result.Message);
-                            case RequestStatusEnum.BadRequest:
-                                return BadRequest(result.Message);
-                            case RequestStatusEnum.NotFound:
-                                return NotFound(result.Message);
-
-                            default:
-                                return StatusCode(500, "Internal Server Error");
-                        }
-                    }
-                    else
-                    {
-                        return BadRequest(new Response { Status = RequestStatusEnum.BadRequest, Message = "Please Check the Parameters" });
-                    }
-
-                }
-                else
-                {
-                    return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
+                    var errorMessage = ModelState.Values.SelectMany(d => d.Errors)
+                                                         .Select(d => d.ErrorMessage)
+                                                         .FirstOrDefault();
+                    return BadRequest(errorMessage);
                 }
 
+                if (IsValidPanchayatMappingRequest(panchayatMappingViewModel))
+                {
+                    var fourthLevels = panchayatMappingViewModel.FourthLevelHMasterId.Select(fLevelMasterId => new FourthLevelH
+                    {
+                        FourthLevelHMasterId = fLevelMasterId,
+                        StateMasterId = panchayatMappingViewModel.StateMasterId,
+                        DistrictMasterId = panchayatMappingViewModel.DistrictMasterId,
+                        AssemblyMasterId = panchayatMappingViewModel.AssemblyMasterId,
+                        AssignedBy = panchayatMappingViewModel.AssignedBy,
+                        IsAssigned = panchayatMappingViewModel.IsAssigned,
+                        ElectionTypeMasterId = panchayatMappingViewModel.ElectionTypeMasterId,
+                        AssignedToARO = panchayatMappingViewModel.AssginedType == "ARO" ? panchayatMappingViewModel.AssignedTo : null,
+                        AssignedToRO = panchayatMappingViewModel.AssginedType == "RO" ? panchayatMappingViewModel.AssignedTo : null
+                    }).ToList();
 
+                    var result = await _EAMSService.PanchayatMapping(fourthLevels);
+                    return HandleResult(result);
+                }
+
+                return BadRequest(new Response { Status = RequestStatusEnum.BadRequest, Message = "Please Check the Parameters" });
             }
-
             catch (Exception ex)
             {
                 _logger.LogError($"BoothMapping: {ex.Message}");
@@ -4374,6 +4352,14 @@ namespace EAMS.Controllers
             }
         }
 
+        // Helper methods for better readability and maintainability
+        private bool IsValidPanchayatMappingRequest(PanchayatMappingViewModel viewModel)
+        {
+            return viewModel.FourthLevelHMasterId != null && viewModel.FourthLevelHMasterId.Any() &&
+                   viewModel.IsAssigned && !string.IsNullOrWhiteSpace(viewModel.AssignedTo);
+        }
+
+       
         [HttpPut]
         [Route("ReleasePanchayat")]
         [Authorize]
@@ -4383,21 +4369,10 @@ namespace EAMS.Controllers
             {
                 try
                 {
-                    var mapperdata = _mapper.Map<FourthLevelH>(panchayatReleaseViewModel);
+                    var mapperdata = _mapper.Map<FourthLevelH>(panchayatReleaseViewModel); 
                     var boothReleaseResponse = await _EAMSService.ReleasePanchayat(mapperdata);
 
-                    switch (boothReleaseResponse.Status)
-                    {
-                        case RequestStatusEnum.OK:
-                            return Ok(boothReleaseResponse.Message);
-                        case RequestStatusEnum.BadRequest:
-                            return BadRequest(boothReleaseResponse.Message);
-                        case RequestStatusEnum.NotFound:
-                            return NotFound(boothReleaseResponse.Message);
-
-                        default:
-                            return StatusCode(500, "Internal Server Error");
-                    }
+                  return  HandleResult(boothReleaseResponse);
                 }
                 catch (InvalidOperationException ex)
                 {
@@ -4427,6 +4402,20 @@ namespace EAMS.Controllers
                 Unassigned = getUnassignedPanchayatList
             };
             return Ok(data);
+        }
+        #endregion
+
+
+        #region Handle API Response
+        private IActionResult HandleResult(Response result)
+        {
+            return result.Status switch
+            {
+                RequestStatusEnum.OK => Ok(result.Message),
+                RequestStatusEnum.BadRequest => BadRequest(result.Message),
+                RequestStatusEnum.NotFound => NotFound(result.Message),
+                _ => StatusCode(500, "Internal Server Error"),
+            };
         }
         #endregion
     }

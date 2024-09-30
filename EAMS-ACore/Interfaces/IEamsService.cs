@@ -71,7 +71,7 @@ namespace EAMS_ACore.Interfaces
         #region AROResult
         Task<Response> AddAROResult(AROResultMaster aROResultMaster);
         Task<Response> UpdateAROResult(AROResultMaster aROResultMaster);
-        Task<AROResultMasterList> GetAROResultById(int aROMasterId);
+        Task<AROResultMasterList> GetAROResultById(int aroMasterId);
         Task<List<AROResultMaster>> GetAROListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
 
 

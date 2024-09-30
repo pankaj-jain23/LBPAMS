@@ -15,5 +15,6 @@ namespace LBPAMS.ViewModels
         public int FourthLevelHMasterId { get; set; }
         [Required(ErrorMessage = "IsAssigned is required")]
         public bool IsAssigned { get; set; }
+        public string AssginedType { get; set; }
     }
 }

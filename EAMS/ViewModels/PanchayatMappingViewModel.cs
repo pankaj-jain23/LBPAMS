@@ -6,11 +6,13 @@ namespace LBPAMS.ViewModels
     {
         [Required(ErrorMessage = "State Master Id is required")]
         public int StateMasterId { get; set; }
+
         [Required(ErrorMessage = "District Master Id is required")]
         public int DistrictMasterId { get; set; }
 
         [Required(ErrorMessage = "Assembly Master Id is required")]
         public int AssemblyMasterId { get; set; }
+
         [Required(ErrorMessage = "Booth Master Id is required")]
         public List<int> FourthLevelHMasterId { get; set; }
 
@@ -20,7 +22,10 @@ namespace LBPAMS.ViewModels
         [Required(ErrorMessage = "Is Assigned Status is required")]
 
         public bool IsAssigned { get; set; }
+
         [Required(ErrorMessage = "Election Type Master Id is required")]
         public int ElectionTypeMasterId { get; set; }
+
+        public string AssginedType { get; set; }
     }
 }

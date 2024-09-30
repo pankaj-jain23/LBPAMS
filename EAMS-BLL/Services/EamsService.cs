@@ -253,9 +253,9 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.UpdateAROResult(aROResultMaster);
         }
-        public async Task<AROResultMasterList> GetAROResultById(int aROMasterId)
+        public async Task<AROResultMasterList> GetAROResultById(int aroMasterId)
         {
-            return await _eamsRepository.GetAROResultById(aROMasterId);
+            return await _eamsRepository.GetAROResultById(aroMasterId);
         }
         public async Task<List<AROResultMaster>> GetAROListById (int stateMasterId, int districtMasterId, int assemblyMasterId)
         {

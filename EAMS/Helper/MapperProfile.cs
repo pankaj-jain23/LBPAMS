@@ -974,8 +974,7 @@ namespace EAMS.Helper
             #region ResultDeclarationViewModel  ResultDeclaration 
             CreateMap<ResultDeclarationListViewModel, ResultDeclaration>()
      .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
-     .ForMember(dest => dest.CandidateId, opt => opt.MapFrom(src => src.CandidateId))
-     .ForMember(dest => dest.CandidateType, opt => opt.MapFrom(src => src.CandidateType))
+     .ForMember(dest => dest.KycMasterId, opt => opt.MapFrom(src => src.KycMasterId)) 
      .ForMember(dest => dest.GPPanchayatWardsMasterId, opt => opt.MapFrom(src => src.GPPanchayatWardsMasterId))
      .ForMember(dest => dest.VoteMargin, opt => opt.MapFrom(src => src.VoteMargin))
      .ForMember(dest => dest.ResultDecStatus, opt => opt.MapFrom(src => src.ResultDecStatus))
@@ -1015,9 +1014,38 @@ namespace EAMS.Helper
                 .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
                 .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
                 .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
+                .ForMember(dest => dest.AssginedType, opt => opt.MapFrom(src => src.AssginedType))
                 .ForMember(dest => dest.IsAssigned, opt => opt.MapFrom(src => src.IsAssigned)) 
                 .ReverseMap();
             #endregion
+
+            #region ResultListViewModel ResultModel
+            CreateMap<ResultListViewModel, AROResultMasterList>()
+                .ForMember(dest => dest.AROMasterId, opt => opt.MapFrom(src => src.AROMasterId))
+                .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+                .ForMember(dest => dest.StateName, opt => opt.MapFrom(src => src.StateName))
+                .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+                .ForMember(dest => dest.DistrictName, opt => opt.MapFrom(src => src.DistrictName))
+                .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+                .ForMember(dest => dest.AssemblyName, opt => opt.MapFrom(src => src.AssemblyName))
+                .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
+                .ForMember(dest => dest.HierarchyName, opt => opt.MapFrom(src => src.FourthLevelHName))
+                .ForMember(dest => dest.AssemblyCode, opt => opt.MapFrom(src => src.AssemblyCode))
+                .ForMember(dest => dest.AROName, opt => opt.MapFrom(src => src.AROName))
+                .ForMember(dest => dest.ARODesignation, opt => opt.MapFrom(src => src.ARODesignation))
+                .ForMember(dest => dest.AROOfficeName, opt => opt.MapFrom(src => src.AROOfficeName))
+                .ForMember(dest => dest.AROMobile, opt => opt.MapFrom(src => src.AROMobile))
+                .ForMember(dest => dest.IsStatus, opt => opt.MapFrom(src => src.IsStatus))
+                .ForMember(dest => dest.OTPGeneratedTime, opt => opt.MapFrom(src => src.OTPGeneratedTime))
+                .ForMember(dest => dest.OTP, opt => opt.MapFrom(src => src.OTP))
+                .ForMember(dest => dest.OTPExpireTime, opt => opt.MapFrom(src => src.OTPExpireTime))
+                .ForMember(dest => dest.OTPAttempts, opt => opt.MapFrom(src => src.OTPAttempts))
+                .ForMember(dest => dest.IsLocked, opt => opt.MapFrom(src => src.IsLocked))
+                .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+                .ForMember(dest => dest.ElectionTypeName, opt => opt.MapFrom(src => src.ElectionTypeName))
+                .ReverseMap();
+            #endregion
+
         }
         #region Convert DateTime UTC
         private DateTime? ParseAndConvertToUtc(string dateTimeString)
