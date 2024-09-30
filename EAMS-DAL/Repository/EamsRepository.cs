@@ -17554,6 +17554,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                             join elec in _context.ElectionTypeMaster
                                 .Where(e => e.ElectionStatus == true) // ElectionTypeMaster status check
                             on ft.ElectionTypeMasterId equals elec.ElectionTypeMasterId
+                            orderby ft.HierarchyCode
                             select new CombinedPanchayatMaster
                             {
                                 StateId = stateMasterId,
@@ -17608,6 +17609,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                join elec in _context.ElectionTypeMaster
                                    .Where(e => e.ElectionStatus == true) // Filter ElectionTypeMaster by status
                                on ft.ElectionTypeMasterId equals elec.ElectionTypeMasterId
+                               orderby ft.HierarchyCode
                                select new CombinedPanchayatMaster
                                {
                                    StateId = stateMasterId,
@@ -17653,6 +17655,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                join elec in _context.ElectionTypeMaster
                                    .Where(e => e.ElectionStatus == true) // Filter ElectionTypeMaster by status
                                on ft.ElectionTypeMasterId equals elec.ElectionTypeMasterId
+                               orderby ft.HierarchyCode
                                select new CombinedPanchayatMaster
                                {
                                    StateId = stateMasterId,
