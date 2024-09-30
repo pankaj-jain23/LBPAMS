@@ -4334,11 +4334,11 @@ namespace EAMS.Controllers
                         AssemblyMasterId = panchayatMappingViewModel.AssemblyMasterId,
                         ElectionTypeMasterId = panchayatMappingViewModel.ElectionTypeMasterId,
 
-                        AROAssignedBy = panchayatMappingViewModel.AssignedBy == "ARO" ? panchayatMappingViewModel.AssignedBy : null,
-                        IsAssignedARO = panchayatMappingViewModel.AssignedBy == "ARO" ? panchayatMappingViewModel.IsAssigned : false,
+                        AROAssignedBy = panchayatMappingViewModel.AssginedType == "ARO" ? panchayatMappingViewModel.AssignedBy : null,
+                        IsAssignedARO = panchayatMappingViewModel.AssginedType == "ARO" ? panchayatMappingViewModel.IsAssigned : false,
                         AssignedToARO = panchayatMappingViewModel.AssginedType == "ARO" ? panchayatMappingViewModel.AssignedTo : null,
 
-                        ROAssignedBy = panchayatMappingViewModel.AssignedBy == "RO" ? panchayatMappingViewModel.AssignedBy : null,
+                        ROAssignedBy = panchayatMappingViewModel.AssginedType == "RO" ? panchayatMappingViewModel.AssignedBy : null,
                         AssignedToRO = panchayatMappingViewModel.AssginedType == "RO" ? panchayatMappingViewModel.AssignedTo : null,
                         IsAssignedRO = panchayatMappingViewModel.AssginedType == "RO" ? panchayatMappingViewModel.IsAssigned : false,
 
