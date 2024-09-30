@@ -52,16 +52,7 @@ namespace EAMS_ACore.Models.PublicModels
             set;
         }
         public int KycMasterId { get; set; }
-        public string CandidateName
-        {
-            get;
-            set;
-        }
-        public string FatherName
-        {
-            get;
-            set;
-        }
+      
         public string? VoteMargin
         {
             get;

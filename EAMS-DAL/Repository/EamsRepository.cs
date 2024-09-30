@@ -17178,8 +17178,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             existingresultDeclaration.AssemblyMasterId = resultDeclaration.AssemblyMasterId;
             existingresultDeclaration.FourthLevelHMasterId = resultDeclaration.FourthLevelHMasterId;
             existingresultDeclaration.GPPanchayatWardsMasterId = resultDeclaration.GPPanchayatWardsMasterId;
-            existingresultDeclaration.CandidateName = resultDeclaration.CandidateName;
-            existingresultDeclaration.FatherName = resultDeclaration.FatherName;
+            //existingresultDeclaration.CandidateName = resultDeclaration.CandidateName;
+            //existingresultDeclaration.FatherName = resultDeclaration.FatherName;
             existingresultDeclaration.VoteMargin = resultDeclaration.VoteMargin;
             existingresultDeclaration.ResultDecUpdatedAt = DateTime.UtcNow;
             existingresultDeclaration.ResultDecStatus = resultDeclaration.ResultDecStatus;
