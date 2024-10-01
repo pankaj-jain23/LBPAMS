@@ -3048,6 +3048,7 @@ namespace EAMS_DAL.Repository
                                              d.AssemblyMasterId == boothMaster.AssemblyMasterId &&
                                              d.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId &&
                                              d.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId &&
+                                             d.BoothNoAuxy == boothMaster.BoothNoAuxy &&
                                              d.BoothCode_No.Equals(boothMaster.BoothCode_No)
                                              && d.PSZonePanchayatMasterId == boothMaster.PSZonePanchayatMasterId);
                         }
@@ -3059,6 +3060,7 @@ namespace EAMS_DAL.Repository
                                              d.DistrictMasterId == boothMaster.DistrictMasterId &&
                                              d.AssemblyMasterId == boothMaster.AssemblyMasterId &&
                                              d.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId &&
+                                             d.BoothNoAuxy == boothMaster.BoothNoAuxy &&
                                               d.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId &&
                                              d.BoothCode_No.Equals(boothMaster.BoothCode_No));
                         }
