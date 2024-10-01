@@ -174,24 +174,35 @@ namespace EAMS.Controllers
         [HttpGet("GetKYCDetailByAssemblyId")]
         public async Task<IActionResult> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            var result = await _eamsService.GetKYCDetailByAssemblyId(electionType, stateMasterId, districtMasterId, assemblyMasterId);
+            var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+            var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
 
-            if (result != null)
+            if (string.IsNullOrEmpty(userId))
             {
-                var data = new
-                {
-                    count = result.Count,
-                    Sarpacnh = result.Where(k => k.GPPanchayatWardsMasterId == 0).ToList(),
-                    Panch = result.Where(k => k.GPPanchayatWardsMasterId != 0).ToList()
-
-                };
-                return Ok(data);
+                return Unauthorized("User doesn't exist.");
             }
-            else
+
+            // Determine whether to call the method with user ID or not
+            var roresult = userRole?.Contains("RO") == true
+                ? await _eamsService.GetKYCDetailByAssemblyId(electionType, stateMasterId, districtMasterId, assemblyMasterId, userId)
+                : await _eamsService.GetKYCDetailByAssemblyId(electionType, stateMasterId, districtMasterId, assemblyMasterId);
+
+            if (roresult == null)
             {
                 return NotFound();
             }
+
+            // Prepare the response data
+            var data = new
+            {
+                count = roresult.Count,
+                Sarpacnh = roresult.Where(k => k.GPPanchayatWardsMasterId == 0).ToList(),
+                Panch = roresult.Where(k => k.GPPanchayatWardsMasterId != 0).ToList()
+            };
+
+            return Ok(data);
         }
+
 
         [HttpGet("GetKycById")]
         public async Task<IActionResult> GetKycById(int KycMasterId)
@@ -593,22 +604,34 @@ namespace EAMS.Controllers
         [HttpGet("GetGPVoterListById")]
         public async Task<IActionResult> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            var result = await _eamsService.GetGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId);
+            var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+            var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
 
-            if (result.Count != 0 || result != null)
+            if (string.IsNullOrEmpty(userId))
             {
-                var data = new
-                {
-                    count = result.Count,
-                    gpVoter = result.Where(k => k.GPVoterMasterId != 0).ToList(),
-
-                };
-                return Ok(data);
+                return Unauthorized("User doesn't exist.");
             }
-            else
+
+            // Determine whether to call the method with user ID or not
+            var result = userRole?.Contains("RO") == true
+                ? await _eamsService.GetGPVoterListById( stateMasterId, districtMasterId, assemblyMasterId, userId)
+                : await _eamsService.GetGPVoterListById( stateMasterId, districtMasterId, assemblyMasterId);
+
+            
+           
+            if (result == null)
             {
                 return NotFound();
             }
+
+            // Prepare the response data
+            var data = new
+            {
+                count = result.Count,
+                gpVoter = result,
+            };
+
+            return Ok(data);
         }
         [HttpDelete("DeleteGPVoterById")]
         public async Task<IActionResult> DeleteGPVoterById(int gpVoterMasterId)

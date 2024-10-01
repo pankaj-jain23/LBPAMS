@@ -2846,12 +2846,16 @@ namespace EAMS.Controllers
         public async Task<IActionResult> GetPollInterruptionbyId(string boothMasterId)
         {
             var pollInterruptionData = await _EAMSService.GetPollInterruptionbyId(boothMasterId);
-            if(pollInterruptionData is null)
+
+            var data = new
             {
-                return Ok("No Poll Interruption");
-            }
-            return Ok(pollInterruptionData);
+                isStatus = pollInterruptionData != null ? true : false, // Explicitly setting true or false
+                pollInterruption = pollInterruptionData
+            };
+
+            return Ok(data);
         }
+
 
 
 
@@ -4420,8 +4424,7 @@ namespace EAMS.Controllers
             };
             return Ok(data);
         }
-        #endregion
-
+        #endregion 
 
         #region Handle API Response
         private IActionResult HandleResult(Response result)

@@ -15907,6 +15907,51 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return await kycList.ToListAsync();
         }
+        public async Task<List<KycList>> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId, string userId)
+        {
+            var baseUrl = "https://lbpams.punjab.gov.in/LBPAMSDOC/";
+
+            // Execute the query with the necessary where conditions
+            var kycList = from k in _context.Kyc
+                          join state in _context.StateMaster on k.StateMasterId equals state.StateMasterId
+                          join district in _context.DistrictMaster on k.DistrictMasterId equals district.DistrictMasterId into districts
+                          from d in districts.DefaultIfEmpty()
+                          join assembly in _context.AssemblyMaster on k.AssemblyMasterId equals assembly.AssemblyMasterId into assemblies
+                          from a in assemblies.DefaultIfEmpty()
+                          join fourthLevel in _context.FourthLevelH on k.FourthLevelHMasterId equals fourthLevel.FourthLevelHMasterId into fourthLevels
+                          from fl in fourthLevels.DefaultIfEmpty()
+                          join psZone in _context.PSZonePanchayat on k.PSZonePanchayatMasterId equals psZone.PSZonePanchayatMasterId into psZones
+                          from pz in psZones.DefaultIfEmpty()
+                          join gpWard in _context.GPPanchayatWards on k.GPPanchayatWardsMasterId equals gpWard.GPPanchayatWardsMasterId into gpWards
+                          from gw in gpWards.DefaultIfEmpty()
+                          where
+                                k.StateMasterId == stateMasterId &&
+                                k.DistrictMasterId == districtMasterId &&
+                                k.AssemblyMasterId == assemblyMasterId&&
+                                fl.AssignedToRO== userId
+
+                          select new KycList
+                          {
+                              KycMasterId = k.KycMasterId,
+                              StateName = state.StateName,
+                              StateMasterId = k.StateMasterId,
+                              DistrictName = d.DistrictName,
+                              DistrictMasterId = k.DistrictMasterId,
+                              AssemblyName = a.AssemblyName,
+                              AssemblyMasterId = k.AssemblyMasterId,
+                              FourthLevelHName = fl.HierarchyName,
+                              FourthLevelHMasterId = k.FourthLevelHMasterId,
+                              GPPanchayatWardsName = gw.GPPanchayatWardsName,
+                              GPPanchayatWardsMasterId = k.GPPanchayatWardsMasterId,
+                              CandidateType = k.GPPanchayatWardsMasterId == 0 ? "Sarpanch" : "Panch",
+                              CandidateName = k.CandidateName,
+                              FatherName = k.FatherName,
+                              IsUnOppossed = k.IsUnOppossed,
+                              NominationPdfPath = $"{baseUrl}{k.NominationPdfPath}",
+                          };
+
+            return await kycList.ToListAsync();
+        }
 
         public async Task<KycList> GetKycById(int kycMasterId)
         {
@@ -17132,6 +17177,48 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                       am => am.AssemblyMasterId,
                       (j, am) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, AssemblyMaster = am })
                 .Join(_context.FourthLevelH,
+                      j => j.GPVoter.FourthLevelHMasterId, // Assuming GPVoter has FourthLevelHMasterId
+                      flh => flh.FourthLevelHMasterId,
+                      (j, flh) => new GPVoterList
+                      {
+                          GPVoterMasterId = j.GPVoter.GPVoterMasterId,
+                          StateMasterId = j.GPVoter.StateMasterId,
+                          DistrictMasterId = j.GPVoter.DistrictMasterId,
+                          AssemblyMasterId = j.GPVoter.AssemblyMasterId,
+                          GPVoterPdfPath = $"{baseUrl}{j.GPVoter.GPVoterPdfPath.Replace("\\", "/")}",
+                          StateName = j.StateMaster.StateName,
+                          DistrictName = j.DistrictMaster.DistrictName,
+                          AssemblyName = j.AssemblyMaster.AssemblyName,
+                          FourthLevelHMasterId = flh.FourthLevelHMasterId,
+                          FourthLevelHName = flh.HierarchyName,
+                          WardRange = j.GPVoter.WardRange,
+                          GPVoterStatus = j.GPVoter.GPVoterStatus
+                      })
+                .ToListAsync();
+
+            return gpVoterList;
+        }
+        public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId,string userId)
+        {
+            var baseUrl = "https://lbpams.punjab.gov.in/lbpamsdoc/";
+
+            var gpVoterList = await _context.GPVoter
+                .Where(gv => gv.StateMasterId == stateMasterId &&
+                             gv.DistrictMasterId == districtMasterId &&
+                             gv.AssemblyMasterId == assemblyMasterId)
+                .Join(_context.StateMaster,
+                      gv => gv.StateMasterId,
+                      sm => sm.StateMasterId,
+                      (gv, sm) => new { GPVoter = gv, StateMaster = sm })
+                .Join(_context.DistrictMaster,
+                      j => j.GPVoter.DistrictMasterId,
+                      dm => dm.DistrictMasterId,
+                      (j, dm) => new { j.GPVoter, j.StateMaster, DistrictMaster = dm })
+                .Join(_context.AssemblyMaster,
+                      j => j.GPVoter.AssemblyMasterId,
+                      am => am.AssemblyMasterId,
+                      (j, am) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, AssemblyMaster = am })
+                .Join(_context.FourthLevelH.Where(flh => flh.AssignedToRO == userId),
                       j => j.GPVoter.FourthLevelHMasterId, // Assuming GPVoter has FourthLevelHMasterId
                       flh => flh.FourthLevelHMasterId,
                       (j, flh) => new GPVoterList

@@ -934,7 +934,7 @@ namespace EAMS_BLL.AuthServices
                     Id = d.Id,
                     PhoneNumber = d.PhoneNumber
 
-                })
+                }).OrderBy(d=>d.UserName)
                 .ToList();
 
             return filteredUsers;

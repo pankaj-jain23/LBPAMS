@@ -336,6 +336,7 @@ namespace EAMS_ACore.IRepository
         Task<List<Kyc>> GetKYCDetails();
         Task<KycList> GetKycById(int kycMasterId);
         Task<List<KycList>> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId);
+        Task<List<KycList>> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId, string userId);
         Task<ServiceResponse> DeleteKycById(int kycMasterId);
         #endregion
 
@@ -388,6 +389,7 @@ namespace EAMS_ACore.IRepository
         Task<ServiceResponse> UpdateGPVoterDetails(GPVoter gpVoterPdf);
         Task<GPVoterList> GetGPVoterById(int gpVoterMasterId);
         Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
+        Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, string userId);
         Task<ServiceResponse> DeleteGPVoterById(int gpVoterMasterId);
         #endregion
 

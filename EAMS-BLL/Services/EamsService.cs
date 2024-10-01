@@ -2588,6 +2588,10 @@ namespace EAMS_BLL.Services
         public async Task<List<KycList>> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
             return await _eamsRepository.GetKYCDetailByAssemblyId(electionType, stateMasterId, districtMasterId, assemblyMasterId);
+        } 
+        public async Task<List<KycList>> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId, string userId)
+        {
+            return await _eamsRepository.GetKYCDetailByAssemblyId(electionType, stateMasterId, districtMasterId, assemblyMasterId, userId);
         }
         public async Task<ServiceResponse> DeleteKycById(int kycMasterId)
         {
@@ -2726,6 +2730,10 @@ namespace EAMS_BLL.Services
         public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
             return await _eamsRepository.GetGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId);
+        }
+        public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId,string userId)
+        {
+            return await _eamsRepository.GetGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId, userId);
         }
         public async Task<ServiceResponse> DeleteGPVoterById(int gpVoterMasterId)
         {
