@@ -895,18 +895,18 @@ namespace EAMS_DAL.Repository
                             // isSOExist.SoStatus = updateMasterStatus.IsStatus;
                             _context.FieldOfficerMaster.Remove(isSOExist);
                             await _context.SaveChangesAsync();
-                            return new ServiceResponse { IsSucceed = true, Message = "So Deleted Successfully" };
+                            return new ServiceResponse { IsSucceed = true, Message = "Field Officer Deleted Successfully" };
                         }
                         else
                         {
-                            return new ServiceResponse { IsSucceed = false, Message = "Booths Assignedto this SO, kindly release them !" };
+                            return new ServiceResponse { IsSucceed = false, Message = "Booths Assigned to this Field Officer, kindly release them !" };
 
                         }
                     }
 
                     else
                     {
-                        return new ServiceResponse { IsSucceed = false, Message = "Sector Officer Record Not Found." };
+                        return new ServiceResponse { IsSucceed = false, Message = "Field Officer Record Not Found." };
                     }
 
                 case "AROMaster":
@@ -2006,6 +2006,7 @@ namespace EAMS_DAL.Repository
 
         public async Task<Response> AddFieldOfficer(FieldOfficerMaster fieldOfficerViewModel)
         {
+           
             // Check if FieldOfficer with the same mobile number, election type, and state already exists
             var existingOfficerMobile = await _context.FieldOfficerMaster
                                                 .FirstOrDefaultAsync(d => d.FieldOfficerMobile == fieldOfficerViewModel.FieldOfficerMobile
@@ -2036,6 +2037,14 @@ namespace EAMS_DAL.Repository
         }
         public async Task<Response> UpdateFieldOfficer(FieldOfficerMaster updatedFieldOfficer)
         {
+            if (!await IsBoothAssgined(updatedFieldOfficer.FieldOfficerMasterId.ToString()))
+            {
+                return new Response
+                {
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = "Please UnAssgined Booths"
+                };
+            }
             // Fetch the existing officer and check for uniqueness of the mobile number in one query
             var existingOfficer = await _context.FieldOfficerMaster
                 .Where(d => d.FieldOfficerMasterId == updatedFieldOfficer.FieldOfficerMasterId)
@@ -2569,6 +2578,10 @@ namespace EAMS_DAL.Repository
 
         #region Booth Master 
 
+        private async Task<bool> IsBoothAssgined(string foId)
+        {
+            return await _context.BoothMaster.AnyAsync(d => d.AssignedTo == foId);
+        }
         public async Task<List<CombinedMaster>> GetBoothListById(string stateMasterId, string districtMasterId, string assemblyMasterId)
         {
             var isStateActive = _context.StateMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId)).FirstOrDefault();
@@ -6645,7 +6658,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                               d.VotesPolled
                                           })
                                           .FirstOrDefaultAsync();
-
+            
             // Step 5: Populate ViewModel and return
             VoterTurnOutPolledDetailViewModel voterTurnOutPolledDetailViewModel = new VoterTurnOutPolledDetailViewModel
             {
@@ -6668,11 +6681,14 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
                 // Compare LockTime with the current time
                 bool checkTimeExceeded = getLastSlot.LockTime.Value < currentTime;
+                UpdateEventActivity updateEventActivity = new UpdateEventActivity();
 
+                var getNextEvent = await GetNextEvent(updateEventActivity);
                 if (checkTimeExceeded)
                 {
                     voterTurnOutPolledDetailViewModel.IsSlotAvailable = false;
                     voterTurnOutPolledDetailViewModel.Message = "Kindly Proceed for Voter In Queue ";
+                    
                     electionInfo.IsVoterTurnOut = true;
                     electionInfo.VotingTurnOutLastUpdate = BharatDateTime();
                     _context.ElectionInfoMaster.Update(electionInfo);

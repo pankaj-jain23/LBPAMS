@@ -752,6 +752,7 @@ namespace EAMS.Controllers
                 return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
             }
         }
+       
         /// <summary this api for portal>
         [HttpGet]
         [Route("GetBoothListByFoId")]
@@ -770,6 +771,7 @@ namespace EAMS.Controllers
             };
             return Ok(data);
         }
+       
         /// <summary>
         /// For Poll Interuption Booth List
         /// </summary>
