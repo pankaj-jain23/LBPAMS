@@ -15819,7 +15819,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
     k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
     k.AssemblyMasterId == kyc.AssemblyMasterId &&
     k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
-    k.IsUnOppossed == true
+    k.IsUnOppossed == true &&
+    (k.GPPanchayatWardsMasterId == 0 || k.GPPanchayatWardsMasterId != 0)
 );
 
             if (existingKyc)
@@ -15827,6 +15828,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 string candidateType = kyc.GPPanchayatWardsMasterId == 0 ? "Sarpanch" : "Panch";
                 return new ServiceResponse { IsSucceed = false, Message = $"UnOpposed {candidateType} already exists." };
             }
+
 
             _context.Kyc.Add(kyc);
             await _context.SaveChangesAsync();
@@ -15852,6 +15854,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 k.AssemblyMasterId == kyc.AssemblyMasterId &&
                 k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
                 k.IsUnOppossed == true &&
+                (k.GPPanchayatWardsMasterId == 0 || k.GPPanchayatWardsMasterId != 0) &&
                 k.KycMasterId != kyc.KycMasterId // Ensure we are not checking the current record
             );
 
