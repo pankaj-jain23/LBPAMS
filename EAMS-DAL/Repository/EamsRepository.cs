@@ -6657,8 +6657,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 EventName = currentEvent.EventName,
                 EventSequence = currentEvent.EventSequence,
                 TotalVoters = getBooth.TotalVoters,
-                VotesPolled = lastVotesPolled.VotesPolled,
-                VotesPolledRecivedTime = lastVotesPolled.VotesPolledRecivedTime
+                VotesPolled = lastVotesPolled?.VotesPolled ?? 0,
+                VotesPolledRecivedTime = lastVotesPolled?.VotesPolledRecivedTime ?? DateTime.Now
 
             };
             if (getLastSlot.IsLastSlot == true && getLastSlot.LockTime.HasValue)
