@@ -74,7 +74,7 @@ namespace EAMS_ACore.Models
         public bool IsAssignedARO { get; set; }
         public string? ROAssignedBy { get; set; }
         public string? AROAssignedBy { get; set; }
-        public string AssginedType { get; set; }
+        public string? AssginedType { get; set; }//For Mapping of RO And ARO. RO is Portal User, ARO is Mobile User.
         public virtual List<BoothMaster> BoothMaster
         {
             get;
