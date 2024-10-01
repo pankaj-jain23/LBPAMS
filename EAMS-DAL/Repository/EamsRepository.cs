@@ -6601,19 +6601,19 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 currentEvent = await _context.EventMaster.AsNoTracking()
                                    .Where(d => d.StateMasterId == getBooth.StateMasterId
                                                          && d.ElectionTypeMasterId == getBooth.ElectionTypeMasterId
-                                                         && d.EventABBR == "VT").Select(d=>new EventMaster
+                                                         && d.EventABBR == "VT").Select(d => new EventMaster
                                                          {
-                                                             EventMasterId=d.EventMasterId,
-                                                             EventName=d.EventName,
-                                                             EventABBR=d.EventABBR,
-                                                             EventSequence=d.EventSequence
-                                                             
+                                                             EventMasterId = d.EventMasterId,
+                                                             EventName = d.EventName,
+                                                             EventABBR = d.EventABBR,
+                                                             EventSequence = d.EventSequence
+
                                                          }).FirstOrDefaultAsync();
 
                 // Add to cache if found
                 if (currentEvent != null)
                 {
-                    await _cacheService.SetDataAsync("GetVTEvent", currentEvent,DateTimeOffset.Now.AddMinutes(10)); // Cache for 30 minutes
+                    await _cacheService.SetDataAsync("GetVTEvent", currentEvent, DateTimeOffset.Now.AddMinutes(10)); // Cache for 30 minutes
                 }
             }
 
@@ -6651,7 +6651,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 VotesPolledRecivedTime = electionInfo.VotingLastUpdate
 
             };
-            var getLastSlot = await GetLastSlot(electionInfo.StateMasterId,  electionInfo.ElectionTypeMasterId);
+            var getLastSlot = await GetLastSlot(electionInfo.StateMasterId, electionInfo.ElectionTypeMasterId);
 
             if (getLastSlot.IsLastSlot == true && getLastSlot.LockTime.HasValue)
             {
@@ -6691,7 +6691,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         private async Task<SlotManagementMaster> GetLastSlot(int stateMasterId, int electionTypeMasterId)
         {
 
-            var lastSlot = _context.SlotManagementMaster.Where(p => p.StateMasterId == stateMasterId 
+            var lastSlot = _context.SlotManagementMaster.Where(p => p.StateMasterId == stateMasterId
             && p.ElectionTypeMasterId == electionTypeMasterId && p.IsLastSlot == true).FirstOrDefault();
 
             if (lastSlot == null)
@@ -15804,12 +15804,27 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         #region KYC Public Details
         public async Task<ServiceResponse> AddKYCDetails(Kyc kyc)
         {
-            _context.Kyc.Add(kyc);
-            _context.SaveChanges();
+            bool existingKyc = await _context.Kyc.AnyAsync(k =>
+    k.StateMasterId == kyc.StateMasterId &&
+    k.DistrictMasterId == kyc.DistrictMasterId &&
+    k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
+    k.AssemblyMasterId == kyc.AssemblyMasterId &&
+    k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
+    k.IsUnOppossed == true
+);
 
+            if (existingKyc)
+            {
+                string candidateType = kyc.GPPanchayatWardsMasterId == 0 ? "Sarpanch" : "Panch";
+                return new ServiceResponse { IsSucceed = false, Message = $"UnOpposed {candidateType} already exists." };
+            }
+
+            _context.Kyc.Add(kyc);
+            await _context.SaveChangesAsync();
 
             return new ServiceResponse { IsSucceed = true, Message = "Successfully added" };
         }
+
         public async Task<ServiceResponse> UpdateKycDetails(Kyc kyc)
         {
             var existingKyc = await _context.Kyc.FirstOrDefaultAsync(k => k.KycMasterId == kyc.KycMasterId);
@@ -17541,12 +17556,12 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                  .Where(d => d.StateMasterId == stateMasterId
                                 && d.DistrictMasterId == districtMasterId
                                 && d.AssemblyMasterId == assemblyMasterId
-                                && d.HierarchyStatus == true 
+                                && d.HierarchyStatus == true
                                 && ((assignedType == "RO" && string.IsNullOrEmpty(d.AssignedToRO)) // Check for RO
                                     || (assignedType == "ARO" && string.IsNullOrEmpty(d.AssignedToARO)))) // Check for ARO
-                               join asem in _context.AssemblyMaster
-                                .Where(a => a.AssemblyStatus == true) // AssemblyMaster status check
-                            on ft.AssemblyMasterId equals asem.AssemblyMasterId
+                            join asem in _context.AssemblyMaster
+                             .Where(a => a.AssemblyStatus == true) // AssemblyMaster status check
+                         on ft.AssemblyMasterId equals asem.AssemblyMasterId
                             join dist in _context.DistrictMaster
                                 .Where(d => d.DistrictStatus == true) // DistrictMaster status check
                             on asem.DistrictMasterId equals dist.DistrictMasterId
@@ -17566,7 +17581,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                 AssemblyCode = asem.AssemblyCode,
                                 FourthLevelHMasterId = ft.FourthLevelHMasterId,
                                 HierarchyName = ft.HierarchyName,
-                                HierarchyCode = ft.HierarchyCode, 
+                                HierarchyCode = ft.HierarchyCode,
                                 IsStatus = ft.HierarchyStatus,
                                 ElectionTypeMasterId = ft.ElectionTypeMasterId,
                                 ElectionTypeName = elec.ElectionType,
@@ -17622,7 +17637,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                    FourthLevelHMasterId = ft.FourthLevelHMasterId,
                                    HierarchyName = ft.HierarchyName,
                                    HierarchyCode = ft.HierarchyCode,
-                                   IsAssigned= assignedType == "RO" ? ft.IsAssignedRO : ft.IsAssignedARO, // Change as needed
+                                   IsAssigned = assignedType == "RO" ? ft.IsAssignedRO : ft.IsAssignedARO, // Change as needed
                                    IsStatus = ft.HierarchyStatus,
                                    ElectionTypeMasterId = ft.ElectionTypeMasterId,
                                    ElectionTypeName = elec.ElectionType,
@@ -17640,9 +17655,9 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                             && d.DistrictMasterId == districtMasterId
                             && d.AssemblyMasterId == assemblyMasterId
                             && d.HierarchyStatus == true
-                            &&d.AssignedToRO == roId) // Filter FourthLevelH by status
+                            && d.AssignedToRO == roId) // Filter FourthLevelH by status
                 .AsQueryable(); // Convert to IQueryable for further filtering
- 
+
             // Continue with joins and selection
             var combinedList = from ft in boothList
                                join asem in _context.AssemblyMaster

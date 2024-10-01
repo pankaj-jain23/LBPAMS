@@ -11,6 +11,7 @@ using EAMS_BLL.Services;
 using LBPAMS.ViewModels.PublicModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.Design;
 
 namespace EAMS.Controllers
 {
@@ -33,6 +34,8 @@ namespace EAMS.Controllers
         [HttpPost("AddKYCDetails")]
         public async Task<IActionResult> AddKyc([FromForm] KycViewModel kycViewModel)
         {
+
+
             if (kycViewModel.NominationPdf == null || kycViewModel.NominationPdf.Length == 0)
             {
                 return BadRequest("PDF file is missing.");
@@ -168,7 +171,6 @@ namespace EAMS.Controllers
                 return BadRequest("Failed to update KYC data.");
             }
         }
-
         [HttpGet("GetKYCDetailByAssemblyId")]
         public async Task<IActionResult> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
