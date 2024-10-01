@@ -5740,52 +5740,47 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
              d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
              d.BoothMasterId == updateEventActivity.BoothMasterId
          );
-            if (result is not null)
+
+            // Update the existing ElectionInfoMaster record
+            result.EventMasterId = updateEventActivity.EventMasterId;
+            result.EventSequence = updateEventActivity.EventSequence;
+            result.EventABBR = updateEventActivity.EventABBR;
+            result.ElectionInfoStatus = updateEventActivity.EventStatus;
+            result.EventStatus = false;
+            if (getLatestSlot != null && getLatestSlot.IsLastSlot == true)
             {
-                // Update the existing ElectionInfoMaster record
-                result.EventMasterId = updateEventActivity.EventMasterId;
-                result.EventSequence = updateEventActivity.EventSequence;
-                result.EventABBR = updateEventActivity.EventABBR;
-                result.ElectionInfoStatus = updateEventActivity.EventStatus;
-                result.EventStatus = false;
-                if (getLatestSlot != null && getLatestSlot.IsLastSlot == true)
-                {
-                    result.IsVoterTurnOut = true;
-                    result.EventStatus = true;
-
-                }
+                result.IsVoterTurnOut = true;
+                result.EventStatus = true;
                 result.VotingTurnOutLastUpdate = BharatDateTime();
-                result.VotingLastUpdate = BharatDateTime();
-                result.FinalVote = updateEventActivity.VotesPolled;
-                result.EventName = updateEventActivity.EventName;
-                // Check if a PollDetail already exists within the current Slot's EndTime and LockTime
 
-
-
-
-
-                PollDetail newPollDetail = new PollDetail()
-                {
-                    StateMasterId = updateEventActivity.StateMasterId,
-                    DistrictMasterId = updateEventActivity.DistrictMasterId,
-                    AssemblyMasterId = updateEventActivity.AssemblyMasterId,
-                    BoothMasterId = updateEventActivity.BoothMasterId,
-                    ElectionTypeMasterId = updateEventActivity.ElectionTypeMasterId,
-                    EventMasterId = updateEventActivity.EventMasterId,
-                    EventSequence = updateEventActivity.EventSequence,
-                    EventABBR = updateEventActivity.EventABBR,
-                    VotesPolledRecivedTime = BharatDateTime(),
-                    VotesPolled = updateEventActivity.VotesPolled,
-                    EventName = updateEventActivity.EventName,
-                    SlotManagementId = getLatestSlot.SlotManagementId,
-                };
-
-                _context.PollDetails.Add(newPollDetail);
-
-
-                // Update ElectionInfoMaster in the context
-                _context.ElectionInfoMaster.Update(result);
             }
+            result.VotingLastUpdate = BharatDateTime();
+            result.FinalVote = updateEventActivity.VotesPolled;
+            result.EventName = updateEventActivity.EventName;
+            // Check if a PollDetail already exists within the current Slot's EndTime and LockTime
+
+            PollDetail newPollDetail = new PollDetail()
+            {
+                StateMasterId = updateEventActivity.StateMasterId,
+                DistrictMasterId = updateEventActivity.DistrictMasterId,
+                AssemblyMasterId = updateEventActivity.AssemblyMasterId,
+                BoothMasterId = updateEventActivity.BoothMasterId,
+                ElectionTypeMasterId = updateEventActivity.ElectionTypeMasterId,
+                EventMasterId = updateEventActivity.EventMasterId,
+                EventSequence = updateEventActivity.EventSequence,
+                EventABBR = updateEventActivity.EventABBR,
+                VotesPolledRecivedTime = BharatDateTime(),
+                VotesPolled = updateEventActivity.VotesPolled,
+                EventName = updateEventActivity.EventName,
+                SlotManagementId = getLatestSlot.SlotManagementId,
+            };
+
+            _context.PollDetails.Add(newPollDetail);
+
+
+            // Update ElectionInfoMaster in the context
+            _context.ElectionInfoMaster.Update(result);
+
 
             // Save changes to the database
             await _context.SaveChangesAsync();
@@ -6636,6 +6631,21 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             // Step 4: Get voter slot availability
             var getVoterSlotAvailable = await GetVoterSlotAvailable(getBooth.StateMasterId, getBooth.ElectionTypeMasterId);
+            var getLastSlot = await GetLastSlot(electionInfo.StateMasterId, electionInfo.ElectionTypeMasterId);
+            var lastVotesPolled = await _context.PollDetails
+                                          .Where(d => d.StateMasterId == electionInfo.StateMasterId &&
+                                                      d.AssemblyMasterId == electionInfo.AssemblyMasterId &&
+                                                      d.DistrictMasterId == electionInfo.DistrictMasterId &&
+                                                      d.ElectionTypeMasterId == electionInfo.ElectionTypeMasterId &&
+                                                      d.BoothMasterId == electionInfo.BoothMasterId)
+                                          .OrderByDescending(d => d.VotesPolledRecivedTime)
+                                          .Select(d => new
+                                          {
+                                              d.VotesPolledRecivedTime,
+                                              d.VotesPolled
+                                          })
+                                          .FirstOrDefaultAsync();
+
             // Step 5: Populate ViewModel and return
             VoterTurnOutPolledDetailViewModel voterTurnOutPolledDetailViewModel = new VoterTurnOutPolledDetailViewModel
             {
@@ -6647,12 +6657,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 EventName = currentEvent.EventName,
                 EventSequence = currentEvent.EventSequence,
                 TotalVoters = getBooth.TotalVoters,
-                VotesPolled = electionInfo.FinalVote,
-                VotesPolledRecivedTime = electionInfo.VotingLastUpdate
+                VotesPolled = lastVotesPolled.VotesPolled,
+                VotesPolledRecivedTime = lastVotesPolled.VotesPolledRecivedTime
 
             };
-            var getLastSlot = await GetLastSlot(electionInfo.StateMasterId, electionInfo.ElectionTypeMasterId);
-
             if (getLastSlot.IsLastSlot == true && getLastSlot.LockTime.HasValue)
             {
                 // Get the current time in TimeOnly format
@@ -6666,6 +6674,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     voterTurnOutPolledDetailViewModel.IsSlotAvailable = false;
                     voterTurnOutPolledDetailViewModel.Message = "Kindly Proceed for Voter In Queue ";
                     electionInfo.IsVoterTurnOut = true;
+                    electionInfo.VotingTurnOutLastUpdate = BharatDateTime();
                     _context.ElectionInfoMaster.Update(electionInfo);
                     _context.SaveChanges();
                     return voterTurnOutPolledDetailViewModel;
@@ -15943,8 +15952,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                           where
                                 k.StateMasterId == stateMasterId &&
                                 k.DistrictMasterId == districtMasterId &&
-                                k.AssemblyMasterId == assemblyMasterId&&
-                                fl.AssignedToRO== userId
+                                k.AssemblyMasterId == assemblyMasterId &&
+                                fl.AssignedToRO == userId
 
                           select new KycList
                           {
@@ -17214,7 +17223,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return gpVoterList;
         }
-        public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId,string userId)
+        public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, string userId)
         {
             var baseUrl = "https://lbpams.punjab.gov.in/lbpamsdoc/";
 
