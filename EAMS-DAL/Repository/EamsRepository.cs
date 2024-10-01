@@ -15813,20 +15813,35 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         #region KYC Public Details
         public async Task<ServiceResponse> AddKYCDetails(Kyc kyc)
         {
-            bool existingKyc = await _context.Kyc.AnyAsync(k =>
-    k.StateMasterId == kyc.StateMasterId &&
-    k.DistrictMasterId == kyc.DistrictMasterId &&
-    k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
-    k.AssemblyMasterId == kyc.AssemblyMasterId &&
-    k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
-    k.IsUnOppossed == true &&
-    (k.GPPanchayatWardsMasterId == 0 || k.GPPanchayatWardsMasterId != 0)
-);
+            // Check if an unopposed Sarpanch exists (GPPanchayatWardsMasterId == 0)
+            bool existingSarpanch = await _context.Kyc.AnyAsync(k =>
+                k.StateMasterId == kyc.StateMasterId &&
+                k.DistrictMasterId == kyc.DistrictMasterId &&
+                k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
+                k.AssemblyMasterId == kyc.AssemblyMasterId &&
+                k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
+                k.IsUnOppossed == true &&
+                k.GPPanchayatWardsMasterId == 0
+            );
 
-            if (existingKyc)
+            // Check if an unopposed Panch exists (GPPanchayatWardsMasterId != 0)
+            bool existingPanch = await _context.Kyc.AnyAsync(k =>
+                k.StateMasterId == kyc.StateMasterId &&
+                k.DistrictMasterId == kyc.DistrictMasterId &&
+                k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
+                k.AssemblyMasterId == kyc.AssemblyMasterId &&
+                k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
+                k.IsUnOppossed == true &&
+                k.GPPanchayatWardsMasterId == kyc.GPPanchayatWardsMasterId
+            );
+
+            if (existingSarpanch && kyc.GPPanchayatWardsMasterId == 0)
             {
-                string candidateType = kyc.GPPanchayatWardsMasterId == 0 ? "Sarpanch" : "Panch";
-                return new ServiceResponse { IsSucceed = false, Message = $"UnOpposed {candidateType} already exists." };
+                return new ServiceResponse { IsSucceed = false, Message = "UnOpposed Sarpanch already exists." };
+            }
+            if (existingPanch)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "UnOpposed Panch already exists." };
             }
 
 
@@ -15846,22 +15861,39 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 return new ServiceResponse { IsSucceed = false, Message = "KYC not found." };
             }
 
-            // Check if an unopposed KYC exists with the same parameters
-            bool isUnopposedExists = await _context.Kyc.AnyAsync(k =>
+            // Check if an unopposed Sarpanch exists (GPPanchayatWardsMasterId == 0)
+            bool existingSarpanch = await _context.Kyc.AnyAsync(k =>
                 k.StateMasterId == kyc.StateMasterId &&
                 k.DistrictMasterId == kyc.DistrictMasterId &&
                 k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
                 k.AssemblyMasterId == kyc.AssemblyMasterId &&
                 k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
                 k.IsUnOppossed == true &&
-                (k.GPPanchayatWardsMasterId == 0 || k.GPPanchayatWardsMasterId != 0) &&
+                k.GPPanchayatWardsMasterId == kyc.GPPanchayatWardsMasterId &&
                 k.KycMasterId != kyc.KycMasterId // Ensure we are not checking the current record
             );
 
-            if (isUnopposedExists)
+            // Check if an unopposed Panch exists (GPPanchayatWardsMasterId != 0)
+            bool existingPanch = await _context.Kyc.AnyAsync(k =>
+                k.StateMasterId == kyc.StateMasterId &&
+                k.DistrictMasterId == kyc.DistrictMasterId &&
+                k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
+                k.AssemblyMasterId == kyc.AssemblyMasterId &&
+                k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
+                k.IsUnOppossed == true &&
+                k.GPPanchayatWardsMasterId == kyc.GPPanchayatWardsMasterId &&
+                k.KycMasterId != kyc.KycMasterId // Ensure we are not checking the current record
+            );
+
+            // If either an unopposed Sarpanch or Panch exists, return an error message
+            if (existingSarpanch && kyc.GPPanchayatWardsMasterId == 0)
             {
-                string candidateType = kyc.GPPanchayatWardsMasterId == 0 ? "Sarpanch" : "Panch";
-                return new ServiceResponse { IsSucceed = false, Message = $"Unopposed {candidateType} already exists." };
+                return new ServiceResponse { IsSucceed = false, Message = "UnOpposed Sarpanch already exists." };
+            }
+
+            if (existingPanch)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "UnOpposed Panch already exists." };
             }
 
             // Update properties of the existing Kyc entity
