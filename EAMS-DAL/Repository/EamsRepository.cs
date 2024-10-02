@@ -2314,70 +2314,78 @@ namespace EAMS_DAL.Repository
 
             return boothListResult;
         }
-
+      
         public async Task<List<CombinedMaster>> GetBoothListForResultDeclaration(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
         {
-            // Step 1: Get booth list with joins
-            var boothlist = from bt in _context.BoothMaster
-                                .AsNoTracking()
-                                .Where(d => d.StateMasterId == stateMasterId &&
-                                            d.DistrictMasterId == districtMasterId &&
-                                            d.AssemblyMasterId == assemblyMasterId &&
-                                            d.AssignedTo == foId.ToString())
-                            join fourthLevelH in _context.FourthLevelH.AsNoTracking() on bt.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
-                            join asem in _context.AssemblyMaster.AsNoTracking() on bt.AssemblyMasterId equals asem.AssemblyMasterId
-                            join dist in _context.DistrictMaster.AsNoTracking() on asem.DistrictMasterId equals dist.DistrictMasterId
-                            join state in _context.StateMaster.AsNoTracking() on dist.StateMasterId equals state.StateMasterId
-                            select new CombinedMaster
-                            {
-                                StateId = stateMasterId,
-                                StateName = state.StateName,
-                                DistrictId = dist.DistrictMasterId,
-                                DistrictName = dist.DistrictName,
-                                DistrictCode = dist.DistrictCode,
-                                AssemblyId = asem.AssemblyMasterId,
-                                AssemblyName = asem.AssemblyName,
-                                AssemblyCode = asem.AssemblyCode,
-                                FourthLevelHMasterId = fourthLevelH.FourthLevelHMasterId,
-                                FourthLevelHName = fourthLevelH.HierarchyName,
-                                BoothMasterId = bt.BoothMasterId,
-                                BoothName = bt.BoothName,
-                                BoothAuxy = bt.BoothNoAuxy == "0" ? string.Empty : bt.BoothNoAuxy,
-                                IsStatus = bt.BoothStatus,
-                                BoothCode_No = bt.BoothCode_No,
-                                IsAssigned = bt.IsAssigned,
-                                FieldOfficerMasterId = foId,
-                                ElectionTypeMasterId = bt.ElectionTypeMasterId,
-                                IsBoothInterrupted = bt.IsBoothInterrupted,
-                                IsVTInterrupted = bt.IsVTInterrupted
-                            };
+            // Step 1: Get the list of BoothMaster with necessary joins
+            var boothList = await (from bt in _context.BoothMaster.AsNoTracking()
+                                   where bt.StateMasterId == stateMasterId &&
+                                         bt.DistrictMasterId == districtMasterId &&
+                                         bt.AssemblyMasterId == assemblyMasterId &&
+                                         bt.AssignedTo == foId.ToString()
+                                   join fourthLevelH in _context.FourthLevelH.AsNoTracking()
+                                   on bt.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
+                                   join asem in _context.AssemblyMaster.AsNoTracking()
+                                   on bt.AssemblyMasterId equals asem.AssemblyMasterId
+                                   join dist in _context.DistrictMaster.AsNoTracking()
+                                   on asem.DistrictMasterId equals dist.DistrictMasterId
+                                   join state in _context.StateMaster.AsNoTracking()
+                                   on dist.StateMasterId equals state.StateMasterId
+                                   select new CombinedMaster
+                                   {
+                                       StateId = stateMasterId,
+                                       StateName = state.StateName,
+                                       DistrictId = dist.DistrictMasterId,
+                                       DistrictName = dist.DistrictName,
+                                       DistrictCode = dist.DistrictCode,
+                                       AssemblyId = asem.AssemblyMasterId,
+                                       AssemblyName = asem.AssemblyName,
+                                       AssemblyCode = asem.AssemblyCode,
+                                       FourthLevelHMasterId = fourthLevelH.FourthLevelHMasterId,
+                                       FourthLevelHName = fourthLevelH.HierarchyName,
+                                       BoothMasterId = bt.BoothMasterId,
+                                       BoothName = bt.BoothName,
+                                       BoothAuxy = bt.BoothNoAuxy == "0" ? string.Empty : bt.BoothNoAuxy,
+                                       IsStatus = bt.BoothStatus,
+                                       BoothCode_No = bt.BoothCode_No,
+                                       IsAssigned = bt.IsAssigned,
+                                       FieldOfficerMasterId = foId,
+                                       ElectionTypeMasterId = bt.ElectionTypeMasterId,
+                                       IsBoothInterrupted = bt.IsBoothInterrupted,
+                                       IsVTInterrupted = bt.IsVTInterrupted
+                                   }).ToListAsync();
 
-            var boothListResult = await boothlist.ToListAsync();
+            // Step 2: Get unique FourthLevelHMasterId and BoothMasterId pairs
+            var fourthLevelHMasterIds = boothList.Select(b => b.FourthLevelHMasterId).Distinct().ToList();
+            var boothMasterIds = boothList.Select(b => b.BoothMasterId).Distinct().ToList();
 
-            // Step 2: Check for records in ResultDeclaration where IsResultDeclared is true
-            var resultDeclarations = await _context.ResultDeclaration
-                .AsNoTracking()
-                .Where(rd => rd.StateMasterId == stateMasterId &&
-                             rd.DistrictMasterId == districtMasterId &&
-                             rd.AssemblyMasterId == assemblyMasterId &&
-                             rd.FourthLevelHMasterId == rd.FourthLevelHMasterId &&
-                             rd.IsResultDeclared == true)
-                .ToListAsync();
+            // Step 3: Fetch ResultDeclaration records that match both FourthLevelHMasterId and BoothMasterId
+            var matchingResultDeclarations = await (from rd in _context.ResultDeclaration.AsNoTracking()
+                                                    where rd.StateMasterId == stateMasterId &&
+                                                          rd.DistrictMasterId == districtMasterId &&
+                                                          rd.AssemblyMasterId == assemblyMasterId &&
+                                                          fourthLevelHMasterIds.Contains(rd.FourthLevelHMasterId) &&
+                                                          boothMasterIds.Contains((int)rd.BoothMasterId)
+                                                    select rd).ToListAsync();
 
-            // Step 3: If records exist in ResultDeclaration, filter based on BoothMasterId; otherwise, return all booths
-            if (resultDeclarations.Any())
-            {
-                // Get the list of BoothMasterId from ResultDeclaration
-                var declaredBoothIds = resultDeclarations.Select(rd => rd.BoothMasterId).ToList();
+            // Step 4: Get all FourthLevelHMasterId from ResultDeclaration (regardless of BoothMasterId)
+            var resultDeclarationFourthLevelHIds = matchingResultDeclarations
+                .Select(rd => rd.FourthLevelHMasterId)
+                .Distinct()
+                .ToList();
 
-                // Filter the booth list to include only those present in ResultDeclaration
-                boothListResult = boothListResult
-                    .Where(b => declaredBoothIds.Contains(b.BoothMasterId))
-                    .ToList();
-            }
+            // Step 5: Remove booths where FourthLevelHMasterId is in ResultDeclaration, 
+            // but only if their BoothMasterId does NOT match any in ResultDeclaration
+            boothList.RemoveAll(bl =>
+                resultDeclarationFourthLevelHIds.Contains((int)bl.FourthLevelHMasterId) &&
+                !matchingResultDeclarations.Any(rd => rd.FourthLevelHMasterId == bl.FourthLevelHMasterId &&
+                                                      rd.BoothMasterId == bl.BoothMasterId)
+            );
 
-            return boothListResult;
+            // Return the filtered list of booths
+            return boothList;
         }
+
 
         public async Task<FieldOfficerMasterList> GetFieldOfficerById(int fieldOfficerMasterId)
         {

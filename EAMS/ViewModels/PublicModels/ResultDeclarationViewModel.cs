@@ -9,6 +9,12 @@
     {
         public int KycMasterId { get; set; } 
         public int? BoothMasterId { get; set; }
+        public int FourthLevelHMasterId // GPSarpanch // MCorp //MC //NP
+
+        {
+            get;
+            set;
+        }
         public int? GPPanchayatWardsMasterId { get; set; } 
         public int? VoteMargin
         {
