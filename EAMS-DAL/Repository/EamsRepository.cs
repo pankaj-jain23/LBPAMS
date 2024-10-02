@@ -2006,7 +2006,7 @@ namespace EAMS_DAL.Repository
 
         public async Task<Response> AddFieldOfficer(FieldOfficerMaster fieldOfficerViewModel)
         {
-           
+
             // Check if FieldOfficer with the same mobile number, election type, and state already exists
             var existingOfficerMobile = await _context.FieldOfficerMaster
                                                 .FirstOrDefaultAsync(d => d.FieldOfficerMobile == fieldOfficerViewModel.FieldOfficerMobile
@@ -2261,7 +2261,7 @@ namespace EAMS_DAL.Repository
             if (getFirstEvent is null)
             {
                 getFirstEvent = await GetFirstSequenceEventById(stateMasterId, boothListResult.FirstOrDefault()?.ElectionTypeMasterId ?? 0);
-                await _cacheService.SetDataAsync("GetFirstEvent", getFirstEvent, BharatTimeDynamic(0, 0, 0, 5, 0));
+                await _cacheService.SetDataAsync("GetFirstEvent", getFirstEvent, BharatTimeDynamic(0, 0, 0, 1, 0));
             }
 
             // Step 4: Update each booth's event data
@@ -6730,7 +6730,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                               d.VotesPolled
                                           })
                                           .FirstOrDefaultAsync();
-            
+
             // Step 5: Populate ViewModel and return
             VoterTurnOutPolledDetailViewModel voterTurnOutPolledDetailViewModel = new VoterTurnOutPolledDetailViewModel
             {
@@ -6753,14 +6753,29 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
                 // Compare LockTime with the current time
                 bool checkTimeExceeded = getLastSlot.LockTime.Value < currentTime;
-                UpdateEventActivity updateEventActivity = new UpdateEventActivity();
+                UpdateEventActivity updateEventActivity = new UpdateEventActivity()
+                {
+                    StateMasterId = electionInfo.StateMasterId,
+                    DistrictMasterId = electionInfo.DistrictMasterId,
+                    AssemblyMasterId = electionInfo.AssemblyMasterId,
+                    ElectionTypeMasterId = electionInfo.ElectionTypeMasterId,
+                    EventMasterId = electionInfo.EventMasterId,
+                    EventSequence = electionInfo.EventSequence,
+                    EventName = electionInfo.EventName,
+                    EventABBR = electionInfo.EventABBR,
+                    EventStatus = electionInfo.EventStatus
+
+                };
 
                 var getNextEvent = await GetNextEvent(updateEventActivity);
                 if (checkTimeExceeded)
                 {
                     voterTurnOutPolledDetailViewModel.IsSlotAvailable = false;
                     voterTurnOutPolledDetailViewModel.Message = "Kindly Proceed for Voter In Queue ";
-                    
+                    voterTurnOutPolledDetailViewModel.EventMasterId = getNextEvent.EventMasterId;
+                    voterTurnOutPolledDetailViewModel.EventSequence = getNextEvent.EventSequence;
+                    voterTurnOutPolledDetailViewModel.EventName = getNextEvent.EventName;
+                    voterTurnOutPolledDetailViewModel.EventABBR = getNextEvent.EventABBR;
                     electionInfo.IsVoterTurnOut = true;
                     electionInfo.VotingTurnOutLastUpdate = BharatDateTime();
                     _context.ElectionInfoMaster.Update(electionInfo);
@@ -8867,13 +8882,16 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 .Where(d => d.BoothMasterId == Convert.ToInt32(boothMasterId))
                 .OrderByDescending(p => p.PollInterruptionId)
                 .FirstOrDefaultAsync();
+          
 
             // Handle case where no record is found
             if (pollInterruptionRecord == null)
             {
-                return null;
+                return new PollInterruption()
+                {
+                    IsStatus = false
+                };
             }
-
             return pollInterruptionRecord;
         }
 
@@ -15898,7 +15916,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         #endregion
 
-        
+
         #region KYC Public Details
         public async Task<ServiceResponse> AddKYCDetails(Kyc kyc)
         {

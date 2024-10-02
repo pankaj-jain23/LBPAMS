@@ -8,6 +8,7 @@
     public class ResultDeclarationListViewModel
     {
         public int KycMasterId { get; set; } 
+
         public int? BoothMasterId { get; set; }
         public int FourthLevelHMasterId // GPSarpanch // MCorp //MC //NP
 

@@ -752,7 +752,7 @@ namespace EAMS.Controllers
                 return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
             }
         }
-       
+
         /// <summary this api for portal>
         [HttpGet]
         [Route("GetBoothListByFoId")]
@@ -771,7 +771,21 @@ namespace EAMS.Controllers
             };
             return Ok(data);
         }
-       
+        [HttpGet]
+        [Route("GetBoothEventListByFoId")]
+        public async Task<IActionResult> GetBoothEventListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
+        {
+            var boothList = await _EAMSService.GetBoothListForFo(stateMasterId, districtMasterId, assemblyMasterId, foId);
+
+            var mappedData = _mapper.Map<List<FieldOfficerBoothViewModel>>(boothList);
+            var data = new
+            {
+                count = mappedData.Count,
+                data = mappedData.OrderBy(p => Int32.Parse(p.BoothCode_No)),
+            };
+            return Ok(data);
+        }
+
         /// <summary>
         /// For Poll Interuption Booth List
         /// </summary>
@@ -2867,15 +2881,9 @@ namespace EAMS.Controllers
         [Authorize]
         public async Task<IActionResult> GetPollInterruptionbyId(string boothMasterId)
         {
-            var pollInterruptionData = await _EAMSService.GetPollInterruptionbyId(boothMasterId);
+            var pollInterruptionData = await _EAMSService.GetPollInterruptionbyId(boothMasterId); 
 
-            var data = new
-            {
-                isStatus = pollInterruptionData != null ? true : false, // Explicitly setting true or false
-                pollInterruption = pollInterruptionData
-            };
-
-            return Ok(data);
+            return Ok(pollInterruptionData);
         }
 
 

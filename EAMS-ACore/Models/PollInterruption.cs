@@ -29,8 +29,7 @@ namespace EAMS_ACore.Models
 
         public string? Flag { get; set; }
         public string? Remarks { get; set; }
-
-
+        public bool IsStatus { get; set; }
 
     }
     public class PollInterruptionHistory
