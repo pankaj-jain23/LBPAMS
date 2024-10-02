@@ -2315,6 +2315,70 @@ namespace EAMS_DAL.Repository
             return boothListResult;
         }
 
+        public async Task<List<CombinedMaster>> GetBoothListForResultDeclaration(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
+        {
+            // Step 1: Get booth list with joins
+            var boothlist = from bt in _context.BoothMaster
+                                .AsNoTracking()
+                                .Where(d => d.StateMasterId == stateMasterId &&
+                                            d.DistrictMasterId == districtMasterId &&
+                                            d.AssemblyMasterId == assemblyMasterId &&
+                                            d.AssignedTo == foId.ToString())
+                            join fourthLevelH in _context.FourthLevelH.AsNoTracking() on bt.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
+                            join asem in _context.AssemblyMaster.AsNoTracking() on bt.AssemblyMasterId equals asem.AssemblyMasterId
+                            join dist in _context.DistrictMaster.AsNoTracking() on asem.DistrictMasterId equals dist.DistrictMasterId
+                            join state in _context.StateMaster.AsNoTracking() on dist.StateMasterId equals state.StateMasterId
+                            select new CombinedMaster
+                            {
+                                StateId = stateMasterId,
+                                StateName = state.StateName,
+                                DistrictId = dist.DistrictMasterId,
+                                DistrictName = dist.DistrictName,
+                                DistrictCode = dist.DistrictCode,
+                                AssemblyId = asem.AssemblyMasterId,
+                                AssemblyName = asem.AssemblyName,
+                                AssemblyCode = asem.AssemblyCode,
+                                FourthLevelHMasterId = fourthLevelH.FourthLevelHMasterId,
+                                FourthLevelHName = fourthLevelH.HierarchyName,
+                                BoothMasterId = bt.BoothMasterId,
+                                BoothName = bt.BoothName,
+                                BoothAuxy = bt.BoothNoAuxy == "0" ? string.Empty : bt.BoothNoAuxy,
+                                IsStatus = bt.BoothStatus,
+                                BoothCode_No = bt.BoothCode_No,
+                                IsAssigned = bt.IsAssigned,
+                                FieldOfficerMasterId = foId,
+                                ElectionTypeMasterId = bt.ElectionTypeMasterId,
+                                IsBoothInterrupted = bt.IsBoothInterrupted,
+                                IsVTInterrupted = bt.IsVTInterrupted
+                            };
+
+            var boothListResult = await boothlist.ToListAsync();
+
+            // Step 2: Check for records in ResultDeclaration where IsResultDeclared is true
+            var resultDeclarations = await _context.ResultDeclaration
+                .AsNoTracking()
+                .Where(rd => rd.StateMasterId == stateMasterId &&
+                             rd.DistrictMasterId == districtMasterId &&
+                             rd.AssemblyMasterId == assemblyMasterId &&
+                             rd.FourthLevelHMasterId == rd.FourthLevelHMasterId &&
+                             rd.IsResultDeclared == true)
+                .ToListAsync();
+
+            // Step 3: If records exist in ResultDeclaration, filter based on BoothMasterId; otherwise, return all booths
+            if (resultDeclarations.Any())
+            {
+                // Get the list of BoothMasterId from ResultDeclaration
+                var declaredBoothIds = resultDeclarations.Select(rd => rd.BoothMasterId).ToList();
+
+                // Filter the booth list to include only those present in ResultDeclaration
+                boothListResult = boothListResult
+                    .Where(b => declaredBoothIds.Contains(b.BoothMasterId))
+                    .ToList();
+            }
+
+            return boothListResult;
+        }
+
         public async Task<FieldOfficerMasterList> GetFieldOfficerById(int fieldOfficerMasterId)
         {
             var foRecord = await _context.FieldOfficerMaster
@@ -4289,7 +4353,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         public async Task<List<EventMaster>> GetEventListById(int stateMasterId, int electionTypeMasterId)
         {
             return await _context.EventMaster.Where(d => d.StateMasterId == stateMasterId
-            && d.ElectionTypeMasterId == electionTypeMasterId && d.Status == true).OrderBy(d => d.EventSequence)
+            && d.ElectionTypeMasterId == electionTypeMasterId).OrderBy(d => d.EventSequence)
             .ToListAsync();
 
 
@@ -5376,7 +5440,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             // If cache is empty, retrieve from repository and set it in cache
             if (eventList == null || !eventList.Any())
             {
-                eventList = await GetEventListById(updateEventActivity.StateMasterId, updateEventActivity.ElectionTypeMasterId);
+                eventList = await GetEventListForBooth(updateEventActivity.StateMasterId, updateEventActivity.ElectionTypeMasterId);
                 await _cacheService.SetDataAsync("GetNextEventList", eventList, DateTimeOffset.Now.AddMinutes(10)); // Cache for 5 minutes
             }
 
@@ -5433,7 +5497,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             // If cache is empty, retrieve from repository and set it in cache
             if (eventList == null || !eventList.Any())
             {
-                eventList = await GetEventListById(updateEventActivity.StateMasterId, updateEventActivity.ElectionTypeMasterId);
+                eventList = await GetEventListForBooth(updateEventActivity.StateMasterId, updateEventActivity.ElectionTypeMasterId);
                 await _cacheService.SetDataAsync("GetEventList", eventList, DateTimeOffset.Now.AddMinutes(5)); // Cache for 5 minutes
             }
 
@@ -15826,6 +15890,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         #endregion
 
+        
         #region KYC Public Details
         public async Task<ServiceResponse> AddKYCDetails(Kyc kyc)
         {

@@ -162,13 +162,25 @@ namespace EAMS.Controllers
             // Call your service method to update KYC details
             var result = await _eamsService.UpdateKycDetails(mappedData);
 
-            if (result.IsSucceed == true)
+            if (result.IsSucceed)
             {
-                return Ok(new { Message = "KYC data updated successfully" });
+                return Ok(new { Message = "KYC data updated successfully." });
             }
             else
             {
-                return BadRequest("Failed to update KYC data.");
+                // Handle specific messages from the service
+                if (result.Message.Contains("UnOpposed Sarpanch already exists"))
+                {
+                    return BadRequest("UnOpposed Sarpanch already exists.");
+                }
+                else if (result.Message.Contains("UnOpposed Panch already exists"))
+                {
+                    return BadRequest("UnOpposed Panch already exists.");
+                }
+                else
+                {
+                    return BadRequest("Failed to update KYC data.");
+                }
             }
         }
         [HttpGet("GetKYCDetailByAssemblyId")]
@@ -673,7 +685,7 @@ namespace EAMS.Controllers
             int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
             int districtMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("DistrictMasterId"));
             int assemblyMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AssemblyMasterId"));
-            int fourthLevelMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("FourthLevelHMasterId"));
+            //int fourthLevelMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("FourthLevelHMasterId"));
             int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId")); 
             // Map ViewModel to Entity
             var mappedData = _mapper.Map<List<ResultDeclaration>>(resultDeclarationViewModel.resultDeclarationLists);
@@ -684,7 +696,7 @@ namespace EAMS.Controllers
                 resultDeclaration.StateMasterId = stateMasterId;
                 resultDeclaration.DistrictMasterId = districtMasterId;
                 resultDeclaration.AssemblyMasterId = assemblyMasterId;
-                resultDeclaration.FourthLevelHMasterId = fourthLevelMasterId;
+                //resultDeclaration.FourthLevelHMasterId = fourthLevelMasterId;
                 resultDeclaration.ElectionTypeMasterId = electionTypeMasterId;
             });
 

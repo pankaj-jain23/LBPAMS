@@ -815,7 +815,26 @@ namespace EAMS.Controllers
             };
             return Ok(data);
         }
+        [HttpGet]
+        [Route("GetBoothListForResultDeclaration")]
+        [Authorize]
+        public async Task<IActionResult> GetBoothListForResultDeclaration()
+        {
+            int foId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "FieldOfficerMasterId")?.Value);
+            int stateMasterId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value);
+            int districtMasterId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value);
+            int assemblyMasterId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId")?.Value);
 
+            var boothList = await _EAMSService.GetBoothListForResultDeclaration(stateMasterId, districtMasterId, assemblyMasterId, foId);
+
+            var mappedData = _mapper.Map<List<FieldOfficerBoothViewModel>>(boothList);
+            var data = new
+            {
+                count = mappedData.Count,
+                data = mappedData.OrderBy(p => Int32.Parse(p.BoothCode_No)),
+            };
+            return Ok(data);
+        }
 
         [HttpGet]
         [Route("GetFieldOfficerById")]

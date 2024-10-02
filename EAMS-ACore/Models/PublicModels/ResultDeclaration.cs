@@ -59,6 +59,8 @@ namespace EAMS_ACore.Models.PublicModels
             set;
         }
         public bool IsWinner { get; set; }
+        public bool IsResultDeclared { get; set; }
+        public bool IsRecounting { get; set; }
         public DateTime? ResultDecCreatedAt { get; set; }
         public DateTime? ResultDecUpdatedAt { get; set; }
         public DateTime? ResultDecDeletedAt { get; set; }

@@ -64,6 +64,7 @@ namespace EAMS_ACore.Interfaces
         /// </summary>
         ///   /// <summary this api for Mobile App>
         Task<List<CombinedMaster>> GetBoothListForFo(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId);
+        Task<List<CombinedMaster>> GetBoothListForResultDeclaration(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId);
         /// </summary>
         Task<FieldOfficerMasterList> GetFieldOfficerById(int FieldOfficerMasterId);
         #endregion

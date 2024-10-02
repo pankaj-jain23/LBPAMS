@@ -236,6 +236,11 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetBoothListForFo(stateMasterId, districtMasterId, assemblyMasterId, foId);
         }
+
+        public async Task<List<CombinedMaster>> GetBoothListForResultDeclaration(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
+        {
+            return await _eamsRepository.GetBoothListForResultDeclaration(stateMasterId, districtMasterId, assemblyMasterId, foId);
+        }
         /// </summary>
         public async Task<FieldOfficerMasterList> GetFieldOfficerById(int FieldOfficerMasterId)
         {
