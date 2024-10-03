@@ -2593,7 +2593,11 @@ namespace EAMS_BLL.Services
         public async Task<List<KycList>> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
             return await _eamsRepository.GetKYCDetailByAssemblyId(electionType, stateMasterId, districtMasterId, assemblyMasterId);
-        } 
+        }
+        public async Task<List<KycList>> GetKYCDetailByFourthAndWardId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelMasterId, int? wardMasterId)
+        {
+            return await _eamsRepository.GetKYCDetailByFourthAndWardId(electionType, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId,wardMasterId);
+        }
         public async Task<List<KycList>> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId, string userId)
         {
             return await _eamsRepository.GetKYCDetailByAssemblyId(electionType, stateMasterId, districtMasterId, assemblyMasterId, userId);

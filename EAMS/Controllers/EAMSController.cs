@@ -2213,6 +2213,7 @@ namespace EAMS.Controllers
                 return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
             }
         }
+
         [HttpGet("GetPanchayatWardforResultDeclaration")]
         [Authorize]
         public async Task<IActionResult> GetPanchayatWardforResultDeclaration(int fourthLevelHMasterId)
@@ -2881,7 +2882,7 @@ namespace EAMS.Controllers
         [Authorize]
         public async Task<IActionResult> GetPollInterruptionbyId(string boothMasterId)
         {
-            var pollInterruptionData = await _EAMSService.GetPollInterruptionbyId(boothMasterId); 
+            var pollInterruptionData = await _EAMSService.GetPollInterruptionbyId(boothMasterId);
 
             return Ok(pollInterruptionData);
         }

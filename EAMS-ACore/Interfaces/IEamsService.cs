@@ -287,6 +287,7 @@ namespace EAMS_ACore.Interfaces
         Task<List<Kyc>> GetKYCDetails();
         Task<KycList> GetKycById(int kycMasterId);
         Task<List<KycList>> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId);
+        Task<List<KycList>> GetKYCDetailByFourthAndWardId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelMasterId, int? wardMasterId);
         Task<List<KycList>> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId, string userId);
         Task<ServiceResponse> DeleteKycById(int kycMasterId);
         

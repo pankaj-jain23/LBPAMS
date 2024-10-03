@@ -214,6 +214,31 @@ namespace EAMS.Controllers
 
             return Ok(data);
         }
+       
+
+        [HttpGet("GetKYCDetailByFourthAndWardId")]
+        public async Task<IActionResult> GetKYCDetailByFourthAndWardId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId ,int fourthLevelMasterId,int? wardMasterId)
+        {
+          
+
+            // Determine whether to call the method with user ID or not
+            var roresult =   await _eamsService.GetKYCDetailByFourthAndWardId(electionType, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId, wardMasterId);
+
+            if (roresult == null)
+            {
+                return NotFound();
+            }
+
+            // Prepare the response data
+            var data = new
+            {
+                count = roresult.Count,
+                Sarpacnh = roresult.Where(k => k.GPPanchayatWardsMasterId == 0).ToList(),
+                Panch = roresult.Where(k => k.GPPanchayatWardsMasterId != 0).ToList()
+            };
+
+            return Ok(data);
+        }
 
 
         [HttpGet("GetKycById")]
@@ -767,6 +792,7 @@ namespace EAMS.Controllers
                 return NotFound();
             }
         }
+
         [HttpPut("UpdateResultDeclarationDetails")]
         [Authorize]
         public async Task<IActionResult> UpdateResultDeclarationDetails(UpdateResultDeclarationViewModel updateResultDeclarationViewModel)

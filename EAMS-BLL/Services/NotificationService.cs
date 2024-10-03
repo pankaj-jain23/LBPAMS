@@ -246,9 +246,7 @@ namespace EAMS_BLL.Services
                 client.Timeout = TimeSpan.FromMinutes(5);
                 try
                 {
-                    HttpResponseMessage response = await client.GetAsync(requestUrl);
-                    _logger.LogInformation($"SMS URL  {requestUrl}");
-                    _logger.LogInformation($"Calling SMS {response.Content.ToString()}");
+                    HttpResponseMessage response = await client.GetAsync(requestUrl); 
                     response.EnsureSuccessStatusCode();
                     return await response.Content.ReadAsStringAsync();
                 }
