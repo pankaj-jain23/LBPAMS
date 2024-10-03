@@ -711,14 +711,14 @@ namespace EAMS.Controllers
 
         [HttpGet("GetSarpanchListById")]
         [Authorize]
-        public async Task<IActionResult> GetSarpanchListById()
+        public async Task<IActionResult> GetSarpanchListById(int fourthLevelHMasterId)
         {
             var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
 
             int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
             int districtMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("DistrictMasterId"));
             int assemblyMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AssemblyMasterId"));
-            int fourthLevelHMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("FourthLevelHMasterId"));
+            //int fourthLevelHMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("FourthLevelHMasterId"));
             int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
             var result = await _eamsService.GetSarpanchListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId);
 
@@ -740,14 +740,14 @@ namespace EAMS.Controllers
 
         [HttpGet("GetPanchListById")]
         [Authorize]
-        public async Task<IActionResult> GetPanchListById(int gPPanchayatWardsMasterId)
+        public async Task<IActionResult> GetPanchListById(int fourthLevelHMasterId,int gPPanchayatWardsMasterId)
         {
             var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
 
             int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
             int districtMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("DistrictMasterId"));
             int assemblyMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AssemblyMasterId"));
-            int fourthLevelHMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("FourthLevelHMasterId"));
+            //int fourthLevelHMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("FourthLevelHMasterId"));
             int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
 
             var result = await _eamsService.GetPanchListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId, gPPanchayatWardsMasterId);

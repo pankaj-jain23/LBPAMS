@@ -2213,20 +2213,20 @@ namespace EAMS.Controllers
                 return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
             }
         }
-        [HttpGet("GetPanchayatWardforAROResult")]
+        [HttpGet("GetPanchayatWardforResultDeclaration")]
         [Authorize]
-        public async Task<IActionResult> GetPanchayatWardforAROResult()
+        public async Task<IActionResult> GetPanchayatWardforResultDeclaration(int fourthLevelHMasterId)
         {
             var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
             int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
             int districtMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("DistrictMasterId"));
             int assemblyMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AssemblyMasterId"));
-            int fourthLevelHMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("FourthLevelHMasterId"));
+            //int fourthLevelHMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("FourthLevelHMasterId"));
             int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
 
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && fourthLevelHMasterId != null)
             {
-                var list = await _EAMSService.GetPanchayatWardforAROResult(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);  // Corrected to await the asynchronous method
+                var list = await _EAMSService.GetPanchayatWardforResultDeclaration(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);  // Corrected to await the asynchronous method
 
                 var mappedData = _mapper.Map<List<GPPanchayatWards>, List<ListGPPanchayatWardsViewModel>>(list);
                 if (list != null)

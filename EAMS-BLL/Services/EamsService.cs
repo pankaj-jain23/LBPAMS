@@ -2694,9 +2694,9 @@ namespace EAMS_BLL.Services
 
             return await _eamsRepository.AddGPPanchayatWards(gpPanchayatWards);
         }
-        public async Task<List<GPPanchayatWards>> GetPanchayatWardforAROResult(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        public async Task<List<GPPanchayatWards>> GetPanchayatWardforResultDeclaration(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
-            return await _eamsRepository.GetPanchayatWardforAROResult(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);
+            return await _eamsRepository.GetPanchayatWardforResultDeclaration(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);
         }
         public async Task<Response> UpdateGPPanchayatWards(GPPanchayatWards gpPanchayatWards)
         {

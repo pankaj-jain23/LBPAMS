@@ -367,7 +367,7 @@ namespace EAMS_ACore.IRepository
 
         #region SarpanchWards
         Task<Response> AddGPPanchayatWards(GPPanchayatWards gpPanchayatWards);
-        Task<List<GPPanchayatWards>> GetPanchayatWardforAROResult(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
+        Task<List<GPPanchayatWards>> GetPanchayatWardforResultDeclaration(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
         Task<List<GPPanchayatWards>> GetGPPanchayatWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId);
         Task<Response> UpdateGPPanchayatWards(GPPanchayatWards gpPanchayatWards);
         Task<GPPanchayatWards> GetGPPanchayatWardsById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId);

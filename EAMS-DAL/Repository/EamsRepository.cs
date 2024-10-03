@@ -17008,7 +17008,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
             }
         }
-        public async Task<List<GPPanchayatWards>> GetPanchayatWardforAROResult(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        public async Task<List<GPPanchayatWards>> GetPanchayatWardforResultDeclaration(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
             var getWard = await _context.GPPanchayatWards.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.FourthLevelHMasterId == fourthLevelHMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).ToListAsync();
             if (getWard != null)
