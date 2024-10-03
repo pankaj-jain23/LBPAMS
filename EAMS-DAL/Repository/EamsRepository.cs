@@ -4241,12 +4241,15 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 .Where(e => e.BoothMasterId == boothMasterId)
                 .Select(e => new
                 {
+                    e.StateMasterId,
+                    e.ElectionInfoMasterId,
                     e.FinalVote,
                     e.VotingLastUpdate,
                     e.IsVoterTurnOut
                 })
                 .FirstOrDefaultAsync();
-
+            var isVoterEvent = await _context.EventMaster.Where(d => d.StateMasterId == electionInfoMaster.StateMasterId
+            &&d.ElectionTypeMasterId==electionInfoMaster.ElectionInfoMasterId&&d.EventABBR=="VT").Select(d=>d.Status).FirstOrDefaultAsync();
             // Fetch TotalVoters from BoothMaster
             var boothRecord = await _context.BoothMaster
                 .Where(d => d.BoothMasterId == boothMasterId)
@@ -4268,7 +4271,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 Message = "Voter Queue is not Available"
 
             };
-            if (electionInfoMaster.IsVoterTurnOut == true)
+            if (electionInfoMaster.IsVoterTurnOut == true|| isVoterEvent==false)
             {
                 boothDetailForVoterInQueue.IsVoteEnabled = true;
                 boothDetailForVoterInQueue.Message = "Voter Queue is Available";
@@ -4369,7 +4372,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         private async Task<EventMaster> GetFirstSequenceEventById(int stateMasterId, int electionTypeMasterId)
         {
             return await _context.EventMaster.Where(d => d.StateMasterId == stateMasterId
-                                                         && d.ElectionTypeMasterId == electionTypeMasterId).OrderBy(d => d.EventSequence)
+                                                         && d.ElectionTypeMasterId == electionTypeMasterId && d.Status == true).OrderBy(d => d.EventSequence)
                 .FirstOrDefaultAsync();
 
 
@@ -5490,8 +5493,11 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
             else
             {
-                // No next event, handle accordingly
-                checkEventActivity = null; // or set it up with some default values
+                checkEventActivity.EventMasterId = updateEventActivity.EventMasterId;
+                checkEventActivity.EventABBR = updateEventActivity.EventABBR;
+                checkEventActivity.EventName = currentEvent.EventName;
+                checkEventActivity.EventSequence = updateEventActivity.EventSequence;
+                checkEventActivity.EventStatus = updateEventActivity.EventStatus;
             }
 
             // Return the next event (or null if none found)
@@ -5831,7 +5837,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             result.EventSequence = updateEventActivity.EventSequence;
             result.EventABBR = updateEventActivity.EventABBR;
             result.ElectionInfoStatus = updateEventActivity.EventStatus;
-            result.EventStatus = false;
+            result.EventStatus = updateEventActivity.EventStatus;
             if (getLatestSlot != null && getLatestSlot.IsLastSlot == true)
             {
                 result.IsVoterTurnOut = true;
@@ -5880,6 +5886,34 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         public async Task<ServiceResponse> VoterInQueue(UpdateEventActivity updateEventActivity)
         {
+            var boothMaster = await _context.BoothMaster
+                              .Where(d => d.StateMasterId == updateEventActivity.StateMasterId &&
+                                          d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                                          d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                                          d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                                          d.BoothMasterId == updateEventActivity.BoothMasterId)
+                              .Select(d => new
+                              {
+                                  d.TotalVoters
+
+                              })
+                              .FirstOrDefaultAsync();
+
+            string warningMessage = string.Empty;
+
+            if (updateEventActivity.VoterInQueue > boothMaster.TotalVoters)
+            {
+                warningMessage += "The number of Queue voters exceeds the total registered  voters. ";
+            }
+
+            if (!string.IsNullOrEmpty(warningMessage))
+            {
+                return new ServiceResponse
+                {
+                    IsSucceed = false,
+                    Message = warningMessage.Trim()
+                };
+            }
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
                 d.StateMasterId == updateEventActivity.StateMasterId &&
@@ -5895,6 +5929,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.EventMasterId = updateEventActivity.EventMasterId;
                 result.EventSequence = updateEventActivity.EventSequence;
                 result.EventABBR = updateEventActivity.EventABBR;
+                result.VoterInQueue = updateEventActivity.VoterInQueue;
                 result.ElectionInfoStatus = updateEventActivity.EventStatus;
                 result.IsVoterInQueue = updateEventActivity.EventStatus;
                 result.VoterInQueueLastUpdate = BharatDateTime();
@@ -6710,7 +6745,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             if (electionInfo == null)
             {
-                return null; // Handle case when no election info is found
+                return new VoterTurnOutPolledDetailViewModel();
             }
 
 
@@ -6759,10 +6794,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     DistrictMasterId = electionInfo.DistrictMasterId,
                     AssemblyMasterId = electionInfo.AssemblyMasterId,
                     ElectionTypeMasterId = electionInfo.ElectionTypeMasterId,
-                    EventMasterId = electionInfo.EventMasterId,
-                    EventSequence = electionInfo.EventSequence,
-                    EventName = electionInfo.EventName,
-                    EventABBR = electionInfo.EventABBR,
+                    EventMasterId = currentEvent.EventMasterId,
+                    EventSequence = currentEvent.EventSequence,
+                    EventName = currentEvent.EventName,
+                    EventABBR = currentEvent.EventABBR,
                     EventStatus = electionInfo.EventStatus
 
                 };
@@ -6776,6 +6811,11 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     voterTurnOutPolledDetailViewModel.EventSequence = getNextEvent.EventSequence;
                     voterTurnOutPolledDetailViewModel.EventName = getNextEvent.EventName;
                     voterTurnOutPolledDetailViewModel.EventABBR = getNextEvent.EventABBR;
+                    electionInfo.EventMasterId = getNextEvent.EventMasterId;
+                    electionInfo.EventSequence = getNextEvent.EventSequence;
+                    electionInfo.EventName = getNextEvent.EventName;
+                    electionInfo.EventABBR = getNextEvent.EventABBR;
+                    electionInfo.EventStatus = false;
                     electionInfo.IsVoterTurnOut = true;
                     electionInfo.VotingTurnOutLastUpdate = BharatDateTime();
                     _context.ElectionInfoMaster.Update(electionInfo);
@@ -7332,7 +7372,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
 
 
-            var currentEvent = await _cacheService.GetDataAsync<EventMaster>("GetVTEvent");
+            var currentEvent = await _cacheService.GetDataAsync<EventMaster>("GetFVEvent");
 
             if (currentEvent == null)
             {
@@ -7340,12 +7380,12 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 currentEvent = await _context.EventMaster
                                    .FirstOrDefaultAsync(d => d.StateMasterId == getBooth.StateMasterId
                                                          && d.ElectionTypeMasterId == getBooth.ElectionTypeMasterId
-                                                         && d.EventABBR == "VT");
+                                                         && d.EventABBR == "FV");
 
                 // Add to cache if found
                 if (currentEvent != null)
                 {
-                    await _cacheService.SetDataAsync("GetVTEvent", currentEvent, BharatTimeDynamic(0, 0, 0, 10, 0)); // Cache for 30 minutes
+                    await _cacheService.SetDataAsync("GetFVEvent", currentEvent, BharatTimeDynamic(0, 0, 0, 10, 0)); // Cache for 30 minutes
                 }
             }
 
@@ -7376,7 +7416,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 .OrderByDescending(d => d.PollDetailMasterId) // Ensure ordering before using LastOrDefault
                 .LastOrDefaultAsync();
 
-            if (votesPolled is null || electionInfo is null && electionInfo.IsVoterInQueue == false)
+            if (electionInfo is null && electionInfo.IsVoterInQueue == false)
             {
                 return null;
             }
@@ -7386,7 +7426,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 BoothMasterId = boothMasterId,
                 ElectionTypeMasterId = getBooth.ElectionTypeMasterId,
                 TotalVoters = getBooth.TotalVoters,
-                LastVotesPolled = votesPolled.VotesPolled,
+                LastVotesPolled = votesPolled?.VotesPolled ?? 0,
                 TotalAvailableMale = getBooth.Male,
                 TotalAvailableFemale = getBooth.Female,
                 TotalAvailableTransgender = getBooth.Transgender,

@@ -504,7 +504,8 @@ namespace EAMS.Helper
             .ForMember(dest => dest.EventName, opt => opt.MapFrom(src => src.EventName))
             .ForMember(dest => dest.EventSequence, opt => opt.MapFrom(src => src.EventSequence))
             .ForMember(dest => dest.EventStatus, opt => opt.MapFrom(src => src.EventStatus))
-            .ForMember(dest => dest.VotesPolled, opt => opt.MapFrom(src => src.VotesPolled))
+            .ForMember(dest => dest.VotesPolled, opt => opt.MapFrom(src => src.VotesPolled)) 
+
 
             .ReverseMap();
             CreateMap<UpdateFinalVoteEventActivityViewModel, UpdateEventActivity>()
@@ -974,7 +975,7 @@ namespace EAMS.Helper
             #region ResultDeclarationViewModel  ResultDeclaration 
             CreateMap<ResultDeclarationListViewModel, ResultDeclaration>()
      .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
-     .ForMember(dest => dest.KycMasterId, opt => opt.MapFrom(src => src.KycMasterId)) 
+     .ForMember(dest => dest.KycMasterId, opt => opt.MapFrom(src => src.KycMasterId))
      .ForMember(dest => dest.GPPanchayatWardsMasterId, opt => opt.MapFrom(src => src.GPPanchayatWardsMasterId))
      .ForMember(dest => dest.VoteMargin, opt => opt.MapFrom(src => src.VoteMargin))
      .ForMember(dest => dest.ResultDecStatus, opt => opt.MapFrom(src => src.ResultDecStatus))
@@ -1014,7 +1015,7 @@ namespace EAMS.Helper
                 .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
                 .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
                 .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
-                .ForMember(dest => dest.AssginedType, opt => opt.MapFrom(src => src.AssginedType)) 
+                .ForMember(dest => dest.AssginedType, opt => opt.MapFrom(src => src.AssginedType))
                 .ReverseMap();
             #endregion
 
