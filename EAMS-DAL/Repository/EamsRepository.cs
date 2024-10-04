@@ -5842,13 +5842,17 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             result.EventSequence = updateEventActivity.EventSequence;
             result.EventABBR = updateEventActivity.EventABBR;
             result.ElectionInfoStatus = updateEventActivity.EventStatus;
-            result.EventStatus = updateEventActivity.EventStatus;
+            
             if (getLatestSlot != null && getLatestSlot.IsLastSlot == true)
             {
                 result.IsVoterTurnOut = true;
                 result.EventStatus = true;
                 result.VotingTurnOutLastUpdate = BharatDateTime();
 
+            }
+            else
+            {
+                result.EventStatus = false;
             }
             result.VotingLastUpdate = BharatDateTime();
             result.FinalVote = updateEventActivity.VotesPolled;
