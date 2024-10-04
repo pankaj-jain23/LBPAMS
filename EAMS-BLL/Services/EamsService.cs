@@ -198,7 +198,7 @@ namespace EAMS_BLL.Services
             {
                 return await _eamsRepository.GetFieldOfficerProfile(Id);
             }
-            else if(role == "BLO")
+            else if (role == "BLO")
             {
                 return await _eamsRepository.GetBLOOfficerProfile(Id);
             }
@@ -207,7 +207,7 @@ namespace EAMS_BLL.Services
                 return await _eamsRepository.GetAROProfile(Id);
             }
         }
-       
+
         public async Task<Response> AddFieldOfficer(FieldOfficerMaster fieldOfficerViewModel)
         {
             return await _eamsRepository.AddFieldOfficer(fieldOfficerViewModel);
@@ -220,7 +220,7 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.UpdateFieldOfficer(fieldOfficerViewModel);
         }
-        
+
         public async Task<Response> UpdateBLOOfficer(BLOMaster bLOMaster)
         {
             return await _eamsRepository.UpdateBLOOfficer(bLOMaster);
@@ -246,7 +246,7 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetFieldOfficerById(FieldOfficerMasterId);
         }
-       
+
         #endregion
 
         #region AROResult
@@ -262,7 +262,7 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetAROResultById(aroMasterId);
         }
-        public async Task<List<AROResultMaster>> GetAROListById (int stateMasterId, int districtMasterId, int assemblyMasterId)
+        public async Task<List<AROResultMaster>> GetAROListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
             return await _eamsRepository.GetAROListById(stateMasterId, districtMasterId, assemblyMasterId);
         }
@@ -867,7 +867,7 @@ namespace EAMS_BLL.Services
         //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Election info record not found" };
         //}
         public async Task<Response> AddPollInterruption(PollInterruption pollInterruption)
-        { 
+        {
             // Fetch the booth master record based on the provided BoothMasterId
             var boothMasterRecord = await _eamsRepository.GetBoothRecord(Convert.ToInt32(pollInterruption.BoothMasterId));
             if (boothMasterRecord == null)
@@ -919,9 +919,9 @@ namespace EAMS_BLL.Services
                 AssemblyMasterId = boothMasterRecord.AssemblyMasterId,
                 BoothMasterId = boothMasterRecord.BoothMasterId,
                 InterruptionType = pollInterruption.InterruptionType,
-               // Flag = isStopformat && isResumeformat ? InterruptionCategory.Both.ToString() :
-               //isStopformat ? InterruptionCategory.Stop.ToString() :
-               //isResumeformat ? InterruptionCategory.Resume.ToString() : null,
+                // Flag = isStopformat && isResumeformat ? InterruptionCategory.Both.ToString() :
+                //isStopformat ? InterruptionCategory.Stop.ToString() :
+                //isResumeformat ? InterruptionCategory.Resume.ToString() : null,
                 CreatedAt = BharatDateTime(),
                 Remarks = pollInterruption.Remarks,
                 ElectionTypeMasterId = pollInterruption.ElectionTypeMasterId
@@ -929,7 +929,7 @@ namespace EAMS_BLL.Services
             };
             if (isStopformat == true)
             {
-                pollInterruptionData.StopTime= pollInterruption.StopTime;
+                pollInterruptionData.StopTime = pollInterruption.StopTime;
                 pollInterruptionData.IsPollInterrupted = true;
                 pollInterruptionData.Flag = InterruptionCategory.Stop.ToString();
 
@@ -942,19 +942,34 @@ namespace EAMS_BLL.Services
             }
             if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.EVMFault)
             {
-                if (pollInterruption.OldCU != null && pollInterruption.OldBU != null && pollInterruption.NewBU != null && pollInterruption.NewCU != null)
+                if (isStopformat)
                 {
-                    pollInterruptionData.NewCU = pollInterruption.NewCU;
-                    pollInterruptionData.NewBU = pollInterruption.NewBU;
-                    pollInterruptionData.OldCU = pollInterruption.OldCU;
-                    pollInterruptionData.OldBU = pollInterruption.OldBU;
+                    if (pollInterruption.OldCU != null && pollInterruption.OldBU != null)
+                    {
+                        pollInterruptionData.NewCU = pollInterruption.NewCU;
+                        pollInterruptionData.NewBU = pollInterruption.NewBU;
+                        pollInterruptionData.OldCU = pollInterruption.OldCU;
+                        pollInterruptionData.OldBU = pollInterruption.OldBU;
 
-                    var result = await _eamsRepository.AddPollInterruption(pollInterruptionData);
-                    return result;
+                        var result = await _eamsRepository.AddPollInterruption(pollInterruptionData);
+                        return result;
+                    }
+                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please Enter Old CU, Old BU Value" };
                 }
-                else
+
+                if (isResumeformat)
                 {
-                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please Enter Old CU, Old BU, New CU & New BU Value" };
+                    if (pollInterruption.NewCU != null && pollInterruption.NewBU != null)
+                    {
+                        pollInterruptionData.NewCU = pollInterruption.NewCU;
+                        pollInterruptionData.NewBU = pollInterruption.NewBU;
+                        pollInterruptionData.OldCU = pollInterruption.OldCU;
+                        pollInterruptionData.OldBU = pollInterruption.OldBU;
+
+                        var result = await _eamsRepository.AddPollInterruption(pollInterruptionData);
+                        return result;
+                    }
+                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please Enter New CU & New BU Value" };
                 }
             }
             else if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.LawAndOrder ||
@@ -963,11 +978,10 @@ namespace EAMS_BLL.Services
                 var result = await _eamsRepository.AddPollInterruption(pollInterruptionData);
                 return result;
             }
-            else
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Reason is not Valid" };
-            }
-             
+
+            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Reason is not valid" };
+
+
         }
 
         //public async Task<Response> AddPollInterruption(PollInterruption pollInterruption)
@@ -2596,7 +2610,7 @@ namespace EAMS_BLL.Services
         }
         public async Task<List<KycList>> GetKYCDetailByFourthAndWardId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelMasterId, int? wardMasterId)
         {
-            return await _eamsRepository.GetKYCDetailByFourthAndWardId(electionType, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId,wardMasterId);
+            return await _eamsRepository.GetKYCDetailByFourthAndWardId(electionType, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId, wardMasterId);
         }
         public async Task<List<KycList>> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId, string userId)
         {
@@ -2740,7 +2754,7 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId);
         }
-        public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId,string userId)
+        public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, string userId)
         {
             return await _eamsRepository.GetGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId, userId);
         }
@@ -2791,7 +2805,7 @@ namespace EAMS_BLL.Services
 
         public async Task<List<CandidateListForResultDeclaration>> GetPanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gPPanchayatWardsMasterId)
         {
-            return await _eamsRepository.GetPanchListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId,gPPanchayatWardsMasterId);
+            return await _eamsRepository.GetPanchListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId, gPPanchayatWardsMasterId);
         }
         public async Task<List<ResultDeclarationList>> GetResultDeclarationsByElectionType(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId)
         {
@@ -2811,7 +2825,7 @@ namespace EAMS_BLL.Services
 
         public async Task<List<CombinedPanchayatMaster>> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId, string roId, string assginedType)
         {
-            return await _eamsRepository.GetPanchayatListByROId(stateMasterId,districtMasterId,assemblyMasterId,roId, assginedType);
+            return await _eamsRepository.GetPanchayatListByROId(stateMasterId, districtMasterId, assemblyMasterId, roId, assginedType);
         }
         public async Task<List<CombinedPanchayatMaster>> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId, string roId)
         {
@@ -2820,7 +2834,7 @@ namespace EAMS_BLL.Services
 
         public async Task<List<CombinedPanchayatMaster>> GetUnassignedPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, string assginedType)
         {
-            return await _eamsRepository.GetUnassignedPanchayatListById(stateMasterId, districtMasterId, assemblyMasterId,assginedType);
+            return await _eamsRepository.GetUnassignedPanchayatListById(stateMasterId, districtMasterId, assemblyMasterId, assginedType);
 
         }
 
