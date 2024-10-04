@@ -2017,10 +2017,15 @@ namespace EAMS_DAL.Repository
             // If more than two officers already exist with the same mobile number for this election type, return an error response
             if (existingOfficerMobile is not null)
             {
+                var getAssembly = await _context.AssemblyMaster.Where(d => d.AssemblyMasterId == existingOfficerMobile.AssemblyMasterId &&
+                d.DistrictMasterId == existingOfficerMobile.DistrictMasterId &&
+                d.StateMasterId == existingOfficerMobile.StateMasterId)
+                    .Include(d=>d.DistrictMaster).
+                    FirstOrDefaultAsync();
                 return new Response
                 {
                     Status = RequestStatusEnum.BadRequest,
-                    Message = $"FO User {fieldOfficerViewModel.FieldOfficerName} Already Exists in this election "
+                    Message = $"FO User {fieldOfficerViewModel.FieldOfficerName} {getAssembly.DistrictMaster.DistrictName} {getAssembly.AssemblyName} Already Exists in this election "
                 };
             }
 
@@ -17749,50 +17754,80 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 return new ServiceResponse { IsSucceed = true, Message = "Record Deleted successfully" };
             }
         }
+        public async Task<List<CandidateListForResultDeclaration>> GetPanchListById(
+         int stateMasterId,
+         int districtMasterId,
+         int electionTypeMasterId,
+         int assemblyMasterId,
+         int fourthLevelHMasterId,
+         int gPPanchayatWardsMasterId)
+        {
+            // Query Kyc Table with join on ResultDeclaration
+            var candidatesWithResults = await (from k in _context.Kyc
+                                               join r in _context.ResultDeclaration on k.KycMasterId equals r.KycMasterId into results
+                                               from result in results.DefaultIfEmpty() // Left join
+                                               where k.StateMasterId == stateMasterId &&
+                                                     k.DistrictMasterId == districtMasterId &&
+                                                     k.ElectionTypeMasterId == electionTypeMasterId &&
+                                                     k.AssemblyMasterId == assemblyMasterId &&
+                                                     k.FourthLevelHMasterId == fourthLevelHMasterId &&
+                                                     k.GPPanchayatWardsMasterId == gPPanchayatWardsMasterId
+                                               select new
+                                               {
+                                                   kycCandidate = k,
+                                                   result // this will be null if there's no match
+                                               }).ToListAsync();
+
+            // Project the results into the desired format, handling nulls
+            var candidateList = candidatesWithResults.Select(c => new CandidateListForResultDeclaration
+            {
+                KycMasterId = c.kycCandidate.KycMasterId,
+                CandidateName = c.kycCandidate.CandidateName,
+                FatherName = c.kycCandidate.FatherName,
+                IsUnOppossed = c.kycCandidate.IsUnOppossed,
+                IsWinner = c.result?.IsWinner ?? false, // Default to false if result is null
+                IsResultDeclared = c.result?.IsResultDeclared ?? false, // Default to false if result is null
+                IsDraw = c.result?.IsDraw ?? false, // Default to false if result is null
+                IsDrawLottery = c.result?.IsDrawLottery ?? false, // Default to false if result is null
+                IsReCounting = c.result?.IsReCounting ?? false // Default to false if result is null
+            }).ToList();
+
+            return candidateList;
+        }
+
 
         public async Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
-            // Query Kyc Table
-            var kycCandidates = await (from k in _context.Kyc
-                                       where k.StateMasterId == stateMasterId &&
-                                             k.DistrictMasterId == districtMasterId &&
-                                             k.ElectionTypeMasterId == electionTypeMasterId &&
-                                             k.AssemblyMasterId == assemblyMasterId &&
-                                             k.FourthLevelHMasterId == fourthLevelHMasterId
-                                       select new CandidateListForResultDeclaration
-                                       {
-                                           KycMasterId = k.KycMasterId,
-                                           CandidateName = k.CandidateName,
-                                           FatherName = k.FatherName,
-                                           IsUnOppossed = k.IsUnOppossed
-                                       }).ToListAsync();
-            var combinedList = kycCandidates.ToList();
+            var candidatesWithResults = await (from k in _context.Kyc
+                                               join r in _context.ResultDeclaration on k.KycMasterId equals r.KycMasterId into results
+                                               from result in results.DefaultIfEmpty() // Left join
+                                               where k.StateMasterId == stateMasterId &&
+                                                     k.DistrictMasterId == districtMasterId &&
+                                                     k.ElectionTypeMasterId == electionTypeMasterId &&
+                                                     k.AssemblyMasterId == assemblyMasterId &&
+                                                     k.FourthLevelHMasterId == fourthLevelHMasterId
+                                               select new
+                                               {
+                                                   kycCandidate = k,
+                                                   result // this will be null if there's no match
+                                               }).ToListAsync();
 
-            return combinedList;
+            // Project the results into the desired format, handling nulls
+            var candidateList = candidatesWithResults.Select(c => new CandidateListForResultDeclaration
+            {
+                KycMasterId = c.kycCandidate.KycMasterId,
+                CandidateName = c.kycCandidate.CandidateName,
+                FatherName = c.kycCandidate.FatherName,
+                IsUnOppossed = c.kycCandidate.IsUnOppossed,
+                IsWinner = c.result?.IsWinner ?? false, // Default to false if result is null
+                IsResultDeclared = c.result?.IsResultDeclared ?? false, // Default to false if result is null
+                IsDraw = c.result?.IsDraw ?? false, // Default to false if result is null
+                IsDrawLottery = c.result?.IsDrawLottery ?? false, // Default to false if result is null
+                IsReCounting = c.result?.IsReCounting ?? false // Default to false if result is null
+            }).ToList();
+
+            return candidateList;
         }
-        public async Task<List<CandidateListForResultDeclaration>> GetPanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gPPanchayatWardsMasterId)
-        {
-            // Query Kyc Table
-            var kycCandidates = await (from k in _context.Kyc
-                                       where k.StateMasterId == stateMasterId &&
-                                             k.DistrictMasterId == districtMasterId &&
-                                             k.ElectionTypeMasterId == electionTypeMasterId &&
-                                             k.AssemblyMasterId == assemblyMasterId &&
-                                             k.FourthLevelHMasterId == fourthLevelHMasterId &&
-                                             k.GPPanchayatWardsMasterId == gPPanchayatWardsMasterId
-                                       select new CandidateListForResultDeclaration
-                                       {
-                                           KycMasterId = k.KycMasterId,
-                                           CandidateName = k.CandidateName,
-                                           FatherName = k.FatherName,
-                                           IsUnOppossed = k.IsUnOppossed
-                                       }).ToListAsync();
-
-            var combinedList = kycCandidates.ToList();
-
-            return combinedList;
-        }
-
         public async Task<List<ResultDeclarationList>> GetResultDeclarationsByElectionType(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId)
         {
             // Define base query for ResultDeclaration
