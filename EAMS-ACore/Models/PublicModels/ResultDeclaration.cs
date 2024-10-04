@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace EAMS_ACore.Models.PublicModels
@@ -59,13 +60,21 @@ namespace EAMS_ACore.Models.PublicModels
             set;
         }
         public bool IsWinner { get; set; }
-        public bool IsResultDeclared { get; set; }
-        public bool IsRecounting { get; set; }
+        public bool IsResultDeclared { get; set; } 
+        public bool IsDraw { get; set; }//For Draw Candidates
+        public bool IsDrawLottery { get; set; }//Choosen  of candidate by blindfolded  box
+        public bool IsReCounting { get; set; } // ReCounting in case of draw candidates
         public DateTime? ResultDecCreatedAt { get; set; }
         public DateTime? ResultDecUpdatedAt { get; set; }
         public DateTime? ResultDecDeletedAt { get; set; }
 
         public bool ResultDecStatus { get; set; }
+
+        public virtual List<ResultDeclarationHistory> ResultDeclarationHistory
+        {
+            get;
+            set;
+        }
     }
     public class ResultDeclarationList
     {

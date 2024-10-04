@@ -979,6 +979,10 @@ namespace EAMS.Helper
      .ForMember(dest => dest.GPPanchayatWardsMasterId, opt => opt.MapFrom(src => src.GPPanchayatWardsMasterId))
      .ForMember(dest => dest.VoteMargin, opt => opt.MapFrom(src => src.VoteMargin))
      .ForMember(dest => dest.ResultDecStatus, opt => opt.MapFrom(src => src.ResultDecStatus))
+     .ForMember(dest => dest.IsWinner, opt => opt.MapFrom(src => src.IsWinner))
+     .ForMember(dest => dest.IsReCounting, opt => opt.MapFrom(src => src.IsReCounting))
+     .ForMember(dest => dest.IsDraw, opt => opt.MapFrom(src => src.IsDraw))
+     .ForMember(dest => dest.IsDrawLottery, opt => opt.MapFrom(src => src.IsDrawLottery))
      .ReverseMap();
             #endregion
 

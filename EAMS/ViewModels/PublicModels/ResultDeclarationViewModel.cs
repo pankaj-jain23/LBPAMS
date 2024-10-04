@@ -23,6 +23,10 @@
             set;
         }
         public bool ResultDecStatus { get; set; }
+        public bool IsReCounting { get; set; }
+        public bool IsWinner { get; set; }
+        public bool IsDraw { get; set; }
+        public bool IsDrawLottery { get; set; }
     }
 
     public class UpdateResultDeclarationViewModel

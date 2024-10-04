@@ -2765,23 +2765,131 @@ namespace EAMS_BLL.Services
         #endregion
 
         #region ResultDeclaration
+        //public async Task<ServiceResponse> AddResultDeclarationDetails(List<ResultDeclaration> resultDeclaration)
+        //{
+        //    if (resultDeclaration != null && resultDeclaration.Any())
+        //    {
+        //        // Find the record with the highest VoteMargin
+        //        var winner = resultDeclaration
+        //            .Where(r => !string.IsNullOrEmpty(r.VoteMargin)) // Ensure VoteMargin is not null or empty
+        //            .OrderByDescending(r => int.Parse(r.VoteMargin)) // Convert VoteMargin to int and order by highest
+        //            .FirstOrDefault();
+
+        //        if (winner != null)
+        //        {
+        //            // Set IsWinner to true for the highest VoteMargin record
+        //            winner.IsWinner = true;
+        //        }
+        //    }
+
+        //    return await _eamsRepository.AddResultDeclarationDetails(resultDeclaration);
+        //}
         public async Task<ServiceResponse> AddResultDeclarationDetails(List<ResultDeclaration> resultDeclaration)
         {
             if (resultDeclaration != null && resultDeclaration.Any())
             {
-                // Find the record with the highest VoteMargin
-                var winner = resultDeclaration
-                    .Where(r => !string.IsNullOrEmpty(r.VoteMargin)) // Ensure VoteMargin is not null or empty
-                    .OrderByDescending(r => int.Parse(r.VoteMargin)) // Convert VoteMargin to int and order by highest
-                    .FirstOrDefault();
+                // Filter the records that have non-null and non-empty VoteMargin
+                var validResults = resultDeclaration
+                    .Where(r => !string.IsNullOrEmpty(r.VoteMargin))
+                    .OrderByDescending(r =>
+                    {
+                        // Use TryParse to safely convert VoteMargin to int
+                        int voteMargin;
+                        return int.TryParse(r.VoteMargin, out voteMargin) ? voteMargin : 0;
+                    })
+                    .ToList();
 
-                if (winner != null)
+                if (validResults.Count > 0)
                 {
-                    // Set IsWinner to true for the highest VoteMargin record
-                    winner.IsWinner = true;
+                    // Get the highest VoteMargin
+                    var highestVoteMarginStr = validResults[0].VoteMargin;
+                    if (int.TryParse(highestVoteMarginStr, out var highestVoteMargin))
+                    {
+                        // Get all candidates with the highest vote margin
+                        var highestMarginCandidates = validResults
+                            .Where(r => int.TryParse(r.VoteMargin, out var margin) && margin == highestVoteMargin)
+                            .ToList();
+
+                        //// Reset all candidates as non-winner, non-draw, non-lottery
+                        //foreach (var candidate in validResults)
+                        //{
+                        //    candidate.IsWinner = false;
+                        //    candidate.IsDraw = false;
+                        //}
+
+                        // Case 4: If any candidate has IsLottery = true, mark that candidate as the winner
+                        var lotteryCandidate = validResults.FirstOrDefault(c => c.IsDrawLottery);
+                        if (lotteryCandidate != null)
+                        {
+                            lotteryCandidate.IsWinner = true;
+                            await _eamsRepository.AddResultDeclarationDetails(resultDeclaration); // Persist after determining winner
+                            return new ServiceResponse
+                            {
+                                IsSucceed = true,
+                                Message = $"Candidate   won by lottery."
+                            };
+                        }
+
+                        // Case 3: If ReCounting is true, recheck candidates and handle the draw situation again
+                        if (validResults.Any(c => c.IsReCounting))
+                        {
+                            // Handle recounting logic (essentially similar to regular draw check)
+                            if (highestMarginCandidates.Count > 1)
+                            {
+                                foreach (var candidate in highestMarginCandidates)
+                                {
+                                    candidate.IsDraw = true;
+                                }
+                                await _eamsRepository.AddResultDeclarationDetails(resultDeclaration); // Persist draw situation
+                                return new ServiceResponse
+                                {
+                                    IsSucceed = true,
+                                    Message = "Recount detected a draw situation between the highest vote margins."
+                                };
+                            }
+                            else
+                            {
+                                highestMarginCandidates[0].IsWinner = true;
+                                await _eamsRepository.AddResultDeclarationDetails(resultDeclaration); // Persist after declaring winner
+                                return new ServiceResponse
+                                {
+                                    IsSucceed = true,
+                                    Message = $"Candidate   is the winner after recounting."
+                                };
+                            }
+                        }
+
+                        // Case 2: If multiple candidates have the same highest vote margin, mark as draw
+                        if (highestMarginCandidates.Count > 1)
+                        {
+                            foreach (var candidate in highestMarginCandidates)
+                            {
+                                candidate.IsDraw = true;
+                            }
+                            await _eamsRepository.AddResultDeclarationDetails(resultDeclaration); // Persist draw situation
+                            return new ServiceResponse
+                            {
+                                IsSucceed = true,
+                                Message = $"Draw situation detected between candidates "
+                            };
+                        }
+
+                        // Case 1: If only one candidate has the highest vote margin, mark as winner
+                        if (highestMarginCandidates.Count == 1)
+                        {
+                            highestMarginCandidates[0].IsWinner = true;
+                            await _eamsRepository.AddResultDeclarationDetails(resultDeclaration); // Persist after declaring winner
+                            return new ServiceResponse
+                            {
+                                IsSucceed = true,
+                                Message = $"Candidate  is the winner with the highest vote margin."
+                            };
+                        }
+                    }
                 }
             }
 
+            // If no specific condition was met, proceed with default persistence
             return await _eamsRepository.AddResultDeclarationDetails(resultDeclaration);
         }
 
