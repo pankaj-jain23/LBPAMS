@@ -771,6 +771,7 @@ namespace EAMS.Controllers
             };
             return Ok(data);
         }
+      
         [HttpGet]
         [Route("GetBoothEventListByFoId")]
         public async Task<IActionResult> GetBoothEventListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)

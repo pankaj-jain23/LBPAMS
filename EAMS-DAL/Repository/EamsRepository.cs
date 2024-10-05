@@ -2024,11 +2024,11 @@ namespace EAMS_DAL.Repository
                     FirstOrDefaultAsync();
                 return new Response
                 {
-                    Status = RequestStatusEnum.BadRequest,
-                    Message = $"FO User {fieldOfficerViewModel.FieldOfficerName} {getAssembly.DistrictMaster.DistrictName} {getAssembly.AssemblyName} Already Exists in this election "
+                    Status = RequestStatusEnum.BadRequest, 
+                    Message = $"{fieldOfficerViewModel.FieldOfficerName} with Phone No {fieldOfficerViewModel.FieldOfficerMobile} is already registered in Block: {getAssembly.AssemblyName} and District: {getAssembly.DistrictMaster.DistrictName} "
                 };
             }
-
+            fieldOfficerViewModel.FieldOfficerCreatedAt = BharatDateTime();
             // If no duplicates exist, add the new FieldOfficer and save changes
             _context.FieldOfficerMaster.Add(fieldOfficerViewModel);
             await _context.SaveChangesAsync();
@@ -2719,75 +2719,64 @@ namespace EAMS_DAL.Repository
             int fourthLevelHMasterId)
         {
 
+             
+            // Validate the status of the hierarchy and related entities
+            bool isValidHierarchy = await _context.FourthLevelH
+                .AnyAsync(f => f.StateMasterId == stateMasterId &&
+                               f.DistrictMasterId == districtMasterId &&
+                               f.AssemblyMasterId == assemblyMasterId &&
+                               f.FourthLevelHMasterId == fourthLevelHMasterId &&
+                               f.HierarchyStatus &&
+                               f.StateMaster.StateStatus &&
+                               f.DistrictMaster.DistrictStatus &&
+                               f.AssemblyMaster.AssemblyStatus);
 
-            // Fetch the relevant FourthLevelH entity along with necessary relations
-            var isActive = await _context.FourthLevelH
-                .Include(f => f.StateMaster)
-                .Include(f => f.DistrictMaster)
-                .Include(f => f.AssemblyMaster)
-                .FirstOrDefaultAsync(f => f.StateMasterId == stateMasterId
-                                          && f.DistrictMasterId == districtMasterId
-                                          && f.AssemblyMasterId == assemblyMasterId
-                                          && f.FourthLevelHMasterId == fourthLevelHMasterId);
 
             // Check for null and status before proceeding
-            if (isActive == null ||
-                !isActive.StateMaster.StateStatus ||
-                !isActive.DistrictMaster.DistrictStatus ||
-                !isActive.AssemblyMaster.AssemblyStatus ||
-                !isActive.HierarchyStatus)
+            if (!isValidHierarchy)
             {
-                return null; // Return null if any status check fails
+                return null;
             }
 
-            // Perform the main query
-            IQueryable<CombinedMaster> boothListQuery = from bt in _context.BoothMaster
-                                                        join asem in _context.AssemblyMaster
-                                                            on bt.AssemblyMasterId equals asem.AssemblyMasterId
-                                                        join dist in _context.DistrictMaster
-                                                            on asem.DistrictMasterId equals dist.DistrictMasterId
-                                                        join state in _context.StateMaster
-                                                            on dist.StateMasterId equals state.StateMasterId
-                                                        join elec in _context.ElectionTypeMaster
-                                                            on bt.ElectionTypeMasterId equals elec.ElectionTypeMasterId
-                                                        join frth in _context.FourthLevelH
-                                                            on bt.FourthLevelHMasterId equals frth.FourthLevelHMasterId
-                                                        where bt.StateMasterId == stateMasterId
-                                                          && bt.DistrictMasterId == districtMasterId
-                                                          && bt.AssemblyMasterId == assemblyMasterId
-                                                          && bt.FourthLevelHMasterId == fourthLevelHMasterId
-                                                        select new CombinedMaster
-                                                        {
-                                                            StateId = stateMasterId,
-                                                            DistrictId = dist.DistrictMasterId,
-                                                            AssemblyId = asem.AssemblyMasterId,
-                                                            AssemblyName = asem.AssemblyName,
-                                                            AssemblyCode = asem.AssemblyCode,
-                                                            BoothMasterId = bt.BoothMasterId,
-                                                            BoothName = $"{bt.BoothName}{(bt.BoothNoAuxy != "0" ? $"-{bt.BoothNoAuxy}" : "")}({bt.BoothCode_No})",
-                                                            SecondLanguage = bt.SecondLanguage,
-                                                            BoothAuxy = bt.BoothNoAuxy,
-                                                            BoothCode_No = bt.BoothCode_No,
-                                                            IsAssigned = bt.IsAssigned,
-                                                            IsStatus = bt.BoothStatus,
-                                                            LocationMasterId = bt.LocationMasterId,
-                                                            ElectionTypeMasterId = bt.ElectionTypeMasterId,
-                                                            ElectionTypeName = elec.ElectionType,
-                                                            FourthLevelHMasterId = bt.FourthLevelHMasterId,
-                                                            FourthLevelHName = frth.HierarchyName,
-                                                            IsPrimaryBooth = bt.IsPrimaryBooth
-                                                        };
+            var boothList = await (from bt in _context.BoothMaster
+                                   join asem in _context.AssemblyMaster on bt.AssemblyMasterId equals asem.AssemblyMasterId
+                                   join dist in _context.DistrictMaster on asem.DistrictMasterId equals dist.DistrictMasterId
+                                   join state in _context.StateMaster on dist.StateMasterId equals state.StateMasterId
+                                   join elec in _context.ElectionTypeMaster on bt.ElectionTypeMasterId equals elec.ElectionTypeMasterId
+                                   join frth in _context.FourthLevelH on bt.FourthLevelHMasterId equals frth.FourthLevelHMasterId
+                                   where bt.StateMasterId == stateMasterId
+                                         && bt.DistrictMasterId == districtMasterId
+                                         && bt.AssemblyMasterId == assemblyMasterId
+                                         && bt.FourthLevelHMasterId == fourthLevelHMasterId
+                                   orderby Convert.ToInt32(bt.BoothCode_No)
+                                   select new CombinedMaster
+                                   {
+                                       StateId = stateMasterId,
+                                       DistrictId = dist.DistrictMasterId,
+                                       AssemblyId = asem.AssemblyMasterId,
+                                       AssemblyName = asem.AssemblyName,
+                                       AssemblyCode = asem.AssemblyCode,
+                                       BoothMasterId = bt.BoothMasterId,
+                                       BoothName = $"{bt.BoothName}{(bt.BoothNoAuxy != "0" ? $"-{bt.BoothNoAuxy}" : "")}({bt.BoothCode_No})",
+                                       SecondLanguage = bt.SecondLanguage,
+                                       BoothAuxy = bt.BoothNoAuxy,
+                                       BoothCode_No = bt.BoothCode_No,
+                                       IsAssigned = bt.IsAssigned,
+                                       IsStatus = bt.BoothStatus,
+                                       LocationMasterId = bt.LocationMasterId,
+                                       ElectionTypeMasterId = bt.ElectionTypeMasterId,
+                                       ElectionTypeName = elec.ElectionType,
+                                       FourthLevelHMasterId = bt.FourthLevelHMasterId,
+                                       FourthLevelHName = frth.HierarchyName,
+                                       IsPrimaryBooth = bt.IsPrimaryBooth
+                                   })
+                              .ToListAsync();
 
-            // Fetch and sort the booth list
-            var boothListResult = await boothListQuery.ToListAsync();
+            
 
-            // Sort by BoothCode_No if it's convertible to an integer, otherwise place it at the end
-            var sortedBoothList = boothListResult
-                .OrderBy(d => int.TryParse(d.BoothCode_No, out int code) ? code : int.MaxValue)
-                .ToList();
-
-            return sortedBoothList;
+            return boothList;
         }
+
         public async Task<List<CombinedMaster>> GetBoothListByPSZonePanchayatId(
             int stateMasterId,
             int districtMasterId,
@@ -2797,67 +2786,63 @@ namespace EAMS_DAL.Repository
         {
 
 
-            var isActive = await _context.PSZonePanchayat
-                .Include(f => f.StateMaster)
-                .Include(f => f.DistrictMaster)
-                .Include(f => f.AssemblyMaster)
-                .Include(d => d.FourthLevelH)
-                .FirstOrDefaultAsync(f => f.StateMasterId == stateMasterId
-                                          && f.DistrictMasterId == districtMasterId
-                                          && f.AssemblyMasterId == assemblyMasterId
-                                          && f.FourthLevelHMasterId == fourthLevelHMasterId && f.PSZonePanchayatMasterId == psZonePanchayatMasterId);
+            // Validate the status of the hierarchy and related entities
+            bool isValidZone = await _context.PSZonePanchayat
+                .AnyAsync(f => f.StateMasterId == stateMasterId &&
+                               f.DistrictMasterId == districtMasterId &&
+                               f.AssemblyMasterId == assemblyMasterId &&
+                               f.FourthLevelHMasterId == fourthLevelHMasterId &&
+                               f.PSZonePanchayatMasterId==psZonePanchayatMasterId&&
+                               f.PSZonePanchayatStatus &&
+                               f.StateMaster.StateStatus &&
+                               f.DistrictMaster.DistrictStatus &&
+                               f.AssemblyMaster.AssemblyStatus);
 
-            // Check if all required statuses are active
-            if (isActive == null ||
-                !isActive.StateMaster.StateStatus ||
-                !isActive.DistrictMaster.DistrictStatus ||
-                !isActive.AssemblyMaster.AssemblyStatus ||
-                !isActive.FourthLevelH.HierarchyStatus || !isActive.PSZonePanchayatStatus)
+
+            // Check for null and status before proceeding
+            if (!isValidZone)
             {
-                return null; // Return null if any status check fails
+                return null;
             }
+             
+            var boothList = await (from bt in _context.BoothMaster
+                                 join asem in _context.AssemblyMaster on bt.AssemblyMasterId equals asem.AssemblyMasterId
+                                 join dist in _context.DistrictMaster on asem.DistrictMasterId equals dist.DistrictMasterId
+                                 join state in _context.StateMaster on dist.StateMasterId equals state.StateMasterId
+                                 join elec in _context.ElectionTypeMaster on bt.ElectionTypeMasterId equals elec.ElectionTypeMasterId
+                                 join frth in _context.FourthLevelH on bt.FourthLevelHMasterId equals frth.FourthLevelHMasterId
+                                 join zp in _context.PSZonePanchayat on bt.PSZonePanchayatMasterId equals zp.PSZonePanchayatMasterId  
+                                 where bt.StateMasterId == stateMasterId &&
+                                       bt.DistrictMasterId == districtMasterId &&
+                                       bt.AssemblyMasterId == assemblyMasterId &&
+                                       bt.FourthLevelHMasterId == fourthLevelHMasterId &&
+                                       bt.PSZonePanchayatMasterId == psZonePanchayatMasterId
+                                   orderby  Convert.ToInt32(bt.BoothCode_No)
+                                   select new CombinedMaster
+                                 {
+                                     StateId = stateMasterId,
+                                     DistrictId = dist.DistrictMasterId,
+                                     AssemblyId = asem.AssemblyMasterId,
+                                     AssemblyName = asem.AssemblyName,
+                                     AssemblyCode = asem.AssemblyCode,
+                                     BoothMasterId = bt.BoothMasterId,
+                                     BoothName = $"{bt.BoothName}{(bt.BoothNoAuxy != "0" ? $"-{bt.BoothNoAuxy}" : "")}({bt.BoothCode_No})",
+                                     SecondLanguage = bt.SecondLanguage,
+                                     BoothAuxy = bt.BoothNoAuxy,
+                                     BoothCode_No = bt.BoothCode_No,
+                                     IsAssigned = bt.IsAssigned,
+                                     IsStatus = bt.BoothStatus,
+                                     LocationMasterId = bt.LocationMasterId,
+                                     ElectionTypeMasterId = bt.ElectionTypeMasterId,
+                                     ElectionTypeName = elec.ElectionType,
+                                     FourthLevelHMasterId = bt.FourthLevelHMasterId,
+                                     FourthLevelHName = frth.HierarchyName,
+                                     PSZoneMasterId = bt.PSZonePanchayatMasterId,
+                                     PSZonePanchayatName = zp.PSZonePanchayatName, // Safely access the PSZonePanchayatName
+                                     IsPrimaryBooth = bt.IsPrimaryBooth
+                                 }).ToListAsync();
 
-            // Query the BoothMaster table based on provided filters
-            IQueryable<CombinedMaster> boothListQuery = from bt in _context.BoothMaster
-                .Where(bt => bt.StateMasterId == stateMasterId
-                             && bt.DistrictMasterId == districtMasterId
-                             && bt.AssemblyMasterId == assemblyMasterId
-                             && bt.FourthLevelHMasterId == fourthLevelHMasterId
-                             && bt.PSZonePanchayatMasterId == psZonePanchayatMasterId)
-                                                        join asem in _context.AssemblyMaster on bt.AssemblyMasterId equals asem.AssemblyMasterId
-                                                        join dist in _context.DistrictMaster on asem.DistrictMasterId equals dist.DistrictMasterId
-                                                        join state in _context.StateMaster on dist.StateMasterId equals state.StateMasterId
-                                                        join elec in _context.ElectionTypeMaster on bt.ElectionTypeMasterId equals elec.ElectionTypeMasterId
-                                                        join frth in _context.FourthLevelH on bt.FourthLevelHMasterId equals frth.FourthLevelHMasterId
-                                                        join zp in _context.PSZonePanchayat on bt.PSZonePanchayatMasterId equals zp.PSZonePanchayatMasterId into zpJoin
-                                                        from zp in zpJoin.DefaultIfEmpty() // Left join to handle null cases
-                                                        select new CombinedMaster
-                                                        {
-                                                            StateId = stateMasterId,
-                                                            DistrictId = dist.DistrictMasterId,
-                                                            AssemblyId = asem.AssemblyMasterId,
-                                                            AssemblyName = asem.AssemblyName,
-                                                            AssemblyCode = asem.AssemblyCode,
-                                                            BoothMasterId = bt.BoothMasterId,
-                                                            BoothName = $"{bt.BoothName}{(bt.BoothNoAuxy != "0" ? $"-{bt.BoothNoAuxy}" : "")}({bt.BoothCode_No})",
-                                                            SecondLanguage = bt.SecondLanguage,
-                                                            BoothAuxy = bt.BoothNoAuxy,
-                                                            BoothCode_No = bt.BoothCode_No,
-                                                            IsAssigned = bt.IsAssigned,
-                                                            IsStatus = bt.BoothStatus,
-                                                            LocationMasterId = bt.LocationMasterId,
-                                                            ElectionTypeMasterId = bt.ElectionTypeMasterId,
-                                                            ElectionTypeName = elec.ElectionType,
-                                                            FourthLevelHMasterId = bt.FourthLevelHMasterId,
-                                                            FourthLevelHName = frth.HierarchyName,
-                                                            PSZoneMasterId = bt.PSZonePanchayatMasterId,
-                                                            PSZonePanchayatName = zp != null ? zp.PSZonePanchayatName : null,
-                                                            IsPrimaryBooth = bt.IsPrimaryBooth
-                                                        };
-
-            // Fetch and sort by BoothCode_No (parsed as int where possible)
-            var boothList = await boothListQuery.ToListAsync();
-            boothList = boothList.OrderBy(b => int.TryParse(b.BoothCode_No, out int code) ? code : int.MaxValue).ToList();
+           
 
             return boothList;
         }
@@ -2927,13 +2912,23 @@ namespace EAMS_DAL.Repository
 
         public async Task<List<CombinedMaster>> GetUnassignedBoothListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            var isStateActive = await _context.StateMaster.FirstOrDefaultAsync(d => d.StateMasterId == stateMasterId);
-            var isDistrictActive = await _context.DistrictMaster.FirstOrDefaultAsync(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId);
-            var isAssemblyActive = await _context.AssemblyMaster.FirstOrDefaultAsync(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId);
-            if (isStateActive.StateStatus && isDistrictActive.DistrictStatus && isAssemblyActive.AssemblyStatus)
-            {
+               bool isValidAssembly = await _context.AssemblyMaster
+                .AnyAsync(f => f.StateMasterId == stateMasterId &&
+                               f.DistrictMasterId == districtMasterId &&
+                               f.AssemblyMasterId == assemblyMasterId && 
+                               f.StateMaster.StateStatus &&
+                               f.DistrictMaster.DistrictStatus &&
+                               f.AssemblyStatus);
 
-                var boothlist = from bt in _context.BoothMaster.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.IsAssigned == false && d.BoothStatus == true) // outer sequenc)
+
+            // Check for null and status before proceeding
+            if (!isValidAssembly)
+            {
+                return null;
+            }
+            
+
+                var boothlist =await (from bt in _context.BoothMaster.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.IsAssigned == false && d.BoothStatus == true) // outer sequenc)
                                 join fourthLevelH in _context.FourthLevelH on bt.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
                                 join asem in _context.AssemblyMaster
                                             on bt.AssemblyMasterId equals asem.AssemblyMasterId
@@ -2941,7 +2936,7 @@ namespace EAMS_DAL.Repository
                                 on asem.DistrictMasterId equals dist.DistrictMasterId
                                 join state in _context.StateMaster
                                  on dist.StateMasterId equals state.StateMasterId
-                                orderby bt.BoothNoAuxy
+                                orderby Convert.ToInt32(bt.BoothCode_No)
                                 select new CombinedMaster
                                 {
                                     StateId = stateMasterId,
@@ -2960,30 +2955,24 @@ namespace EAMS_DAL.Repository
                                     BoothCode_No = bt.BoothCode_No
 
 
-                                };
-                var sortedBoothList = await boothlist.ToListAsync();
+                                }).ToListAsync(); 
 
-                // Convert string BoothCode_No to integers for sorting
-                sortedBoothList = sortedBoothList.OrderBy(d => int.TryParse(d.BoothCode_No, out int code) ? code : int.MaxValue).ToList();
-
-                return sortedBoothList;
-            }
-            else
-            {
-                return null;
-            }
+                
+                return boothlist;
+           
+            
         }
         public async Task<List<CombinedMaster>> GetBoothListByAssemblyId(string stateMasterId, string districtMasterId, string assemblyMasterId)
         {
 
-            var boothlist = from bt in _context.BoothMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId)) // outer sequenc)
+            var boothlist =await (from bt in _context.BoothMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId)) // outer sequenc)
                             join asem in _context.AssemblyMaster
                             on bt.AssemblyMasterId equals asem.AssemblyMasterId
                             join dist in _context.DistrictMaster
                             on asem.DistrictMasterId equals dist.DistrictMasterId
                             join state in _context.StateMaster
                              on dist.StateMasterId equals state.StateMasterId
-
+                            orderby Convert.ToInt32(bt.BoothCode_No)
                             select new CombinedMaster
                             {
                                 StateName = state.StateName,
@@ -2998,10 +2987,10 @@ namespace EAMS_DAL.Repository
                                 BoothAuxy = bt.BoothNoAuxy
 
 
-                            };
-            var count = boothlist.Count();
-            return await boothlist.ToListAsync();
+                            }).ToListAsync();
+            return boothlist;
         }
+     
         public async Task<Response> AddBooth2(BoothMaster boothMaster)
         {
             try

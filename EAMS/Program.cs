@@ -25,7 +25,7 @@ using StackExchange.Redis;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
- 
+
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -42,7 +42,7 @@ builder.Services.AddDbContextPool<EamsContext>(options =>
         npgsqlOptionsAction: sqlOptions =>
         {
             sqlOptions.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(30), errorCodesToAdd: null);
-           
+
         });
 });
 var redisConnectionString = builder.Configuration.GetConnectionString("RedisCacheUrl");
@@ -93,7 +93,7 @@ builder.Services
         {
             OnMessageReceived = context =>
             {
-                var accessToken = context.Request.Query["access_token"]; 
+                var accessToken = context.Request.Query["access_token"];
                 if (!string.IsNullOrEmpty(accessToken))
                 {
                     context.Token = accessToken;
@@ -157,19 +157,8 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddSignalR(options =>
-{
-    // Enable detailed logging for diagnostic purposes
-    options.EnableDetailedErrors = true;
-})
-    .AddHubOptions<DashBoardHub>(options =>
-    {
-        options.MaximumReceiveMessageSize = 102400000;
-        options.ClientTimeoutInterval = TimeSpan.FromSeconds(60);
-        options.KeepAliveInterval = TimeSpan.FromMinutes(2);
-        options.MaximumParallelInvocationsPerClient = 10;
+builder.Services.AddSignalR();
 
-    });
 builder.Services.AddSignalRCore();
 var logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
@@ -179,9 +168,9 @@ var logger = new LoggerConfiguration()
 
 
 builder.Logging.AddSerilog(logger);
- 
-   // BenchmarkRunner.Run<EAMSController>();
-  
+
+// BenchmarkRunner.Run<EAMSController>();
+
 var app = builder.Build();
 app.Use(async (context, next) =>
 {
