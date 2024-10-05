@@ -26,7 +26,7 @@
         [StringValue("CEOPUN")]
         SenderId,
 
-        [StringValue("7")]
+        [StringValue("2")]
         OTP,
 
         [StringValue("Message Accepted")]
