@@ -142,6 +142,7 @@ namespace EAMS_ACore.Models.PublicModels
             set;
 
         }
+        public string? HierarchyType { get; set; }
         public int? PSZonePanchayatMasterId
         {
             get;
@@ -165,6 +166,7 @@ namespace EAMS_ACore.Models.PublicModels
             set;
 
         }
+        public string? GPPanchayatWardsCategory { get; set; }
         public string CandidateType
         {
             get;

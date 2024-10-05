@@ -2811,11 +2811,11 @@ namespace EAMS_BLL.Services
                             .ToList();
 
                         //// Reset all candidates as non-winner, non-draw, non-lottery
-                        //foreach (var candidate in validResults)
-                        //{
-                        //    candidate.IsWinner = false;
-                        //    candidate.IsDraw = false;
-                        //}
+                        foreach (var candidate in validResults)
+                        {
+                            candidate.IsWinner = false;
+                            candidate.IsDraw = false;
+                        }
 
                         // Case 4: If any candidate has IsLottery = true, mark that candidate as the winner
                         var lotteryCandidate = validResults.FirstOrDefault(c => c.IsDrawLottery);
@@ -2826,7 +2826,7 @@ namespace EAMS_BLL.Services
                             return new ServiceResponse
                             {
                                 IsSucceed = true,
-                                Message = $"Candidate   won by lottery."
+                                Message = $"Candidate won by lottery."
                             };
                         }
 
@@ -2854,7 +2854,7 @@ namespace EAMS_BLL.Services
                                 return new ServiceResponse
                                 {
                                     IsSucceed = true,
-                                    Message = $"Candidate   is the winner after recounting."
+                                    Message = $"Candidate is the winner after recounting."
                                 };
                             }
                         }
@@ -2882,7 +2882,7 @@ namespace EAMS_BLL.Services
                             return new ServiceResponse
                             {
                                 IsSucceed = true,
-                                Message = $"Candidate  is the winner with the highest vote margin."
+                                Message = $"Candidate is the winner with the highest vote margin."
                             };
                         }
                     }
