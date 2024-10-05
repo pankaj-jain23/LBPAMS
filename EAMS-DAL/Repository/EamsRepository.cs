@@ -2042,7 +2042,7 @@ namespace EAMS_DAL.Repository
         }
         public async Task<Response> UpdateFieldOfficer(FieldOfficerMaster updatedFieldOfficer)
         {
-            if (!await IsBoothAssgined(updatedFieldOfficer.FieldOfficerMasterId.ToString()))
+            if (await IsBoothAssgined(updatedFieldOfficer.FieldOfficerMasterId.ToString()))
             {
                 return new Response
                 {
@@ -4325,7 +4325,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 .AnyAsync(d => d.StateMasterId == eventMaster.StateMasterId
                               && d.ElectionTypeMasterId == eventMaster.ElectionTypeMasterId
                               && d.EventABBR == eventMaster.EventABBR
-                               && d.EventSequence == eventMaster.EventSequence);
+                              && d.EventSequence == eventMaster.EventSequence);
 
             // If a duplicate is found, return a failure response
             if (duplicateEvent)
@@ -4350,11 +4350,15 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 };
             }
 
+             
+
+            // Update the event
             existingEvent.EventName = eventMaster.EventName;
             existingEvent.StateMasterId = eventMaster.StateMasterId;
             existingEvent.EventSequence = eventMaster.EventSequence;
             existingEvent.EventABBR = eventMaster.EventABBR;
-            existingEvent.ElectionTypeMasterId = eventMaster.ElectionTypeMasterId;
+            existingEvent.ElectionTypeMasterId = existingEvent.ElectionTypeMasterId;
+
             _context.EventMaster.Update(existingEvent);
             await _context.SaveChangesAsync();
 
