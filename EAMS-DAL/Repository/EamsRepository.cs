@@ -17804,7 +17804,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                                      k.DistrictMasterId == districtMasterId &&
                                                      k.ElectionTypeMasterId == electionTypeMasterId &&
                                                      k.AssemblyMasterId == assemblyMasterId &&
-                                                     k.FourthLevelHMasterId == fourthLevelHMasterId
+                                                     k.FourthLevelHMasterId == fourthLevelHMasterId && 
+                                                     k.GPPanchayatWardsMasterId == 0
                                                select new
                                                {
                                                    kycCandidate = k,
