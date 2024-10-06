@@ -1869,7 +1869,7 @@ namespace EAMS.Controllers
         }
 
         [HttpGet("GetFourthLevelHListById")]
-        [Authorize]
+         
         public async Task<IActionResult> GetFourthLevelHListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null)
@@ -2184,6 +2184,7 @@ namespace EAMS.Controllers
         #endregion
 
         #region  GPPanchayatWards 
+
         [HttpPost]
         [Route("AddGPPanchayatWards")]
         [Authorize]
@@ -2256,8 +2257,8 @@ namespace EAMS.Controllers
             }
 
         }
-        [HttpGet("GetGPPanchayatWardsListById")]
-        [Authorize]
+
+        [HttpGet("GetGPPanchayatWardsListById")] 
         public async Task<IActionResult> GetGPPanchayatWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId)
         {
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && FourthLevelHMasterId != null)
@@ -3756,6 +3757,33 @@ namespace EAMS.Controllers
             ClaimsIdentity claimsIdentity = User.Identity as ClaimsIdentity;
 
             var getDashboardRecord = await _EAMSService.GetDashBoardCount(claimsIdentity);
+            return Ok(getDashboardRecord);
+        }
+        [HttpGet]
+        [Route("GetEventActivityDashBoardCount")]
+        [Authorize]
+        public async Task<IActionResult> GetEventActivityDashBoardCount()
+        {
+            ClaimsIdentity claimsIdentity = User.Identity as ClaimsIdentity;
+            var rolesClaim = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role");
+            var roles = rolesClaim?.Value;
+
+            var stateMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            int stateMasterId = int.Parse(stateMasterIdString);
+
+            var electionTypeMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
+            int electionTypeMasterId = int.Parse(electionTypeMasterIdString);
+
+            var districtMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value;
+            int? districtMasterId = !string.IsNullOrEmpty(districtMasterIdString) ? int.Parse(districtMasterIdString) : (int?)null;
+
+            var assemblyMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId")?.Value;
+            int? assemblyMasterId = !string.IsNullOrEmpty(assemblyMasterIdString) ? int.Parse(assemblyMasterIdString) : (int?)null;
+
+            var fourthLevelHMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "FourthLevelHMasterId")?.Value;
+            int? fourthLevelHMasterId = !string.IsNullOrEmpty(fourthLevelHMasterIdString) ? int.Parse(fourthLevelHMasterIdString) : (int?)null;
+
+            var getDashboardRecord = await _EAMSService.GetEventActivityDashBoardCount(roles, electionTypeMasterId, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);
             return Ok(getDashboardRecord);
         }
         #endregion

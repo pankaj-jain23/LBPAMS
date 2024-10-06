@@ -5,7 +5,6 @@ using System.Security.Claims;
 
 namespace EAMS.Hubs
 {
-
     public sealed class DashBoardHub : Hub
     {
         private readonly IEamsService _eamsService;
@@ -29,34 +28,20 @@ namespace EAMS.Hubs
 
                 if (role.Contains("FO"))
                 {
-                    _logger.LogInformation("Mobile user connected");
-                    _mobileUserCount++; // Increment mobile user count
-
-                    // Notify the connected client that they are a Mobile user
-                    await Clients.Client(Context.ConnectionId).SendAsync("UserType", "MobileUser");
+                    await HandleMobileUserConnected();
                 }
                 else
                 {
-                    _logger.LogInformation("Dashboard user connected");
-                    _dashboardUserCount++; // Increment dashboard user count
-
-                    // Notify the connected client that they are a Dashboard user
-                    await Clients.Client(Context.ConnectionId).SendAsync("UserType", "DashboardUser");
+                    await HandleDashboardUserConnected();
                 }
 
-                // Send updated counts to all clients
                 await SendUserCounts();
-                await Ping(); // Ping method to send a heartbeat message
+
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in OnConnectedAsync");
             }
-        }
-
-        public async Task Ping()
-        {
-            await Clients.Client(Context.ConnectionId).SendAsync("Ping", "HeartBeat");
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
@@ -67,17 +52,14 @@ namespace EAMS.Hubs
 
                 if (role.Contains("FO"))
                 {
-                    _logger.LogInformation("Mobile user disconnected");
-                    _mobileUserCount--; // Decrement mobile user count
+                    await HandleMobileUserDisconnected();
                 }
                 else
                 {
-                    _logger.LogInformation("Dashboard user disconnected");
-                    _dashboardUserCount--; // Decrement dashboard user count
+                    await HandleDashboardUserDisconnected();
                 }
 
-                // Send updated counts to all clients
-                await SendUserCounts();
+                await SendUserCounts(); // Send updated user counts to all clients
             }
             catch (Exception ex)
             {
@@ -89,7 +71,27 @@ namespace EAMS.Hubs
             }
         }
 
-        // Method to send the current counts to all connected clients
+        private async Task HandleMobileUserConnected()
+        {
+            _mobileUserCount++;
+            await Clients.Client(Context.ConnectionId).SendAsync("UserType", "MobileUser");
+        }
+
+        private async Task HandleDashboardUserConnected()
+        {
+            _dashboardUserCount++;
+            await Clients.Client(Context.ConnectionId).SendAsync("UserType", "DashboardUser");
+        }
+        private async Task HandleMobileUserDisconnected()
+        {
+            _mobileUserCount--;
+        }
+
+        private async Task HandleDashboardUserDisconnected()
+        {
+            _dashboardUserCount--;
+        }
+
         public async Task SendUserCounts()
         {
             var counts = new
@@ -100,6 +102,35 @@ namespace EAMS.Hubs
 
             // Broadcast the updated counts to all connected clients
             await Clients.All.SendAsync("ReceiveUserCounts", counts);
+        }
+        public async Task SendDashBoardCount()
+        {
+            ClaimsIdentity claimsIdentity = Context.User.Identity as ClaimsIdentity;
+            var rolesClaim = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role");
+            var roles = rolesClaim?.Value;
+
+            var stateMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            int stateMasterId = int.Parse(stateMasterIdString);
+
+            var electionTypeMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
+            int electionTypeMasterId = int.Parse(electionTypeMasterIdString);
+
+            var districtMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value;
+            int? districtMasterId = !string.IsNullOrEmpty(districtMasterIdString) ? int.Parse(districtMasterIdString) : (int?)null;
+
+            var assemblyMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId")?.Value;
+            int? assemblyMasterId = !string.IsNullOrEmpty(assemblyMasterIdString) ? int.Parse(assemblyMasterIdString) : (int?)null;
+
+            var fourthLevelHMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "FourthLevelHMasterId")?.Value;
+            int? fourthLevelHMasterId = !string.IsNullOrEmpty(fourthLevelHMasterIdString) ? int.Parse(fourthLevelHMasterIdString) : (int?)null;
+            var eventDashboardCount = await _eamsService.GetEventActivityDashBoardCount(roles, electionTypeMasterId, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);
+            
+            await Clients.Client(Context.ConnectionId).SendAsync("GetDashBoardCount", eventDashboardCount);
+        }
+        public async Task Ping()
+        {
+            await SendDashBoardCount();
+            await Clients.Client(Context.ConnectionId).SendAsync("Ping", "HeartBeat");
         }
     }
 }

@@ -707,6 +707,12 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetDashBoardCount(claimsIdentity);
         }
+        public async Task<DashBoardRealTimeCount> GetEventActivityDashBoardCount(string role, int electionTypeMasterId, int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelMasterId)
+        { 
+
+            return await _eamsRepository.GetEventActivityDashBoardCount(role, electionTypeMasterId, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId);
+        }
+
         public async Task<List<DashboardConnectedUser>> DashboardConnectedUser(DahboardMastersId dashboardMastersId, string roleType)
         {
             return await _eamsRepository.DashboardConnectedUser(dashboardMastersId, roleType);

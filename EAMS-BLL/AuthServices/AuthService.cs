@@ -220,7 +220,7 @@ namespace EAMS_BLL.AuthServices
                 {
                     // Generate a new OTP and update Field Officer's record
                     foRecords.OTP = generatedOtp;
-                    foRecords.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 0, 60);
+                    foRecords.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 2, 0);
                     foRecords.OTPAttempts += 1;
 
                     var updateFO = await _eamsRepository.UpdateFieldOfficerValidate(foRecords);
@@ -232,7 +232,7 @@ namespace EAMS_BLL.AuthServices
                         {
                             return new Response { Status = RequestStatusEnum.OK, Message = $"OTP Sent to {foRecords.FieldOfficerMobile}" };
                         }
-                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Failed to send OTP" };
+                        return new Response { Status = RequestStatusEnum.BadRequest, Message = sendOtpResponse.Message };
                     }
                     return new Response { Status = RequestStatusEnum.BadRequest, Message = "Failed to update OTP" };
                 }
@@ -857,11 +857,11 @@ namespace EAMS_BLL.AuthServices
                     var result = await _userManager.ResetPasswordAsync(user, resetToken, forgetPasswordModel.Password);
 
                     return result.Succeeded
-                        ? new ServiceResponse { IsSucceed = true, Message = "Password reset successful" }
-                        : new ServiceResponse { IsSucceed = false, Message = "Password reset failed. Please try again." };
+                        ? new ServiceResponse { IsSucceed = true, Message = $"Password reset successful" }
+                        : new ServiceResponse { IsSucceed = false, Message = $"{result}" };
                 }
 
-                return new ServiceResponse { IsSucceed = false, Message = "User not found with the provided mobile number." };
+               
             }
 
             if (user != null)
@@ -881,7 +881,7 @@ namespace EAMS_BLL.AuthServices
                 return new ServiceResponse { IsSucceed = true, Message = "OTP for Forgot Password sent on your registered number" };
             }
 
-            return new ServiceResponse { IsSucceed = true, Message = "Mobile Number Doesn't Exist" };
+            return new ServiceResponse { IsSucceed = false, Message = "User not found with the provided mobile number." };
         }
         public async Task<ServiceResponse> ResetPassword(ResetPasswordModel resetPasswordModel)
         {

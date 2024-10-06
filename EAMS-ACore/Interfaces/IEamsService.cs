@@ -150,6 +150,7 @@ namespace EAMS_ACore.Interfaces
 
         #region SendDashBoardCount
         Task<DashBoardRealTimeCount> GetDashBoardCount(ClaimsIdentity claimsIdentity);
+        Task<DashBoardRealTimeCount> GetEventActivityDashBoardCount(string role, int electionTypeMasterId, int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelMasterId);
         Task<List<DashboardConnectedUser>> DashboardConnectedUser(DahboardMastersId dashboardMastersId, string roleType);
         #endregion
 

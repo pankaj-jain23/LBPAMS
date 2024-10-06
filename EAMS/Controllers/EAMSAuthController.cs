@@ -336,21 +336,24 @@ namespace EAMS.Controllers
         #region ForgetPassword && ResetPasswordViewModel    
         [HttpPost]
         [Route("ForgetPassword")]
-        //[Authorize]
         public async Task<IActionResult> ForgetPassword(ForgetPasswordViewModel forgetPassword)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var mapped = _mapper.Map<ForgetPasswordModel>(forgetPassword);
-                var result = await _authService.ForgetPassword(mapped);
+                return BadRequest("Invalid data provided.");
+            }
+
+            var mapped = _mapper.Map<ForgetPasswordModel>(forgetPassword);
+            var result = await _authService.ForgetPassword(mapped);
+
+            if (result.IsSucceed)
+            {
                 return Ok(result.Message);
             }
-            else
-            {
 
-            }
-            return Ok("Under Development");
+            return BadRequest(result.Message);
         }
+
         [HttpPost]
         [Route("ResetPassword")]
         [Authorize]

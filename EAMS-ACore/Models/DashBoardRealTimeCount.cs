@@ -9,11 +9,11 @@
     public class EventCount
     {
         public string EventName { get; set; }
-
+        public string EventAbbrName { get; set; }
+        
         public int? VotesPolledCount { get; set; }
-
+        public int? VotesInQueueCount { get; set; }
         public int? TotalVotersCount { get; set; }
-
         public decimal? VotesPolledPercentage { get; set; }
         public int? FinalVotesCount { get; set; }
         public decimal? FinalVotesPercentage { get; set; }
