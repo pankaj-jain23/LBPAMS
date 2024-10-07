@@ -2357,7 +2357,8 @@ namespace EAMS_DAL.Repository
                                        FieldOfficerMasterId = foId,
                                        ElectionTypeMasterId = bt.ElectionTypeMasterId,
                                        IsBoothInterrupted = bt.IsBoothInterrupted,
-                                       IsVTInterrupted = bt.IsVTInterrupted
+                                       IsVTInterrupted = bt.IsVTInterrupted,
+                                       TotalVoters = bt.TotalVoters
                                    }).ToListAsync();
 
             // Step 2: Get unique FourthLevelHMasterId and BoothMasterId pairs
@@ -7878,6 +7879,71 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
 
         #region District Based Dashboard Methods
+        //public async Task<List<EventActivityForDashboard>> GetEventActivitiesForDashboard(int stateMasterId, int districtMasterId)
+        //{
+        //    // Querying the EventMaster and filtering by stateMasterId and districtMasterId
+        //    var query = from e in _context.EventMaster
+        //                where e.StateMasterId == stateMasterId
+        //                select new EventActivityForDashboard
+        //                {
+        //                    EventName = e.EventName,
+        //                    EventABBR = e.EventABBR,
+        //                    Status = e.Status
+        //                };
+
+        //    return await query.ToListAsync();
+        //}
+        //public async Task<(List<EventActivityForDashboard> eventActivities, int totalBoothCount)> GetEventActivitiesForDashboard(int stateMasterId, int districtMasterId)
+        //{
+        //    // Querying the EventMaster and filtering by stateMasterId
+        //    var eventQuery = from e in _context.EventMaster
+        //                     where e.StateMasterId == stateMasterId
+        //                     select new EventActivityForDashboard
+        //                     {
+        //                         EventName = e.EventName,
+        //                         EventABBR = e.EventABBR,
+        //                         Status = e.Status
+        //                     };
+
+        //    // Count the total booths for the provided stateMasterId and districtMasterId
+        //    var totalBoothCount = await _context.BoothMaster
+        //                                         .CountAsync(b => b.StateMasterId == stateMasterId && b.DistrictMasterId == districtMasterId);
+
+        //    // Fetch the list of event activities
+        //    var eventActivities = await eventQuery.ToListAsync();
+
+        //    return (eventActivities, totalBoothCount);
+        //}
+        public async Task<(List<EventActivityForDashboard> eventActivities, int totalBoothCount)> GetEventActivitiesForDashboard(int stateMasterId, int districtMasterId)
+        {
+            // Querying the EventMaster and filtering by stateMasterId
+            var eventQuery = from e in _context.EventMaster
+                             where e.StateMasterId == stateMasterId &&
+                             e.Status == true
+                             select new EventActivityForDashboard
+                             {
+                                 EventName = e.EventName,
+                                 EventABBR = e.EventABBR,
+                                 Status = e.Status
+                             };
+
+            // Count the total booths for the provided stateMasterId and districtMasterId
+            var totalBoothCount = await _context.BoothMaster
+                                                 .CountAsync(b => b.StateMasterId == stateMasterId && b.DistrictMasterId == districtMasterId);
+
+            // Fetch the list of event activities
+            var eventActivities = await eventQuery.ToListAsync();
+
+            return (eventActivities, totalBoothCount);
+        }
+
+        public async Task<int> GetTotalBoothActivity(int stateMasterId, int districtMasterId, string eventName)
+        {
+            // Logic to get total booth activities based on eventName
+            return await _context.ElectionInfoMaster
+                .Where(e => e.StateMasterId == stateMasterId && e.DistrictMasterId == districtMasterId && e.EventName == eventName)
+                .CountAsync();
+        }
         public async Task<List<EventActivityCount>> GetEventListDistrictWiseById(string stateId)
         {
             var eventActivityList = new List<EventActivityCount>();
@@ -7926,6 +7992,54 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return eventActivityList;
         }
+        //public async Task<List<EventActivityCount>> GetEventListDistrictWiseById(string stateId)
+        //{
+        //    var eventActivityList = new List<EventActivityCount>();
+
+        //    // Establish a connection to the PostgreSQL database
+        //    await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("Postgres"));
+        //    await connection.OpenAsync();
+
+        //    var command = new NpgsqlCommand("select * from getdistrictwiseeventlistbyid(@state_master_id)", connection);
+        //    command.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateId));
+
+        //    // Execute the command and read the results
+        //    await using var reader = await command.ExecuteReaderAsync();
+
+        //    while (await reader.ReadAsync())
+        //    {
+        //        // Create a new EventActivityCount object and populate its properties from the reader
+        //        var eventActivityCount = new EventActivityCount
+        //        {
+        //            Key = GenerateRandomAlphanumericString(6),
+        //            MasterId = reader.GetInt32(0),
+        //            Name = reader.GetString(1),
+        //            Type = "District",
+        //            PartyDispatch = reader.IsDBNull(4) ? null : reader.GetString(4),
+        //            PartyArrived = reader.IsDBNull(5) ? null : reader.GetString(5),
+        //            SetupPollingStation = reader.IsDBNull(6) ? null : reader.GetString(6),
+        //            //MockPollDone = reader.IsDBNull(7) ? null : reader.GetString(7)+","+ reader.GetInt32(17),
+        //            MockPollDone = reader.IsDBNull(7) ? null : reader.GetString(7),
+        //            PollStarted = reader.IsDBNull(8) ? null : reader.GetString(8),
+        //            PollEnded = reader.IsDBNull(9) ? null : reader.GetString(9),
+        //            MCEVMOff = reader.IsDBNull(10) ? null : reader.GetString(10),
+        //            PartyDeparted = reader.IsDBNull(11) ? null : reader.GetString(11),
+        //            EVMDeposited = reader.IsDBNull(12) ? null : reader.GetString(12),
+        //            PartyReachedAtCollection = reader.IsDBNull(13) ? null : reader.GetString(13),
+        //            QueueValue = reader.IsDBNull(14) ? null : reader.GetString(14),
+        //            FinalVotesValue = reader.IsDBNull(15) ? null : reader.GetString(15),
+        //            VoterTurnOutValue = reader.IsDBNull(16) ? null : reader.GetString(16),
+        //            TotalSo = reader.IsDBNull(3) ? null : reader.GetInt32(3),
+        //            Children = new List<object>()
+        //        };
+
+
+        //        // Add the object to the list
+        //        eventActivityList.Add(eventActivityCount);
+        //    }
+
+        //    return eventActivityList;
+        //}
         public async Task<List<AssemblyEventActivityCount>> GetEventListAssemblyWiseById(string stateId, string districtId)
         {
             var eventActivityList = new List<AssemblyEventActivityCount>();

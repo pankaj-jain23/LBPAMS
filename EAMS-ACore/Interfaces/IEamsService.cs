@@ -136,6 +136,10 @@ namespace EAMS_ACore.Interfaces
         Task<Response> AddVoterTurnOut(AddVoterTurnOut addVoterTurnOut);
 
         Task<List<EventWiseBoothStatus>> EventWiseBoothStatus(string soId);
+        //Task<List<EventActivityForDashboard>> GetEventActivitiesForDashboard(int stateMasterId, int districtMasterId);
+        //Task<(List<EventActivityForDashboard> eventActivities, int totalBoothCount)> GetEventActivitiesForDashboard(int stateMasterId, int districtMasterId);
+        Task<(List<EventActivityForDashboard> eventActivities, int totalBoothCount)> GetEventActivitiesForDashboard(int stateMasterId, int districtMasterId);
+        Task<int> GetTotalBoothActivity(int stateMasterId, int districtMasterId, string eventName);
         Task<List<EventActivityCount>> GetEventListDistrictWiseById(string stateId);
         Task<List<EventActivityCount>> GetEventListPCWiseById(string stateId, string userId);
         Task<List<AssemblyEventActivityCount>> GetEventListAssemblyWiseById(string stateId, string districtId);

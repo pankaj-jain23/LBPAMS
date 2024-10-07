@@ -61,6 +61,7 @@
         public bool IsPrimaryBooth { get; set; }
         public bool IsBoothInterrupted { get; set; }
         public bool IsVTInterrupted { get; set; }//Voter Turnout Event 
+        public int? TotalVoters { get; set; }
     }
     public class CombinedPanchayatMaster
     {

@@ -2637,6 +2637,76 @@ namespace EAMS.Controllers
         #endregion
 
         #region Event Count for Dashboard
+        //[HttpGet("GetEventActivitiesForDashboard")]
+        //public async Task<ActionResult<EventActivityCountForDashboard>> GetEventActivitiesForDashboard( int stateMasterId, int districtMasterId)
+        //{
+        //    var result = await _EAMSService.GetEventActivitiesForDashboard(stateMasterId, districtMasterId);
+        //    if (result == null || !result.Any())
+        //    {
+        //        return NotFound("No event activities found.");
+        //    }
+
+        //    var response = new EventActivityCountForDashboard
+        //    {
+        //        eventActivityForDashboard = result
+        //    };
+
+        //    return Ok(response);
+        //}
+        //[HttpGet("GetEventActivitiesForDashboard")]
+        //public async Task<ActionResult<EventActivityCountForDashboard>> GetEventActivitiesForDashboard(int stateMasterId, int districtMasterId)
+        //{
+        //    var (eventActivities, totalBoothCount) = await _EAMSService.GetEventActivitiesForDashboard(stateMasterId, districtMasterId);
+
+        //    if (eventActivities == null || !eventActivities.Any())
+        //    {
+        //        return NotFound("No event activities found.");
+        //    }
+
+        //    var response = new EventActivityCountForDashboard
+        //    {
+        //        eventActivityForDashboardHeader = eventActivities,
+        //        TotalBoothCount = totalBoothCount // Include the total booth count
+        //    };
+
+        //    return Ok(response);
+        //}
+        [HttpGet("GetEventActivitiesForDashboard")]
+        public async Task<ActionResult<EventActivityCountForDashboard>> GetEventActivitiesForDashboard(int stateMasterId, int districtMasterId)
+        {
+            var (eventActivities, totalBoothCount) = await _EAMSService.GetEventActivitiesForDashboard(stateMasterId, districtMasterId);
+
+            if (eventActivities == null || !eventActivities.Any())
+            {
+                return NotFound("No event activities found.");
+            }
+
+            // Fetching the activity data
+            var eventActivityData = new List<EventActivityForDashboardData>();
+            foreach (var activity in eventActivities)
+            {
+                var totalBoothActivity = await _EAMSService.GetTotalBoothActivity(stateMasterId, districtMasterId, activity.EventName);
+                var remainingBooths = totalBoothCount - totalBoothActivity;
+                var activityPercentage = ((totalBoothActivity / (double)totalBoothCount) * 100).ToString("0.0%");
+
+                eventActivityData.Add(new EventActivityForDashboardData
+                {
+                    TotalBoothCount = totalBoothCount.ToString(),
+                    EventName = activity.EventName,
+                    TotalBoothActivity = totalBoothActivity.ToString(),
+                    ActivityPercentage = activityPercentage
+                });
+            }
+
+            var response = new EventActivityCountForDashboard
+            {
+                eventActivityForDashboardHeader = eventActivities,
+                TotalBoothCount = totalBoothCount,
+                eventActivityForDashboardData = eventActivityData // Set the event activity data
+            };
+
+            return Ok(response);
+        }
         [HttpGet]
         [Route("GetDistrictWiseEventListById")]
         [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,PC")]

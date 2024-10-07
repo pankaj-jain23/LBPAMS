@@ -671,9 +671,28 @@ namespace EAMS_BLL.Services
 
 
         }
+        public async Task<(List<EventActivityForDashboard> eventActivities, int totalBoothCount)> GetEventActivitiesForDashboard(int stateMasterId, int districtMasterId)
+        {
+            // Calling the repository method
+            return await _eamsRepository.GetEventActivitiesForDashboard(stateMasterId, districtMasterId);
+        }
 
+        public async Task<int> GetTotalBoothActivity(int stateMasterId, int districtMasterId, string eventName)
+        {
+            // Logic to fetch the total booths based on the event
+            return await _eamsRepository.GetTotalBoothActivity(stateMasterId, districtMasterId, eventName);
+        }
 
-
+        //public async Task<(List<EventActivityForDashboard> eventActivities, int totalBoothCount)> GetEventActivitiesForDashboard(int stateMasterId, int districtMasterId)
+        //{
+        //    // Calling the repository method
+        //    return await _eamsRepository.GetEventActivitiesForDashboard(stateMasterId, districtMasterId);
+        //}
+        //public async Task<List<EventActivityForDashboard>> GetEventActivitiesForDashboard(int stateMasterId, int districtMasterId)
+        //{
+        //    // Calling the repository method
+        //    return await _eamsRepository.GetEventActivitiesForDashboard(stateMasterId, districtMasterId);
+        //}
         public async Task<List<EventActivityCount>> GetEventListDistrictWiseById(string stateId)
         {
             return await _eamsRepository.GetEventListDistrictWiseById(stateId);
