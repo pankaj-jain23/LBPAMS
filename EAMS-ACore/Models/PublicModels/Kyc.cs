@@ -167,6 +167,8 @@ namespace EAMS_ACore.Models.PublicModels
 
         }
         public string? GPPanchayatWardsCategory { get; set; }
+        public int? GPPanchayatWardsCode { get; set; }
+
         public string CandidateType
         {
             get;

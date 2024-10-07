@@ -16355,6 +16355,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                               FourthLevelHName = fl.HierarchyName,
                               FourthLevelHMasterId = k.FourthLevelHMasterId,
                               GPPanchayatWardsName = gw.GPPanchayatWardsName,
+                              GPPanchayatWardsCode = gw.GPPanchayatWardsCode,
                               GPPanchayatWardsMasterId = k.GPPanchayatWardsMasterId,
                               CandidateType = k.GPPanchayatWardsMasterId == 0 ? "Sarpanch" : "Panch",
                               CandidateName = k.CandidateName,
