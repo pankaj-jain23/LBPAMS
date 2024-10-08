@@ -528,6 +528,14 @@ namespace EAMS.Controllers
             {
                 return BadRequest("PDF file is missing.");
             }
+            if (gpVoterPdfViewModel.GPVoterPdf != null)
+            {
+                if (!gpVoterPdfViewModel.GPVoterPdf.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase) &&
+                    !Path.GetExtension(gpVoterPdfViewModel.GPVoterPdf.FileName).Equals(".pdf", StringComparison.OrdinalIgnoreCase))
+                {
+                    return BadRequest("Only PDF files are allowed.");
+                }
+            }
             const long MaxFileSize = 7 * 1024 * 1024; // 7 MB in bytes
 
             // Check if the file exceeds the maximum size
@@ -579,6 +587,14 @@ namespace EAMS.Controllers
             if (existingGPVoter == null)
             {
                 return NotFound("GP Voter not found.");
+            }
+            if (updateGPVoterViewModel.GPVoterPdf != null)
+            {
+                if (!updateGPVoterViewModel.GPVoterPdf.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase) &&
+                !Path.GetExtension(updateGPVoterViewModel.GPVoterPdf.FileName).Equals(".pdf", StringComparison.OrdinalIgnoreCase))
+                {
+                    return BadRequest("Only PDF files are allowed.");
+                }
             }
             // Define the maximum allowed size (7 MB)
             const long MaxFileSize = 7 * 1024 * 1024; // 7 MB in bytes
