@@ -16371,6 +16371,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                               CandidateName = k.CandidateName,
                               FatherName = k.FatherName,
                               IsUnOppossed = k.IsUnOppossed,
+                              Age = k.Age,
                               NominationPdfPath = $"{baseUrl}{k.NominationPdfPath}",
                           };
 
