@@ -9037,6 +9037,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         //    var pollInterruptionRecord = await _context.PollInterruptions.Where(d => d.BoothMasterId == Convert.ToInt32(boothMasterId)).OrderByDescending(p => p.PollInterruptionId).FirstOrDefaultAsync();
         //    return pollInterruptionRecord;
         //}
+
         public async Task<PollInterruption> GetPollInterruptionData(string boothMasterId)
         {
             var pollInterruptionRecord = await _context.PollInterruptions

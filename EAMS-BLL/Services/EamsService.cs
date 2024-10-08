@@ -891,8 +891,10 @@ namespace EAMS_BLL.Services
 
         //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Election info record not found" };
         //}
+
         public async Task<Response> AddPollInterruption(PollInterruption pollInterruption)
         {
+            var latestPollInterruptionRecord = await _eamsRepository.GetPollInterruptionData(pollInterruption.BoothMasterId.ToString());
             // Fetch the booth master record based on the provided BoothMasterId
             var boothMasterRecord = await _eamsRepository.GetBoothRecord(Convert.ToInt32(pollInterruption.BoothMasterId));
             if (boothMasterRecord == null)
@@ -961,6 +963,7 @@ namespace EAMS_BLL.Services
             }
             if (isResumeformat == true)
             {
+                pollInterruptionData.StopTime = latestPollInterruptionRecord.StopTime;
                 pollInterruptionData.ResumeTime = pollInterruption.ResumeTime;
                 pollInterruptionData.IsPollInterrupted = false;
                 pollInterruptionData.Flag = InterruptionCategory.Resume.ToString();

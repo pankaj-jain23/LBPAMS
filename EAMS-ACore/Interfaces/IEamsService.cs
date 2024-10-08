@@ -218,6 +218,7 @@ namespace EAMS_ACore.Interfaces
         //Task<List<VTReportModel>> GetSlotBasedVoterTurnOutReport(SlotVTReportModel boothReportModel);
 
        
+
         #region HelpDesk
         Task<Response> AddHelpDeskInfo(HelpDeskDetail helpDeskDetail);
         Task<List<HelpDeskDetail>> GetHelpDeskDetail(string assemblyMasterId);
