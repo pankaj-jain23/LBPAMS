@@ -16558,6 +16558,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     CandidateName = kyc.CandidateName,
                     FatherName = kyc.FatherName,
                     IsUnOppossed = kyc.IsUnOppossed,
+                    Age = kyc.Age,
                     NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}"
                 };
 
@@ -16595,6 +16596,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     CandidateName = kyc.CandidateName,
                     FatherName = kyc.FatherName,
                     IsUnOppossed = kyc.IsUnOppossed,
+                    Age = kyc.Age,
                     NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}"
                 };
 
@@ -16629,6 +16631,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     CandidateName = kyc.CandidateName,
                     FatherName = kyc.FatherName,
                     IsUnOppossed = kyc.IsUnOppossed,
+                    Age = kyc.Age,
                     NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}"
                 };
 
