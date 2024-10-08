@@ -41,10 +41,13 @@ namespace EAMS.Controllers
                 return BadRequest("PDF file is missing.");
             }
             // Check if the uploaded file is a PDF
-            if (!kycViewModel.NominationPdf.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase) &&
-                !Path.GetExtension(kycViewModel.NominationPdf.FileName).Equals(".pdf", StringComparison.OrdinalIgnoreCase))
+            if (kycViewModel.NominationPdf != null)
             {
-                return BadRequest("Only PDF files are allowed.");
+                if (!kycViewModel.NominationPdf.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase) &&
+                    !Path.GetExtension(kycViewModel.NominationPdf.FileName).Equals(".pdf", StringComparison.OrdinalIgnoreCase))
+                {
+                    return BadRequest("Only PDF files are allowed.");
+                }
             }
             const long MaxFileSize = 7 * 1024 * 1024; // 7 MB in bytes
 
@@ -124,10 +127,13 @@ namespace EAMS.Controllers
         public async Task<IActionResult> UpdateKyc([FromForm] UpdateKycViewModel updateKycViewModel)
         {
             // Check if the uploaded file is a PDF
-            if (!updateKycViewModel.NominationPdf.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase) &&
-                !Path.GetExtension(updateKycViewModel.NominationPdf.FileName).Equals(".pdf", StringComparison.OrdinalIgnoreCase))
+            if (updateKycViewModel.NominationPdf != null)
             {
-                return BadRequest("Only PDF files are allowed.");
+                if (!updateKycViewModel.NominationPdf.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase) &&
+                !Path.GetExtension(updateKycViewModel.NominationPdf.FileName).Equals(".pdf", StringComparison.OrdinalIgnoreCase))
+                {
+                    return BadRequest("Only PDF files are allowed.");
+                }
             }
             const long MaxFileSize = 7 * 1024 * 1024; // 7 MB in bytes
             // Check if the file exceeds the maximum size
