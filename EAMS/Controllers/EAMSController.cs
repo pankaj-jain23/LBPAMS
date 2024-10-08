@@ -2924,7 +2924,11 @@ namespace EAMS.Controllers
         {
             if (ModelState.IsValid)
             {
+                ClaimsIdentity claimsIdentity = User.Identity as ClaimsIdentity;
+                var electionTypeMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
+
                 var mappedData = _mapper.Map<PollInterruption>(interruptionViewModel);
+                mappedData.ElectionTypeMasterId=Convert.ToInt32(electionTypeMasterIdString);
                 var result = await _EAMSService.AddPollInterruption(mappedData);
 
                 switch (result.Status)

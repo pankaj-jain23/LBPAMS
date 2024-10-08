@@ -35,8 +35,7 @@ namespace EAMS.Hubs
                     await HandleDashboardUserConnected();
                 }
 
-                await SendUserCounts();
-
+                await SendUserCounts(); 
             }
             catch (Exception ex)
             {
@@ -127,9 +126,34 @@ namespace EAMS.Hubs
             
             await Clients.Client(Context.ConnectionId).SendAsync("GetDashBoardCount", eventDashboardCount);
         }
+        public async Task SendDashBoardPollInterruptionCount()
+        {
+            ClaimsIdentity claimsIdentity = Context.User.Identity as ClaimsIdentity;
+            var rolesClaim = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role");
+            var roles = rolesClaim?.Value;
+
+            var stateMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            int stateMasterId = int.Parse(stateMasterIdString);
+
+            var electionTypeMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
+            int electionTypeMasterId = int.Parse(electionTypeMasterIdString);
+
+            var districtMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value;
+            int? districtMasterId = !string.IsNullOrEmpty(districtMasterIdString) ? int.Parse(districtMasterIdString) : (int?)null;
+
+            var assemblyMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId")?.Value;
+            int? assemblyMasterId = !string.IsNullOrEmpty(assemblyMasterIdString) ? int.Parse(assemblyMasterIdString) : (int?)null;
+
+            var fourthLevelHMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "FourthLevelHMasterId")?.Value;
+            int? fourthLevelHMasterId = !string.IsNullOrEmpty(fourthLevelHMasterIdString) ? int.Parse(fourthLevelHMasterIdString) : (int?)null;
+            var eventDashboardCount = await _eamsService.GetPollInterruptionDashboardCount(roles, electionTypeMasterId, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);
+
+            await Clients.Client(Context.ConnectionId).SendAsync("GetPollInterruptionCount", eventDashboardCount);
+        }
         public async Task Ping()
         {
             await SendDashBoardCount();
+            await SendDashBoardPollInterruptionCount();
             await Clients.Client(Context.ConnectionId).SendAsync("Ping", "HeartBeat");
         }
     }

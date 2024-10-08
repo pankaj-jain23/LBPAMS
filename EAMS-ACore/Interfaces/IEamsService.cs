@@ -174,7 +174,7 @@ namespace EAMS_ACore.Interfaces
 
         Task<List<PollInterruptionDashboard>> GetPollInterruptionDashboard(ClaimsIdentity claimsIdentity);
 
-        Task<int> GetPollInterruptionDashboardCount(ClaimsIdentity claimsIdentity);
+        Task<int> GetPollInterruptionDashboardCount(string role, int electionTypeMasterId, int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelMasterId);
         //Task<List<PollInterruptionDashboard>> AddPSOForm(ClaimsIdentity claimsIdentity);
 
         Task<List<PollInterruptionDashboard>> GetBoothListBySoIdfoInterruption(ClaimsIdentity claimsIdentity);

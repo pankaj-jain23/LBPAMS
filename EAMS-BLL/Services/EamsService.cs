@@ -2170,9 +2170,9 @@ namespace EAMS_BLL.Services
             return _eamsRepository.GetPollInterruptionDashboard(claimsIdentity);
         }
 
-        public Task<int> GetPollInterruptionDashboardCount(ClaimsIdentity claimsIdentity)
+        public Task<int> GetPollInterruptionDashboardCount(string role, int electionTypeMasterId, int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelMasterId)
         {
-            return _eamsRepository.GetPollInterruptionDashboardCount(claimsIdentity);
+            return _eamsRepository.GetPollInterruptionDashboardCount(role, electionTypeMasterId, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId);
         }
 
         public Task<List<PollInterruptionDashboard>> GetBoothListBySoIdfoInterruption(ClaimsIdentity claimsIdentity)

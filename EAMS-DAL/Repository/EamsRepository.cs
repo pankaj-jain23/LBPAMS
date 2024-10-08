@@ -6375,8 +6375,21 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 d.ElectionTypeMasterId == checkEventActivity.ElectionTypeMasterId &&
                 d.BoothMasterId == checkEventActivity.BoothMasterId
             );
-
-            if (result is not null && result.IsVoterTurnOut == true)
+            var isPollDetailExist = await _context.PollDetails.AnyAsync(d =>
+                d.StateMasterId == checkEventActivity.StateMasterId &&
+                d.DistrictMasterId == checkEventActivity.DistrictMasterId &&
+                d.AssemblyMasterId == checkEventActivity.AssemblyMasterId &&
+                d.ElectionTypeMasterId == checkEventActivity.ElectionTypeMasterId &&
+                d.BoothMasterId == checkEventActivity.BoothMasterId
+            ) ;
+            if (isPollDetailExist is true && result.IsVoterTurnOut == false)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = true,
+                };
+            }
+            if (result is not null && result.IsVoterTurnOut == true && isPollDetailExist is false)
             {
                 return new ServiceResponse()
                 {
@@ -9326,96 +9339,49 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             //return finalResult;
         }
-        public async Task<int> GetPollInterruptionDashboardCount(ClaimsIdentity claimsIdentity)
+
+        public async Task<int> GetPollInterruptionDashboardCount(
+      string role,
+      int electionTypeMasterId,
+      int stateMasterId,
+      int? districtMasterId,
+      int? assemblyMasterId,
+      int? fourthLevelMasterId)
         {
-            List<PollInterruptionDashboard> finalResult = new List<PollInterruptionDashboard>();
-            int pollCount = 0;
-            if (claimsIdentity != null)
+            // Start building the base query
+            IQueryable<PollInterruption> pollInterruptions = _context.PollInterruptions
+                .Where(e => e.StateMasterId == stateMasterId && e.IsPollInterrupted == true); // Filter for poll interruptions directly
+
+            // Apply role-specific filters in a single conditional block
+            switch (role)
             {
-                Claim stateMasterId = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "StateMasterId");
-                Claim districtMasterId = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId");
-                Claim assemblyMasterId = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId");
-                Claim pcMasterid = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "PCMasterId");
+                case "DistrictAdmin":
+                    pollInterruptions = pollInterruptions.Where(e => e.DistrictMasterId == districtMasterId);
+                    break;
 
-                string sid = stateMasterId.Value; string aid = assemblyMasterId.Value; string did = districtMasterId.Value; string pcid = "";
-                if (pcMasterid != null)
-                {
-                    pcid = pcMasterid.Value;
-                }
-                //Claim role = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "roles");
-                var roles = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role").Value;
-                //var roles = claimsIdentity.Claims(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role").Value;
-                if (roles == "ARO" || roles == "SubARO")
-                {
+                case "LocalBodiesAdmin":
+                    pollInterruptions = pollInterruptions.Where(e => e.DistrictMasterId == districtMasterId &&
+                                                                     e.AssemblyMasterId == assemblyMasterId);
+                    break;
 
-                    var latestRecordsCount = await _context.PollInterruptions
-                           .Where(pi => pi.StateMasterId == Convert.ToInt32(sid) && pi.AssemblyMasterId == Convert.ToInt16(aid))
-                           .GroupBy(pi => new { pi.AssemblyMasterId, pi.BoothMasterId })
-                           .Select(groupedResult => groupedResult.OrderByDescending(r => r.CreatedAt).FirstOrDefault())
-                            .Where(pi => pi.IsPollInterrupted == true)
-                           .CountAsync();
-                    pollCount = latestRecordsCount;
-                }
-                else if (roles == "StateAdmin")
-                {
+                case "RO":
+                    pollInterruptions = pollInterruptions.Where(e => e.DistrictMasterId == districtMasterId &&
+                                                                     e.AssemblyMasterId == assemblyMasterId);
+                    break;
 
-                    var latestRecordsCount = await _context.PollInterruptions
-                           .Where(pi => pi.StateMasterId == Convert.ToInt32(sid))
-                           .GroupBy(pi => new { pi.AssemblyMasterId, pi.BoothMasterId })
-                           .Select(groupedResult => groupedResult.OrderByDescending(r => r.CreatedAt).FirstOrDefault())
-                            .Where(pi => pi.IsPollInterrupted == true)
-                           .CountAsync();
-                    pollCount = latestRecordsCount;
-                }
-                else if (roles == "ECI" || roles == "SuperAdmin")
-                {
-
-                    var latestRecordsCount = await _context.PollInterruptions
-                           .Where(pi => pi.StateMasterId == Convert.ToInt32(sid))
-                           .GroupBy(pi => new { pi.AssemblyMasterId, pi.BoothMasterId })
-                           .Select(groupedResult => groupedResult.OrderByDescending(r => r.CreatedAt).FirstOrDefault())
-                            .Where(pi => pi.IsPollInterrupted == true)
-                           .CountAsync();
-                    pollCount = latestRecordsCount;
-
-                }
-                else if (roles == "DistrictAdmin")
-                {
-
-                    var latestRecordsCount = await _context.PollInterruptions
-                           .Where(pi => pi.StateMasterId == Convert.ToInt32(sid) && pi.DistrictMasterId == Convert.ToInt16(did))
-                           .GroupBy(pi => new { pi.AssemblyMasterId, pi.BoothMasterId })
-                           .Select(groupedResult => groupedResult.OrderByDescending(r => r.CreatedAt).FirstOrDefault())
-                            .Where(pi => pi.IsPollInterrupted == true)
-                           .CountAsync();
-                    pollCount = latestRecordsCount;
-                }
-                else if (roles == "PC")
-                {
-
-                    var latestRecordsCount = await _context.PollInterruptions
-                           .Where(pi => pi.StateMasterId == Convert.ToInt32(sid))
-                           .GroupBy(pi => new { pi.AssemblyMasterId, pi.BoothMasterId })
-                           .Select(groupedResult => groupedResult.OrderByDescending(r => r.CreatedAt).FirstOrDefault())
-                            .Where(pi => pi.IsPollInterrupted == true)
-                           .CountAsync();
-                    pollCount = latestRecordsCount;
-                }
-
-
+                    // Uncomment and adjust if needed for SubLocalBodiesAdmin
+                    // case "SubLocalBodiesAdmin":
+                    //     pollInterruptions = pollInterruptions.Where(e => e.DistrictMasterId == districtMasterId &&
+                    //                                                      e.AssemblyMasterId == assemblyMasterId &&
+                    //                                                      e.FourthLevelMasterId == fourthLevelMasterId);
+                    //     break;
             }
 
-
-
-
-            return pollCount;
-
-
-
-
-
-            //return finalResult;
+            // Perform the count directly on the database
+            return await pollInterruptions.CountAsync();
         }
+
+
 
 
         public async Task<BoothMaster> GetBoothRecord(int boothMasterId)
@@ -11761,7 +11727,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 totalVotesPolled = totalVotesPolled
                     .Where(e => e.DistrictMasterId == districtMasterId);
             }
-            else if (role.Equals("LocalBodiesAdmin", StringComparison.OrdinalIgnoreCase))
+            else if (role.Equals("LocalBodiesAdmin", StringComparison.OrdinalIgnoreCase) || role.Equals("RO", StringComparison.OrdinalIgnoreCase))
             {
                 electionQuery = electionQuery
                     .Where(e => e.DistrictMasterId == districtMasterId && e.AssemblyMasterId == assemblyMasterId);
@@ -11781,7 +11747,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
 
             var totalBoothsCount = await totalBooths.CountAsync();
-            var totalVoters = await totalBooths.SumAsync(d=>d.TotalVoters);
+            var totalVoters = await totalBooths.SumAsync(d => d.TotalVoters);
             var totalVotesPolledSum = await totalVotesPolled.GroupBy(d => d.BoothMasterId)
                 .Select(group => group.OrderByDescending(d => d.VotesPolledRecivedTime).FirstOrDefault().VotesPolled)
                 .SumAsync();
@@ -11810,11 +11776,11 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     PartyDepartedCount = g.Sum(x => x.IsPartyDeparted ? 1 : 0),
                     PartyReachedAtCollectionCount = g.Sum(x => x.IsPartyReachedCollectionCenter ? 1 : 0),
                     EVMDepositedCount = g.Sum(x => x.IsEVMDeposited ? 1 : 0),
-                    EDC = g.Sum(x => x.EDC) 
+                    EDC = g.Sum(x => x.EDC)
                 })
                 .FirstOrDefaultAsync();
 
-           
+
 
             if (electionInfos != null)
             {
@@ -11849,9 +11815,9 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                 .Select(activeEvent => new EventCount
                                 {
                                     EventName = activeEvent.EventName,
-                                    EventAbbrName=activeEvent.EventABBR,
+                                    EventAbbrName = activeEvent.EventABBR,
                                     Count = eventCounts.TryGetValue(activeEvent.EventABBR, out var count) ? count : 0,
-                                    VotesInQueueCount= VotesInQueueCount,
+                                    VotesInQueueCount = VotesInQueueCount,
                                     VotesPolledCount = votesPolledCount,
                                     TotalVotersCount = totalVotersCount,
                                     VotesPolledPercentage = votesPolledPercentage,
