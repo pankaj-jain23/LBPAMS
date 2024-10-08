@@ -77,6 +77,11 @@
             get;
             set;
         }
+        public string? Age
+        {
+
+            get; set;
+        }
     }
 
 }

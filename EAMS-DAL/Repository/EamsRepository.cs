@@ -16212,6 +16212,11 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         #region KYC Public Details
         public async Task<ServiceResponse> AddKYCDetails(Kyc kyc)
         {
+            if (!int.TryParse(kyc.Age, out int age) || age < 21)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "Age must be 21 or above." };
+            }
+
             // Check if an unopposed Sarpanch exists (GPPanchayatWardsMasterId == 0)
             bool existingSarpanch = await _context.Kyc.AnyAsync(k =>
                 k.StateMasterId == kyc.StateMasterId &&
@@ -16251,6 +16256,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         public async Task<ServiceResponse> UpdateKycDetails(Kyc kyc)
         {
+            if (!int.TryParse(kyc.Age, out int age) || age < 21)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "Age must be 21 or above." };
+            }
             // Check if the KYC record exists
             var existingKyc = await _context.Kyc.FirstOrDefaultAsync(k => k.KycMasterId == kyc.KycMasterId);
 
@@ -16309,7 +16318,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             existingKyc.NominationPdfPath = string.IsNullOrEmpty(kyc.NominationPdfPath)
                 ? existingKyc.NominationPdfPath
                 : kyc.NominationPdfPath; // Update only if new path is provided
-            existingKyc.Option1 = kyc.Option1;
+            existingKyc.Age = kyc.Age;
             existingKyc.Option2 = kyc.Option2;
 
             // Save changes to the database
@@ -16407,6 +16416,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                               CandidateName = k.CandidateName,
                               FatherName = k.FatherName,
                               IsUnOppossed = k.IsUnOppossed,
+                              Age = k.Age,
                               NominationPdfPath = $"{baseUrl}{k.NominationPdfPath}",
                           };
 
@@ -16458,6 +16468,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                               CandidateName = k.CandidateName,
                               FatherName = k.FatherName,
                               IsUnOppossed = k.IsUnOppossed,
+                              Age = k.Age,
                               NominationPdfPath = $"{baseUrl}{k.NominationPdfPath}",
                           };
 
@@ -16507,6 +16518,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     CandidateName = kyc.CandidateName,
                     FatherName = kyc.FatherName,
                     IsUnOppossed = kyc.IsUnOppossed,
+                    Age = kyc.Age,
                     NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}"
                 };
 

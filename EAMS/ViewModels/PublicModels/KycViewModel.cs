@@ -41,7 +41,7 @@
             set;
         }
 
-        public string? Option1
+        public string? Age
         {
 
             get; set;
@@ -120,7 +120,7 @@
             set;
         }
 
-        public string? Option1
+        public string? Age
         {
 
             get; set;

@@ -103,6 +103,7 @@ namespace EAMS.Controllers
                 CandidateName = kyc.CandidateName,
                 FatherName = kyc.FatherName,
                 IsUnOppossed = kyc.IsUnOppossed,
+                Age = kyc.Age,
                 NominationPdfPath = !string.IsNullOrEmpty(kyc.NominationPdfPath)
                     ? $"{baseUrl}/{Path.GetFileName(kyc.NominationPdfPath)}"
                     : null,

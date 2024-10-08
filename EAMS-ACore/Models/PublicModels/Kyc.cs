@@ -67,7 +67,7 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
-        public string? Option1
+        public string? Age
         {
 
             get; set;
@@ -203,6 +203,11 @@ namespace EAMS_ACore.Models.PublicModels
         {
             get;
             set;
+        }
+        public string? Age
+        {
+
+            get; set;
         }
     }
 }
