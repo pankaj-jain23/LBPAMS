@@ -169,8 +169,11 @@ namespace EAMS.Controllers
             }
             else
             {
-                // Handle specific messages from the service
-                if (result.Message.Contains("UnOpposed Sarpanch already exists"))
+                if (result.Message.Contains("Age must be 21 or above"))
+                {
+                    return BadRequest("Age must be 21 or above.");
+                }
+                else if (result.Message.Contains("UnOpposed Sarpanch already exists"))
                 {
                     return BadRequest("UnOpposed Sarpanch already exists.");
                 }
