@@ -959,7 +959,8 @@ namespace EAMS_BLL.Services
                 pollInterruptionData.StopTime = pollInterruption.StopTime;
                 pollInterruptionData.IsPollInterrupted = true;
                 pollInterruptionData.Flag = InterruptionCategory.Stop.ToString();
-
+                boothMasterRecord.IsBoothInterrupted = true;
+                await _eamsRepository.UpdateBooth(boothMasterRecord);
             }
             if (isResumeformat == true)
             {
@@ -967,6 +968,8 @@ namespace EAMS_BLL.Services
                 pollInterruptionData.ResumeTime = pollInterruption.ResumeTime;
                 pollInterruptionData.IsPollInterrupted = false;
                 pollInterruptionData.Flag = InterruptionCategory.Resume.ToString();
+                boothMasterRecord.IsBoothInterrupted = false;
+                await _eamsRepository.UpdateBooth(boothMasterRecord);
             }
             if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.EVMFault)
             {
