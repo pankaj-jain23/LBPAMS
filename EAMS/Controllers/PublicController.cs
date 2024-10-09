@@ -210,12 +210,7 @@ namespace EAMS.Controllers
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
             var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
-
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized("User doesn't exist.");
-            }
-
+             
             // Determine whether to call the method with user ID or not
             var roresult = userRole?.Contains("RO") == true
                 ? await _eamsService.GetKYCDetailByAssemblyId(electionType, stateMasterId, districtMasterId, assemblyMasterId, userId)
