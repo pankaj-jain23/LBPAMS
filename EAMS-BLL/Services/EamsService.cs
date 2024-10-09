@@ -2842,14 +2842,14 @@ namespace EAMS_BLL.Services
                             .ToList();
 
                         //// Reset all candidates as non-winner, non-draw, non-lottery
-                        foreach (var candidate in validResults)
-                        {
-                            candidate.IsWinner = false;
-                            candidate.IsDraw = false;
-                        }
+                        //foreach (var candidate in validResults)
+                        //{
+                        //    candidate.IsWinner = false;
+                        //    candidate.IsDraw = false;
+                        //}
 
                         // Case 4: If any candidate has IsLottery = true, mark that candidate as the winner
-                        var lotteryCandidate = validResults.FirstOrDefault(c => c.IsDrawLottery);
+                        var lotteryCandidate = validResults.FirstOrDefault(c => c.IsDrawLottery && c.IsWinner == true);
                         if (lotteryCandidate != null)
                         {
                             lotteryCandidate.IsWinner = true;
@@ -2860,6 +2860,7 @@ namespace EAMS_BLL.Services
                                 Message = $"Candidate won by lottery."
                             };
                         }
+
 
                         // Case 3: If ReCounting is true, recheck candidates and handle the draw situation again
                         if (validResults.Any(c => c.IsReCounting))
