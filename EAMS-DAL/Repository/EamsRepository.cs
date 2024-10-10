@@ -8144,7 +8144,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                 } into g
                                 select new FourthLevelEventActivityCount
                                 {
-                                    Key = stateMasterId + districtMasterId+ assemblyMasterId + g.Key.FourthLevelHMasterId + g.Key.HierarchyName, // Generate different key for each record
+                                    Key = $"{stateMasterId}{districtMasterId}{assemblyMasterId}{g.Key.FourthLevelHMasterId}{g.Key.HierarchyName}",
+                                    // Generate different key for each record
                                     MasterId = g.Key.FourthLevelHMasterId,
                                     StateMasterId = stateMasterId,
                                     DistrictMasterId = districtMasterId,
