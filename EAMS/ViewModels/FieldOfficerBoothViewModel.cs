@@ -12,6 +12,12 @@
             get;
             set;
         }
+        public int? FourthLevelHTotalVoters
+        {
+            get;
+            set;
+        }
+        
         public string? FourthLevelHName { get; set; }
         public int BoothMasterId { get; set; }
         public string BoothName { get; set; }

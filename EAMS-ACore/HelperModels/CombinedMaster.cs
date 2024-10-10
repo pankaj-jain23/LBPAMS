@@ -46,6 +46,11 @@
             get;
             set;
         }
+        public int? FourthLevelHTotalVoters
+        {
+            get;
+            set;
+        }
         public string? FourthLevelHName { get; set; }
         public string? PSZonePanchayatName { get; set; }
         public int? PSZoneMasterId

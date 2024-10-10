@@ -431,6 +431,7 @@ namespace EAMS.Helper
                   .ForMember(dest => dest.FieldOfficerMasterId, opt => opt.MapFrom(src => src.FieldOfficerMasterId))
                  .ForMember(dest => dest.BoothName, opt => opt.MapFrom(src => src.BoothName))
                  .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
+                 .ForMember(dest => dest.FourthLevelHTotalVoters, opt => opt.MapFrom(src => src.FourthLevelHTotalVoters))
                  .ForMember(dest => dest.FourthLevelHName, opt => opt.MapFrom(src => src.FourthLevelHName))
                 .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
                 .ForMember(dest => dest.IsAssigned, opt => opt.MapFrom(src => src.IsAssigned))

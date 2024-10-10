@@ -2436,8 +2436,24 @@ namespace EAMS_DAL.Repository
                                        ElectionTypeMasterId = bt.ElectionTypeMasterId,
                                        IsBoothInterrupted = bt.IsBoothInterrupted,
                                        IsVTInterrupted = bt.IsVTInterrupted,
-                                       TotalVoters = bt.TotalVoters
+                                       TotalVoters = bt.TotalVoters,
+                                       FourthLevelHTotalVoters=bt.TotalVoters,
                                    }).ToListAsync();
+            // Step 2: Group by FourthLevelHMasterId and calculate total voters
+            var totalVotersByFourthLevelH = boothList
+                .GroupBy(b => b.FourthLevelHMasterId)
+                .Select(g => new
+                {
+                    FourthLevelHMasterId = g.Key,
+                    TotalVotersSum = g.Sum(b => b.TotalVoters)
+                }).ToList();
+
+            // Step 3: Update boothList to include the total voters for each FourthLevelHMasterId
+            foreach (var booth in boothList)
+            {
+                booth.FourthLevelHTotalVoters = totalVotersByFourthLevelH
+                    .FirstOrDefault(t => t.FourthLevelHMasterId == booth.FourthLevelHMasterId)?.TotalVotersSum ?? 0;
+            }
 
             // Step 2: Get unique FourthLevelHMasterId and BoothMasterId pairs
             var fourthLevelHMasterIds = boothList.Select(b => b.FourthLevelHMasterId).Distinct().ToList();
@@ -2465,8 +2481,7 @@ namespace EAMS_DAL.Repository
                 !matchingResultDeclarations.Any(rd => rd.FourthLevelHMasterId == bl.FourthLevelHMasterId &&
                                                       rd.BoothMasterId == bl.BoothMasterId)
             );
-
-            // Return the filtered list of booths
+         
             return boothList;
         }
 
