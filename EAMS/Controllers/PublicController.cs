@@ -723,7 +723,7 @@ namespace EAMS.Controllers
         }
         #endregion
 
-        #region ResultDeclaration 
+        #region ResultDeclaration For Mobile
 
         [HttpPost("AddResultDeclarationDetails")]
         [Authorize]
@@ -740,8 +740,9 @@ namespace EAMS.Controllers
             int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
             int districtMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("DistrictMasterId"));
             int assemblyMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AssemblyMasterId"));
-            //int fourthLevelMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("FourthLevelHMasterId"));
-            int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId")); 
+            int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));  
+            int fieldOfficerMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("FieldOfficerMasterId"));
+
             // Map ViewModel to Entity
             var mappedData = _mapper.Map<List<ResultDeclaration>>(resultDeclarationViewModel.resultDeclarationLists);
 
@@ -753,6 +754,7 @@ namespace EAMS.Controllers
                 resultDeclaration.AssemblyMasterId = assemblyMasterId;
                 //resultDeclaration.FourthLevelHMasterId = fourthLevelMasterId;
                 resultDeclaration.ElectionTypeMasterId = electionTypeMasterId;
+                resultDeclaration.ResultDeclaredByMobile = fieldOfficerMasterId.ToString();
             });
 
             // Save the mapped data

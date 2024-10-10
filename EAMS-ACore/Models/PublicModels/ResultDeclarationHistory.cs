@@ -69,6 +69,16 @@ namespace EAMS_ACore.Models.PublicModels
         }
         public bool IsWinner { get; set; }
         public bool IsResultDeclared { get; set; }
+        public string? ResultDeclaredByMobile
+        {
+            get;
+            set;
+        }
+        public string? ResultDeclaredByPortal
+        {
+            get;
+            set;
+        }
         public bool IsReCounting { get; set; }
         public bool IsDraw { get; set; }
         public bool IsDrawLottery { get; set; }
