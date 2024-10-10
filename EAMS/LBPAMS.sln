@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LBPAMS-BLL", "..\EAMS-BLL\L
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LBPAMS-DAL", "..\EAMS-DAL\LBPAMS-DAL.csproj", "{1517FEF2-B426-4191-91BF-7E5F5E29E4D7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LBPAMS-BEBCHMARK", "..\LBPAMS-BEBCHMARK\LBPAMS-BEBCHMARK.csproj", "{EFE5E067-84FB-41CF-9308-2752AA508BA8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{1517FEF2-B426-4191-91BF-7E5F5E29E4D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1517FEF2-B426-4191-91BF-7E5F5E29E4D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1517FEF2-B426-4191-91BF-7E5F5E29E4D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EFE5E067-84FB-41CF-9308-2752AA508BA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFE5E067-84FB-41CF-9308-2752AA508BA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFE5E067-84FB-41CF-9308-2752AA508BA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFE5E067-84FB-41CF-9308-2752AA508BA8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
