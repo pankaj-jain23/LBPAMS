@@ -2756,31 +2756,88 @@ namespace EAMS.Controllers
         //        return NotFound();
         //}
 
+        //[HttpGet]
+        //[Route("GetAssemblyWiseEventListById")]
+        //[Authorize(Roles = "SuperAdmin,StateAdmin,DistrictAdmin")]
+        //public async Task<IActionResult> EventListAssemblyWiseById(int? districtMasterId)
+        //{
+        //    var stateMasterId = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+        //    if (string.IsNullOrEmpty(stateMasterId))
+        //    {
+        //        return BadRequest("StateMasterId is required.");
+        //    }
+        //    var eventAssemblyList = await _EAMSService.GetEventListAssemblyWiseById(Convert.ToInt32(stateMasterId), districtMasterId);
+        //    if (eventAssemblyList is not null)
+        //        return Ok(eventAssemblyList);
+        //    else
+        //        return NotFound();
+        //}
         [HttpGet]
         [Route("GetAssemblyWiseEventListById")]
         [Authorize(Roles = "SuperAdmin,StateAdmin,DistrictAdmin")]
-        public async Task<IActionResult> EventListAssemblyWiseById(int districtMasterId)
+        public async Task<IActionResult> EventListAssemblyWiseById(int? districtMasterId)
+        {
+            // Retrieve StateMasterId from user claims
+            var stateMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+
+            // Validate StateMasterId
+            if (!int.TryParse(stateMasterIdClaim, out var stateMasterId))
+            {
+                return BadRequest("StateMasterId is required.");
+            }
+
+            // If districtMasterId is not provided, retrieve it from claims
+            if (!districtMasterId.HasValue)
+            {
+                var districtMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value;
+
+                if (!int.TryParse(districtMasterIdClaim, out var districtId))
+                {
+                    return BadRequest("DistrictMasterId is required.");
+                }
+
+                districtMasterId = districtId;
+            }
+
+            // Fetch the event assembly list
+            var eventAssemblyList = await _EAMSService.GetEventListAssemblyWiseById(stateMasterId, districtMasterId.Value);
+
+            // Return the appropriate response
+            return eventAssemblyList?.Any() == true ? Ok(eventAssemblyList) : NotFound("No events found for the specified state and district.");
+        }
+
+        [HttpGet]
+        [Route("GetEventListFourthLevelHWiseById")]
+        [Authorize(Roles = "SuperAdmin,StateAdmin,DistrictAdmin")]
+        public async Task<IActionResult> EventListFourthLevelHWiseById(int? districtMasterId,int? assemblyMasterId)
         {
             var stateMasterId = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
             if (string.IsNullOrEmpty(stateMasterId))
             {
                 return BadRequest("StateMasterId is required.");
             }
-            var eventAssemblyList = await _EAMSService.GetEventListAssemblyWiseById(Convert.ToInt32(stateMasterId), districtMasterId);
-            if (eventAssemblyList is not null)
-                return Ok(eventAssemblyList);
-            else
-                return NotFound();
-        }
-        [HttpGet]
-        [Route("GetEventListFourthLevelHWiseById")]
-        [Authorize(Roles = "SuperAdmin,StateAdmin,DistrictAdmin")]
-        public async Task<IActionResult> EventListFourthLevelHWiseById(int districtMasterId,int assemblyMasterId)
-        {
-            var stateMasterId = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
-            if (string.IsNullOrEmpty(stateMasterId))
+            if (!districtMasterId.HasValue)
             {
-                return BadRequest("StateMasterId is required.");
+                var districtMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value;
+
+                if (!int.TryParse(districtMasterIdClaim, out var districtId))
+                {
+                    return BadRequest("DistrictMasterId is required.");
+                }
+
+                districtMasterId = districtId;
+            }
+
+            if (!assemblyMasterId.HasValue)
+            {
+                var assemblyMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId")?.Value;
+
+                if (!int.TryParse(assemblyMasterIdClaim, out var assemblyId))
+                {
+                    return BadRequest("AssemblyMasterId is required.");
+                }
+
+                assemblyMasterId = assemblyId;
             }
             var eventAssemblyList = await _EAMSService.GetEventListFourthLevelHWiseById(Convert.ToInt32(stateMasterId), districtMasterId, assemblyMasterId);
             if (eventAssemblyList is not null)
@@ -2804,9 +2861,48 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetBoothWiseEventListById")]
         [Authorize]
-        public async Task<IActionResult> EventListBoothWiseById(string? stateId, string? districtId, string? assemblyId)
+        public async Task<IActionResult> EventListBoothWiseById(int? districtMasterId, int? assemblyMasterId, int? fourthLevelHMasterId)
         {
-            var eventBoothList = await _EAMSService.GetEventListBoothWiseById(stateId, districtId, assemblyId);
+            var stateMasterId = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            if (string.IsNullOrEmpty(stateMasterId))
+            {
+                return BadRequest("StateMasterId is required.");
+            }
+            if (!districtMasterId.HasValue)
+            {
+                var districtMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value;
+
+                if (!int.TryParse(districtMasterIdClaim, out var districtId))
+                {
+                    return BadRequest("DistrictMasterId is required.");
+                }
+
+                districtMasterId = districtId;
+            }
+
+            if (!assemblyMasterId.HasValue)
+            {
+                var assemblyMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId")?.Value;
+
+                if (!int.TryParse(assemblyMasterIdClaim, out var assemblyId))
+                {
+                    return BadRequest("AssemblyMasterId is required.");
+                }
+
+                assemblyMasterId = assemblyId;
+            }
+            if (!fourthLevelHMasterId.HasValue)
+            {
+                var fourthLevelHMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "FourthLevelHMasterId")?.Value;
+
+                if (!int.TryParse(fourthLevelHMasterIdClaim, out var fourthLevelId))
+                {
+                    return BadRequest("FourthLevelHMasterId is required.");
+                }
+
+                fourthLevelHMasterId = fourthLevelId;
+            }
+            var eventBoothList = await _EAMSService.GetEventListBoothWiseById(Convert.ToInt32(stateMasterId), districtMasterId, assemblyMasterId, fourthLevelHMasterId);
             if (eventBoothList is not null)
                 return Ok(eventBoothList);
             else

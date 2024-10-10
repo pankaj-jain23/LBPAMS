@@ -189,11 +189,11 @@ namespace EAMS_ACore.IRepository
         Task<int> GetTotalBoothActivity(int stateMasterId, int districtMasterId, string eventName);
         Task<List<EventActivityCount>> GetEventListDistrictWiseById(int stateMasterId);
         Task<List<EventActivityCount>> GetEventListPCWiseById(string stateId, string userId);
-        Task<List<AssemblyEventActivityCount>> GetEventListAssemblyWiseById(int stateMasterId, int districtMasterId);
-        Task<List<FourthLevelEventActivityCount>> GetEventListFourthLevelHWiseById(int stateMasterId, int districtMasterId,int assemblyMasterId);
+        Task<List<AssemblyEventActivityCount>> GetEventListAssemblyWiseById(int stateMasterId, int? districtMasterId);
+        Task<List<FourthLevelEventActivityCount>> GetEventListFourthLevelHWiseById(int stateMasterId, int? districtMasterId,int? assemblyMasterId);
         //Task<List<AssemblyEventActivityCount>> GetEventListAssemblyWiseByStateId(string stateId);
         Task<List<AssemblyEventActivityCountPCWise>> GetEventListAssemblyWiseByPCId(string stateId, string pcId);
-        Task<List<EventActivityBoothWise>> GetEventListBoothWiseById(string stateId, string districtId, string assemblyId);
+        Task<List<EventActivityBoothWise>> GetEventListBoothWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelHMasterId);
         Task<List<EventActivityBoothWise>> GetEventListBoothWiseByPCId(string stateId, string pcId, string assemblyId);
 
 

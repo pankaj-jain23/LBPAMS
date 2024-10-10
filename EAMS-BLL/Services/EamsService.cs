@@ -701,21 +701,22 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetEventListPCWiseById(stateId, userId);
         }
-        public async Task<List<AssemblyEventActivityCount>> GetEventListAssemblyWiseById(int stateMasterId, int districtMasterId)
+        public async Task<List<AssemblyEventActivityCount>> GetEventListAssemblyWiseById(int stateMasterId, int? districtMasterId)
         {
             return await _eamsRepository.GetEventListAssemblyWiseById(stateMasterId, districtMasterId);
         }
-        public async Task<List<FourthLevelEventActivityCount>> GetEventListFourthLevelHWiseById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        public async Task<List<FourthLevelEventActivityCount>> GetEventListFourthLevelHWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId)
         {
             return await _eamsRepository.GetEventListFourthLevelHWiseById(stateMasterId, districtMasterId, assemblyMasterId);
         }
+
         public async Task<List<AssemblyEventActivityCountPCWise>> GetEventListAssemblyWiseByPCId(string stateId, string pcId)
         {
             return await _eamsRepository.GetEventListAssemblyWiseByPCId(stateId, pcId);
         }
-        public async Task<List<EventActivityBoothWise>> GetEventListBoothWiseById(string stateId, string districtId, string assemblyId)
+        public async Task<List<EventActivityBoothWise>> GetEventListBoothWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelHMasterId)
         {
-            return await _eamsRepository.GetEventListBoothWiseById(stateId, districtId, assemblyId);
+            return await _eamsRepository.GetEventListBoothWiseById(stateMasterId,districtMasterId,assemblyMasterId, fourthLevelHMasterId);
         }
         public async Task<List<EventActivityBoothWise>> GetEventListBoothWiseByPCId(string stateId, string pcId, string assemblyId)
         {

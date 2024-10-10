@@ -8090,7 +8090,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
 
          
-        public async Task<List<AssemblyEventActivityCount>> GetEventListAssemblyWiseById(int stateMasterId, int districtMasterId)
+        public async Task<List<AssemblyEventActivityCount>> GetEventListAssemblyWiseById(int stateMasterId, int? districtMasterId)
         {
             var result = await (from election in _context.ElectionInfoMaster
                                 join assembly in _context.AssemblyMaster on election.AssemblyMasterId equals assembly.AssemblyMasterId
@@ -8131,7 +8131,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return result;
         }
-        public async Task<List<FourthLevelEventActivityCount>> GetEventListFourthLevelHWiseById(int stateMasterId, int districtMasterId,int assemblyMasterId)
+        public async Task<List<FourthLevelEventActivityCount>> GetEventListFourthLevelHWiseById(int stateMasterId, int? districtMasterId,int? assemblyMasterId)
         {
             var result = await (from election in _context.ElectionInfoMaster
                                 join fourthLevel in _context.FourthLevelH on election.FourthLevelMasterId equals fourthLevel.FourthLevelHMasterId
@@ -8174,56 +8174,105 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return result;
         }
-        public async Task<List<EventActivityBoothWise>> GetEventListBoothWiseById(string stateId, string districtId, string assemblyId)
+        public async Task<List<EventActivityBoothWise>> GetEventListBoothWiseById(int stateMasterId,int? districtMasterId,int? assemblyMasterId,int? fourthLevelHMasterId)
         {
-            var eventActivityList = new List<EventActivityBoothWise>();
+            var result = await (from election in _context.ElectionInfoMaster
+                                join boothMaster in _context.BoothMaster on election.BoothMasterId equals boothMaster.BoothMasterId
+                                join fieldOfficerMaster in _context.FieldOfficerMaster
+                                    on boothMaster.AssignedBy equals fieldOfficerMaster.FieldOfficerMasterId.ToString() // Assuming AssignedBy is string
+                                where election.StateMasterId == stateMasterId
+                                      && (districtMasterId == null || election.DistrictMasterId == districtMasterId)
+                                      && (assemblyMasterId == null || election.AssemblyMasterId == assemblyMasterId)
+                                      && (fourthLevelHMasterId == null || election.FourthLevelMasterId == fourthLevelHMasterId) // Use == for nullable check
+                                group election by new
+                                {
+                                    boothMaster.BoothMasterId,
+                                    boothMaster.BoothCode_No,
+                                    boothMaster.BoothName,
+                                    fieldOfficerMaster.FieldOfficerName,
+                                    fieldOfficerMaster.FieldOfficerMobile
+                                } into g
+                                select new EventActivityBoothWise
+                                {
+                                    Key = $"{stateMasterId}{districtMasterId}{assemblyMasterId}{fourthLevelHMasterId}{g.Key.BoothMasterId}{g.Key.BoothName}",
+                                    MasterId = g.Key.BoothMasterId,
+                                    StateMasterId = stateMasterId,
+                                    DistrictMasterId = districtMasterId,
+                                    AssemblyMasterId = assemblyMasterId,
+                                    Name = g.Key.BoothName,
+                                    Type = "Booth",
+                                    BoothCode_No = g.Key.BoothCode_No,
+                                    PartyDispatch = g.Sum(x => x.IsPartyDispatched ? 1 : 0).ToString(),
+                                    PartyArrived = g.Sum(x => x.IsPartyReached ? 1 : 0).ToString(),
+                                    SetupPollingStation = g.Sum(x => x.IsSetupOfPolling ? 1 : 0).ToString(),
+                                    MockPollDone = g.Sum(x => x.IsMockPollDone ? 1 : 0).ToString(),
+                                    PollStarted = g.Sum(x => x.IsPollStarted ? 1 : 0).ToString(),
+                                    PollEnded = g.Sum(x => x.IsPollEnded ? 1 : 0).ToString(),
+                                    MCEVMOff = g.Sum(x => x.IsMCESwitchOff ? 1 : 0).ToString(),
+                                    PartyDeparted = g.Sum(x => x.IsPartyDeparted ? 1 : 0).ToString(),
+                                    EVMDeposited = g.Sum(x => x.IsEVMDeposited ? 1 : 0).ToString(),
+                                    PartyReachedAtCollection = g.Sum(x => x.IsPartyReachedCollectionCenter ? 1 : 0).ToString(),
+                                    QueueValue = g.Sum(x => x.IsVoterInQueue ? 1 : 0).ToString(),
+                                    FinalVotesValue = g.Sum(x => x.IsFinalVote ? 1 : 0).ToString(),
+                                    VoterTurnOutValue = g.Sum(x => x.IsVoterTurnOut ? 1 : 0).ToString(),
+                                    AssignedFOName = g.Key.FieldOfficerName,
+                                    AssignedFOMobile = g.Key.FieldOfficerMobile
+                                }).ToListAsync();
 
-            // Establish a connection to the PostgreSQL database
-            await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("Postgres"));
-            await connection.OpenAsync();
-
-            var command = new NpgsqlCommand("SELECT * FROM getboothwiseeventlistbyid(@state_master_id, @district_master_id, @assembly_master_id)", connection);
-            command.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateId));
-            command.Parameters.AddWithValue("@district_master_id", Convert.ToInt32(districtId));
-            command.Parameters.AddWithValue("@assembly_master_id", Convert.ToInt32(assemblyId));
-
-            // Execute the command and read the results
-            await using var reader = await command.ExecuteReaderAsync();
-
-            while (await reader.ReadAsync())
-            {
-                // Create a new EventActivityBoothWise object and populate its properties from the reader
-                var eventActivityBoothWise = new EventActivityBoothWise
-                {
-                    Key = GenerateRandomAlphanumericString(6), // You need to define this method to generate a random alphanumeric string
-                    MasterId = reader.IsDBNull(0) ? (int?)null : reader.GetInt32(0),
-                    Name = reader.IsDBNull(1) ? null : reader.GetString(1),
-                    Type = "Booth", // Assuming this is the type for booth
-                    PartyDispatch = reader.IsDBNull(2) ? (int?)null : reader.GetInt32(2),
-                    PartyArrived = reader.IsDBNull(3) ? (int?)null : reader.GetInt32(3),
-                    SetupPollingStation = reader.IsDBNull(4) ? (int?)null : reader.GetInt32(4),
-                    MockPollDone = reader.IsDBNull(5) ? (int?)null : reader.GetInt32(5),
-                    PollStarted = reader.IsDBNull(6) ? (int?)null : reader.GetInt32(6),
-                    PollEnded = reader.IsDBNull(7) ? (int?)null : reader.GetInt32(7),
-                    MCEVMOff = reader.IsDBNull(8) ? (int?)null : reader.GetInt32(8),
-                    PartyDeparted = reader.IsDBNull(9) ? (int?)null : reader.GetInt32(9),
-                    EVMDeposited = reader.IsDBNull(10) ? (int?)null : reader.GetInt32(10),
-                    PartyReachedAtCollection = reader.IsDBNull(11) ? (int?)null : reader.GetInt32(11),
-                    QueueValue = reader.IsDBNull(12) ? (int?)null : reader.GetInt32(12),
-                    FinalVotesValue = reader.IsDBNull(13) ? (int?)null : reader.GetInt32(13),
-                    VoterTurnOutValue = reader.IsDBNull(14) ? (int?)null : reader.GetInt32(14),
-                    //  AssignedSOId= reader.IsDBNull(15) ? (int?)null : reader.GetInt32(15),
-                    AssignedSOName = reader.IsDBNull(16) ? null : reader.GetString(16),
-                    AssignedSOMobile = reader.IsDBNull(17) ? null : reader.GetString(17)
-
-                };
-
-                // Add the object to the list
-                eventActivityList.Add(eventActivityBoothWise);
-            }
-
-            return eventActivityList;
+            return result;
         }
+
+
+        //public async Task<List<EventActivityBoothWise>> GetEventListBoothWiseById(int stateId, int? districtId, int? assemblyId)
+        //{
+        //    var eventActivityList = new List<EventActivityBoothWise>();
+
+        //    // Establish a connection to the PostgreSQL database
+        //    await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("Postgres"));
+        //    await connection.OpenAsync();
+
+        //    var command = new NpgsqlCommand("SELECT * FROM getboothwiseeventlistbyid(@state_master_id, @district_master_id, @assembly_master_id)", connection);
+        //    command.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateId));
+        //    command.Parameters.AddWithValue("@district_master_id", Convert.ToInt32(districtId));
+        //    command.Parameters.AddWithValue("@assembly_master_id", Convert.ToInt32(assemblyId));
+
+        //    // Execute the command and read the results
+        //    await using var reader = await command.ExecuteReaderAsync();
+
+        //    while (await reader.ReadAsync())
+        //    {
+        //        // Create a new EventActivityBoothWise object and populate its properties from the reader
+        //        var eventActivityBoothWise = new EventActivityBoothWise
+        //        {
+        //            Key = GenerateRandomAlphanumericString(6), // You need to define this method to generate a random alphanumeric string
+        //            MasterId = reader.IsDBNull(0) ? (int?)null : reader.GetInt32(0),
+        //            Name = reader.IsDBNull(1) ? null : reader.GetString(1),
+        //            Type = "Booth", // Assuming this is the type for booth
+        //            PartyDispatch = reader.IsDBNull(2) ? (int?)null : reader.GetInt32(2),
+        //            PartyArrived = reader.IsDBNull(3) ? (int?)null : reader.GetInt32(3),
+        //            SetupPollingStation = reader.IsDBNull(4) ? (int?)null : reader.GetInt32(4),
+        //            MockPollDone = reader.IsDBNull(5) ? (int?)null : reader.GetInt32(5),
+        //            PollStarted = reader.IsDBNull(6) ? (int?)null : reader.GetInt32(6),
+        //            PollEnded = reader.IsDBNull(7) ? (int?)null : reader.GetInt32(7),
+        //            MCEVMOff = reader.IsDBNull(8) ? (int?)null : reader.GetInt32(8),
+        //            PartyDeparted = reader.IsDBNull(9) ? (int?)null : reader.GetInt32(9),
+        //            EVMDeposited = reader.IsDBNull(10) ? (int?)null : reader.GetInt32(10),
+        //            PartyReachedAtCollection = reader.IsDBNull(11) ? (int?)null : reader.GetInt32(11),
+        //            QueueValue = reader.IsDBNull(12) ? (int?)null : reader.GetInt32(12),
+        //            FinalVotesValue = reader.IsDBNull(13) ? (int?)null : reader.GetInt32(13),
+        //            VoterTurnOutValue = reader.IsDBNull(14) ? (int?)null : reader.GetInt32(14),
+        //            //  AssignedSOId= reader.IsDBNull(15) ? (int?)null : reader.GetInt32(15),
+        //            AssignedSOName = reader.IsDBNull(16) ? null : reader.GetString(16),
+        //            AssignedSOMobile = reader.IsDBNull(17) ? null : reader.GetString(17)
+
+        //        };
+
+        //        // Add the object to the list
+        //        eventActivityList.Add(eventActivityBoothWise);
+        //    }
+
+        //    return eventActivityList;
+        //}
 
 
         #endregion
@@ -8427,26 +8476,26 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 // Create a new EventActivityBoothWise object and populate its properties from the reader
                 var eventActivityBoothWise = new EventActivityBoothWise
                 {
-                    Key = GenerateRandomAlphanumericString(6), // You need to define this method to generate a random alphanumeric string
-                    MasterId = reader.IsDBNull(0) ? (int?)null : reader.GetInt32(0),
-                    Name = reader.IsDBNull(1) ? null : reader.GetString(1),
-                    Type = "Booth", // Assuming this is the type for booth
-                    PartyDispatch = reader.IsDBNull(2) ? (int?)null : reader.GetInt32(2),
-                    PartyArrived = reader.IsDBNull(3) ? (int?)null : reader.GetInt32(3),
-                    SetupPollingStation = reader.IsDBNull(4) ? (int?)null : reader.GetInt32(4),
-                    MockPollDone = reader.IsDBNull(5) ? (int?)null : reader.GetInt32(5),
-                    PollStarted = reader.IsDBNull(6) ? (int?)null : reader.GetInt32(6),
-                    PollEnded = reader.IsDBNull(7) ? (int?)null : reader.GetInt32(7),
-                    MCEVMOff = reader.IsDBNull(8) ? (int?)null : reader.GetInt32(8),
-                    PartyDeparted = reader.IsDBNull(9) ? (int?)null : reader.GetInt32(9),
-                    EVMDeposited = reader.IsDBNull(10) ? (int?)null : reader.GetInt32(10),
-                    PartyReachedAtCollection = reader.IsDBNull(11) ? (int?)null : reader.GetInt32(11),
-                    QueueValue = reader.IsDBNull(12) ? (int?)null : reader.GetInt32(12),
-                    FinalVotesValue = reader.IsDBNull(13) ? (int?)null : reader.GetInt32(13),
-                    VoterTurnOutValue = reader.IsDBNull(14) ? (int?)null : reader.GetInt32(14),
-                    //  AssignedSOId= reader.IsDBNull(15) ? (int?)null : reader.GetInt32(15),
-                    AssignedSOName = reader.IsDBNull(16) ? null : reader.GetString(16),
-                    AssignedSOMobile = reader.IsDBNull(17) ? null : reader.GetString(17)
+                    //Key = GenerateRandomAlphanumericString(6), // You need to define this method to generate a random alphanumeric string
+                    //MasterId = reader.IsDBNull(0) ? (int?)null : reader.GetInt32(0),
+                    //Name = reader.IsDBNull(1) ? null : reader.GetString(1),
+                    //Type = "Booth", // Assuming this is the type for booth
+                    //PartyDispatch = reader.IsDBNull(2) ? (int?)null : reader.GetInt32(2),
+                    //PartyArrived = reader.IsDBNull(3) ? (int?)null : reader.GetInt32(3),
+                    //SetupPollingStation = reader.IsDBNull(4) ? (int?)null : reader.GetInt32(4),
+                    //MockPollDone = reader.IsDBNull(5) ? (int?)null : reader.GetInt32(5),
+                    //PollStarted = reader.IsDBNull(6) ? (int?)null : reader.GetInt32(6),
+                    //PollEnded = reader.IsDBNull(7) ? (int?)null : reader.GetInt32(7),
+                    //MCEVMOff = reader.IsDBNull(8) ? (int?)null : reader.GetInt32(8),
+                    //PartyDeparted = reader.IsDBNull(9) ? (int?)null : reader.GetInt32(9),
+                    //EVMDeposited = reader.IsDBNull(10) ? (int?)null : reader.GetInt32(10),
+                    //PartyReachedAtCollection = reader.IsDBNull(11) ? (int?)null : reader.GetInt32(11),
+                    //QueueValue = reader.IsDBNull(12) ? (int?)null : reader.GetInt32(12),
+                    //FinalVotesValue = reader.IsDBNull(13) ? (int?)null : reader.GetInt32(13),
+                    //VoterTurnOutValue = reader.IsDBNull(14) ? (int?)null : reader.GetInt32(14),
+                    ////  AssignedSOId= reader.IsDBNull(15) ? (int?)null : reader.GetInt32(15),
+                    //AssignedSOName = reader.IsDBNull(16) ? null : reader.GetString(16),
+                    //AssignedSOMobile = reader.IsDBNull(17) ? null : reader.GetString(17)
 
                 };
 
