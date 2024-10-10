@@ -2319,7 +2319,84 @@ namespace EAMS_DAL.Repository
 
             return boothListResult;
         }
+        //public async Task<List<CombinedMaster>> GetBoothListForResultDeclaration(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
+        //{
+        //    // Step 1: Get the list of BoothMaster with necessary joins
+        //    var boothList = await (from bt in _context.BoothMaster.AsNoTracking()
+        //                           where bt.StateMasterId == stateMasterId &&
+        //                                 bt.DistrictMasterId == districtMasterId &&
+        //                                 bt.AssemblyMasterId == assemblyMasterId &&
+        //                                 bt.AssignedTo == foId.ToString()
+        //                           join fourthLevelH in _context.FourthLevelH.AsNoTracking()
+        //                           on bt.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
+        //                           join asem in _context.AssemblyMaster.AsNoTracking()
+        //                           on bt.AssemblyMasterId equals asem.AssemblyMasterId
+        //                           join dist in _context.DistrictMaster.AsNoTracking()
+        //                           on asem.DistrictMasterId equals dist.DistrictMasterId
+        //                           join state in _context.StateMaster.AsNoTracking()
+        //                           on dist.StateMasterId equals state.StateMasterId
+        //                           group bt by new
+        //                           {
+        //                               bt.FourthLevelHMasterId,
+        //                               state.StateName,
+        //                               dist.DistrictMasterId,
+        //                               dist.DistrictName,
+        //                               dist.DistrictCode,
+        //                               asem.AssemblyMasterId,
+        //                               asem.AssemblyName,
+        //                               asem.AssemblyCode,
+        //                               fourthLevelH.HierarchyName,
+        //                               bt.ElectionTypeMasterId
+        //                           } into grouped
+        //                           select new CombinedMaster
+        //                           {
+        //                               StateId = stateMasterId,
+        //                               StateName = grouped.Key.StateName,
+        //                               DistrictId = grouped.Key.DistrictMasterId,
+        //                               DistrictName = grouped.Key.DistrictName,
+        //                               DistrictCode = grouped.Key.DistrictCode,
+        //                               AssemblyId = grouped.Key.AssemblyMasterId,
+        //                               AssemblyName = grouped.Key.AssemblyName,
+        //                               AssemblyCode = grouped.Key.AssemblyCode,
+        //                               FourthLevelHMasterId = grouped.Key.FourthLevelHMasterId,
+        //                               FourthLevelHName = grouped.Key.HierarchyName,
+        //                               ElectionTypeMasterId = grouped.Key.ElectionTypeMasterId,
+        //                               TotalVoters = grouped.Sum(x => x.TotalVoters) ?? 0,  // Summing TotalVoters
+        //                               IsAssigned = grouped.FirstOrDefault().IsAssigned,    // You can select other fields if needed
+        //                               IsBoothInterrupted = grouped.FirstOrDefault().IsBoothInterrupted,
+        //                               IsVTInterrupted = grouped.FirstOrDefault().IsVTInterrupted
+        //                           }).ToListAsync();
 
+        //    // Step 2: Get unique FourthLevelHMasterId and BoothMasterId pairs
+        //    var fourthLevelHMasterIds = boothList.Select(b => b.FourthLevelHMasterId).Distinct().ToList();
+        //    var boothMasterIds = boothList.Select(b => b.BoothMasterId).Distinct().ToList();
+
+        //    // Step 3: Fetch ResultDeclaration records that match both FourthLevelHMasterId and BoothMasterId
+        //    var matchingResultDeclarations = await (from rd in _context.ResultDeclaration.AsNoTracking()
+        //                                            where rd.StateMasterId == stateMasterId &&
+        //                                                  rd.DistrictMasterId == districtMasterId &&
+        //                                                  rd.AssemblyMasterId == assemblyMasterId &&
+        //                                                  fourthLevelHMasterIds.Contains(rd.FourthLevelHMasterId) &&
+        //                                                  boothMasterIds.Contains((int)rd.BoothMasterId)
+        //                                            select rd).ToListAsync();
+
+        //    // Step 4: Get all FourthLevelHMasterId from ResultDeclaration (regardless of BoothMasterId)
+        //    var resultDeclarationFourthLevelHIds = matchingResultDeclarations
+        //        .Select(rd => rd.FourthLevelHMasterId)
+        //        .Distinct()
+        //        .ToList();
+
+        //    // Step 5: Remove booths where FourthLevelHMasterId is in ResultDeclaration, 
+        //    // but only if their BoothMasterId does NOT match any in ResultDeclaration
+        //    boothList.RemoveAll(bl =>
+        //        resultDeclarationFourthLevelHIds.Contains((int)bl.FourthLevelHMasterId) &&
+        //        !matchingResultDeclarations.Any(rd => rd.FourthLevelHMasterId == bl.FourthLevelHMasterId &&
+        //                                              rd.BoothMasterId == bl.BoothMasterId)
+        //    );
+
+        //    // Return the filtered list of booths
+        //    return boothList;
+        //}
         public async Task<List<CombinedMaster>> GetBoothListForResultDeclaration(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
         {
             // Step 1: Get the list of BoothMaster with necessary joins
@@ -2336,6 +2413,7 @@ namespace EAMS_DAL.Repository
                                    on asem.DistrictMasterId equals dist.DistrictMasterId
                                    join state in _context.StateMaster.AsNoTracking()
                                    on dist.StateMasterId equals state.StateMasterId
+
                                    select new CombinedMaster
                                    {
                                        StateId = stateMasterId,
