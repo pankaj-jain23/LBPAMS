@@ -2772,7 +2772,22 @@ namespace EAMS.Controllers
             else
                 return NotFound();
         }
-
+        [HttpGet]
+        [Route("GetEventListFourthLevelHWiseById")]
+        [Authorize(Roles = "SuperAdmin,StateAdmin,DistrictAdmin")]
+        public async Task<IActionResult> EventListFourthLevelHWiseById(int districtMasterId,int assemblyMasterId)
+        {
+            var stateMasterId = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            if (string.IsNullOrEmpty(stateMasterId))
+            {
+                return BadRequest("StateMasterId is required.");
+            }
+            var eventAssemblyList = await _EAMSService.GetEventListFourthLevelHWiseById(Convert.ToInt32(stateMasterId), districtMasterId, assemblyMasterId);
+            if (eventAssemblyList is not null)
+                return Ok(eventAssemblyList);
+            else
+                return NotFound();
+        }
 
         [HttpGet]
         [Route("GetAssemblyWiseEventListByPCId")]

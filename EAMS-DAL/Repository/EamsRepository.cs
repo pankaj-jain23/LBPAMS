@@ -8131,7 +8131,48 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return result;
         }
+        public async Task<List<FourthLevelEventActivityCount>> GetEventListFourthLevelHWiseById(int stateMasterId, int districtMasterId,int assemblyMasterId)
+        {
+            var result = await (from election in _context.ElectionInfoMaster
+                                join fourthLevel in _context.FourthLevelH on election.FourthLevelMasterId equals fourthLevel.FourthLevelHMasterId
+                                where election.StateMasterId == stateMasterId && election.DistrictMasterId == districtMasterId && election.AssemblyMasterId == assemblyMasterId
+                                group election by new
+                                {
+                                    fourthLevel.FourthLevelHMasterId,
+                                    fourthLevel.HierarchyCode,
+                                    fourthLevel.HierarchyName
+                                } into g
+                                select new FourthLevelEventActivityCount
+                                {
+                                    Key = stateMasterId + districtMasterId+ assemblyMasterId + g.Key.FourthLevelHMasterId + g.Key.HierarchyName, // Generate different key for each record
+                                    MasterId = g.Key.FourthLevelHMasterId,
+                                    StateMasterId = stateMasterId,
+                                    DistrictMasterId = districtMasterId,
+                                    AssemblyMasterId = assemblyMasterId,
+                                    Name = g.Key.HierarchyName,
+                                    Type = "FourthLevel",
+                                    HierarchyCode = g.Key.HierarchyCode,
+                                    PartyDispatch = g.Sum(x => x.IsPartyDispatched ? 1 : 0).ToString(),
+                                    PartyArrived = g.Sum(x => x.IsPartyReached ? 1 : 0).ToString(),
+                                    SetupPollingStation = g.Sum(x => x.IsSetupOfPolling ? 1 : 0).ToString(),
+                                    MockPollDone = g.Sum(x => x.IsMockPollDone ? 1 : 0).ToString(),
+                                    PollStarted = g.Sum(x => x.IsPollStarted ? 1 : 0).ToString(),
+                                    PollEnded = g.Sum(x => x.IsPollEnded ? 1 : 0).ToString(),
+                                    MCEVMOff = g.Sum(x => x.IsMCESwitchOff ? 1 : 0).ToString(),
+                                    PartyDeparted = g.Sum(x => x.IsPartyDeparted ? 1 : 0).ToString(),
+                                    EVMDeposited = g.Sum(x => x.IsEVMDeposited ? 1 : 0).ToString(),
+                                    PartyReachedAtCollection = g.Sum(x => x.IsPartyReachedCollectionCenter ? 1 : 0).ToString(),
+                                    QueueValue = g.Sum(x => x.IsVoterInQueue ? 1 : 0).ToString(),
+                                    FinalVotesValue = g.Sum(x => x.IsFinalVote ? 1 : 0).ToString(),
+                                    VoterTurnOutValue = g.Sum(x => x.IsVoterTurnOut ? 1 : 0).ToString(),
+                                    TotalSo = g.Sum(x => x.NoOfPollingAgents ?? 0),
+                                    TotalSoCount = g.Count(),
+                                    Children = new List<object>()
+                                }).ToListAsync();
 
+
+            return result;
+        }
         public async Task<List<EventActivityBoothWise>> GetEventListBoothWiseById(string stateId, string districtId, string assemblyId)
         {
             var eventActivityList = new List<EventActivityBoothWise>();
