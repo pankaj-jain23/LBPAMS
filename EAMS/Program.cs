@@ -174,15 +174,15 @@ builder.Logging.AddSerilog(logger);
 var app = builder.Build();
 app.Use(async (context, next) =>
 {
-    context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
-    context.Response.Headers.Add("X-XSS-Protection", "1; mode=block");
-    context.Response.Headers.Add("X-Frame-Options", "DENY");
+    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
+    context.Response.Headers.Append("X-Frame-Options", "DENY");
     context.Response.Headers.Remove("X-Powered-By");
-    context.Response.Headers.Add("Referrer-Policy", "no-referrer");
-    context.Response.Headers.Add("Access-Control-Allow-Origin", "*"); // Allow CORS for any origin
-    context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization"); // Allow specific headers
-    context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE"); // Allow specific methods
-    context.Response.Headers.Add("Access-Control-Allow-Credentials", "true"); // Allow credentials for WebSocket
+    context.Response.Headers.Append("Referrer-Policy", "no-referrer");
+    context.Response.Headers.Append("Access-Control-Allow-Origin", "*"); // Allow CORS for any origin
+    context.Response.Headers.Append("Access-Control-Allow-Headers", "Content-Type, Authorization"); // Allow specific headers
+    context.Response.Headers.Append("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE"); // Allow specific methods
+    context.Response.Headers.Append("Access-Control-Allow-Credentials", "true"); // Allow credentials for WebSocket
     await next();
 });
 

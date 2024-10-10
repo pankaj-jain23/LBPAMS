@@ -9,10 +9,6 @@ class Program
 {
     static void Main(string[] args)
     {
-        var config = ManualConfig
-            .Create(DefaultConfig.Instance)
-            .AddJob(Job.Default.WithToolchain(InProcessNoEmitToolchain.Instance)); // InProcess No Emit Toolchain
-
-        var summary = BenchmarkRunner.Run<ApiBenchmark>(config);
+          BenchmarkRunner.Run<ApiBenchmark>( );
     }
 }

@@ -2437,7 +2437,7 @@ namespace EAMS_DAL.Repository
                                        IsBoothInterrupted = bt.IsBoothInterrupted,
                                        IsVTInterrupted = bt.IsVTInterrupted,
                                        TotalVoters = bt.TotalVoters,
-                                       FourthLevelHTotalVoters=bt.TotalVoters,
+                                       FourthLevelHTotalVoters = bt.TotalVoters,
                                    }).ToListAsync();
             // Step 2: Group by FourthLevelHMasterId and calculate total voters
             var totalVotersByFourthLevelH = boothList
@@ -2481,7 +2481,7 @@ namespace EAMS_DAL.Repository
                 !matchingResultDeclarations.Any(rd => rd.FourthLevelHMasterId == bl.FourthLevelHMasterId &&
                                                       rd.BoothMasterId == bl.BoothMasterId)
             );
-         
+
             return boothList;
         }
 
@@ -6474,7 +6474,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 d.AssemblyMasterId == checkEventActivity.AssemblyMasterId &&
                 d.ElectionTypeMasterId == checkEventActivity.ElectionTypeMasterId &&
                 d.BoothMasterId == checkEventActivity.BoothMasterId
-            ) ;
+            );
             if (isPollDetailExist is true && result.IsVoterTurnOut == false)
             {
                 return new ServiceResponse()
@@ -8050,154 +8050,88 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 .Where(e => e.StateMasterId == stateMasterId && e.DistrictMasterId == districtMasterId && e.EventName == eventName)
                 .CountAsync();
         }
-        public async Task<List<EventActivityCount>> GetEventListDistrictWiseById(string stateId)
+        public async Task<List<EventActivityCount>> GetEventListDistrictWiseById(int stateMasterId)
         {
-            var eventActivityList = new List<EventActivityCount>();
+            var result = await (from election in _context.ElectionInfoMaster
+                                join district in _context.DistrictMaster on election.DistrictMasterId equals district.DistrictMasterId
+                                where election.StateMasterId == stateMasterId
+                                group election by new
+                                {
+                                    district.DistrictMasterId,
+                                    district.DistrictCode,
+                                    district.DistrictName
+                                } into g
+                                select new EventActivityCount
+                                {
+                                    Key = stateMasterId + g.Key.DistrictMasterId+g.Key.DistrictName,
+                                    MasterId = g.Key.DistrictMasterId, // Group key
+                                    Name = g.Key.DistrictName, // Group key
+                                    Type = "District",
+                                    PartyDispatch = g.Sum(x => x.IsPartyDispatched ? 1 : 0).ToString(),
+                                    PartyArrived = g.Sum(x => x.IsPartyReached ? 1 : 0).ToString(),
+                                    SetupPollingStation = g.Sum(x => x.IsSetupOfPolling ? 1 : 0).ToString(),
+                                    MockPollDone = g.Sum(x => x.IsMockPollDone ? 1 : 0).ToString(),
+                                    PollStarted = g.Sum(x => x.IsPollStarted ? 1 : 0).ToString(),
+                                    PollEnded = g.Sum(x => x.IsPollEnded ? 1 : 0).ToString(),
+                                    MCEVMOff = g.Sum(x => x.IsMCESwitchOff ? 1 : 0).ToString(),
+                                    PartyDeparted = g.Sum(x => x.IsPartyDeparted ? 1 : 0).ToString(),
+                                    EVMDeposited = g.Sum(x => x.IsEVMDeposited ? 1 : 0).ToString(),
+                                    PartyReachedAtCollection = g.Sum(x => x.IsPartyReachedCollectionCenter ? 1 : 0).ToString(),
+                                    QueueValue = g.Sum(x => x.IsVoterInQueue ? 1 : 0).ToString(),
+                                    FinalVotesValue = g.Sum(x => x.IsFinalVote ? 1 : 0).ToString(),
+                                    VoterTurnOutValue = g.Sum(x => x.IsVoterTurnOut ? 1 : 0).ToString(),
+                                    TotalSo = g.Sum(x => x.NoOfPollingAgents ?? 0), // Sum of NoOfPollingAgents
+                                    Children = new List<object>() // Placeholder for children if needed
+                                }).ToListAsync();
 
-            // Establish a connection to the PostgreSQL database
-            await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("Postgres"));
-            await connection.OpenAsync();
+          
 
-            var command = new NpgsqlCommand("select * from getdistrictwiseeventlistbyid(@state_master_id)", connection);
-            command.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateId));
-
-            // Execute the command and read the results
-            await using var reader = await command.ExecuteReaderAsync();
-
-            while (await reader.ReadAsync())
-            {
-                // Create a new EventActivityCount object and populate its properties from the reader
-                var eventActivityCount = new EventActivityCount
-                {
-                    Key = GenerateRandomAlphanumericString(6),
-                    MasterId = reader.GetInt32(0),
-                    Name = reader.GetString(1),
-                    Type = "District",
-                    PartyDispatch = reader.IsDBNull(4) ? null : reader.GetString(4),
-                    PartyArrived = reader.IsDBNull(5) ? null : reader.GetString(5),
-                    SetupPollingStation = reader.IsDBNull(6) ? null : reader.GetString(6),
-                    //MockPollDone = reader.IsDBNull(7) ? null : reader.GetString(7)+","+ reader.GetInt32(17),
-                    MockPollDone = reader.IsDBNull(7) ? null : reader.GetString(7),
-                    PollStarted = reader.IsDBNull(8) ? null : reader.GetString(8),
-                    PollEnded = reader.IsDBNull(9) ? null : reader.GetString(9),
-                    MCEVMOff = reader.IsDBNull(10) ? null : reader.GetString(10),
-                    PartyDeparted = reader.IsDBNull(11) ? null : reader.GetString(11),
-                    EVMDeposited = reader.IsDBNull(12) ? null : reader.GetString(12),
-                    PartyReachedAtCollection = reader.IsDBNull(13) ? null : reader.GetString(13),
-                    QueueValue = reader.IsDBNull(14) ? null : reader.GetString(14),
-                    FinalVotesValue = reader.IsDBNull(15) ? null : reader.GetString(15),
-                    VoterTurnOutValue = reader.IsDBNull(16) ? null : reader.GetString(16),
-                    TotalSo = reader.IsDBNull(3) ? null : reader.GetInt32(3),
-                    Children = new List<object>()
-                };
-
-
-                // Add the object to the list
-                eventActivityList.Add(eventActivityCount);
-            }
-
-            return eventActivityList;
+            return result;
         }
-        //public async Task<List<EventActivityCount>> GetEventListDistrictWiseById(string stateId)
-        //{
-        //    var eventActivityList = new List<EventActivityCount>();
 
-        //    // Establish a connection to the PostgreSQL database
-        //    await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("Postgres"));
-        //    await connection.OpenAsync();
-
-        //    var command = new NpgsqlCommand("select * from getdistrictwiseeventlistbyid(@state_master_id)", connection);
-        //    command.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateId));
-
-        //    // Execute the command and read the results
-        //    await using var reader = await command.ExecuteReaderAsync();
-
-        //    while (await reader.ReadAsync())
-        //    {
-        //        // Create a new EventActivityCount object and populate its properties from the reader
-        //        var eventActivityCount = new EventActivityCount
-        //        {
-        //            Key = GenerateRandomAlphanumericString(6),
-        //            MasterId = reader.GetInt32(0),
-        //            Name = reader.GetString(1),
-        //            Type = "District",
-        //            PartyDispatch = reader.IsDBNull(4) ? null : reader.GetString(4),
-        //            PartyArrived = reader.IsDBNull(5) ? null : reader.GetString(5),
-        //            SetupPollingStation = reader.IsDBNull(6) ? null : reader.GetString(6),
-        //            //MockPollDone = reader.IsDBNull(7) ? null : reader.GetString(7)+","+ reader.GetInt32(17),
-        //            MockPollDone = reader.IsDBNull(7) ? null : reader.GetString(7),
-        //            PollStarted = reader.IsDBNull(8) ? null : reader.GetString(8),
-        //            PollEnded = reader.IsDBNull(9) ? null : reader.GetString(9),
-        //            MCEVMOff = reader.IsDBNull(10) ? null : reader.GetString(10),
-        //            PartyDeparted = reader.IsDBNull(11) ? null : reader.GetString(11),
-        //            EVMDeposited = reader.IsDBNull(12) ? null : reader.GetString(12),
-        //            PartyReachedAtCollection = reader.IsDBNull(13) ? null : reader.GetString(13),
-        //            QueueValue = reader.IsDBNull(14) ? null : reader.GetString(14),
-        //            FinalVotesValue = reader.IsDBNull(15) ? null : reader.GetString(15),
-        //            VoterTurnOutValue = reader.IsDBNull(16) ? null : reader.GetString(16),
-        //            TotalSo = reader.IsDBNull(3) ? null : reader.GetInt32(3),
-        //            Children = new List<object>()
-        //        };
-
-
-        //        // Add the object to the list
-        //        eventActivityList.Add(eventActivityCount);
-        //    }
-
-        //    return eventActivityList;
-        //}
-        public async Task<List<AssemblyEventActivityCount>> GetEventListAssemblyWiseById(string stateId, string districtId)
+         
+        public async Task<List<AssemblyEventActivityCount>> GetEventListAssemblyWiseById(int stateMasterId, int districtMasterId)
         {
-            var eventActivityList = new List<AssemblyEventActivityCount>();
+            var result = await (from election in _context.ElectionInfoMaster
+                                join assembly in _context.AssemblyMaster on election.AssemblyMasterId equals assembly.AssemblyMasterId
+                                where election.StateMasterId == stateMasterId && election.DistrictMasterId == districtMasterId
+                                group election by new
+                                {
+                                    assembly.AssemblyMasterId,
+                                    assembly.AssemblyCode,
+                                    assembly.AssemblyName
+                                } into g
+                                select new AssemblyEventActivityCount
+                                {
+                                    Key = stateMasterId + districtMasterId + g.Key.AssemblyMasterId + g.Key.AssemblyName, // Generate different key for each record
+                                    MasterId = g.Key.AssemblyMasterId,
+                                    StateMasterId = stateMasterId,
+                                    DistrictMasterId = districtMasterId,
+                                    Name = g.Key.AssemblyName,
+                                    Type = "Assembly",
+                                    AssemblyCode = g.Key.AssemblyCode,
+                                    PartyDispatch = g.Sum(x => x.IsPartyDispatched ? 1 : 0).ToString(),
+                                    PartyArrived = g.Sum(x => x.IsPartyReached ? 1 : 0).ToString(),
+                                    SetupPollingStation = g.Sum(x => x.IsSetupOfPolling ? 1 : 0).ToString(),
+                                    MockPollDone = g.Sum(x => x.IsMockPollDone ? 1 : 0).ToString(),
+                                    PollStarted = g.Sum(x => x.IsPollStarted ? 1 : 0).ToString(),
+                                    PollEnded = g.Sum(x => x.IsPollEnded ? 1 : 0).ToString(),
+                                    MCEVMOff = g.Sum(x => x.IsMCESwitchOff ? 1 : 0).ToString(),
+                                    PartyDeparted = g.Sum(x => x.IsPartyDeparted ? 1 : 0).ToString(),
+                                    EVMDeposited = g.Sum(x => x.IsEVMDeposited ? 1 : 0).ToString(),
+                                    PartyReachedAtCollection = g.Sum(x => x.IsPartyReachedCollectionCenter ? 1 : 0).ToString(),
+                                    QueueValue = g.Sum(x => x.IsVoterInQueue ? 1 : 0).ToString(),
+                                    FinalVotesValue = g.Sum(x => x.IsFinalVote ? 1 : 0).ToString(),
+                                    VoterTurnOutValue = g.Sum(x => x.IsVoterTurnOut ? 1 : 0).ToString(),
+                                    TotalSo = g.Sum(x => x.NoOfPollingAgents ?? 0),
+                                    TotalSoCount = g.Count(),
+                                    Children = new List<object>()
+                                }).ToListAsync();
 
-            // Establish a connection to the PostgreSQL database
-            await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("Postgres"));
-            await connection.OpenAsync();
 
-            var command = new NpgsqlCommand("SELECT * FROM getassemblywiseeventlistbyid(@state_master_id, @district_master_id)", connection);
-            command.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateId));
-            command.Parameters.AddWithValue("@district_master_id", Convert.ToInt32(districtId));
-
-            // Execute the command and read the results
-            await using var reader = await command.ExecuteReaderAsync();
-
-            while (await reader.ReadAsync())
-            {
-                // Create a new AssemblyEventActivityCount object and populate its properties from the reader
-                var eventActivityCount = new AssemblyEventActivityCount
-                {
-                    Key = GenerateRandomAlphanumericString(6), // You need to define this method to generate a random alphanumeric string
-                    MasterId = reader.IsDBNull(0) ? (int?)null : reader.GetInt32(0),
-                    //Name = reader.IsDBNull(1) ? null : reader.GetString(1),
-                    Name = reader.IsDBNull(2) ? ((int?)null).ToString() : reader.GetInt32(2).ToString() + "-" + (reader.IsDBNull(1) ? null : reader.GetString(1)),
-                    Type = "Assembly", // Assuming this is the type for assembly
-                    StateMasterId = Convert.ToInt32(stateId),
-                    DistrictMasterId = Convert.ToInt32(districtId),
-                    AssemblyCode = reader.IsDBNull(2) ? (int?)null : reader.GetInt32(2),
-                    TotalSoCount = reader.IsDBNull(3) ? (int?)null : reader.GetInt32(3),
-                    PartyDispatch = reader.IsDBNull(4) ? null : reader.GetString(4),
-                    PartyArrived = reader.IsDBNull(5) ? null : reader.GetString(5),
-                    SetupPollingStation = reader.IsDBNull(6) ? null : reader.GetString(6),
-                    MockPollDone = reader.IsDBNull(7) ? null : reader.GetString(7),
-                    PollStarted = reader.IsDBNull(8) ? null : reader.GetString(8),
-                    PollEnded = reader.IsDBNull(9) ? null : reader.GetString(9),
-                    MCEVMOff = reader.IsDBNull(10) ? null : reader.GetString(10),
-                    PartyDeparted = reader.IsDBNull(11) ? null : reader.GetString(11),
-                    EVMDeposited = reader.IsDBNull(12) ? null : reader.GetString(12),
-                    PartyReachedAtCollection = reader.IsDBNull(13) ? null : reader.GetString(13),
-                    QueueValue = reader.IsDBNull(14) ? null : reader.GetString(14),
-                    FinalVotesValue = reader.IsDBNull(15) ? null : reader.GetString(15),
-                    VoterTurnOutValue = reader.IsDBNull(16) ? null : reader.GetString(16),
-                    TotalSo = reader.IsDBNull(3) ? null : reader.GetInt32(3),
-                    Children = new List<object>()
-                };
-
-                // Add the object to the list
-                eventActivityList.Add(eventActivityCount);
-            }
-
-            return eventActivityList;
+            return result;
         }
+
         public async Task<List<EventActivityBoothWise>> GetEventListBoothWiseById(string stateId, string districtId, string assemblyId)
         {
             var eventActivityList = new List<EventActivityBoothWise>();

@@ -1,50 +1,66 @@
 ﻿using AutoMapper;
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Jobs;
 using EAMS.Controllers;
+using EAMS.Helper;
 using EAMS_ACore.IExternal;
 using EAMS_ACore.Interfaces;
+using EAMS_ACore.IRepository;
 using EAMS_BLL.ExternalServices;
 using EAMS_BLL.Services;
+using EAMS_DAL.Repository;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace LBPAMS_BEBCHMARK
 {
+    [MemoryDiagnoser]
+
+    [HideColumns(BenchmarkDotNet.Columns.Column.Job)]
     public class ApiBenchmark
     {
         private EAMSController _eamsController;
+        private ServiceProvider _serviceProvider;
 
         [GlobalSetup]
         public void Setup()
         {
-            // Set up DI, services, and the controller
-            var services = new ServiceCollection();
+            // Create a new service collection
+            var serviceCollection = new ServiceCollection();
 
-            // Register your services and controllers
-            services.AddScoped<IEamsService, EamsService>();
+            // Add your mocked services
+            var mockEamsService = new Mock<IEamsService>();
+            var mockMapper = new Mock<IMapper>();
+            var mockLogger = new Mock<ILogger<EAMSController>>();
+            var mockCacheService = new Mock<ICacheService>();
 
-          
-            services.AddLogging();  // ILogger dependency
-            services.AddScoped<ICacheService, CacheService>();  // Your cache service registration
+            // Register the mocks with the service collection
+            serviceCollection.AddSingleton(mockEamsService.Object);
+            serviceCollection.AddSingleton(mockMapper.Object);
+            serviceCollection.AddSingleton(mockLogger.Object);
+            serviceCollection.AddSingleton(mockCacheService.Object);
 
-            var serviceProvider = services.BuildServiceProvider();
+            // Build the service provider
+            _serviceProvider = serviceCollection.BuildServiceProvider();
 
-            // Get the controller instance
-            var eamsService = serviceProvider.GetRequiredService<IEamsService>();
-            var mapper = serviceProvider.GetRequiredService<IMapper>();
-            var logger = serviceProvider.GetRequiredService<ILogger<EAMSController>>();
-            var cacheService = serviceProvider.GetRequiredService<ICacheService>();
-
-            _eamsController = new EAMSController(eamsService, mapper, logger, cacheService);
+            // Initialize the controller with the DI container
+            _eamsController = new EAMSController(
+                _serviceProvider.GetRequiredService<IEamsService>(),
+                _serviceProvider.GetRequiredService<IMapper>(),
+                _serviceProvider.GetRequiredService<ILogger<EAMSController>>(),
+                _serviceProvider.GetRequiredService<ICacheService>()
+            );
         }
 
         [Benchmark]
-        public void TestYourApiMethod()
+      
+        public void TestStateList()
         {
-            // Call your controller method
-            var result = _eamsController.StateList().Result;  // or .Get() for sync
+            // Call the controller method you want to benchmark
+            var result = _eamsController.StateList().Result; // Use Result for async methods
         }
     }
-
-
+    
 }

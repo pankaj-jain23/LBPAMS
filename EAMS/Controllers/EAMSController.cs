@@ -771,7 +771,7 @@ namespace EAMS.Controllers
             };
             return Ok(data);
         }
-      
+
         [HttpGet]
         [Route("GetBoothEventListByFoId")]
         public async Task<IActionResult> GetBoothEventListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
@@ -1869,7 +1869,7 @@ namespace EAMS.Controllers
         }
 
         [HttpGet("GetFourthLevelHListById")]
-         
+
         public async Task<IActionResult> GetFourthLevelHListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null)
@@ -2258,7 +2258,7 @@ namespace EAMS.Controllers
 
         }
 
-        [HttpGet("GetGPPanchayatWardsListById")] 
+        [HttpGet("GetGPPanchayatWardsListById")]
         public async Task<IActionResult> GetGPPanchayatWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId)
         {
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && FourthLevelHMasterId != null)
@@ -2707,23 +2707,20 @@ namespace EAMS.Controllers
 
             return Ok(response);
         }
+
         [HttpGet]
         [Route("GetDistrictWiseEventListById")]
-        [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,PC")]
-        public async Task<IActionResult> EventListDistrictWiseById(string? stateId)
+        [Authorize(Roles = "SuperAdmin,StateAdmin")]
+        public async Task<IActionResult> EventListDistrictWiseById()
         {
-            if (string.IsNullOrEmpty(stateId) || stateId.Contains("undefined"))
-            {
-                return BadRequest("Parameter miss match");
-            }
 
-            string stateMasterId = stateId ?? User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            var stateMasterId = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
             if (string.IsNullOrEmpty(stateMasterId))
             {
                 return BadRequest("StateMasterId is required.");
             }
 
-            var eventDistrictWiseList = await _EAMSService.GetEventListDistrictWiseById(stateMasterId);
+            var eventDistrictWiseList = await _EAMSService.GetEventListDistrictWiseById(Convert.ToInt32(stateMasterId));
             if (eventDistrictWiseList != null)
             {
                 return Ok(eventDistrictWiseList);
@@ -2736,35 +2733,40 @@ namespace EAMS.Controllers
 
 
 
-        [HttpGet]
-        [Route("GetPCWiseEventListById")]
-        [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,PC")]
-        public async Task<IActionResult> EventListPCWiseById(string? stateId)
-        {
-            string stateMasterId;
-            var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId").Value;
-            var stateMasterIdC = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId").Value;
-            if (stateId != null)
-            {
-                stateMasterId = stateId;
-            }
-            else
-            {
-                stateMasterId = stateMasterIdC.ToString();
-            }
-            var eventPCWiseList = await _EAMSService.GetEventListPCWiseById(stateMasterId, userId);
-            if (eventPCWiseList is not null)
-                return Ok(eventPCWiseList);
-            else
-                return NotFound();
-        }
+        //[HttpGet]
+        //[Route("GetPCWiseEventListById")]
+        //[Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,PC")]
+        //public async Task<IActionResult> EventListPCWiseById(string? stateId)
+        //{
+        //    string stateMasterId;
+        //    var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId").Value;
+        //    var stateMasterIdC = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId").Value;
+        //    if (stateId != null)
+        //    {
+        //        stateMasterId = stateId;
+        //    }
+        //    else
+        //    {
+        //        stateMasterId = stateMasterIdC.ToString();
+        //    }
+        //    var eventPCWiseList = await _EAMSService.GetEventListPCWiseById(stateMasterId, userId);
+        //    if (eventPCWiseList is not null)
+        //        return Ok(eventPCWiseList);
+        //    else
+        //        return NotFound();
+        //}
 
         [HttpGet]
         [Route("GetAssemblyWiseEventListById")]
-        [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,PC")]
-        public async Task<IActionResult> EventListAssemblyWiseById(string? stateId, string? districtId)
+        [Authorize(Roles = "SuperAdmin,StateAdmin,DistrictAdmin")]
+        public async Task<IActionResult> EventListAssemblyWiseById(int districtMasterId)
         {
-            var eventAssemblyList = await _EAMSService.GetEventListAssemblyWiseById(stateId, districtId);
+            var stateMasterId = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            if (string.IsNullOrEmpty(stateMasterId))
+            {
+                return BadRequest("StateMasterId is required.");
+            }
+            var eventAssemblyList = await _EAMSService.GetEventListAssemblyWiseById(Convert.ToInt32(stateMasterId), districtMasterId);
             if (eventAssemblyList is not null)
                 return Ok(eventAssemblyList);
             else
@@ -2928,7 +2930,7 @@ namespace EAMS.Controllers
                 var electionTypeMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
 
                 var mappedData = _mapper.Map<PollInterruption>(interruptionViewModel);
-                mappedData.ElectionTypeMasterId=Convert.ToInt32(electionTypeMasterIdString);
+                mappedData.ElectionTypeMasterId = Convert.ToInt32(electionTypeMasterIdString);
                 var result = await _EAMSService.AddPollInterruption(mappedData);
 
                 switch (result.Status)
