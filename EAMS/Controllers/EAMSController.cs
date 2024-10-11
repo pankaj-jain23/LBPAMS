@@ -830,6 +830,7 @@ namespace EAMS.Controllers
             };
             return Ok(data);
         }
+
         [HttpGet]
         [Route("GetBoothListForResultDeclaration")]
         [Authorize]

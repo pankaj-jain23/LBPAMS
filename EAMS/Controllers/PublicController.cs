@@ -40,16 +40,14 @@ namespace EAMS.Controllers
             {
                 return BadRequest("PDF file is missing.");
             }
-            // Check if the uploaded file is a PDF
-            if (kycViewModel.NominationPdf != null)
+
+
+            if (!kycViewModel.NominationPdf.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase))
             {
-                if (!kycViewModel.NominationPdf.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase) &&
-                    !Path.GetExtension(kycViewModel.NominationPdf.FileName).Equals(".pdf", StringComparison.OrdinalIgnoreCase))
-                {
-                    return BadRequest("Only PDF files are allowed.");
-                }
+                return BadRequest("Only PDF files are allowed.");
             }
-            const long MaxFileSize = 7 * 1024 * 1024; // 7 MB in bytes
+
+            const long MaxFileSize = 7 * 1024 * 1024;  
 
             // Check if the file exceeds the maximum size
             if (kycViewModel.NominationPdf.Length > MaxFileSize)
@@ -58,9 +56,7 @@ namespace EAMS.Controllers
             }
             // Generate a unique file name for the PDF file
             var fileName = Guid.NewGuid().ToString() + Path.GetExtension(kycViewModel.NominationPdf.FileName);
-            var folderPath = @"C:\inetpub\wwwroot\LBPAMSDOC\kyc";
-
-
+            var folderPath = @"C:\inetpub\wwwroot\LBPAMSDOC\kyc";  
             var filePath = Path.Combine(folderPath, fileName);
 
             // Ensure the directory exists
@@ -73,6 +69,7 @@ namespace EAMS.Controllers
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
                 await kycViewModel.NominationPdf.CopyToAsync(stream);
+
             }
 
             // Map the ViewModel to the Model
@@ -97,9 +94,7 @@ namespace EAMS.Controllers
             var kycList = await _eamsService.GetKYCDetails();
 
             var request = HttpContext.Request;
-            var baseUrl = $"{request.Scheme}://{request.Host}/LBPAMSDOC/kyc";
-
-
+            var baseUrl = $"{request.Scheme}://{request.Host}/LBPAMSDOC/kyc"; 
             var kycResponses = kycList.Select(kyc => new KycResponseViewModel
             {
                 KycMasterId = kyc.KycMasterId,
@@ -210,7 +205,7 @@ namespace EAMS.Controllers
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
             var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
-             
+
             // Determine whether to call the method with user ID or not
             var roresult = userRole?.Contains("RO") == true
                 ? await _eamsService.GetKYCDetailByAssemblyId(electionType, stateMasterId, districtMasterId, assemblyMasterId, userId)
@@ -231,15 +226,15 @@ namespace EAMS.Controllers
 
             return Ok(data);
         }
-       
+
 
         [HttpGet("GetKYCDetailByFourthAndWardId")]
-        public async Task<IActionResult> GetKYCDetailByFourthAndWardId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId ,int fourthLevelMasterId,int? wardMasterId)
+        public async Task<IActionResult> GetKYCDetailByFourthAndWardId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelMasterId, int? wardMasterId)
         {
-          
+
 
             // Determine whether to call the method with user ID or not
-            var roresult =   await _eamsService.GetKYCDetailByFourthAndWardId(electionType, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId, wardMasterId);
+            var roresult = await _eamsService.GetKYCDetailByFourthAndWardId(electionType, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId, wardMasterId);
 
             if (roresult == null)
             {
@@ -677,15 +672,15 @@ namespace EAMS.Controllers
             var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
             var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
 
-            
+
 
             // Determine whether to call the method with user ID or not
             var result = userRole?.Contains("RO") == true
-                ? await _eamsService.GetGPVoterListById( stateMasterId, districtMasterId, assemblyMasterId, userId)
-                : await _eamsService.GetGPVoterListById( stateMasterId, districtMasterId, assemblyMasterId);
+                ? await _eamsService.GetGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId, userId)
+                : await _eamsService.GetGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId);
 
-            
-           
+
+
             if (result == null)
             {
                 return NotFound();
@@ -740,7 +735,7 @@ namespace EAMS.Controllers
             int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
             int districtMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("DistrictMasterId"));
             int assemblyMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AssemblyMasterId"));
-            int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));  
+            int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
             int fieldOfficerMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("FieldOfficerMasterId"));
 
             // Map ViewModel to Entity
@@ -800,7 +795,7 @@ namespace EAMS.Controllers
 
         [HttpGet("GetPanchListById")]
         [Authorize]
-        public async Task<IActionResult> GetPanchListById(int fourthLevelHMasterId,int gPPanchayatWardsMasterId)
+        public async Task<IActionResult> GetPanchListById(int fourthLevelHMasterId, int gPPanchayatWardsMasterId)
         {
             var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
 

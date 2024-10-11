@@ -2622,10 +2622,18 @@ namespace EAMS_BLL.Services
         #region KYC Public Details
         public async Task<ServiceResponse> AddKYCDetails(Kyc kyc)
         {
+            if (!int.TryParse(kyc.Age, out int age) || age < 21)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "Age must be 21 or above." };
+            }
             return await _eamsRepository.AddKYCDetails(kyc);
         }
         public async Task<ServiceResponse> UpdateKycDetails(Kyc kyc)
         {
+            if (!int.TryParse(kyc.Age, out int age) || age < 21)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "Age must be 21 or above." };
+            }
             return await _eamsRepository.UpdateKycDetails(kyc);
         }
 

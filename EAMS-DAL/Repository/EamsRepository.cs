@@ -8105,7 +8105,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                     VoterTurnOutValue = g.Sum(x => x.IsVoterTurnOut ? 1 : 0).ToString(),
                                     TotalSo = g.Sum(x => x.NoOfPollingAgents ?? 0), // Sum of NoOfPollingAgents
                                     Children = new List<object>() // Placeholder for children if needed
-                                }).ToListAsync();
+                                }).OrderBy(d=>d.Name).ToListAsync();
 
 
 
@@ -8149,7 +8149,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                     TotalSo = g.Sum(x => x.NoOfPollingAgents ?? 0),
                                     TotalSoCount = g.Count(),
                                     Children = new List<object>()
-                                }).ToListAsync();
+                                }).OrderBy(d => d.Name).ToListAsync();
 
 
             return result;
@@ -11855,7 +11855,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             IQueryable<ElectionInfoMaster> electionQuery = _context.ElectionInfoMaster
                 .Where(e => e.StateMasterId == stateMasterId);
             IQueryable<BoothMaster> totalBooths = _context.BoothMaster
-                .Where(e => e.StateMasterId == stateMasterId);
+                .Where(e => e.StateMasterId == stateMasterId&&e.BoothStatus==true);
             IQueryable<PollDetail> totalVotesPolled = _context.PollDetails
                 .Where(e => e.StateMasterId == stateMasterId);
 
@@ -16318,12 +16318,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         #region KYC Public Details
         public async Task<ServiceResponse> AddKYCDetails(Kyc kyc)
-        {
-            if (!int.TryParse(kyc.Age, out int age) || age < 21)
-            {
-                return new ServiceResponse { IsSucceed = false, Message = "Age must be 21 or above." };
-            }
-
+        { 
             // Check if an unopposed Sarpanch exists (GPPanchayatWardsMasterId == 0)
             bool existingSarpanch = await _context.Kyc.AnyAsync(k =>
                 k.StateMasterId == kyc.StateMasterId &&
@@ -16363,10 +16358,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         public async Task<ServiceResponse> UpdateKycDetails(Kyc kyc)
         {
-            if (!int.TryParse(kyc.Age, out int age) || age < 21)
-            {
-                return new ServiceResponse { IsSucceed = false, Message = "Age must be 21 or above." };
-            }
+            
             // Check if the KYC record exists
             var existingKyc = await _context.Kyc.FirstOrDefaultAsync(k => k.KycMasterId == kyc.KycMasterId);
 
@@ -16552,9 +16544,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                 k.StateMasterId == stateMasterId &&
                                 k.DistrictMasterId == districtMasterId &&
                                 k.AssemblyMasterId == assemblyMasterId &&
-                                k.FourthLevelHMasterId == fourthLevelMasterId
-
-                                // Conditionally check wardMasterId if it's provided
+                                k.FourthLevelHMasterId == fourthLevelMasterId 
                                 && (!wardMasterId.HasValue || k.GPPanchayatWardsMasterId == wardMasterId.Value)
 
                           select new KycList
