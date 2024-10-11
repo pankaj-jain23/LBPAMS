@@ -239,7 +239,7 @@ namespace EAMS_DAL.Repository
                             {
                                 assemblyMaster.AssemblyStatus = updateMasterStatus.IsStatus;
                                 _context.AssemblyMaster.Update(assemblyMaster);
-                                _context.SaveChanges();
+                                await _context.SaveChangesAsync();
                                 return new ServiceResponse { IsSucceed = true, Message = "Deactivated Successfuly." };
                             }
                         }
@@ -261,7 +261,7 @@ namespace EAMS_DAL.Repository
                             //{
                             assemblyMaster.AssemblyStatus = updateMasterStatus.IsStatus;
                             _context.AssemblyMaster.Update(assemblyMaster);
-                            _context.SaveChanges();
+                            await _context.SaveChangesAsync();
                             return new ServiceResponse { IsSucceed = true, Message = "Activated Successfuly." };
                             //}
 
@@ -284,7 +284,7 @@ namespace EAMS_DAL.Repository
                     {
                         isFOExist.FieldOfficerStatus = updateMasterStatus.IsStatus;
                         _context.FieldOfficerMaster.Update(isFOExist);
-                        _context.SaveChanges();
+                        await _context.SaveChangesAsync();
                         string foMessage = isFOExist.FieldOfficerStatus ? "FO Activated Successfully" : "FO Deactivated Successfully";
                         return new ServiceResponse { IsSucceed = true, Message = foMessage };
                     }
@@ -298,7 +298,7 @@ namespace EAMS_DAL.Repository
                     {
                         isAROExist.IsStatus = updateMasterStatus.IsStatus;
                         _context.AROResultMaster.Update(isAROExist);
-                        _context.SaveChanges();
+                        await _context.SaveChangesAsync();
                         string aroMessage = isAROExist.IsStatus ? "ARO Activated Successfully" : "ARO Deactivated Successfully";
                         return new ServiceResponse { IsSucceed = true, Message = aroMessage };
                     }
@@ -482,7 +482,7 @@ namespace EAMS_DAL.Repository
                             {
                                 isBLOExist.BLOStatus = updateMasterStatus.IsStatus;
                                 _context.BLOMaster.Update(isBLOExist);
-                                _context.SaveChanges();
+                                await _context.SaveChangesAsync();
                                 return new ServiceResponse { IsSucceed = true, Message = "BLO Status Updated Successfully" };
                             }
                             else
@@ -501,7 +501,7 @@ namespace EAMS_DAL.Repository
 
                                 isBLOExist.BLOStatus = updateMasterStatus.IsStatus;
                                 _context.BLOMaster.Update(isBLOExist);
-                                _context.SaveChanges();
+                                await _context.SaveChangesAsync();
                                 return new ServiceResponse { IsSucceed = true, Message = "BLO Status Updated Successfully" };
 
                             }
@@ -1201,7 +1201,7 @@ namespace EAMS_DAL.Repository
                     stateMasterRecord.IsGenderCapturedinVoterTurnOut = stateMaster.IsGenderCapturedinVoterTurnOut;
 
                     _context.StateMaster.Update(stateMasterRecord);
-                    _context.SaveChanges();
+                    await _context.SaveChangesAsync();
 
                     return new Response { Status = RequestStatusEnum.OK, Message = "State Updated Successfully" + stateMaster.StateName };
                 }
@@ -1215,7 +1215,7 @@ namespace EAMS_DAL.Repository
                 stateMasterRecord.IsGenderCapturedinVoterTurnOut = stateMaster.IsGenderCapturedinVoterTurnOut;
 
                 _context.StateMaster.Update(stateMasterRecord);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
 
                 return new Response { Status = RequestStatusEnum.OK, Message = "State Updated Successfully" + stateMaster.StateName };
             }
@@ -1239,8 +1239,8 @@ namespace EAMS_DAL.Repository
                 if (stateExist == null)
                 {
                     stateMaster.StateCreatedAt = BharatDateTime();
-                    _context.StateMaster.Add(stateMaster);
-                    _context.SaveChanges();
+                    await _context.StateMaster.AddAsync(stateMaster);
+                    await _context.SaveChangesAsync();
 
                     return new Response { Status = RequestStatusEnum.OK, Message = $"State Added Successfully {stateMaster.StateName}" };
                 }
@@ -1401,8 +1401,8 @@ namespace EAMS_DAL.Repository
                         if (isExistCode == null)
                         {
                             districtMaster.DistrictCreatedAt = BharatDateTime();
-                            _context.DistrictMaster.Add(districtMaster);
-                            _context.SaveChanges();
+                            await _context.DistrictMaster.AddAsync(districtMaster);
+                            await _context.SaveChangesAsync();
 
 
                             return new Response { Status = RequestStatusEnum.OK, Message = "District Added Successfully " + districtMaster.DistrictName };
@@ -1728,8 +1728,8 @@ namespace EAMS_DAL.Repository
                 if (assemblieExist == null)
                 {
                     assemblyMaster.AssemblyCreatedAt = BharatDateTime();
-                    _context.AssemblyMaster.Add(assemblyMaster);
-                    _context.SaveChanges();
+                    await _context.AssemblyMaster.AddAsync(assemblyMaster);
+                    await _context.SaveChangesAsync();
 
                     return new Response { Status = RequestStatusEnum.OK, Message = assemblyMaster.AssemblyName + "Added Successfully" };
 
@@ -1761,7 +1761,7 @@ namespace EAMS_DAL.Repository
 
                     pcMaster.PcCreatedAt = BharatDateTime();
                     _context.ParliamentConstituencyMaster.Add(pcMaster);
-                    _context.SaveChanges();
+                    await _context.SaveChangesAsync();
 
                     return new Response { Status = RequestStatusEnum.OK, Message = pcMaster.PcName + "Added Successfully" };
 
@@ -2030,7 +2030,7 @@ namespace EAMS_DAL.Repository
             }
             fieldOfficerViewModel.FieldOfficerCreatedAt = BharatDateTime();
             // If no duplicates exist, add the new FieldOfficer and save changes
-            _context.FieldOfficerMaster.Add(fieldOfficerViewModel);
+            await _context.FieldOfficerMaster.AddAsync(fieldOfficerViewModel);
             await _context.SaveChangesAsync();
 
             // Return success response
@@ -2157,7 +2157,7 @@ namespace EAMS_DAL.Repository
 
             _context.FieldOfficerMaster.Update(existingOfficer);
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             // Return a success response
             return new Response
@@ -2558,7 +2558,7 @@ namespace EAMS_DAL.Repository
             }
 
             // If no duplicates exist, add the new FieldOfficer and save changes
-            _context.AROResultMaster.Add(aROResultMaster);
+            await _context.AROResultMaster.AddAsync(aROResultMaster);
             await _context.SaveChangesAsync();
 
             // Return success response
@@ -2729,7 +2729,7 @@ namespace EAMS_DAL.Repository
 
             _context.AROResultMaster.Update(aROResultMaster);
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             // Return a success response
             return new Response
@@ -3259,14 +3259,14 @@ namespace EAMS_DAL.Repository
                                         _context.BoothMaster.Update(existingBooth);
                                     }
                                     boothMaster.BoothCreatedAt = BharatDateTime();
-                                    _context.BoothMaster.Add(boothMaster);
+                                    await _context.BoothMaster.AddAsync(boothMaster);
                                     await _context.SaveChangesAsync();
                                     return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
                                 }
                                 else
                                 {// as it is save otherwise
                                     boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
-                                    _context.BoothMaster.Add(boothMaster);
+                                    await _context.BoothMaster.AddAsync(boothMaster);
                                     await _context.SaveChangesAsync();
                                     return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
 
@@ -3275,7 +3275,7 @@ namespace EAMS_DAL.Repository
                             else
                             {
                                 boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
-                                _context.BoothMaster.Add(boothMaster);
+                                await _context.BoothMaster.AddAsync(boothMaster);
                                 await _context.SaveChangesAsync();
                                 return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
                             }
@@ -3283,7 +3283,7 @@ namespace EAMS_DAL.Repository
                         else
                         {
                             boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
-                            _context.BoothMaster.Add(boothMaster);
+                            await _context.BoothMaster.AddAsync(boothMaster);
                             await _context.SaveChangesAsync();
                             return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
                         }
@@ -3308,7 +3308,7 @@ namespace EAMS_DAL.Repository
                             if (boothMaster.Male + boothMaster.Female + boothMaster.Transgender == boothMaster.TotalVoters)
                             {
                                 boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
-                                _context.BoothMaster.Add(boothMaster);
+                                await _context.BoothMaster.AddAsync(boothMaster);
                                 await _context.SaveChangesAsync();
                                 return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
                             }
@@ -3355,14 +3355,14 @@ namespace EAMS_DAL.Repository
                                             _context.BoothMaster.Update(existingBooth);
                                         }
                                         boothMaster.BoothCreatedAt = BharatDateTime();
-                                        _context.BoothMaster.Add(boothMaster);
+                                        await _context.BoothMaster.AddAsync(boothMaster);
                                         await _context.SaveChangesAsync();
                                         return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
                                     }
                                     else
                                     {// as it is save otherwise
                                         boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
-                                        _context.BoothMaster.Add(boothMaster);
+                                        await _context.BoothMaster.AddAsync(boothMaster);
                                         await _context.SaveChangesAsync();
                                         return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
 
@@ -3373,7 +3373,7 @@ namespace EAMS_DAL.Repository
                                 else
                                 {
                                     boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
-                                    _context.BoothMaster.Add(boothMaster);
+                                    await _context.BoothMaster.AddAsync(boothMaster);
                                     await _context.SaveChangesAsync();
                                     return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
 
@@ -3389,7 +3389,7 @@ namespace EAMS_DAL.Repository
                             {
 
                                 boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
-                                _context.BoothMaster.Add(boothMaster);
+                                await _context.BoothMaster.AddAsync(boothMaster);
                                 await _context.SaveChangesAsync();
                                 return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
                             }
@@ -4392,7 +4392,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
 
             // Add the new event to the context and save changes
-            _context.EventMaster.Add(eventMaster);
+            await _context.EventMaster.AddAsync(eventMaster);
             await _context.SaveChangesAsync();
 
             // Return success response
@@ -4492,7 +4492,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             {
                 isExist.Status = eventMaster.Status;
                 _context.EventMaster.Update(isExist);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
                 return new ServiceResponse
                 {
                     IsSucceed = true,
@@ -5658,59 +5658,46 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         public async Task<ServiceResponse> PartyDispatch(UpdateEventActivity updateEventActivity)
         {
-            // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
-            var result = await (from election in _context.ElectionInfoMaster
-                                join booth in _context.BoothMaster.AsNoTracking()
-                                on new
-                                {
-                                    election.StateMasterId,
-                                    election.DistrictMasterId,
-                                    election.AssemblyMasterId,
-                                    election.ElectionTypeMasterId,
-                                    election.BoothMasterId
-                                }
-                                equals new
-                                {
-                                    booth.StateMasterId,
-                                    booth.DistrictMasterId,
-                                    booth.AssemblyMasterId,
-                                    booth.ElectionTypeMasterId,
-                                    booth.BoothMasterId
-                                }
-                                where election.StateMasterId == updateEventActivity.StateMasterId &&
-                                      election.DistrictMasterId == updateEventActivity.DistrictMasterId &&
-                                      election.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
-                                      election.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
-                                      election.BoothMasterId == updateEventActivity.BoothMasterId
-                                select new
-                                {
-                                    ElectionInfo = election,
-                                    FourthLevelHMasterId = booth.FourthLevelHMasterId
-                                })
-                    .FirstOrDefaultAsync();
+            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+                  d.StateMasterId == updateEventActivity.StateMasterId &&
+                  d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                  d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                  d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                  d.BoothMasterId == updateEventActivity.BoothMasterId
+              );
+
 
             // If the record exists, update it
             if (result is not null)
             {
-                result.ElectionInfo.EventMasterId = updateEventActivity.EventMasterId;
-                result.ElectionInfo.EventSequence = updateEventActivity.EventSequence;
-                result.ElectionInfo.EventABBR = updateEventActivity.EventABBR;
-                result.ElectionInfo.EventName = updateEventActivity.EventName;
-                result.ElectionInfo.ElectionInfoStatus = updateEventActivity.EventStatus;
-                result.ElectionInfo.IsPartyDispatched = updateEventActivity.EventStatus;
-                result.ElectionInfo.PartyDispatchedLastUpdate = BharatDateTime();
-                result.ElectionInfo.EventStatus = updateEventActivity.EventStatus;
-                _context.ElectionInfoMaster.Update(result.ElectionInfo);
+                result.EventMasterId = updateEventActivity.EventMasterId;
+                result.EventSequence = updateEventActivity.EventSequence;
+                result.EventABBR = updateEventActivity.EventABBR;
+                result.EventName = updateEventActivity.EventName;
+                result.ElectionInfoStatus = updateEventActivity.EventStatus;
+                result.IsPartyDispatched = updateEventActivity.EventStatus;
+                result.PartyDispatchedLastUpdate = BharatDateTime();
+                result.EventStatus = updateEventActivity.EventStatus;
+                _context.ElectionInfoMaster.Update(result);
             }
             // If the record does not exist, create a new one
             else
             {
+                var getfourthLevelId = await _context.BoothMaster
+                                   .AsNoTracking()  // No tracking for better performance
+                                   .Where(d => d.StateMasterId == updateEventActivity.StateMasterId &&
+                                               d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                                               d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                                               d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                                               d.BoothMasterId == updateEventActivity.BoothMasterId)
+                                   .Select(d => d.FourthLevelHMasterId)
+                                   .FirstOrDefaultAsync();
                 var newElectionInfo = new ElectionInfoMaster
                 {
                     StateMasterId = updateEventActivity.StateMasterId,
                     DistrictMasterId = updateEventActivity.DistrictMasterId,
                     AssemblyMasterId = updateEventActivity.AssemblyMasterId,
-                    FourthLevelMasterId= result.FourthLevelHMasterId,
+                    FourthLevelMasterId = getfourthLevelId,
                     ElectionTypeMasterId = updateEventActivity.ElectionTypeMasterId,
                     BoothMasterId = updateEventActivity.BoothMasterId,
                     EventMasterId = updateEventActivity.EventMasterId,
@@ -5973,7 +5960,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.EventStatus = false;
             }
             result.VotingLastUpdate = BharatDateTime();
-            result.FinalVote = updateEventActivity.VotesPolled;
             result.EventName = updateEventActivity.EventName;
             // Check if a PollDetail already exists within the current Slot's EndTime and LockTime
 
@@ -5993,7 +5979,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 SlotManagementId = getLatestSlot.SlotManagementId,
             };
 
-            _context.PollDetails.Add(newPollDetail);
+            await _context.PollDetails.AddAsync(newPollDetail);
 
 
             // Update ElectionInfoMaster in the context
@@ -6079,18 +6065,18 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         public async Task<ServiceResponse> FinalVotesPolled(UpdateEventActivity updateEventActivity)
         {
             var boothMaster = await _context.BoothMaster
-       .Where(d => d.StateMasterId == updateEventActivity.StateMasterId &&
-                   d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
-                   d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
-                   d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
-                   d.BoothMasterId == updateEventActivity.BoothMasterId)
-       .Select(d => new
-       {
-           d.Male,
-           d.Female,
-           d.Transgender
-       })
-       .FirstOrDefaultAsync();
+                               .Where(d => d.StateMasterId == updateEventActivity.StateMasterId &&
+                                           d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                                           d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                                           d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                                           d.BoothMasterId == updateEventActivity.BoothMasterId)
+                               .Select(d => new
+                               {
+                                   d.Male,
+                                   d.Female,
+                                   d.Transgender
+                               })
+                               .FirstOrDefaultAsync();
 
             string warningMessage = string.Empty;
 
@@ -6133,6 +6119,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.EventABBR = updateEventActivity.EventABBR;
                 result.ElectionInfoStatus = updateEventActivity.EventStatus;
                 result.IsFinalVote = updateEventActivity.EventStatus;
+                result.FinalVote = updateEventActivity.FinalFeMaleVotes + updateEventActivity.FinalMaleVotes + updateEventActivity.FinalTransgenderVotes;
                 result.FinalVoteLastUpdate = BharatDateTime();
                 result.EventName = updateEventActivity.EventName;
                 result.EventStatus = updateEventActivity.EventStatus;
@@ -6487,13 +6474,14 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         public async Task<ServiceResponse> IsVoterTurnOut(CheckEventActivity checkEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
-            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
+            var isVoterTurnOut = await _context.ElectionInfoMaster.Where(d =>
                 d.StateMasterId == checkEventActivity.StateMasterId &&
                 d.DistrictMasterId == checkEventActivity.DistrictMasterId &&
                 d.AssemblyMasterId == checkEventActivity.AssemblyMasterId &&
                 d.ElectionTypeMasterId == checkEventActivity.ElectionTypeMasterId &&
                 d.BoothMasterId == checkEventActivity.BoothMasterId
-            );
+            ).Select(d => d.IsVoterTurnOut).FirstOrDefaultAsync();
+
             var isPollDetailExist = await _context.PollDetails.AnyAsync(d =>
                 d.StateMasterId == checkEventActivity.StateMasterId &&
                 d.DistrictMasterId == checkEventActivity.DistrictMasterId &&
@@ -6501,14 +6489,14 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 d.ElectionTypeMasterId == checkEventActivity.ElectionTypeMasterId &&
                 d.BoothMasterId == checkEventActivity.BoothMasterId
             );
-            if (isPollDetailExist is true && result.IsVoterTurnOut == false)
+            if (isPollDetailExist is true && isVoterTurnOut == false)
             {
                 return new ServiceResponse()
                 {
                     IsSucceed = true,
                 };
             }
-            if (result is not null && result.IsVoterTurnOut == true && isPollDetailExist is false)
+            if (isVoterTurnOut == true && isPollDetailExist is true)
             {
                 return new ServiceResponse()
                 {
@@ -6959,7 +6947,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     electionInfo.IsVoterTurnOut = true;
                     electionInfo.VotingTurnOutLastUpdate = BharatDateTime();
                     _context.ElectionInfoMaster.Update(electionInfo);
-                    _context.SaveChanges();
+                    await _context.SaveChangesAsync();
                     return voterTurnOutPolledDetailViewModel;
                 }
             }
@@ -8108,7 +8096,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                     VoterTurnOutValue = g.Sum(x => x.IsVoterTurnOut ? 1 : 0).ToString(),
                                     TotalSo = g.Sum(x => x.NoOfPollingAgents ?? 0), // Sum of NoOfPollingAgents
                                     Children = new List<object>() // Placeholder for children if needed
-                                }).OrderBy(d=>d.Name).ToListAsync();
+                                }).OrderBy(d => d.Name).ToListAsync();
 
 
 
@@ -9143,8 +9131,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 _context.SlotManagementMaster.RemoveRange(deleteRecord);
             }
 
-            _context.SlotManagementMaster.AddRange(slotManagement);
-            _context.SaveChanges();
+            await _context.SlotManagementMaster.AddRangeAsync(slotManagement);
+            await _context.SaveChangesAsync();
 
             return new Response()
             {
@@ -9184,8 +9172,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         #region PollInterruption Interruption
         public async Task<Response> AddPollInterruption(PollInterruption PollInterruptionData)
         {
-            _context.PollInterruptions.Add(PollInterruptionData);
-            _context.SaveChanges();
+            await _context.PollInterruptions.AddAsync(PollInterruptionData);
+            await _context.SaveChangesAsync();
             return new Response { Status = RequestStatusEnum.OK, Message = "Poll Interruption Added Successfully." };
 
         }
@@ -9671,8 +9659,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             if (roles == "ARO" && stateMasterId == pollingStationMaster.StateMasterId.ToString() && assemblyMasterId == pollingStationMaster.AssemblyMasterId.ToString() && districtMasterId == pollingStationMaster.DistrictMasterId.ToString())
             {
-                _context.PollingStationMaster.AddRange(pollingStationMaster);
-                _context.SaveChanges();
+                await _context.PollingStationMaster.AddRangeAsync(pollingStationMaster);
+                await _context.SaveChangesAsync();
 
 
                 return new Response() { Status = RequestStatusEnum.OK, Message = $"Polling Station Data Addded Successfully." };
@@ -9851,7 +9839,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
 
                     _context.PollingStationGender.RemoveRange(psRecord.PollingStationGender);
-                    _context.PollingStationGender.AddRange(pollingStationMaster.PollingStationGender);
+                    await _context.PollingStationGender.AddRangeAsync(pollingStationMaster.PollingStationGender);
 
                     await _context.SaveChangesAsync();
 
@@ -10673,7 +10661,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                         };
 
                         // Add the new location to the context
-                        _context.PollingLocationMaster.Add(lm);
+                        await _context.PollingLocationMaster.AddAsync(lm);
                         await _context.SaveChangesAsync(); // Use asynchronous save changes
 
                         if (locationModel.BoothMasterId != null && locationModel.BoothMasterId.Any())
@@ -11858,7 +11846,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             IQueryable<ElectionInfoMaster> electionQuery = _context.ElectionInfoMaster
                 .Where(e => e.StateMasterId == stateMasterId);
             IQueryable<BoothMaster> totalBooths = _context.BoothMaster
-                .Where(e => e.StateMasterId == stateMasterId&&e.BoothStatus==true);
+                .Where(e => e.StateMasterId == stateMasterId && e.BoothStatus == true);
             IQueryable<PollDetail> totalVotesPolled = _context.PollDetails
                 .Where(e => e.StateMasterId == stateMasterId);
 
@@ -11951,7 +11939,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 var totalVotersCount = totalVoters;
                 var VotesInQueueCount = electionInfos.VoterInQueue;
                 var votesPolledPercentage = totalVoters > 0 ? Math.Round((decimal)(totalVotesPolledSum * 100.0 / totalVoters), 1) : 0;
-                var finalVotesCount = electionInfos.FinalVotesCount; // Assuming this is the correct source for final votes
+                var finalVotesSum = electionInfos.FinalVote; // Assuming this is the correct source for final votes
                 var finalVotesPercentage = totalVoters > 0 ? Math.Round((decimal)(electionInfos.FinalVote * 100.0 / totalVoters), 1) : 0;
 
                 // Now you can use a single query to populate the dashboard count
@@ -11965,7 +11953,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                     VotesPolledCount = votesPolledCount,
                                     TotalVotersCount = totalVotersCount,
                                     VotesPolledPercentage = votesPolledPercentage,
-                                    FinalVotesCount = finalVotesCount,
+                                    FinalVotesCount = finalVotesSum,
                                     FinalVotesPercentage = finalVotesPercentage
                                 }).ToList();
             }
@@ -14560,7 +14548,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
                 helpDeskDetail.CreatedAt = BharatDateTime();
                 _context.HelpDeskDetail.Add(helpDeskDetail);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
 
                 return new Response { Status = RequestStatusEnum.OK, Message = helpDeskDetail.ContactName + " " + "Contact Added Successfully" };
 
@@ -15498,7 +15486,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     bLOMaster.BLOCreatedAt = BharatDateTime();
                     bLOMaster.PCMasterId = getPcMasterId;
                     _context.BLOMaster.Add(bLOMaster);
-                    _context.SaveChanges();
+                    await _context.SaveChangesAsync();
                     return new Response { Status = RequestStatusEnum.OK, Message = "BLO User " + bLOMaster.BLOName + " " + "Added Successfully" };
 
 
@@ -15635,7 +15623,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                             existingBooth.AssignedOnTime = DateTime.UtcNow;
                             //existingBooth.IsAssigned = boothMaster.IsAssigned;
                             _context.BoothMaster.Update(existingBooth);
-                            _context.SaveChanges();
+                            await _context.SaveChangesAsync();
                         }
                         else
                         {
@@ -15771,7 +15759,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 existingPPR.DateOfCompletedRound = pPR.DateOfCompletedRound;
                 existingPPR.DateOfPostponedRound = pPR.DateOfPostponedRound;
                 _context.PPR.Update(existingPPR);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
                 return new ServiceResponse { IsSucceed = true, Message = "Updated Successfully" };
             }
         }
@@ -16321,7 +16309,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         #region KYC Public Details
         public async Task<ServiceResponse> AddKYCDetails(Kyc kyc)
-        { 
+        {
             // Check if an unopposed Sarpanch exists (GPPanchayatWardsMasterId == 0)
             bool existingSarpanch = await _context.Kyc.AnyAsync(k =>
                 k.StateMasterId == kyc.StateMasterId &&
@@ -16354,14 +16342,14 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
 
 
-            _context.Kyc.Add(kyc);
+            await _context.Kyc.AddAsync(kyc);
             await _context.SaveChangesAsync();
 
             return new ServiceResponse { IsSucceed = true, Message = "Successfully added" };
         }
         public async Task<ServiceResponse> UpdateKycDetails(Kyc kyc)
         {
-            
+
             // Check if the KYC record exists
             var existingKyc = await _context.Kyc.FirstOrDefaultAsync(k => k.KycMasterId == kyc.KycMasterId);
 
@@ -16547,7 +16535,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                 k.StateMasterId == stateMasterId &&
                                 k.DistrictMasterId == districtMasterId &&
                                 k.AssemblyMasterId == assemblyMasterId &&
-                                k.FourthLevelHMasterId == fourthLevelMasterId 
+                                k.FourthLevelHMasterId == fourthLevelMasterId
                                 && (!wardMasterId.HasValue || k.GPPanchayatWardsMasterId == wardMasterId.Value)
 
                           select new KycList
@@ -16750,7 +16738,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             else
             {
                 _context.Kyc.Remove(isExist);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
                 return new ServiceResponse { IsSucceed = true, Message = "Record Deleted successfully" };
             }
         }
@@ -16799,7 +16787,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
 
             // Add the new UnOpposed record
-            _context.UnOpposed.Add(unOpposed);
+            await _context.UnOpposed.AddAsync(unOpposed);
             await _context.SaveChangesAsync();
 
             return new ServiceResponse { IsSucceed = true, Message = "Successfully added" };
@@ -17054,7 +17042,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             else
             {
                 _context.UnOpposed.Remove(isExist);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
                 return new ServiceResponse { IsSucceed = true, Message = "Record Deleted successfully" };
             }
         }
@@ -17098,8 +17086,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 {
 
                     fourthLevelH.HierarchyCreatedAt = BharatDateTime();
-                    _context.FourthLevelH.Add(fourthLevelH);
-                    _context.SaveChanges();
+                    await _context.FourthLevelH.AddAsync(fourthLevelH);
+                    await _context.SaveChangesAsync();
 
                     return new Response { Status = RequestStatusEnum.OK, Message = fourthLevelH.HierarchyName + " Added Successfully" };
 
@@ -17315,7 +17303,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 }
 
                 psZonePanchayat.PSZonePanchayatCreatedAt = BharatDateTime();
-                _context.PSZonePanchayat.Add(psZonePanchayat);
+                await _context.PSZonePanchayat.AddAsync(psZonePanchayat);
                 await _context.SaveChangesAsync();
 
                 return new Response
@@ -17388,7 +17376,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 existingPSZonePanchayat.PSZonePanchayatDeletedAt = updatedPSZonePanchayat.PSZonePanchayatDeletedAt;
                 existingPSZonePanchayat.PSZonePanchayatStatus = updatedPSZonePanchayat.PSZonePanchayatStatus;
                 _context.PSZonePanchayat.Update(existingPSZonePanchayat);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
 
                 return new Response { Status = RequestStatusEnum.OK, Message = "Block Panchayat updated successfully" };
             }
@@ -17447,8 +17435,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 {
 
                     gpPanchayatWards.GPPanchayatWardsCreatedAt = BharatDateTime();
-                    _context.GPPanchayatWards.Add(gpPanchayatWards);
-                    _context.SaveChanges();
+                    await _context.GPPanchayatWards.AddAsync(gpPanchayatWards);
+                    await _context.SaveChangesAsync();
 
                     return new Response { Status = RequestStatusEnum.OK, Message = gpPanchayatWards.GPPanchayatWardsName + "Added Successfully" };
 
@@ -17671,7 +17659,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 }
             }
 
-            _context.GPVoter.Add(gpVoterPdf);
+            await _context.GPVoter.AddAsync(gpVoterPdf);
             await _context.SaveChangesAsync();
             return new ServiceResponse { IsSucceed = true, Message = "Successfully added" };
         }
@@ -17878,7 +17866,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             else
             {
                 _context.GPVoter.Remove(isExist);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
                 return new ServiceResponse { IsSucceed = true, Message = "Record Deleted successfully" };
             }
         }
@@ -17919,7 +17907,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 else
                 {
                     // Insert a new record if no existing record is found
-                    _context.ResultDeclaration.Add(resultCandidate);
+                    await _context.ResultDeclaration.AddAsync(resultCandidate);
                     await _context.SaveChangesAsync(); // Save to generate IDs
                 }
 
@@ -17958,7 +17946,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                         historyEntry.ResultDeclarationMasterId = existingResult.ResultDeclarationMasterId;
                     }
 
-                    _context.ResultDeclarationHistory.Add(historyEntry);
+                    await _context.ResultDeclarationHistory.AddAsync(historyEntry);
                 }
             }
 
@@ -18117,7 +18105,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             else
             {
                 _context.ResultDeclaration.Remove(isExist);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
                 return new ServiceResponse { IsSucceed = true, Message = "Record Deleted successfully" };
             }
         }
