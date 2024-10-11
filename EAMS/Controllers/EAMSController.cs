@@ -831,6 +831,28 @@ namespace EAMS.Controllers
             return Ok(data);
         }
 
+        /// <summary this api for Portal>
+        [HttpGet]
+        [Route("GetBoothListForFoPortal")]
+        [Authorize]
+        public async Task<IActionResult> GetBoothListForFoPortal(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
+        {
+            //int foId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "FieldOfficerMasterId")?.Value);
+            //int stateMasterId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value);
+            //int districtMasterId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value);
+            //int assemblyMasterId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId")?.Value);
+
+            var boothList = await _EAMSService.GetBoothListForFo(stateMasterId, districtMasterId, assemblyMasterId, foId);
+
+            var mappedData = _mapper.Map<List<FieldOfficerBoothViewModel>>(boothList);
+            var data = new
+            {
+                count = mappedData.Count,
+                data = mappedData.OrderBy(p => Int32.Parse(p.BoothCode_No)),
+            };
+            return Ok(data);
+        }
+
         [HttpGet]
         [Route("GetBoothListForResultDeclaration")]
         [Authorize]
