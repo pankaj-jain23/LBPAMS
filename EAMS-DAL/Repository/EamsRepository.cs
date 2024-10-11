@@ -8217,7 +8217,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                 } into g
                                 select new EventActivityBoothWise
                                 {
-                                    Key = $"{stateMasterId}{districtMasterId}{assemblyMasterId}{fourthLevelHMasterId}{g.Key.BoothMasterId}{g.Key.BoothName}",
+                                    Key = $"{stateMasterId}{districtMasterId}{assemblyMasterId}{fourthLevelHMasterId}{g.Key.BoothMasterId}",
                                     MasterId = g.Key.BoothMasterId,
                                     StateMasterId = stateMasterId,
                                     DistrictMasterId = districtMasterId,
