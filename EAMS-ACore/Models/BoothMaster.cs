@@ -103,9 +103,9 @@ namespace EAMS_ACore
 
         public DateTime? BoothDeletedAt { get; set; }
 
-        public string? AssignedTo { get; set; }
+        public string? AssignedTo { get; set; }//FieldOfficer Mobile User
         public string? AssignedToBLO { get; set; }
-        public string? AssignedBy { get; set; }
+        public string? AssignedBy { get; set; }//Portal User
         public DateTime? AssignedOnTime { get; set; }
         public bool IsAssigned { get; set; }
         public int? LocationMasterId { get; set; }

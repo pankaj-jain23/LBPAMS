@@ -2437,7 +2437,7 @@ namespace EAMS_DAL.Repository
                                        IsBoothInterrupted = bt.IsBoothInterrupted,
                                        IsVTInterrupted = bt.IsVTInterrupted,
                                        TotalVoters = bt.TotalVoters,
-                                       FourthLevelHTotalVoters = bt.TotalVoters,
+                                       //FourthLevelHTotalVoters = bt.TotalVoters,
                                    }).ToListAsync();
             // Step 2: Group by FourthLevelHMasterId and calculate total voters
             var totalVotersByFourthLevelH = boothList
@@ -2449,11 +2449,11 @@ namespace EAMS_DAL.Repository
                 }).ToList();
 
             // Step 3: Update boothList to include the total voters for each FourthLevelHMasterId
-            foreach (var booth in boothList)
-            {
-                booth.FourthLevelHTotalVoters = totalVotersByFourthLevelH
-                    .FirstOrDefault(t => t.FourthLevelHMasterId == booth.FourthLevelHMasterId)?.TotalVotersSum ?? 0;
-            }
+            //foreach (var booth in boothList)
+            //{
+            //    booth.FourthLevelHTotalVoters = totalVotersByFourthLevelH
+            //        .FirstOrDefault(t => t.FourthLevelHMasterId == booth.FourthLevelHMasterId)?.TotalVotersSum ?? 0;
+            //}
 
             // Step 2: Get unique FourthLevelHMasterId and BoothMasterId pairs
             var fourthLevelHMasterIds = boothList.Select(b => b.FourthLevelHMasterId).Distinct().ToList();
@@ -5656,26 +5656,48 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         public async Task<ServiceResponse> PartyDispatch(UpdateEventActivity updateEventActivity)
         {
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
-            var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
-                d.StateMasterId == updateEventActivity.StateMasterId &&
-                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
-                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
-                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
-                d.BoothMasterId == updateEventActivity.BoothMasterId
-            );
+            var result = await (from election in _context.ElectionInfoMaster
+                                join booth in _context.BoothMaster.AsNoTracking()
+                                on new
+                                {
+                                    election.StateMasterId,
+                                    election.DistrictMasterId,
+                                    election.AssemblyMasterId,
+                                    election.ElectionTypeMasterId,
+                                    election.BoothMasterId
+                                }
+                                equals new
+                                {
+                                    booth.StateMasterId,
+                                    booth.DistrictMasterId,
+                                    booth.AssemblyMasterId,
+                                    booth.ElectionTypeMasterId,
+                                    booth.BoothMasterId
+                                }
+                                where election.StateMasterId == updateEventActivity.StateMasterId &&
+                                      election.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+                                      election.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+                                      election.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+                                      election.BoothMasterId == updateEventActivity.BoothMasterId
+                                select new
+                                {
+                                    ElectionInfo = election,
+                                    FourthLevelHMasterId = booth.FourthLevelHMasterId
+                                })
+                    .FirstOrDefaultAsync();
 
             // If the record exists, update it
             if (result is not null)
             {
-                result.EventMasterId = updateEventActivity.EventMasterId;
-                result.EventSequence = updateEventActivity.EventSequence;
-                result.EventABBR = updateEventActivity.EventABBR;
-                result.EventName = updateEventActivity.EventName;
-                result.ElectionInfoStatus = updateEventActivity.EventStatus;
-                result.IsPartyDispatched = updateEventActivity.EventStatus;
-                result.PartyDispatchedLastUpdate = BharatDateTime();
-                result.EventStatus = updateEventActivity.EventStatus;
-                _context.ElectionInfoMaster.Update(result);
+                result.ElectionInfo.EventMasterId = updateEventActivity.EventMasterId;
+                result.ElectionInfo.EventSequence = updateEventActivity.EventSequence;
+                result.ElectionInfo.EventABBR = updateEventActivity.EventABBR;
+                result.ElectionInfo.EventName = updateEventActivity.EventName;
+                result.ElectionInfo.ElectionInfoStatus = updateEventActivity.EventStatus;
+                result.ElectionInfo.IsPartyDispatched = updateEventActivity.EventStatus;
+                result.ElectionInfo.PartyDispatchedLastUpdate = BharatDateTime();
+                result.ElectionInfo.EventStatus = updateEventActivity.EventStatus;
+                _context.ElectionInfoMaster.Update(result.ElectionInfo);
             }
             // If the record does not exist, create a new one
             else
@@ -5685,6 +5707,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     StateMasterId = updateEventActivity.StateMasterId,
                     DistrictMasterId = updateEventActivity.DistrictMasterId,
                     AssemblyMasterId = updateEventActivity.AssemblyMasterId,
+                    FourthLevelMasterId= result.FourthLevelHMasterId,
                     ElectionTypeMasterId = updateEventActivity.ElectionTypeMasterId,
                     BoothMasterId = updateEventActivity.BoothMasterId,
                     EventMasterId = updateEventActivity.EventMasterId,
@@ -8063,7 +8086,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                 } into g
                                 select new EventActivityCount
                                 {
-                                    Key = stateMasterId + g.Key.DistrictMasterId+g.Key.DistrictName,
+                                    Key = stateMasterId + g.Key.DistrictMasterId + g.Key.DistrictName,
                                     MasterId = g.Key.DistrictMasterId, // Group key
                                     Name = g.Key.DistrictName, // Group key
                                     Type = "District",
@@ -8084,12 +8107,12 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                     Children = new List<object>() // Placeholder for children if needed
                                 }).ToListAsync();
 
-          
+
 
             return result;
         }
 
-         
+
         public async Task<List<AssemblyEventActivityCount>> GetEventListAssemblyWiseById(int stateMasterId, int? districtMasterId)
         {
             var result = await (from election in _context.ElectionInfoMaster
@@ -8131,7 +8154,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return result;
         }
-        public async Task<List<FourthLevelEventActivityCount>> GetEventListFourthLevelHWiseById(int stateMasterId, int? districtMasterId,int? assemblyMasterId)
+        public async Task<List<FourthLevelEventActivityCount>> GetEventListFourthLevelHWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId)
         {
             var result = await (from election in _context.ElectionInfoMaster
                                 join fourthLevel in _context.FourthLevelH on election.FourthLevelMasterId equals fourthLevel.FourthLevelHMasterId
@@ -8174,16 +8197,16 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return result;
         }
-        public async Task<List<EventActivityBoothWise>> GetEventListBoothWiseById(int stateMasterId,int? districtMasterId,int? assemblyMasterId,int? fourthLevelHMasterId)
+        public async Task<List<EventActivityBoothWise>> GetEventListBoothWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelHMasterId)
         {
             var result = await (from election in _context.ElectionInfoMaster
                                 join boothMaster in _context.BoothMaster on election.BoothMasterId equals boothMaster.BoothMasterId
                                 join fieldOfficerMaster in _context.FieldOfficerMaster
-                                    on boothMaster.AssignedBy equals fieldOfficerMaster.FieldOfficerMasterId.ToString() // Assuming AssignedBy is string
+                                    on boothMaster.AssignedTo equals fieldOfficerMaster.FieldOfficerMasterId.ToString() // Assuming AssignedBy is string
                                 where election.StateMasterId == stateMasterId
-                                      && (districtMasterId == null || election.DistrictMasterId == districtMasterId)
-                                      && (assemblyMasterId == null || election.AssemblyMasterId == assemblyMasterId)
-                                      && (fourthLevelHMasterId == null || election.FourthLevelMasterId == fourthLevelHMasterId) // Use == for nullable check
+                                      && (election.DistrictMasterId == districtMasterId)
+                                      && (election.AssemblyMasterId == assemblyMasterId)
+                                      && (election.FourthLevelMasterId == fourthLevelHMasterId) // Use == for nullable check
                                 group election by new
                                 {
                                     boothMaster.BoothMasterId,
