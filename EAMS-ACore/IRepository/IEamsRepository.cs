@@ -188,6 +188,8 @@ namespace EAMS_ACore.IRepository
         Task<(List<EventActivityForDashboard> eventActivities, int totalBoothCount)> GetEventActivitiesForDashboard(int stateMasterId, int districtMasterId);
         Task<int> GetTotalBoothActivity(int stateMasterId, int districtMasterId, string eventName);
         Task<List<EventActivityCount>> GetEventListDistrictWiseById(int stateMasterId);
+        ///This API fetches the district-wise event list for Pending events.
+        Task<List<EventActivityCount>> GetEventPendingListDistrictWiseById(int stateMasterId);
         Task<List<EventActivityCount>> GetEventListPCWiseById(string stateId, string userId);
         Task<List<AssemblyEventActivityCount>> GetEventListAssemblyWiseById(int stateMasterId, int? districtMasterId);
         Task<List<FourthLevelEventActivityCount>> GetEventListFourthLevelHWiseById(int stateMasterId, int? districtMasterId,int? assemblyMasterId);

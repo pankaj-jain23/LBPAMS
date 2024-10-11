@@ -2730,7 +2730,11 @@ namespace EAMS.Controllers
 
             return Ok(response);
         }
-
+        /// <summary>
+        /// This API fetches the district-wise event list for running events.
+        /// The event list is filtered based on the StateMasterId of the authenticated user.
+        /// </summary>
+        /// <returns>Returns a list of events for the districts in the user's state.</returns>
         [HttpGet]
         [Route("GetDistrictWiseEventListById")]
         [Authorize(Roles = "SuperAdmin,StateAdmin")]
@@ -2754,7 +2758,33 @@ namespace EAMS.Controllers
             }
         }
 
+        /// <summary>
+        /// This API fetches the district-wise event list for Pending events.
+        /// The event list is filtered based on the StateMasterId of the authenticated user.
+        /// </summary>
+        /// <returns>Returns a list of events for the districts in the user's state.</returns>
+        [HttpGet]
+        [Route("GetEventPendingListDistrictWiseById")]
+        [Authorize(Roles = "SuperAdmin,StateAdmin")]
+        public async Task<IActionResult> EventPendingListDistrictWiseById()
+        {
 
+            var stateMasterId = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            if (string.IsNullOrEmpty(stateMasterId))
+            {
+                return BadRequest("StateMasterId is required.");
+            }
+
+            var eventDistrictWiseList = await _EAMSService.GetEventPendingListDistrictWiseById(Convert.ToInt32(stateMasterId));
+            if (eventDistrictWiseList != null)
+            {
+                return Ok(eventDistrictWiseList);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
 
         //[HttpGet]
         //[Route("GetPCWiseEventListById")]

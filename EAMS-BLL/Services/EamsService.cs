@@ -697,6 +697,12 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetEventListDistrictWiseById(stateMasterId);
         }
+        ///This API fetches the district-wise event list for Pending events.
+
+        public async Task<List<EventActivityCount>> GetEventPendingListDistrictWiseById(int stateMasterId)
+        {
+            return await _eamsRepository.GetEventPendingListDistrictWiseById(stateMasterId);
+        }
         public async Task<List<EventActivityCount>> GetEventListPCWiseById(string stateId, string userId)
         {
             return await _eamsRepository.GetEventListPCWiseById(stateId, userId);
