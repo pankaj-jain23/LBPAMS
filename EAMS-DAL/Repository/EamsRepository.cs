@@ -3662,12 +3662,15 @@ namespace EAMS_DAL.Repository
                                 if (boothMaster.ElectionTypeMasterId == electionAssemblyTypeId)
                                 {
                                     var electionInfoRecord = _context.ElectionInfoMaster
-                                          .Where(d => d.StateMasterId == boothMaster.StateMasterId && d.DistrictMasterId == boothMaster.DistrictMasterId && d.AssemblyMasterId == boothMaster.AssemblyMasterId && d.BoothMasterId == boothMaster.BoothMasterId)
+                                          .Where(d => d.StateMasterId == boothMaster.StateMasterId
+                                          && d.DistrictMasterId == boothMaster.DistrictMasterId
+                                          && d.AssemblyMasterId == boothMaster.AssemblyMasterId
+                                          && d.BoothMasterId == boothMaster.BoothMasterId).Select(d=>d.IsPartyDispatched)
                                         .FirstOrDefault();
                                     //check if booths of Gram Panchyat case
                                     //{ 
                                     //means election_info null,also booth not mapped
-                                    if (electionInfoRecord == null && (existingbooth.AssignedTo == null || existingbooth.AssignedTo == ""))
+                                    if (electionInfoRecord == null|| electionInfoRecord==false && (existingbooth.AssignedTo == null || existingbooth.AssignedTo == ""))
                                     {
                                         if (boothMaster.BoothStatus == false)
                                         {
@@ -3921,7 +3924,7 @@ namespace EAMS_DAL.Repository
                                     }
 
                                     //means info null, but booth mapped, that case 4 fields can editable--> changed method
-                                    else if (electionInfoRecord == null && existingbooth.AssignedTo != null)
+                                    else if (electionInfoRecord == null || electionInfoRecord == false && existingbooth.AssignedTo != null)
                                     {  // can update only 4 fields
                                         if (existingbooth.BoothName == boothMaster.BoothName && existingbooth.BoothCode_No == boothMaster.BoothCode_No &&
                                             existingbooth.DistrictMasterId == boothMaster.DistrictMasterId && existingbooth.AssemblyMasterId == boothMaster.AssemblyMasterId
@@ -4123,7 +4126,7 @@ namespace EAMS_DAL.Repository
                                         }
                                     }
 
-                                    else if (electionInfoRecord != null)
+                                    else if (electionInfoRecord != null || electionInfoRecord == true)
                                     {
                                         //allow editing of isprimary only
 
