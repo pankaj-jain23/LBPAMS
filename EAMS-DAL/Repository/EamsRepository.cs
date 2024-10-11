@@ -3665,7 +3665,7 @@ namespace EAMS_DAL.Repository
                                           .Where(d => d.StateMasterId == boothMaster.StateMasterId
                                           && d.DistrictMasterId == boothMaster.DistrictMasterId
                                           && d.AssemblyMasterId == boothMaster.AssemblyMasterId
-                                          && d.BoothMasterId == boothMaster.BoothMasterId).Select(d=>d.IsPartyDispatched)
+                                          && d.BoothMasterId == boothMaster.BoothMasterId).Select(d=>d.IsEVMDeposited)
                                         .FirstOrDefault();
                                     //check if booths of Gram Panchyat case
                                     //{ 
