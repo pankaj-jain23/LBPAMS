@@ -2405,6 +2405,115 @@ namespace EAMS.Controllers
         #endregion
 
         #region Event Activity
+
+        #region Event Activity for Portal
+        [HttpPut]
+        [Route("UpdateEventActivityForPortal")]
+        [Authorize]
+        public async Task<IActionResult> UpdateEventActivityForPortal(UpdateEventActivityViewModel updateEventActivityViewModel,
+            int stateMasterId,
+            int districtMasterId,
+            int assemblyMasterId,
+            int electionTypeMasterId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Invalid model state.");
+            }
+
+            var mappedData = _mapper.Map<UpdateEventActivity>(updateEventActivityViewModel);
+            // Set IDs from claims
+            mappedData.StateMasterId = stateMasterId;
+            mappedData.DistrictMasterId = districtMasterId;
+            mappedData.AssemblyMasterId = assemblyMasterId;
+            mappedData.ElectionTypeMasterId = electionTypeMasterId;
+
+            var result = await _EAMSService.UpdateEventActivity(mappedData);
+            if (result.IsSucceed == true)
+            {
+                return Ok(result.Message);
+            }
+            else
+            {
+                return BadRequest(result.Message);
+            }
+
+        }
+
+        [HttpPut]
+        [Route("UpdateVTEventActivityForPortal")]
+        [Authorize]
+        public async Task<IActionResult> UpdateVTEventActivityForPortal(UpdateVTEventActivityViewModel updateEventActivityViewModel,
+            int stateMasterId,
+            int districtMasterId,
+            int assemblyMasterId,
+            int electionTypeMasterId
+            )
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Invalid model state.");
+            }
+
+
+
+            // Map view model to entity
+            var mappedData = _mapper.Map<UpdateEventActivity>(updateEventActivityViewModel);
+
+            mappedData.StateMasterId = stateMasterId;
+            mappedData.DistrictMasterId = districtMasterId;
+            mappedData.AssemblyMasterId = assemblyMasterId;
+            mappedData.ElectionTypeMasterId = electionTypeMasterId;
+
+            var result = await _EAMSService.UpdateEventActivity(mappedData);
+            if (result.IsSucceed == true)
+            {
+                return Ok(result.Message);
+            }
+            else
+            {
+                return BadRequest(result.Message);
+            }
+
+        }
+
+        [HttpPut]
+        [Route("UpdateFinalVoteEventActivityForPortal")]
+        [Authorize]
+        public async Task<IActionResult> UpdateFinalVoteEventActivityForPortal(UpdateFinalVoteEventActivityViewModel updateEventActivityViewModel,
+             int stateMasterId,
+            int districtMasterId,
+            int assemblyMasterId,
+            int electionTypeMasterId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Invalid model state.");
+            }
+
+          
+
+            // Map view model to entity
+            var mappedData = _mapper.Map<UpdateEventActivity>(updateEventActivityViewModel); 
+            mappedData.StateMasterId = stateMasterId;
+            mappedData.DistrictMasterId = districtMasterId;
+            mappedData.AssemblyMasterId = assemblyMasterId;
+            mappedData.ElectionTypeMasterId = electionTypeMasterId;
+
+            var result = await _EAMSService.UpdateEventActivity(mappedData);
+            if (result.IsSucceed == true)
+            {
+                return Ok(result.Message);
+            }
+            else
+            {
+                return BadRequest(result.Message);
+            }
+
+        }
+
+        #endregion 
+
         [HttpPut]
         [Route("UpdateEventActivity")]
         [Authorize]
@@ -2900,7 +3009,7 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetEventListFourthLevelHWiseById")]
         [Authorize(Roles = "SuperAdmin,StateAdmin,DistrictAdmin")]
-        public async Task<IActionResult> EventListFourthLevelHWiseById(int? districtMasterId,int? assemblyMasterId)
+        public async Task<IActionResult> EventListFourthLevelHWiseById(int? districtMasterId, int? assemblyMasterId)
         {
             var stateMasterId = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
             if (string.IsNullOrEmpty(stateMasterId))
