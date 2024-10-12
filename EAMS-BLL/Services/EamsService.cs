@@ -699,9 +699,9 @@ namespace EAMS_BLL.Services
         }
         ///This API fetches the district-wise event list for Pending events.
 
-        public async Task<List<EventActivityCount>> GetEventPendingListDistrictWiseById(int stateMasterId)
+        public async Task<List<EventActivityCount>> GetPendingEventListDistrictWiseById(int stateMasterId)
         {
-            return await _eamsRepository.GetEventPendingListDistrictWiseById(stateMasterId);
+            return await _eamsRepository.GetPendingEventListDistrictWiseById(stateMasterId);
         }
         public async Task<List<EventActivityCount>> GetEventListPCWiseById(string stateId, string userId)
         {
@@ -711,11 +711,21 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetEventListAssemblyWiseById(stateMasterId, districtMasterId);
         }
+        ///This API fetches the Assembly-wise event list for Pending events.
+        public async Task<List<AssemblyEventActivityCount>> GetPendingAssemblyWiseEventListById(int stateMasterId, int? districtMasterId)
+        {
+            return await _eamsRepository.GetPendingAssemblyWiseEventListById(stateMasterId, districtMasterId);
+        }
         public async Task<List<FourthLevelEventActivityCount>> GetEventListFourthLevelHWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId)
         {
             return await _eamsRepository.GetEventListFourthLevelHWiseById(stateMasterId, districtMasterId, assemblyMasterId);
         }
+        ///This API fetches the FourthLevelH-wise event list for Pending events.
 
+        public async Task<List<FourthLevelEventActivityCount>> GetPendingEventListFourthLevelHWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId)
+        {
+            return await _eamsRepository.GetPendingEventListFourthLevelHWiseById(stateMasterId, districtMasterId, assemblyMasterId);
+        }
         public async Task<List<AssemblyEventActivityCountPCWise>> GetEventListAssemblyWiseByPCId(string stateId, string pcId)
         {
             return await _eamsRepository.GetEventListAssemblyWiseByPCId(stateId, pcId);
@@ -723,6 +733,11 @@ namespace EAMS_BLL.Services
         public async Task<List<EventActivityBoothWise>> GetEventListBoothWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelHMasterId)
         {
             return await _eamsRepository.GetEventListBoothWiseById(stateMasterId,districtMasterId,assemblyMasterId, fourthLevelHMasterId);
+        }
+        ///This API fetches the Booth-wise event list for Pending events.
+        public async Task<List<EventActivityBoothWise>> GetPendingBoothWiseEventListById(int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelHMasterId)
+        {
+            return await _eamsRepository.GetPendingBoothWiseEventListById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);
         }
         public async Task<List<EventActivityBoothWise>> GetEventListBoothWiseByPCId(string stateId, string pcId, string assemblyId)
         {

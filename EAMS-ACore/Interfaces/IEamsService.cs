@@ -142,14 +142,21 @@ namespace EAMS_ACore.Interfaces
         Task<int> GetTotalBoothActivity(int stateMasterId, int districtMasterId, string eventName);
         Task<List<EventActivityCount>> GetEventListDistrictWiseById(int stateMasterId);
         ///This API fetches the district-wise event list for Pending events.
-        Task<List<EventActivityCount>> GetEventPendingListDistrictWiseById(int stateMasterId);
+        Task<List<EventActivityCount>> GetPendingEventListDistrictWiseById(int stateMasterId);
         Task<List<EventActivityCount>> GetEventListPCWiseById(string stateId, string userId);
         Task<List<AssemblyEventActivityCount>> GetEventListAssemblyWiseById(int stateMasterId, int? districtMasterId);
+        ///This API fetches the Assembly-wise event list for Pending events.
+        Task<List<AssemblyEventActivityCount>> GetPendingAssemblyWiseEventListById(int stateMasterId, int? districtMasterId);
         Task<List<FourthLevelEventActivityCount>> GetEventListFourthLevelHWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId);
+        ///This API fetches the FourthLevelH-wise event list for Pending events.
+
+        Task<List<FourthLevelEventActivityCount>> GetPendingEventListFourthLevelHWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId);
         //Task<List<AssemblyEventActivityCount>> GetEventListAssemblyWiseByStateId(string stateId);
 
         Task<List<AssemblyEventActivityCountPCWise>> GetEventListAssemblyWiseByPCId(string stateId, string pcId);
         Task<List<EventActivityBoothWise>> GetEventListBoothWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelHMasterId);
+        ///This API fetches the Booth-wise event list for Pending events.
+        Task<List<EventActivityBoothWise>> GetPendingBoothWiseEventListById(int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelHMasterId);
         Task<List<EventActivityBoothWise>> GetEventListBoothWiseByPCId(string stateId, string pcId, string assemblyId);
 
 

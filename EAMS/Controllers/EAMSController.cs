@@ -2764,7 +2764,7 @@ namespace EAMS.Controllers
         /// </summary>
         /// <returns>Returns a list of events for the districts in the user's state.</returns>
         [HttpGet]
-        [Route("GetEventPendingListDistrictWiseById")]
+        [Route("GetPendingEventListDistrictWiseById")]
         [Authorize(Roles = "SuperAdmin,StateAdmin")]
         public async Task<IActionResult> EventPendingListDistrictWiseById()
         {
@@ -2775,7 +2775,7 @@ namespace EAMS.Controllers
                 return BadRequest("StateMasterId is required.");
             }
 
-            var eventDistrictWiseList = await _EAMSService.GetEventPendingListDistrictWiseById(Convert.ToInt32(stateMasterId));
+            var eventDistrictWiseList = await _EAMSService.GetPendingEventListDistrictWiseById(Convert.ToInt32(stateMasterId));
             if (eventDistrictWiseList != null)
             {
                 return Ok(eventDistrictWiseList);
@@ -2858,6 +2858,44 @@ namespace EAMS.Controllers
             // Return the appropriate response
             return eventAssemblyList?.Any() == true ? Ok(eventAssemblyList) : NotFound("No events found for the specified state and district.");
         }
+        /// <summary>
+        /// This API fetches the Assembly-wise event list for Pending events.
+        /// The event list is filtered based on the StateMasterId and districtMasterId of the authenticated user.
+        /// </summary>
+        /// <returns>Returns a list of events for the districts in the user's state.</returns>
+        [HttpGet]
+        [Route("GetPendingAssemblyWiseEventListById")]
+        [Authorize(Roles = "SuperAdmin,StateAdmin,DistrictAdmin")]
+        public async Task<IActionResult> EventPendingListAssemblyWiseById(int? districtMasterId)
+        {
+            // Retrieve StateMasterId from user claims
+            var stateMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+
+            // Validate StateMasterId
+            if (!int.TryParse(stateMasterIdClaim, out var stateMasterId))
+            {
+                return BadRequest("StateMasterId is required.");
+            }
+
+            // If districtMasterId is not provided, retrieve it from claims
+            if (!districtMasterId.HasValue)
+            {
+                var districtMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value;
+
+                if (!int.TryParse(districtMasterIdClaim, out var districtId))
+                {
+                    return BadRequest("DistrictMasterId is required.");
+                }
+
+                districtMasterId = districtId;
+            }
+
+            // Fetch the event assembly list
+            var eventAssemblyList = await _EAMSService.GetPendingAssemblyWiseEventListById(stateMasterId, districtMasterId.Value);
+
+            // Return the appropriate response
+            return eventAssemblyList?.Any() == true ? Ok(eventAssemblyList) : NotFound("No events found for the specified state and district.");
+        }
 
         [HttpGet]
         [Route("GetEventListFourthLevelHWiseById")]
@@ -2899,6 +2937,51 @@ namespace EAMS.Controllers
                 return NotFound();
         }
 
+        /// <summary>
+        /// This API fetches the FourthLevelH-wise event list for Pending events.
+        /// The event list is filtered based on the StateMasterId and districtMasterId of the authenticated user.
+        /// </summary>
+        /// <returns>Returns a list of events for the districts in the user's state.</returns>
+        /// 
+        [HttpGet]
+        [Route("GetPendingEventListFourthLevelHWiseById")]
+        [Authorize(Roles = "SuperAdmin,StateAdmin,DistrictAdmin")]
+        public async Task<IActionResult> EventPendingListFourthLevelHWiseById(int? districtMasterId, int? assemblyMasterId)
+        {
+            var stateMasterId = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            if (string.IsNullOrEmpty(stateMasterId))
+            {
+                return BadRequest("StateMasterId is required.");
+            }
+            if (!districtMasterId.HasValue)
+            {
+                var districtMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value;
+
+                if (!int.TryParse(districtMasterIdClaim, out var districtId))
+                {
+                    return BadRequest("DistrictMasterId is required.");
+                }
+
+                districtMasterId = districtId;
+            }
+
+            if (!assemblyMasterId.HasValue)
+            {
+                var assemblyMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId")?.Value;
+
+                if (!int.TryParse(assemblyMasterIdClaim, out var assemblyId))
+                {
+                    return BadRequest("AssemblyMasterId is required.");
+                }
+
+                assemblyMasterId = assemblyId;
+            }
+            var eventAssemblyList = await _EAMSService.GetPendingEventListFourthLevelHWiseById(Convert.ToInt32(stateMasterId), districtMasterId, assemblyMasterId);
+            if (eventAssemblyList is not null)
+                return Ok(eventAssemblyList);
+            else
+                return NotFound();
+        }
         [HttpGet]
         [Route("GetAssemblyWiseEventListByPCId")]
         [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,PC")]
@@ -2961,8 +3044,62 @@ namespace EAMS.Controllers
             else
                 return NotFound();
         }
+        /// <summary>
+        /// This API fetches the Booth-wise event list for Pending events.
+        /// The event list is filtered based on the StateMasterId and districtMasterId of the authenticated user.
+        /// </summary>
+        /// <returns>Returns a list of events for the districts in the user's state.</returns>
+        /// 
+        [HttpGet]
+        [Route("GetPendingBoothWiseEventListById")]
+        [Authorize]
+        public async Task<IActionResult> EventPendingListBoothWiseById(int? districtMasterId, int? assemblyMasterId, int? fourthLevelHMasterId)
+        {
+            var stateMasterId = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            if (string.IsNullOrEmpty(stateMasterId))
+            {
+                return BadRequest("StateMasterId is required.");
+            }
+            if (!districtMasterId.HasValue)
+            {
+                var districtMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value;
 
+                if (!int.TryParse(districtMasterIdClaim, out var districtId))
+                {
+                    return BadRequest("DistrictMasterId is required.");
+                }
 
+                districtMasterId = districtId;
+            }
+
+            if (!assemblyMasterId.HasValue)
+            {
+                var assemblyMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId")?.Value;
+
+                if (!int.TryParse(assemblyMasterIdClaim, out var assemblyId))
+                {
+                    return BadRequest("AssemblyMasterId is required.");
+                }
+
+                assemblyMasterId = assemblyId;
+            }
+            if (!fourthLevelHMasterId.HasValue)
+            {
+                var fourthLevelHMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "FourthLevelHMasterId")?.Value;
+
+                if (!int.TryParse(fourthLevelHMasterIdClaim, out var fourthLevelId))
+                {
+                    return BadRequest("FourthLevelHMasterId is required.");
+                }
+
+                fourthLevelHMasterId = fourthLevelId;
+            }
+            var eventBoothList = await _EAMSService.GetPendingBoothWiseEventListById(Convert.ToInt32(stateMasterId), districtMasterId, assemblyMasterId, fourthLevelHMasterId);
+            if (eventBoothList is not null)
+                return Ok(eventBoothList);
+            else
+                return NotFound();
+        }
 
         [HttpGet]
         [Route("GetPCBoothWiseEventListById")]
