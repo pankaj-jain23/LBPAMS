@@ -3665,12 +3665,12 @@ namespace EAMS_DAL.Repository
                                           .Where(d => d.StateMasterId == boothMaster.StateMasterId
                                           && d.DistrictMasterId == boothMaster.DistrictMasterId
                                           && d.AssemblyMasterId == boothMaster.AssemblyMasterId
-                                          && d.BoothMasterId == boothMaster.BoothMasterId).Select(d=>d.IsEVMDeposited)
+                                          && d.BoothMasterId == boothMaster.BoothMasterId).Select(d => d.IsEVMDeposited)
                                         .FirstOrDefault();
                                     //check if booths of Gram Panchyat case
                                     //{ 
                                     //means election_info null,also booth not mapped
-                                    if (electionInfoRecord == null|| electionInfoRecord==false && (existingbooth.AssignedTo == null || existingbooth.AssignedTo == ""))
+                                    if (electionInfoRecord == null || electionInfoRecord == false && (existingbooth.AssignedTo == null || existingbooth.AssignedTo == ""))
                                     {
                                         if (boothMaster.BoothStatus == false)
                                         {
@@ -8331,8 +8331,9 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                 where election.StateMasterId == stateMasterId
                                       && (election.DistrictMasterId == districtMasterId)
                                       && (election.AssemblyMasterId == assemblyMasterId)
-                                      && (election.FourthLevelMasterId == fourthLevelHMasterId) 
-                                      && (boothMaster.BoothStatus == true) 
+                                      && (election.FourthLevelMasterId == fourthLevelHMasterId)
+                                      && (boothMaster.BoothStatus == true)
+                                      && (boothMaster.AssignedTo != null)
                                 group election by new
                                 {
                                     boothMaster.BoothMasterId,
@@ -8371,25 +8372,25 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             return result;
         }
         ///This API fetches the Booth-wise event list for Pending events.
-      
+
         public async Task<List<EventActivityBoothWise>> GetPendingBoothWiseEventListById(int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelHMasterId)
         {
-       
+
             var result = await (from boothMaster in _context.BoothMaster
 
                                 join fieldOfficer in _context.FieldOfficerMaster
-                                    on boothMaster.AssignedTo equals fieldOfficer.FieldOfficerMasterId.ToString()
-
+                                    on boothMaster.AssignedTo equals fieldOfficer.FieldOfficerMasterId.ToString() 
                                 join election in _context.ElectionInfoMaster
                                     on boothMaster.FourthLevelHMasterId equals election.FourthLevelMasterId into electionGroup
-                                from election in electionGroup.DefaultIfEmpty() 
+                                from election in electionGroup.DefaultIfEmpty()
 
-                                // Left join to include FourthLevelH without election records
+                                    // Left join to include FourthLevelH without election records
                                 where boothMaster.StateMasterId == stateMasterId
                                       && boothMaster.DistrictMasterId == districtMasterId
                                       && boothMaster.AssemblyMasterId == assemblyMasterId
                                       && boothMaster.FourthLevelHMasterId == fourthLevelHMasterId
                                       && boothMaster.BoothStatus == true
+                                      &&boothMaster.AssignedTo!=null
                                       && election == null // Exclude FourthLevelH where ElectionInfoMaster data exists
                                 group election by new
                                 {
@@ -8428,58 +8429,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return result;
         }
-
-        //public async Task<List<EventActivityBoothWise>> GetEventListBoothWiseById(int stateId, int? districtId, int? assemblyId)
-        //{
-        //    var eventActivityList = new List<EventActivityBoothWise>();
-
-        //    // Establish a connection to the PostgreSQL database
-        //    await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("Postgres"));
-        //    await connection.OpenAsync();
-
-        //    var command = new NpgsqlCommand("SELECT * FROM getboothwiseeventlistbyid(@state_master_id, @district_master_id, @assembly_master_id)", connection);
-        //    command.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateId));
-        //    command.Parameters.AddWithValue("@district_master_id", Convert.ToInt32(districtId));
-        //    command.Parameters.AddWithValue("@assembly_master_id", Convert.ToInt32(assemblyId));
-
-        //    // Execute the command and read the results
-        //    await using var reader = await command.ExecuteReaderAsync();
-
-        //    while (await reader.ReadAsync())
-        //    {
-        //        // Create a new EventActivityBoothWise object and populate its properties from the reader
-        //        var eventActivityBoothWise = new EventActivityBoothWise
-        //        {
-        //            Key = GenerateRandomAlphanumericString(6), // You need to define this method to generate a random alphanumeric string
-        //            MasterId = reader.IsDBNull(0) ? (int?)null : reader.GetInt32(0),
-        //            Name = reader.IsDBNull(1) ? null : reader.GetString(1),
-        //            Type = "Booth", // Assuming this is the type for booth
-        //            PartyDispatch = reader.IsDBNull(2) ? (int?)null : reader.GetInt32(2),
-        //            PartyArrived = reader.IsDBNull(3) ? (int?)null : reader.GetInt32(3),
-        //            SetupPollingStation = reader.IsDBNull(4) ? (int?)null : reader.GetInt32(4),
-        //            MockPollDone = reader.IsDBNull(5) ? (int?)null : reader.GetInt32(5),
-        //            PollStarted = reader.IsDBNull(6) ? (int?)null : reader.GetInt32(6),
-        //            PollEnded = reader.IsDBNull(7) ? (int?)null : reader.GetInt32(7),
-        //            MCEVMOff = reader.IsDBNull(8) ? (int?)null : reader.GetInt32(8),
-        //            PartyDeparted = reader.IsDBNull(9) ? (int?)null : reader.GetInt32(9),
-        //            EVMDeposited = reader.IsDBNull(10) ? (int?)null : reader.GetInt32(10),
-        //            PartyReachedAtCollection = reader.IsDBNull(11) ? (int?)null : reader.GetInt32(11),
-        //            QueueValue = reader.IsDBNull(12) ? (int?)null : reader.GetInt32(12),
-        //            FinalVotesValue = reader.IsDBNull(13) ? (int?)null : reader.GetInt32(13),
-        //            VoterTurnOutValue = reader.IsDBNull(14) ? (int?)null : reader.GetInt32(14),
-        //            //  AssignedSOId= reader.IsDBNull(15) ? (int?)null : reader.GetInt32(15),
-        //            AssignedSOName = reader.IsDBNull(16) ? null : reader.GetString(16),
-        //            AssignedSOMobile = reader.IsDBNull(17) ? null : reader.GetString(17)
-
-        //        };
-
-        //        // Add the object to the list
-        //        eventActivityList.Add(eventActivityBoothWise);
-        //    }
-
-        //    return eventActivityList;
-        //}
-
+         
 
         #endregion
 

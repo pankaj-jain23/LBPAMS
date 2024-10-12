@@ -35,7 +35,7 @@ namespace EAMS.Hubs
                     await HandleDashboardUserConnected();
                 }
 
-                await SendUserCounts(); 
+              
             }
             catch (Exception ex)
             {
