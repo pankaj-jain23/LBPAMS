@@ -239,7 +239,7 @@ namespace EAMS_BLL.Services
                 return string.Empty;
 
             //string smsPostUrl = "https://smsgw.sms.gov.in/failsafe/MLink?username={0}&pin={1}&message={2}&mnumber={3}&signature={4}&dlt_entity_id={5}&dlt_template_id={6}";
-            string smsPostUrl = "https://smsgw.sms.gov.in/failsafe/MLink?username={0}&pin={Rvp%2B74x=J6tw}&message={2}&mnumber={3}&signature={4}&dlt_entity_id={5}&dlt_template_id={6}";
+            string smsPostUrl = "https://smsgw.sms.gov.in/failsafe/MLink?username={0}&pin={1}&message={2}&mnumber={3}&signature={4}&dlt_entity_id={5}&dlt_template_id={6}";
             string requestUrl = string.Format(smsPostUrl, username, pin, Uri.EscapeDataString(msg), mobileNo, senderid, entityid, templateid);
 
             using (HttpClient client = CreateHttpClient())
