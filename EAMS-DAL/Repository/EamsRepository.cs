@@ -8461,7 +8461,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                     VoterTurnOutValue = g.Sum(x => x.election != null && x.election.IsVoterTurnOut ? 1 : 0).ToString(),
                                     AssignedFOName = g.Key.FieldOfficerName,
                                     AssignedFOMobile = g.Key.FieldOfficerMobile
-                                }).OrderBy(d => d.Name).ToListAsync();
+                                }).ToListAsync();
 
             return result;
         }

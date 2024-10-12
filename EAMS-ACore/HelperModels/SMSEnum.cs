@@ -20,8 +20,8 @@
         [StringValue("pbgovt.otp")]
         UserName,
 
-        [StringValue("hvrc4pVA")]
-        Password,
+        //[StringValue("hvrc4pVA")]
+        //Password,
 
         [StringValue("SECPJB")]
         SenderId,
