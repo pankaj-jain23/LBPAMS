@@ -870,7 +870,7 @@ namespace EAMS.Controllers
             {
                 count = mappedData.Count,
                 data = mappedData.OrderBy(p =>
-    string.IsNullOrEmpty(p.BoothCode_No) ? int.MaxValue : Int32.Parse(p.BoothCode_No)),
+                 string.IsNullOrEmpty(p.BoothCode_No) ? int.MaxValue : Int32.Parse(p.BoothCode_No)),
             };
             return Ok(data);
         }

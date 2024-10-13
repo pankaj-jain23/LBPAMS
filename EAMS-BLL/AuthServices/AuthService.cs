@@ -748,26 +748,30 @@ namespace EAMS_BLL.AuthServices
         {
             var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
 
-            var expireAccessToken = BharatTimeDynamic(0, 0, 4, 0, 0);
-
+           // var expireAccessToken = BharatTimeDynamic(0, 0, 0, 1, 0); // Your method for setting expiration time
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Issuer = _configuration["JWT:ValidIssuer"],
                 Audience = _configuration["JWT:ValidAudience"],
-                Expires = expireAccessToken,
+                Expires = DateTime.Now.AddHours(4),
                 SigningCredentials = new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256),
-                Subject = new ClaimsIdentity(claims)
-
+                Subject = new ClaimsIdentity(claims),
             };
 
+            // Optionally add 'kid' to the token header for key rotation support
             var tokenHandler = new JwtSecurityTokenHandler();
-            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var token = tokenHandler.CreateJwtSecurityToken(
+                issuer: tokenDescriptor.Issuer,
+                audience: tokenDescriptor.Audience,
+                subject: tokenDescriptor.Subject,
+                expires: tokenDescriptor.Expires,
+                signingCredentials: tokenDescriptor.SigningCredentials);
+ 
+
             return tokenHandler.WriteToken(token);
-
-
-
         }
+
 
         private static string GenerateRefreshToken()
         {

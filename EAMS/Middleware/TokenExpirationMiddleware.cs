@@ -4,14 +4,13 @@ namespace EAMS.Middleware
 {
     public class TokenExpirationMiddleware
     {
-        private readonly RequestDelegate _next;
-        private readonly byte[] _encryptionKey;
+        private readonly RequestDelegate _next; 
 
         public TokenExpirationMiddleware(RequestDelegate next)
         {
             _next = next;
             // Initialize encryption key from configuration or wherever it's stored
-            _encryptionKey = Encoding.UTF8.GetBytes("PAMSTOKenEncripTionKey2024");
+ 
         }
 
         public async Task Invoke(HttpContext context)

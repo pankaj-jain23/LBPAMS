@@ -46,8 +46,11 @@ builder.Services.AddDbContextPool<EamsContext>(options =>
         });
 });
 var redisConnectionString = builder.Configuration.GetConnectionString("RedisCacheUrl");
-builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));
-
+builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
+{
+    var configuration = ConfigurationOptions.Parse(redisConnectionString, true);
+    return ConnectionMultiplexer.Connect(configuration);
+});
 
 builder.Services
     .AddIdentity<UserRegistration, IdentityRole>()
@@ -75,7 +78,7 @@ builder.Services
     })
     .AddJwtBearer(options =>
     {
-        options.SaveToken = true;
+        //options.SaveToken = true;
         options.RequireHttpsMetadata = false;
         options.TokenValidationParameters = new TokenValidationParameters()
         {
@@ -85,23 +88,27 @@ builder.Services
             ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
             ValidAudience = builder.Configuration["JWT:ValidAudience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"])),
-            ClockSkew = TimeSpan.FromMinutes(5), // Set to zero or adjust according to your requirements
-            RequireSignedTokens = true,
+            ClockSkew = TimeSpan.Zero,
 
         };
+        // Enable JWT Bearer token authentication for SignalR connections
         options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
             {
                 var accessToken = context.Request.Query["access_token"];
-                if (!string.IsNullOrEmpty(accessToken))
+
+                // If the request is for our SignalR hub, extract the token from the query string
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    (path.StartsWithSegments("/DashBoardHub")))
                 {
                     context.Token = accessToken;
                 }
-
                 return Task.CompletedTask;
             }
         };
+
     });
 
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -169,36 +176,37 @@ var logger = new LoggerConfiguration()
 
 builder.Logging.AddSerilog(logger);
 
-// BenchmarkRunner.Run<EAMSController>();
-
 var app = builder.Build();
-app.Use(async (context, next) =>
+//app.Use(async (context, next) =>
+//{
+//    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+//    context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
+//    context.Response.Headers.Append("X-Frame-Options", "DENY");
+//    context.Response.Headers.Remove("X-Powered-By");
+//    context.Response.Headers.Append("Referrer-Policy", "no-referrer");
+//    context.Response.Headers.Append("Access-Control-Allow-Origin", "*"); // Allow CORS for any origin
+//    context.Response.Headers.Append("Access-Control-Allow-Headers", "Content-Type, Authorization"); // Allow specific headers
+//    context.Response.Headers.Append("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE"); // Allow specific methods
+//    context.Response.Headers.Append("Access-Control-Allow-Credentials", "true"); // Allow credentials for WebSocket
+//    await next();
+//});
+if (app.Environment.IsDevelopment())
 {
-    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
-    context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
-    context.Response.Headers.Append("X-Frame-Options", "DENY");
-    context.Response.Headers.Remove("X-Powered-By");
-    context.Response.Headers.Append("Referrer-Policy", "no-referrer");
-    context.Response.Headers.Append("Access-Control-Allow-Origin", "*"); // Allow CORS for any origin
-    context.Response.Headers.Append("Access-Control-Allow-Headers", "Content-Type, Authorization"); // Allow specific headers
-    context.Response.Headers.Append("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE"); // Allow specific methods
-    context.Response.Headers.Append("Access-Control-Allow-Credentials", "true"); // Allow credentials for WebSocket
-    await next();
-});
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
-app.UseSwagger();
-app.UseSwaggerUI();
-app.UseStaticFiles();
+
 app.UseCors();
 app.UseWebSockets();
 
 app.UseAuthentication();
-app.UseMiddleware<TokenExpirationMiddleware>();
+//app.UseMiddleware<TokenExpirationMiddleware>();
 
 app.MapHub<DashBoardHub>("/DashBoardHub", options =>
 {
 }).RequireAuthorization();
-
+app.UseStaticFiles();
 app.UseAuthorization();
 app.UseHttpsRedirection();
 app.MapControllers();
