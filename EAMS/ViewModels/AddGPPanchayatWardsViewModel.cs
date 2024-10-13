@@ -43,6 +43,8 @@
         public string? GPPanchayatWardsCategory { get; set; }
 
         public bool IsStatus { get; set; }
+        public bool IsCC { get; set; }
+        public bool IsNN { get; set; }
 
     }
     public class UpdateGPPanchayatWardsViewModel
@@ -91,7 +93,8 @@
         public string? GPPanchayatWardsCategory { get; set; }
 
         public bool IsStatus { get; set; }
-
+        public bool IsCC { get; set; }
+        public bool IsNN { get; set; }
     }
 
     public class ListGPPanchayatWardsViewModel
@@ -139,6 +142,8 @@
         public string? GPPanchayatWardsCategory { get; set; }
 
         public bool IsStatus { get; set; }
+        public bool IsCC { get; set; }
+        public bool IsNN { get; set; }
     }
     public class GPPanchListViewModel
     {

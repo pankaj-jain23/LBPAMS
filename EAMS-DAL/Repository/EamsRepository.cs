@@ -17609,6 +17609,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 existing.HierarchyCreatedAt = fourthLevelH.HierarchyCreatedAt;
                 existing.HierarchyUpdatedAt = DateTime.UtcNow;
                 existing.HierarchyStatus = fourthLevelH.HierarchyStatus;
+                existing.IsCC = fourthLevelH.IsCC;
+                existing.IsNN = fourthLevelH.IsNN;
 
                 // Save changes to the database
                 try
@@ -17989,6 +17991,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 existingGPPanchayatWards.GPPanchayatWardsUpdatedAt = DateTime.UtcNow;
                 existingGPPanchayatWards.GPPanchayatWardsDeletedAt = gpPanchayatWards.GPPanchayatWardsDeletedAt;
                 existingGPPanchayatWards.GPPanchayatWardsStatus = gpPanchayatWards.GPPanchayatWardsStatus;
+                existingGPPanchayatWards.IsCC = gpPanchayatWards.IsCC;
+                existingGPPanchayatWards.IsNN = gpPanchayatWards.IsNN;
 
                 // Save changes to the database
                 try

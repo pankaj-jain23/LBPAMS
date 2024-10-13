@@ -505,7 +505,7 @@ namespace EAMS.Helper
             .ForMember(dest => dest.EventName, opt => opt.MapFrom(src => src.EventName))
             .ForMember(dest => dest.EventSequence, opt => opt.MapFrom(src => src.EventSequence))
             .ForMember(dest => dest.EventStatus, opt => opt.MapFrom(src => src.EventStatus))
-            .ForMember(dest => dest.VotesPolled, opt => opt.MapFrom(src => src.VotesPolled)) 
+            .ForMember(dest => dest.VotesPolled, opt => opt.MapFrom(src => src.VotesPolled))
 
 
             .ReverseMap();
@@ -815,6 +815,8 @@ namespace EAMS.Helper
                  .ForMember(dest => dest.HierarchyUpdatedAt, opt => opt.MapFrom(src => src.HierarchyUpdatedAt))
                  .ForMember(dest => dest.HierarchyDeletedAt, opt => opt.MapFrom(src => src.HierarchyDeletedAt))
                  .ForMember(dest => dest.HierarchyStatus, opt => opt.MapFrom(src => src.IsStatus))
+                 .ForMember(dest => dest.IsCC, opt => opt.MapFrom(src => src.IsCC))
+                 .ForMember(dest => dest.IsNN, opt => opt.MapFrom(src => src.IsNN))
                  .ReverseMap();
 
             CreateMap<UpdateFourthLevelHViewModel, FourthLevelH>()
@@ -830,7 +832,8 @@ namespace EAMS.Helper
                  .ForMember(dest => dest.HierarchyUpdatedAt, opt => opt.MapFrom(src => src.HierarchyUpdatedAt))
                  .ForMember(dest => dest.HierarchyDeletedAt, opt => opt.MapFrom(src => src.HierarchyDeletedAt))
                  .ForMember(dest => dest.HierarchyStatus, opt => opt.MapFrom(src => src.IsStatus))
-
+                 .ForMember(dest => dest.IsCC, opt => opt.MapFrom(src => src.IsCC))
+                 .ForMember(dest => dest.IsNN, opt => opt.MapFrom(src => src.IsNN))
                 .ReverseMap();
             CreateMap<FourthLevelH, ListFourthLevelHViewModel>()
                    .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
@@ -847,7 +850,8 @@ namespace EAMS.Helper
                    .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
                    .ForMember(dest => dest.AssemblyName, opt => opt.MapFrom(src => src.AssemblyMaster.AssemblyName))
                 .ForMember(dest => dest.IsStatus, opt => opt.MapFrom(src => src.HierarchyStatus))
-
+                .ForMember(dest => dest.IsCC, opt => opt.MapFrom(src => src.IsCC))
+                 .ForMember(dest => dest.IsNN, opt => opt.MapFrom(src => src.IsNN))
                .ReverseMap();
             #endregion
 
@@ -917,7 +921,8 @@ namespace EAMS.Helper
                      .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
                      .ForMember(dest => dest.GPPanchayatWardsCategory, opt => opt.MapFrom(src => src.GPPanchayatWardsCategory))
                      .ForMember(dest => dest.GPPanchayatWardsStatus, opt => opt.MapFrom(src => src.IsStatus))
-
+                     .ForMember(dest => dest.IsCC, opt => opt.MapFrom(src => src.IsCC))
+                     .ForMember(dest => dest.IsNN, opt => opt.MapFrom(src => src.IsNN))
             .ReverseMap();
 
             CreateMap<UpdateGPPanchayatWardsViewModel, GPPanchayatWards>()
@@ -932,7 +937,8 @@ namespace EAMS.Helper
                      .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
                      .ForMember(dest => dest.GPPanchayatWardsCategory, opt => opt.MapFrom(src => src.GPPanchayatWardsCategory))
                      .ForMember(dest => dest.GPPanchayatWardsStatus, opt => opt.MapFrom(src => src.IsStatus))
-
+                     .ForMember(dest => dest.IsCC, opt => opt.MapFrom(src => src.IsCC))
+                     .ForMember(dest => dest.IsNN, opt => opt.MapFrom(src => src.IsNN))
             .ReverseMap();
             CreateMap<GPPanchayatWards, ListGPPanchayatWardsViewModel>()
                    .ForMember(dest => dest.GPPanchayatWardsMasterId, opt => opt.MapFrom(src => src.GPPanchayatWardsMasterId))
@@ -951,7 +957,8 @@ namespace EAMS.Helper
                    .ForMember(dest => dest.IsStatus, opt => opt.MapFrom(src => src.GPPanchayatWardsStatus))
                    .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
                    .ForMember(dest => dest.FourthLevelHName, opt => opt.MapFrom(src => src.FourthLevelH.HierarchyName))
-
+                   .ForMember(dest => dest.IsCC, opt => opt.MapFrom(src => src.IsCC))
+                   .ForMember(dest => dest.IsNN, opt => opt.MapFrom(src => src.IsNN))
           .ReverseMap();
 
             CreateMap<GPPanchayatWards, GPPanchListViewModel>()

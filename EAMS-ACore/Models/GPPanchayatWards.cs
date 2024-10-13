@@ -86,7 +86,8 @@ namespace EAMS_ACore.Models
 
         public DateTime? GPPanchayatWardsDeletedAt { get; set; }
         public bool GPPanchayatWardsStatus { get; set; }
-
+        public bool IsCC { get; set; }
+        public bool IsNN { get; set; }
 
     }
 }
