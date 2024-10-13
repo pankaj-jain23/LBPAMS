@@ -11,7 +11,7 @@ namespace EAMS.Middleware
         {
             _next = next;
             // Initialize encryption key from configuration or wherever it's stored
-            _encryptionKey = Encoding.UTF8.GetBytes("YourEncryptionKeyHere");
+            _encryptionKey = Encoding.UTF8.GetBytes("PAMSTOKenEncripTionKey2024");
         }
 
         public async Task Invoke(HttpContext context)

@@ -2266,7 +2266,7 @@ namespace EAMS_DAL.Repository
             if (getFirstEvent is null)
             {
                 getFirstEvent = await GetFirstSequenceEventById(stateMasterId, boothListResult.FirstOrDefault()?.ElectionTypeMasterId ?? 0);
-                await _cacheService.SetDataAsync("GetFirstEvent", getFirstEvent, BharatTimeDynamic(0, 0, 0, 1, 0));
+                await _cacheService.SetDataAsync("GetFirstEvent", getFirstEvent, BharatTimeDynamic(0, 0, 0, 0, 20));
             }
 
             // Step 4: Update each booth's event data
@@ -5547,7 +5547,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             if (eventList == null || !eventList.Any())
             {
                 eventList = await GetEventListForBooth(updateEventActivity.StateMasterId, updateEventActivity.ElectionTypeMasterId);
-                await _cacheService.SetDataAsync("GetNextEventList", eventList, DateTimeOffset.Now.AddMinutes(10)); // Cache for 5 minutes
+                await _cacheService.SetDataAsync("GetNextEventList", eventList, BharatTimeDynamic(0, 0, 0, 0, 20)); // Cache for 5 minutes
             }
 
             // Sort the event list by sequence in ascending order
@@ -5607,7 +5607,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             if (eventList == null || !eventList.Any())
             {
                 eventList = await GetEventListForBooth(updateEventActivity.StateMasterId, updateEventActivity.ElectionTypeMasterId);
-                await _cacheService.SetDataAsync("GetEventList", eventList, DateTimeOffset.Now.AddMinutes(5)); // Cache for 5 minutes
+                await _cacheService.SetDataAsync("GetEventList", eventList, BharatTimeDynamic(0, 0, 0, 0, 20)); // Cache for 5 minutes
             }
 
             // Sort the event list by sequence in ascending order
@@ -6527,7 +6527,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                 d.ElectionTypeMasterId == electionTypeMasterId)
                     .ToListAsync();
 
-                await _cacheService.SetDataAsync($"GetNextEventList{electionTypeMasterId}", getSlotList, BharatTimeDynamic(0, 0, 0, 10, 0));
+                await _cacheService.SetDataAsync($"GetNextEventList{electionTypeMasterId}", getSlotList, BharatTimeDynamic(0, 0, 0, 0, 20));
             }
 
             // Get the current time
@@ -6826,7 +6826,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 // Add to cache if found
                 if (getBooth != null)
                 {
-                    await _cacheService.SetDataAsync(cacheKeyBooth, getBooth, DateTimeOffset.Now.AddMinutes(10)); // Cache for 30 minutes
+                    await _cacheService.SetDataAsync(cacheKeyBooth, getBooth, BharatTimeDynamic(0, 0, 0, 0, 20)); // Cache for 30 minutes
                 }
             }
 
@@ -6856,7 +6856,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 // Add to cache if found
                 if (currentEvent != null)
                 {
-                    await _cacheService.SetDataAsync("GetVTEvent", currentEvent, DateTimeOffset.Now.AddMinutes(10)); // Cache for 30 minutes
+                    await _cacheService.SetDataAsync("GetVTEvent", currentEvent, BharatTimeDynamic(0, 0, 0, 0, 20)); // Cache for 30 minutes
                 }
             }
 
@@ -7490,7 +7490,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 // Add to cache if found
                 if (getBooth != null)
                 {
-                    await _cacheService.SetDataAsync(cacheKeyBooth, getBooth, BharatTimeDynamic(0, 0, 0, 10, 0)); // Cache for 30 minutes
+                    await _cacheService.SetDataAsync(cacheKeyBooth, getBooth, BharatTimeDynamic(0, 0, 0, 0, 20)); // Cache for 30 minutes
                 }
             }
 
@@ -7513,7 +7513,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 // Add to cache if found
                 if (currentEvent != null)
                 {
-                    await _cacheService.SetDataAsync("GetFVEvent", currentEvent, BharatTimeDynamic(0, 0, 0, 10, 0)); // Cache for 30 minutes
+                    await _cacheService.SetDataAsync("GetFVEvent", currentEvent, BharatTimeDynamic(0, 0, 0, 0, 20)); // Cache for 30 minutes
                 }
             }
 

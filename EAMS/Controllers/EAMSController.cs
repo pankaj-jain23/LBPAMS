@@ -172,7 +172,7 @@ namespace EAMS.Controllers
                 var mappedData = _mapper.Map<List<StateMasterViewModel>>(stateList);
 
                 // Optionally set data in cache
-                await _cacheService.SetDataAsync("GetState", mappedData, DateTimeOffset.Now.AddMinutes(5)); // Example expiration
+                await _cacheService.SetDataAsync("GetState", mappedData, DateTimeOffset.Now.AddSeconds(20)); // Example expiration
 
                 var data = new
                 {
