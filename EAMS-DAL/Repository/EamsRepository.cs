@@ -8300,6 +8300,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                      on booth.BoothMasterId equals election.BoothMasterId into electionGroup
                                 from election in electionGroup.DefaultIfEmpty()
                                 where assembly.StateMasterId == stateMasterId &&
+                                      assembly.DistrictMasterId == districtMasterId &&
                                       booth.BoothStatus == true &&
                                       booth.AssignedTo != null &&
                                       assembly.AssemblyStatus == true
@@ -8604,41 +8605,43 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         ///This API fetches the Booth-wise event list for Pending events.
         public async Task<List<EventActivityBoothWise>> GetPendingBoothWiseEventListById(int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelHMasterId)
         {
-            // Get grouped event counts by district
-            var result = await (from boothMaster in _context.BoothMaster
+            // Get grouped event counts by booth
+            var result = await (from booth in _context.BoothMaster
                                 join fieldOfficerMaster in _context.FieldOfficerMaster
-                                    on boothMaster.AssignedTo equals fieldOfficerMaster.FieldOfficerMasterId.ToString()
+                                     on booth.AssignedTo equals fieldOfficerMaster.FieldOfficerMasterId.ToString()
                                 join election in _context.ElectionInfoMaster
-                                     on boothMaster.BoothMasterId equals election.BoothMasterId into electionGroup
+                                     on booth.BoothMasterId equals election.BoothMasterId into electionGroup
                                 from election in electionGroup.DefaultIfEmpty()
-                                where election.StateMasterId == stateMasterId
-                                       && election.DistrictMasterId == districtMasterId
-                                       && election.AssemblyMasterId == assemblyMasterId
-                                       && election.FourthLevelMasterId == fourthLevelHMasterId
-                                       && boothMaster.BoothStatus == true
-                                       && boothMaster.AssignedTo != null
-                                       // Exclude booths where event activity is completed
-                                       && (election == null ||
-                                           (!election.IsPartyDispatched &&
-                                           !election.IsPartyReached &&
-                                           !election.IsSetupOfPolling &&
-                                           !election.IsMockPollDone &&
-                                           !election.IsPollStarted &&
-                                           !election.IsPollEnded &&
-                                           !election.IsMCESwitchOff &&
-                                           !election.IsPartyDeparted &&
-                                           !election.IsEVMDeposited &&
-                                           !election.IsPartyReachedCollectionCenter &&
-                                           !election.IsVoterInQueue &&
-                                           !election.IsFinalVote &&
-                                           !election.IsVoterTurnOut))
-                                group new { boothMaster, election } by new
+                                where booth.StateMasterId == stateMasterId &&
+                                      booth.DistrictMasterId == districtMasterId &&
+                                      booth.AssemblyMasterId == assemblyMasterId &&
+                                      booth.FourthLevelHMasterId == fourthLevelHMasterId &&
+                                      booth.BoothStatus == true &&
+                                      booth.AssignedTo != null &&
+                                      booth.BoothStatus == true
+                                // Exclude booths where event activity is completed
+                                && (election == null && (
+                                       !election.IsPartyDispatched ||
+                                       !election.IsPartyReached ||
+                                       !election.IsSetupOfPolling ||
+                                       !election.IsMockPollDone ||
+                                       !election.IsPollStarted ||
+                                       !election.IsPollEnded ||
+                                       !election.IsMCESwitchOff ||
+                                       !election.IsPartyDeparted ||
+                                       !election.IsEVMDeposited ||
+                                       !election.IsPartyReachedCollectionCenter ||
+                                       !election.IsVoterInQueue ||
+                                       !election.IsFinalVote ||
+                                       !election.IsVoterTurnOut
+                                ))
+                                group new { booth, election } by new
                                 {
-                                    boothMaster.BoothMasterId,
-                                    boothMaster.BoothCode_No,
-                                    boothMaster.BoothName,
-                                    fieldOfficerMaster.FieldOfficerName,
-                                    fieldOfficerMaster.FieldOfficerMobile
+                                    booth.BoothMasterId,
+                                    booth.BoothCode_No,
+                                    booth.BoothName,
+                                    FieldOfficerName = fieldOfficerMaster.FieldOfficerName,
+                                    FieldOfficerMobile = fieldOfficerMaster.FieldOfficerMobile,
                                 } into g
                                 select new EventActivityBoothWise
                                 {
@@ -8647,9 +8650,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                     StateMasterId = stateMasterId,
                                     DistrictMasterId = districtMasterId,
                                     AssemblyMasterId = assemblyMasterId,
-                                    Name = $"{g.Key.BoothName} ({g.Key.FieldOfficerName}: {g.Key.FieldOfficerMobile})",
+                                    FourthLevelHMasterId = fourthLevelHMasterId,
+                                    Name = $"{g.Key.BoothName}",
                                     Type = "Booth",
-                                    BoothCode_No = g.Key.BoothCode_No,
+                                    BoothCode_No = g.Key.BoothCode_No, // Added BoothCode
                                     PartyDispatch = g.Sum(x => x.election != null && x.election.IsPartyDispatched ? 0 : 1).ToString(),
                                     PartyArrived = g.Sum(x => x.election != null && x.election.IsPartyReached ? 0 : 1).ToString(),
                                     SetupPollingStation = g.Sum(x => x.election != null && x.election.IsSetupOfPolling ? 0 : 1).ToString(),
@@ -8665,20 +8669,21 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                     VoterTurnOutValue = g.Sum(x => x.election != null && x.election.IsVoterTurnOut ? 0 : 1).ToString(),
                                     AssignedFOName = g.Key.FieldOfficerName,
                                     AssignedFOMobile = g.Key.FieldOfficerMobile
-                                })
-                                .ToListAsync();
+                                }).ToListAsync();
 
             return result;
         }
+
         //public async Task<List<EventActivityBoothWise>> GetPendingBoothWiseEventListById(int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelHMasterId)
         //{
 
         //    var result = await (from boothMaster in _context.BoothMaster
 
         //                        join fieldOfficer in _context.FieldOfficerMaster
-        //                            on boothMaster.AssignedTo equals fieldOfficer.FieldOfficerMasterId.ToString() 
+        //                            on boothMaster.AssignedTo equals fieldOfficer.FieldOfficerMasterId.ToString()
+
         //                        join election in _context.ElectionInfoMaster
-        //                            on boothMaster.FourthLevelHMasterId equals election.FourthLevelMasterId into electionGroup
+        //                             on boothMaster.BoothMasterId equals election.BoothMasterId into electionGroup
         //                        from election in electionGroup.DefaultIfEmpty()
 
         //                            // Left join to include FourthLevelH without election records
@@ -8687,8 +8692,22 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         //                              && boothMaster.AssemblyMasterId == assemblyMasterId
         //                              && boothMaster.FourthLevelHMasterId == fourthLevelHMasterId
         //                              && boothMaster.BoothStatus == true
-        //                              &&boothMaster.AssignedTo!=null
-        //                              && election == null // Exclude FourthLevelH where ElectionInfoMaster data exists
+        //                              && boothMaster.AssignedTo != null
+        //                               && (
+        //                               !election.IsPartyDispatched ||
+        //                               !election.IsPartyReached ||
+        //                               !election.IsSetupOfPolling ||
+        //                               !election.IsMockPollDone ||
+        //                               !election.IsPollStarted ||
+        //                               !election.IsPollEnded ||
+        //                               !election.IsMCESwitchOff ||
+        //                               !election.IsPartyDeparted ||
+        //                               !election.IsEVMDeposited ||
+        //                               !election.IsPartyReachedCollectionCenter ||
+        //                               !election.IsVoterInQueue ||
+        //                               !election.IsFinalVote ||
+        //                               !election.IsVoterTurnOut
+        //                        )
         //                        group election by new
         //                        {
         //                            boothMaster.BoothMasterId,
