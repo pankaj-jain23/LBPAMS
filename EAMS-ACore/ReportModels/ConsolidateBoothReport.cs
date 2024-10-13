@@ -20,6 +20,8 @@
         public int? Trans { get; set; }
         public int? Total { get; set; }
         public bool IsStatus { get; set; }
+        public bool IsCC { get; set; }
+        public bool IsNN { get; set; }
     }
 
 }

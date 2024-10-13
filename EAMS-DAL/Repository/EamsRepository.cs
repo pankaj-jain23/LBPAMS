@@ -8609,32 +8609,16 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             var result = await (from booth in _context.BoothMaster
                                 join fieldOfficerMaster in _context.FieldOfficerMaster
                                      on booth.AssignedTo equals fieldOfficerMaster.FieldOfficerMasterId.ToString()
+                                // Left join to ElectionInfoMaster to fetch booths even if they don't exist in ElectionInfoMaster
                                 join election in _context.ElectionInfoMaster
                                      on booth.BoothMasterId equals election.BoothMasterId into electionGroup
                                 from election in electionGroup.DefaultIfEmpty()
-                                where booth.StateMasterId == stateMasterId &&
-                                      booth.DistrictMasterId == districtMasterId &&
-                                      booth.AssemblyMasterId == assemblyMasterId &&
-                                      booth.FourthLevelHMasterId == fourthLevelHMasterId &&
-                                      booth.BoothStatus == true &&
-                                      booth.AssignedTo != null &&
-                                      booth.BoothStatus == true
-                                // Exclude booths where event activity is completed
-                                && (election == null && (
-                                       !election.IsPartyDispatched ||
-                                       !election.IsPartyReached ||
-                                       !election.IsSetupOfPolling ||
-                                       !election.IsMockPollDone ||
-                                       !election.IsPollStarted ||
-                                       !election.IsPollEnded ||
-                                       !election.IsMCESwitchOff ||
-                                       !election.IsPartyDeparted ||
-                                       !election.IsEVMDeposited ||
-                                       !election.IsPartyReachedCollectionCenter ||
-                                       !election.IsVoterInQueue ||
-                                       !election.IsFinalVote ||
-                                       !election.IsVoterTurnOut
-                                ))
+                                where booth.StateMasterId == stateMasterId
+                                      && (!districtMasterId.HasValue || booth.DistrictMasterId == districtMasterId)
+                                      && (!assemblyMasterId.HasValue || booth.AssemblyMasterId == assemblyMasterId)
+                                      && (!fourthLevelHMasterId.HasValue || booth.FourthLevelHMasterId == fourthLevelHMasterId)
+                                      && booth.BoothStatus == true
+                                      && booth.AssignedTo != null  // Ensure AssignedTo is not null
                                 group new { booth, election } by new
                                 {
                                     booth.BoothMasterId,
@@ -8651,9 +8635,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                     DistrictMasterId = districtMasterId,
                                     AssemblyMasterId = assemblyMasterId,
                                     FourthLevelHMasterId = fourthLevelHMasterId,
-                                    Name = $"{g.Key.BoothName}",
+                                    Name = $"{g.Key.BoothName} ({g.Key.FieldOfficerName}: {g.Key.FieldOfficerMobile})",
                                     Type = "Booth",
-                                    BoothCode_No = g.Key.BoothCode_No, // Added BoothCode
+                                    BoothCode_No = g.Key.BoothCode_No, // Booth Code No
+                                                                       // If there's no election data, these values should all be 1 (pending)
                                     PartyDispatch = g.Sum(x => x.election != null && x.election.IsPartyDispatched ? 0 : 1).ToString(),
                                     PartyArrived = g.Sum(x => x.election != null && x.election.IsPartyReached ? 0 : 1).ToString(),
                                     SetupPollingStation = g.Sum(x => x.election != null && x.election.IsSetupOfPolling ? 0 : 1).ToString(),
@@ -11440,7 +11425,9 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 //Female = d.Female,
                 //Trans = d.Transgender,
                 //Total = d.TotalVoters,
-                IsStatus = d.GPPanchayatWardsStatus
+                IsStatus = d.GPPanchayatWardsStatus,
+                IsCC = d.IsCC,
+                IsNN = d.IsNN
             }).ToListAsync();
         }
 
