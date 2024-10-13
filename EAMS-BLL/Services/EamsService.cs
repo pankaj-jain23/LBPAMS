@@ -2957,7 +2957,10 @@ namespace EAMS_BLL.Services
             // If no specific condition was met, proceed with default persistence
             return await _eamsRepository.AddResultDeclarationDetails(resultDeclaration);
         }
-
+        public async Task<ServiceResponse> CheckIfAllBoothsPollEnded(int fieldOfficerMasterId)
+        {
+            return await _eamsRepository.CheckIfAllBoothsPollEnded(fieldOfficerMasterId);
+        }
         public async Task<Response> UpdateResultDeclarationDetails(ResultDeclaration resultDeclaration)
         {
             return await _eamsRepository.UpdateResultDeclarationDetails(resultDeclaration);

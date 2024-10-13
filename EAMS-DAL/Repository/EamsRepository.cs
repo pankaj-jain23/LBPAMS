@@ -18417,6 +18417,23 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return new ServiceResponse { IsSucceed = true, Message = "Result declarations successfully processed." };
         }
+        public async Task<ServiceResponse> CheckIfAllBoothsPollEnded(int fieldOfficerMasterId)
+        {
+            bool anyPollActive = await _context.BoothMaster
+       .Where(b => b.AssignedTo == fieldOfficerMasterId.ToString())
+       .Join(_context.ElectionInfoMaster,
+             b => b.BoothMasterId,
+             e => e.BoothMasterId,
+             (b, e) => e.IsPollEnded)
+       .AnyAsync(e => !e); // Check if any IsPollEnded is false
+
+            return new ServiceResponse
+            {
+                IsSucceed = !anyPollActive,
+                Message = anyPollActive ? "You can't declare the result until poll end activity is done for all assigned booths." : "All polls activity have ended."
+            };
+        }
+
 
         //public async Task<ServiceResponse> AddResultDeclarationDetails(List<ResultDeclaration> resultDeclaration)
         //{
@@ -18581,6 +18598,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         {
             // Query Kyc Table with join on ResultDeclaration
             var candidatesWithResults = await (from k in _context.Kyc
+                                               join gpPanchayatWards in _context.GPPanchayatWards
+                                       on k.GPPanchayatWardsMasterId equals gpPanchayatWards.GPPanchayatWardsMasterId
                                                join r in _context.ResultDeclaration on k.KycMasterId equals r.KycMasterId into results
                                                from result in results.DefaultIfEmpty() // Left join
                                                where k.StateMasterId == stateMasterId &&
@@ -18592,7 +18611,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                                select new
                                                {
                                                    kycCandidate = k,
-                                                   result // this will be null if there's no match
+                                                   result, // this will be null if there's no match
+                                                   gpPanchayatWards
                                                }).ToListAsync();
 
             // Project the results into the desired format, handling nulls
@@ -18602,6 +18622,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 CandidateName = c.kycCandidate.CandidateName,
                 FatherName = c.kycCandidate.FatherName,
                 IsUnOppossed = c.kycCandidate.IsUnOppossed,
+                IsCC = c.gpPanchayatWards.IsCC,
+                IsNN = c.gpPanchayatWards.IsNN,
                 IsWinner = c.result?.IsWinner ?? false, // Default to false if result is null
                 IsResultDeclared = c.result?.IsResultDeclared ?? false, // Default to false if result is null
                 IsDraw = c.result?.IsDraw ?? false, // Default to false if result is null
@@ -18616,6 +18638,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         public async Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
             var candidatesWithResults = await (from k in _context.Kyc
+                                               join fourthLevelH in _context.FourthLevelH
+                                       on k.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
                                                join r in _context.ResultDeclaration on k.KycMasterId equals r.KycMasterId into results
                                                from result in results.DefaultIfEmpty() // Left join
                                                where k.StateMasterId == stateMasterId &&
@@ -18627,7 +18651,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                                select new
                                                {
                                                    kycCandidate = k,
-                                                   result // this will be null if there's no match
+                                                   result, // this will be null if there's no match
+                                                   fourthLevelH // Include the FourthLevelH entity to access IsCC and IsNN
                                                }).ToListAsync();
 
             // Project the results into the desired format, handling nulls
@@ -18637,6 +18662,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 CandidateName = c.kycCandidate.CandidateName,
                 FatherName = c.kycCandidate.FatherName,
                 IsUnOppossed = c.kycCandidate.IsUnOppossed,
+                IsCC = c.fourthLevelH.IsCC,
+                IsNN = c.fourthLevelH.IsNN,
                 IsWinner = c.result?.IsWinner ?? false, // Default to false if result is null
                 IsResultDeclared = c.result?.IsResultDeclared ?? false, // Default to false if result is null
                 IsDraw = c.result?.IsDraw ?? false, // Default to false if result is null

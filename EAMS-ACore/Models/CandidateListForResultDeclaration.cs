@@ -29,6 +29,8 @@ namespace EAMS_ACore.Models
             get;
             set;
         }
+        public bool IsCC { get; set; }//Court Case
+        public bool IsNN { get; set; }//No nomination
         public bool IsWinner { get; set; }
         public bool IsResultDeclared { get; set; }
         public bool IsDraw { get; set; }//For Draw Candidates

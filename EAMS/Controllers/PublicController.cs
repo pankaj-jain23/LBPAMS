@@ -11,6 +11,7 @@ using EAMS_BLL.Services;
 using LBPAMS.ViewModels.PublicModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.Design;
 
 namespace EAMS.Controllers
@@ -738,6 +739,13 @@ namespace EAMS.Controllers
             int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
             int fieldOfficerMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("FieldOfficerMasterId"));
 
+            // Check if all assigned booths have polls ended
+            var pollCheckResponse = await _eamsService.CheckIfAllBoothsPollEnded(fieldOfficerMasterId);
+
+            if (!pollCheckResponse.IsSucceed)
+            {
+                return BadRequest(pollCheckResponse.Message);
+            }
             // Map ViewModel to Entity
             var mappedData = _mapper.Map<List<ResultDeclaration>>(resultDeclarationViewModel.resultDeclarationLists);
 
