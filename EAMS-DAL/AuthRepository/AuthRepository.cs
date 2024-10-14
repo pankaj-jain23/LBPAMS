@@ -355,7 +355,7 @@ namespace EAMS_DAL.AuthRepository
             }
             catch (Exception ex)
             {
-                throw ex;
+                return null;
             }
 
 
@@ -553,18 +553,11 @@ namespace EAMS_DAL.AuthRepository
         #endregion
 
         #region GetFOByID
-        public async Task<AROResultMaster> GetAROById(int roId)
+        public async Task<AROResultMaster?> GetAROById(int roId)
         {
-            var roRecord = await _context.AROResultMaster.FirstOrDefaultAsync(d => d.AROMasterId == roId);
-            if (roRecord is not null)
-            {
-                return roRecord;
-            }
-            else
-            {
-                return null;
-            }
+            return await _context.AROResultMaster.FirstOrDefaultAsync(d => d.AROMasterId == roId);
         }
+
         #endregion
 
         #region GetDashboardProfile && UpdateDashboardProfile

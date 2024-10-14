@@ -216,9 +216,8 @@ namespace EAMS.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"RefreshToken: {ex.Message}");
-
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                 
+                return null;
             }
         }
         #endregion

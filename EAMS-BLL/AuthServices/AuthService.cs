@@ -109,12 +109,7 @@ namespace EAMS_BLL.AuthServices
                     {
                         // Log the exception or handle it appropriately
                         // You may also want to return an error response
-                        return new Token()
-                        {
-                            IsSucceed = false,
-                            Message = "Error updating user: " + ex.Message,
-                            Is2FA = is2FA.IsSucceed
-                        };
+                        return null;
                     }
                 }
                 _Token.IsSucceed = true;
@@ -618,14 +613,11 @@ namespace EAMS_BLL.AuthServices
         public async Task<Token> GetRefreshToken(GetRefreshToken model)
         {
             Token _Token = new();
-
-            string userName = "";
-            var principal = default(ClaimsPrincipal);
-
+            ClaimsPrincipal? principal = null;
 
             if (!string.IsNullOrWhiteSpace(model.AccessToken))
             {
-                principal = await GetPrincipalFromExpiredToken(model.AccessToken);
+                principal = GetPrincipalFromExpiredToken(model.AccessToken);
             }
             var role = principal.Claims.FirstOrDefault(d => d.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role").Value;
             if (role.Contains("FO"))
@@ -687,6 +679,7 @@ namespace EAMS_BLL.AuthServices
                     roRecords.RefreshToken = GenerateRefreshToken();
                     roRecords.RefreshTokenExpiryTime = BharatTimeDynamic(0, 7, 0, 0, 0);
                     var updateUser = await _eamsRepository.UpdateAROValidate(roRecords);
+
                     var authClaims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, roRecords.AROName),
@@ -748,7 +741,7 @@ namespace EAMS_BLL.AuthServices
         {
             var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
 
-           // var expireAccessToken = BharatTimeDynamic(0, 0, 0, 1, 0); // Your method for setting expiration time
+            // var expireAccessToken = BharatTimeDynamic(0, 0, 0, 1, 0); // Your method for setting expiration time
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
@@ -767,7 +760,7 @@ namespace EAMS_BLL.AuthServices
                 subject: tokenDescriptor.Subject,
                 expires: tokenDescriptor.Expires,
                 signingCredentials: tokenDescriptor.SigningCredentials);
- 
+
 
             return tokenHandler.WriteToken(token);
         }
@@ -780,7 +773,8 @@ namespace EAMS_BLL.AuthServices
             rng.GetBytes(randomNumber);
             return Convert.ToBase64String(randomNumber);
         }
-        private async Task<ClaimsPrincipal> GetPrincipalFromExpiredToken(string? token)
+
+        private ClaimsPrincipal? GetPrincipalFromExpiredToken(string? token)
         {
             var tokenValidationParameters = new TokenValidationParameters
             {
@@ -802,17 +796,14 @@ namespace EAMS_BLL.AuthServices
                 if (securityToken is not JwtSecurityToken jwtSecurityToken ||
                     !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    throw new SecurityTokenException("Invalid token");
+                    return null;
                 }
-
-                // Log claims for debugging purposes
-                var tokenClaims = jwtSecurityToken.Claims.Select(c => $"{c.Type}: {c.Value}");
 
                 return principal;
             }
             catch (Exception ex)
             {
-                throw ex;
+                return null; // Avoid throwing exceptions to prevent memory leaks
             }
         }
         private bool IsRefreshTokenValid(DateTime refreshTokenExpiryTime)
@@ -865,7 +856,7 @@ namespace EAMS_BLL.AuthServices
                         : new ServiceResponse { IsSucceed = false, Message = $"{result}" };
                 }
 
-               
+
             }
 
             if (user != null)

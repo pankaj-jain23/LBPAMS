@@ -1073,7 +1073,7 @@ namespace EAMS_DAL.Repository
 
         public async Task<List<StateMaster>> GetState()
         {
-            var stateList = await _context.StateMaster.Select(d => new StateMaster
+            return await _context.StateMaster.Select(d => new StateMaster
             {
                 StateCode = d.StateCode,
                 StateName = d.StateName,
@@ -1082,9 +1082,8 @@ namespace EAMS_DAL.Repository
 
                 StateStatus = d.StateStatus
             }).OrderBy(d => d.StateMasterId)
-                .ToListAsync();
+                 .ToListAsync();
 
-            return stateList;
         }
 
         //public async Task<Response> ResetAccounts(string stateMasterId)
@@ -1252,8 +1251,7 @@ namespace EAMS_DAL.Repository
             }
             catch (Exception ex)
             {
-                // Handle the exception appropriately, logging or other actions.
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
+                return null;
             }
         }
         public async Task<StateMaster> GetStateById(string stateId)
@@ -1296,7 +1294,7 @@ namespace EAMS_DAL.Repository
             }
             catch (Exception ex)
             {
-                _logger.LogError($"GetDistrictById: {ex.Message}");
+
                 return null;
             }
         }
@@ -2171,43 +2169,43 @@ namespace EAMS_DAL.Repository
         public async Task<List<CombinedMaster>> GetBoothListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
         {
 
-            var boothlist = from bt in _context.BoothMaster.Where(d => d.StateMasterId == stateMasterId
+            var boothlist = await (from bt in _context.BoothMaster.Where(d => d.StateMasterId == stateMasterId
                             && d.DistrictMasterId == districtMasterId
                             && d.AssemblyMasterId == assemblyMasterId && d.AssignedTo == foId.ToString())
-                            join fourthLevelH in _context.FourthLevelH on bt.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
-                            join asem in _context.AssemblyMaster
-                            on bt.AssemblyMasterId equals asem.AssemblyMasterId
-                            join dist in _context.DistrictMaster
-                            on asem.DistrictMasterId equals dist.DistrictMasterId
-                            join state in _context.StateMaster
-                             on dist.StateMasterId equals state.StateMasterId
+                                   join fourthLevelH in _context.FourthLevelH on bt.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
+                                   join asem in _context.AssemblyMaster
+                                   on bt.AssemblyMasterId equals asem.AssemblyMasterId
+                                   join dist in _context.DistrictMaster
+                                   on asem.DistrictMasterId equals dist.DistrictMasterId
+                                   join state in _context.StateMaster
+                                    on dist.StateMasterId equals state.StateMasterId
+                                   orderby Convert.ToInt32(bt.BoothCode_No)
+                                   select new CombinedMaster
+                                   {
+                                       StateId = stateMasterId,
+                                       StateName = state.StateName,
+                                       DistrictId = dist.DistrictMasterId,
+                                       DistrictName = dist.DistrictName,
+                                       DistrictCode = dist.DistrictCode,
+                                       AssemblyId = asem.AssemblyMasterId,
+                                       AssemblyName = asem.AssemblyName,
+                                       AssemblyCode = asem.AssemblyCode,
+                                       FourthLevelHMasterId = fourthLevelH.FourthLevelHMasterId,
+                                       FourthLevelHName = fourthLevelH.HierarchyName,
+                                       BoothMasterId = bt.BoothMasterId,
+                                       BoothName = $"{bt.BoothName}({bt.BoothCode_No})",
+                                       //BoothAuxy = bt.BoothNoAuxy,
+                                       BoothAuxy = (bt.BoothNoAuxy == "0") ? string.Empty : bt.BoothNoAuxy,
+                                       IsStatus = bt.BoothStatus,
+                                       BoothCode_No = bt.BoothCode_No,
+                                       IsAssigned = bt.IsAssigned,
+                                       FieldOfficerMasterId = foId,
+                                       IsBoothInterrupted = bt.IsBoothInterrupted
 
-                            select new CombinedMaster
-                            {
-                                StateId = stateMasterId,
-                                StateName = state.StateName,
-                                DistrictId = dist.DistrictMasterId,
-                                DistrictName = dist.DistrictName,
-                                DistrictCode = dist.DistrictCode,
-                                AssemblyId = asem.AssemblyMasterId,
-                                AssemblyName = asem.AssemblyName,
-                                AssemblyCode = asem.AssemblyCode,
-                                FourthLevelHMasterId = fourthLevelH.FourthLevelHMasterId,
-                                FourthLevelHName = fourthLevelH.HierarchyName,
-                                BoothMasterId = bt.BoothMasterId,
-                                BoothName = bt.BoothName,
-                                //BoothAuxy = bt.BoothNoAuxy,
-                                BoothAuxy = (bt.BoothNoAuxy == "0") ? string.Empty : bt.BoothNoAuxy,
-                                IsStatus = bt.BoothStatus,
-                                BoothCode_No = bt.BoothCode_No,
-                                IsAssigned = bt.IsAssigned,
-                                FieldOfficerMasterId = foId,
-                                IsBoothInterrupted = bt.IsBoothInterrupted
 
+                                   }).ToListAsync();
 
-                            };
-            var count = boothlist.Count();
-            return await boothlist.ToListAsync();
+            return boothlist;
         }
         /// </summary>
         /// <summary this api for Mobile App>
@@ -2226,6 +2224,7 @@ namespace EAMS_DAL.Repository
                             join asem in _context.AssemblyMaster.AsNoTracking() on bt.AssemblyMasterId equals asem.AssemblyMasterId
                             join dist in _context.DistrictMaster.AsNoTracking() on asem.DistrictMasterId equals dist.DistrictMasterId
                             join state in _context.StateMaster.AsNoTracking() on dist.StateMasterId equals state.StateMasterId
+                            orderby Convert.ToInt32(bt.BoothCode_No)
                             select new CombinedMaster
                             {
                                 StateId = stateMasterId,
@@ -2239,7 +2238,7 @@ namespace EAMS_DAL.Repository
                                 FourthLevelHMasterId = fourthLevelH.FourthLevelHMasterId,
                                 FourthLevelHName = fourthLevelH.HierarchyName,
                                 BoothMasterId = bt.BoothMasterId,
-                                BoothName = bt.BoothName,
+                                BoothName = $"{bt.BoothName}({bt.BoothCode_No})",
                                 BoothAuxy = bt.BoothNoAuxy == "0" ? string.Empty : bt.BoothNoAuxy,
                                 IsStatus = bt.BoothStatus,
                                 BoothCode_No = bt.BoothCode_No,
@@ -2413,7 +2412,7 @@ namespace EAMS_DAL.Repository
                                    on asem.DistrictMasterId equals dist.DistrictMasterId
                                    join state in _context.StateMaster.AsNoTracking()
                                    on dist.StateMasterId equals state.StateMasterId
-
+                                   orderby Convert.ToInt32(bt.BoothCode_No)
                                    select new CombinedMaster
                                    {
                                        StateId = stateMasterId,
@@ -2770,7 +2769,7 @@ namespace EAMS_DAL.Repository
                                  on dist.StateMasterId equals state.StateMasterId
                                 join elec in _context.ElectionTypeMaster
                                 on bt.ElectionTypeMasterId equals elec.ElectionTypeMasterId
-
+                                orderby Convert.ToInt32(bt.BoothCode_No)
                                 select new CombinedMaster
                                 {
                                     StateId = Convert.ToInt32(stateMasterId),
@@ -2795,12 +2794,12 @@ namespace EAMS_DAL.Repository
 
                                 };
 
-                var sortedBoothList = await boothlist.ToListAsync();
+                return await boothlist.ToListAsync();
 
-                // Convert string BoothCode_No to integers for sorting
-                sortedBoothList = sortedBoothList.OrderBy(d => int.TryParse(d.BoothCode_No, out int code) ? code : int.MaxValue).ToList();
+                //// Convert string BoothCode_No to integers for sorting
+                //sortedBoothList = sortedBoothList.OrderBy(d => int.TryParse(d.BoothCode_No, out int code) ? code : int.MaxValue).ToList();
 
-                return sortedBoothList;
+
             }
             else
             {
@@ -2972,6 +2971,7 @@ namespace EAMS_DAL.Repository
                                    && bt.StateMasterId == Convert.ToInt32(stateMasterId)
                                    && bt.DistrictMasterId == Convert.ToInt32(districtMasterId)
                                    && bt.AssemblyMasterId == Convert.ToInt32(assemblyMasterId)
+                                orderby Convert.ToInt32(bt.BoothCode_No)
                                 select new CombinedMaster
                                 {
                                     StateId = Convert.ToInt32(stateMasterId),
@@ -2991,12 +2991,12 @@ namespace EAMS_DAL.Repository
                                     Transgender = bt.Transgender,
                                     NoOfPollingAgent = elecinfo.NoOfPollingAgents
                                 };
-                var sortedBoothList = await boothlist.ToListAsync();
+                return await boothlist.ToListAsync();
 
-                // Convert string BoothCode_No to integers for sorting
-                sortedBoothList = sortedBoothList.OrderBy(d => int.TryParse(d.BoothCode_No, out int code) ? code : int.MaxValue).ToList();
+                //// Convert string BoothCode_No to integers for sorting
+                //sortedBoothList = sortedBoothList.OrderBy(d => int.TryParse(d.BoothCode_No, out int code) ? code : int.MaxValue).ToList();
 
-                return sortedBoothList;
+                //return sortedBoothList;
             }
             else
             {
@@ -3167,7 +3167,7 @@ namespace EAMS_DAL.Repository
             catch (Exception ex)
             {
                 // Log the exception details for troubleshooting
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
+                return null;
             }
         }
         public async Task<Response> AddBooth(BoothMaster boothMaster)
@@ -3410,7 +3410,7 @@ namespace EAMS_DAL.Repository
             catch (Exception ex)
             {
                 // Log the exception details for troubleshooting
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
+                return null;
             }
         }
 
@@ -5649,12 +5649,12 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         public async Task<ElectionInfoMaster> EventUpdationStatus(ElectionInfoMaster electionInfoMaster)
         {
             // added electionTypeMasterId check
-            var electionInfoRecord = _context.ElectionInfoMaster.Where(d => d.StateMasterId == electionInfoMaster.StateMasterId
+            return _context.ElectionInfoMaster.Where(d => d.StateMasterId == electionInfoMaster.StateMasterId
             && d.DistrictMasterId == electionInfoMaster.DistrictMasterId &&
             d.AssemblyMasterId == electionInfoMaster.AssemblyMasterId
             && d.BoothMasterId == electionInfoMaster.BoothMasterId && d.ElectionTypeMasterId == electionInfoMaster.ElectionTypeMasterId
             ).FirstOrDefault();
-            return electionInfoRecord;
+
         }
         public async Task<ServiceResponse> PartyDispatch(UpdateEventActivity updateEventActivity)
         {
@@ -5719,8 +5719,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return new ServiceResponse
             {
-                IsSucceed = true
-                ,
+                IsSucceed = true,
                 Message = "Party Dispatch Updated SucessFully"
             };
         }
@@ -7259,14 +7258,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
             catch (Exception ex)
             {
-                model = new EAMS_ACore.Models.Queue()
-                {
-
-                    Message = ex.Message
-
-
-
-                };
+                return null;
             }
             return model;
         }
@@ -7310,14 +7302,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
             catch (Exception ex)
             {
-                model = new EAMS_ACore.Models.Queue()
-                {
-
-                    Message = ex.Message
-
-
-
-                };
+                return null;
             }
             return model;
         }
@@ -7618,7 +7603,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         public async Task<bool> IsSlotAlreadyEntered(SlotManagementMaster? slotRecord, DateTime? lastReceviedTime)
         {
-            bool slotTurnOutValueAlreadyExists = false;
+            bool slotTurnOutValueAlreadyExists;
             DateTime endTime = DateTime.ParseExact(slotRecord.EndTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
             DateTime lockTime = DateTime.ParseExact(slotRecord.LockTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
 
@@ -7639,7 +7624,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             }
 
-            return slotTurnOutValueAlreadyExists;
         }
 
         public async Task<bool> TimeExceedLastSlot(SlotManagementMaster? slotRecord)
@@ -7662,8 +7646,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
 
             }
-            return lastSlotExceededTime;
-
         }
 
 
@@ -8103,7 +8085,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return result;
         }
-        ///This API fetches the district-wise event list for Pending events.
 
         public async Task<List<EventActivityCount>> GetPendingEventListDistrictWiseById(int stateMasterId)
         {
@@ -8386,6 +8367,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                 }).OrderBy(d => d.Name).ToListAsync();
             return result;
         }
+
         public async Task<List<EventActivityBoothWise>> GetEventListBoothWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelHMasterId)
         {
             var result = await (from election in _context.ElectionInfoMaster
@@ -8413,7 +8395,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                     StateMasterId = stateMasterId,
                                     DistrictMasterId = districtMasterId,
                                     AssemblyMasterId = assemblyMasterId,
-                                    Name = $"{g.Key.BoothName} ({g.Key.FieldOfficerName}: {g.Key.FieldOfficerMobile})",
+                                    Name = $"{g.Key.BoothName}({g.Key.BoothCode_No}) ({g.Key.FieldOfficerName}: {g.Key.FieldOfficerMobile})",
                                     Type = "Booth",
                                     BoothCode_No = g.Key.BoothCode_No,
                                     PartyDispatch = g.Sum(x => x.IsPartyDispatched ? 1 : 0).ToString(),
@@ -8468,7 +8450,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                     DistrictMasterId = districtMasterId,
                                     AssemblyMasterId = assemblyMasterId,
                                     FourthLevelHMasterId = fourthLevelHMasterId,
-                                    Name = $"{g.Key.BoothName} ({g.Key.FieldOfficerName}: {g.Key.FieldOfficerMobile})",
+                                    Name = $"{g.Key.BoothName}({g.Key.BoothCode_No}) ({g.Key.FieldOfficerName}: {g.Key.FieldOfficerMobile})",
                                     Type = "Booth",
                                     BoothCode_No = g.Key.BoothCode_No, // Booth Code No
                                                                        // If there's no election data, these values should all be 1 (pending)
@@ -9453,11 +9435,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             return new Response { Status = RequestStatusEnum.OK, Message = "Poll Interruption Added Successfully." };
 
         }
-        //public async Task<PollInterruption> GetPollInterruptionData(string boothMasterId)
-        //{
-        //    var pollInterruptionRecord = await _context.PollInterruptions.Where(d => d.BoothMasterId == Convert.ToInt32(boothMasterId)).OrderByDescending(p => p.PollInterruptionId).FirstOrDefaultAsync();
-        //    return pollInterruptionRecord;
-        //}
+
 
         public async Task<PollInterruption> GetPollInterruptionData(string boothMasterId)
         {
@@ -9480,34 +9458,34 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         public async Task<List<PollInterruptionHistoryModel>> GetPollInterruptionHistoryById(string boothMasterId)
         {
-            var query = from pollInterruption in _context.PollInterruptions
-                        join assemblyMaster in _context.AssemblyMaster on pollInterruption.AssemblyMasterId equals assemblyMaster.AssemblyMasterId
-                        join boothMaster in _context.BoothMaster on new { BoothMasterId = pollInterruption.BoothMasterId, AssemblyMasterId = assemblyMaster.AssemblyMasterId } equals new { BoothMasterId = boothMaster.BoothMasterId, AssemblyMasterId = boothMaster.AssemblyMasterId }
-                        where boothMaster.BoothMasterId == Convert.ToInt32(boothMasterId)
-                        orderby pollInterruption.CreatedAt descending
-                        select new
-                        {
-                            pollInterruption.PollInterruptionId,
-                            pollInterruption.BoothMasterId,
-                            boothMaster.BoothName,
-                            boothMaster.StateMasterId,
-                            boothMaster.DistrictMasterId,
-                            //pollInterruption.PCMasterId,
+            var result = await (from pollInterruption in _context.PollInterruptions
+                                join assemblyMaster in _context.AssemblyMaster on pollInterruption.AssemblyMasterId equals assemblyMaster.AssemblyMasterId
+                                join boothMaster in _context.BoothMaster on new { BoothMasterId = pollInterruption.BoothMasterId, AssemblyMasterId = assemblyMaster.AssemblyMasterId } equals new { BoothMasterId = boothMaster.BoothMasterId, AssemblyMasterId = boothMaster.AssemblyMasterId }
+                                where boothMaster.BoothMasterId == Convert.ToInt32(boothMasterId)
+                                orderby pollInterruption.CreatedAt descending
+                                select new
+                                {
+                                    pollInterruption.PollInterruptionId,
+                                    pollInterruption.BoothMasterId,
+                                    boothMaster.BoothName,
+                                    boothMaster.StateMasterId,
+                                    boothMaster.DistrictMasterId,
+                                    //pollInterruption.PCMasterId,
 
-                            pollInterruption.OldBU,
-                            pollInterruption.OldCU,
-                            pollInterruption.NewCU,
-                            pollInterruption.NewBU,
+                                    pollInterruption.OldBU,
+                                    pollInterruption.OldCU,
+                                    pollInterruption.NewCU,
+                                    pollInterruption.NewBU,
 
-                            pollInterruption.IsPollInterrupted,
-                            pollInterruption.InterruptionType,
-                            pollInterruption.StopTime,
-                            pollInterruption.ResumeTime,
-                            pollInterruption.CreatedAt,
-                            pollInterruption.Remarks
-                        };
+                                    pollInterruption.IsPollInterrupted,
+                                    pollInterruption.InterruptionType,
+                                    pollInterruption.StopTime,
+                                    pollInterruption.ResumeTime,
+                                    pollInterruption.CreatedAt,
+                                    pollInterruption.Remarks
+                                }).ToListAsync();
 
-            var result = await query.ToListAsync();
+
 
             return result.Select(p => new PollInterruptionHistoryModel
             {
@@ -9735,11 +9713,9 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
 
             // Execute the query and retrieve the results
-            finalResult = result.ToList();
+            return await result.ToListAsync();
 
 
-
-            return finalResult;
 
 
 
@@ -9794,8 +9770,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         public async Task<BoothMaster> GetBoothRecord(int boothMasterId)
         {
-            var boothRecord = await _context.BoothMaster.Where(d => d.BoothMasterId == boothMasterId).FirstOrDefaultAsync();
-            return boothRecord;
+            return await _context.BoothMaster.Where(d => d.BoothMasterId == boothMasterId).FirstOrDefaultAsync();
+
         }
         public async Task<List<PollInterruptionDashboard>> GetBoothListBySoIdfoInterruption(ClaimsIdentity claimsIdentity)
         {
@@ -9843,7 +9819,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             }
 
-            var count = finalResult.Count();
             return await result.ToListAsync();
 
         }
@@ -10973,7 +10948,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
             catch (Exception ex)
             {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
+                return null;
             }
         }
         public async Task<Response> UpdateLocation(LocationModel locationModel)
@@ -11067,7 +11042,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
             catch (Exception ex)
             {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
+                return null;
             }
         }
 
@@ -14841,7 +14816,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             catch (Exception ex)
             {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
+                return null;
             }
         }
 
@@ -16368,7 +16343,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
 
 
-            return list;
         }
 
 
@@ -16427,9 +16401,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
 
 
-
-
-            return list;
         }
         public async Task<List<BLOBoothAssignedQueueCount>> GetAssignedBLOs(BoothReportModel boothReportModel)
         {
@@ -16486,8 +16457,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
 
 
-
-            return list;
         }
 
 
@@ -16549,19 +16518,15 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
 
 
-
-
-
-            return list;
         }
         #endregion 
 
         #region MobileVersion
         public async Task<MobileVersion> GetMobileVersionById(string StateMasterId)
         {
-            var mobileVersionRecord = await _context.MobileVersion.OrderByDescending(d => d.MobileVersionId).FirstOrDefaultAsync(d => d.StateMasterId == Convert.ToInt32(StateMasterId));
+            return await _context.MobileVersion.OrderByDescending(d => d.MobileVersionId).FirstOrDefaultAsync(d => d.StateMasterId == Convert.ToInt32(StateMasterId));
 
-            return mobileVersionRecord;
+
         }
 
         public async Task<ServiceResponse> AddMobileVersion(MobileVersion mobileVersion)
@@ -16578,7 +16543,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
             catch (Exception ex)
             {
-                return new ServiceResponse { IsSucceed = false, Message = "Not added " };
+                return null;
             }
         }
 
@@ -17382,7 +17347,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             catch (Exception ex)
             {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
+                return null;
             }
 
         }
@@ -17463,12 +17428,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 }
                 catch (Exception ex)
                 {
-                    // Handle any errors that may have occurred
-                    return new Response
-                    {
-                        Status = RequestStatusEnum.BadRequest,
-                        Message = $"An error occurred: {ex.Message}"
-                    };
+                    return null;
                 }
             }
 
@@ -17481,7 +17441,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         public async Task<FourthLevelH> GetFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
-            var fourthLevelH = await _context.FourthLevelH
+            return await _context.FourthLevelH
                 .Where(d => d.StateMasterId == stateMasterId &&
                             d.DistrictMasterId == districtMasterId &&
                             d.AssemblyMasterId == assemblyMasterId &&
@@ -17489,7 +17449,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 .Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.ElectionTypeMaster)
                 .FirstOrDefaultAsync();
 
-            return fourthLevelH;
+
         }
 
         public async Task<ServiceResponse> DeleteFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
@@ -17549,12 +17509,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
             catch (Exception ex)
             {
-                // Handle any errors that may have occurred during deletion
-                return new ServiceResponse
-                {
-                    IsSucceed = false,
-                    Message = $"An error occurred: {ex.Message}"
-                };
+                return null;
             }
         }
 
@@ -17594,26 +17549,14 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
             catch (Exception ex)
             {
-                // Log the exception if needed
-                return new Response
-                {
-                    Status = RequestStatusEnum.BadRequest,
-                    Message = ex.Message
-                };
+                return null;
             }
         }
 
         public async Task<List<PSZonePanchayat>> GetPSZonePanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
-            var getBlockPanchayat = await _context.PSZonePanchayat.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.FourthLevelHMasterId == fourthLevelHMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).ToListAsync();
-            if (getBlockPanchayat != null)
-            {
-                return getBlockPanchayat;
-            }
-            else
-            {
-                return null;
-            }
+            return await _context.PSZonePanchayat.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.FourthLevelHMasterId == fourthLevelHMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).ToListAsync();
+
         }
         public async Task<Response> UpdatePSZonePanchayat(PSZonePanchayat updatedPSZonePanchayat)
         {
@@ -17662,7 +17605,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
             catch (Exception ex)
             {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
+                return null;
             }
 
         }
@@ -17695,7 +17638,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
             catch (Exception ex)
             {
-                return new ServiceResponse { IsSucceed = false, Message = ex.Message };
+                return null;
             }
         }
         #endregion
@@ -17733,24 +17676,17 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             catch (Exception ex)
             {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = ex.Message };
+                return null;
             }
         }
         public async Task<List<GPPanchayatWards>> GetPanchayatWardforResultDeclaration(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
-            var getWard = await _context.GPPanchayatWards.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.FourthLevelHMasterId == fourthLevelHMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).ToListAsync();
-            if (getWard != null)
-            {
-                return getWard;
-            }
-            else
-            {
-                return null;
-            }
+            return await _context.GPPanchayatWards.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.FourthLevelHMasterId == fourthLevelHMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).ToListAsync();
+
         }
         public async Task<List<GPPanchayatWards>> GetPanchListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId)
         {
-            var getPsZone = await _context.GPPanchayatWards.Where(d => d.StateMasterId == stateMasterId
+            return await _context.GPPanchayatWards.Where(d => d.StateMasterId == stateMasterId
             && d.DistrictMasterId == districtMasterId
             && d.AssemblyMasterId == assemblyMasterId
             && d.FourthLevelHMasterId == FourthLevelHMasterId
@@ -17759,26 +17695,12 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 .Include(d => d.DistrictMaster)
                 .Include(d => d.AssemblyMaster)
                 .Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).ToListAsync();
-            if (getPsZone != null)
-            {
-                return getPsZone;
-            }
-            else
-            {
-                return null;
-            }
+
         }
         public async Task<List<GPPanchayatWards>> GetGPPanchayatWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId)
         {
-            var getPsZone = await _context.GPPanchayatWards.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.FourthLevelHMasterId == FourthLevelHMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).ToListAsync();
-            if (getPsZone != null)
-            {
-                return getPsZone;
-            }
-            else
-            {
-                return null;
-            }
+            return await _context.GPPanchayatWards.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.FourthLevelHMasterId == FourthLevelHMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).ToListAsync();
+
         }
         public async Task<Response> UpdateGPPanchayatWards(GPPanchayatWards gpPanchayatWards)
         {
@@ -17845,12 +17767,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 }
                 catch (Exception ex)
                 {
-                    // Handle any errors that may have occurred
-                    return new Response
-                    {
-                        Status = RequestStatusEnum.BadRequest,
-                        Message = $"An error occurred: {ex.Message}"
-                    };
+                    return null;
                 }
             }
             return new Response
@@ -17908,11 +17825,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
             catch (Exception ex)
             {
-                return new Response
-                {
-                    Status = RequestStatusEnum.BadRequest,
-                    Message = $"An error occurred: {ex.Message}"
-                };
+                return null;
             }
         }
 
@@ -18376,12 +18289,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
             catch (Exception ex)
             {
-                // Handle any errors that may have occurred
-                return new Response
-                {
-                    Status = RequestStatusEnum.BadRequest,
-                    Message = $"An error occurred: {ex.Message}"
-                };
+                return null;
             }
         }
         public async Task<ResultDeclaration> GetResultDeclarationById(int resultDeclarationMasterId)

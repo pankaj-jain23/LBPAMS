@@ -172,7 +172,7 @@ namespace EAMS.Controllers
                 var mappedData = _mapper.Map<List<StateMasterViewModel>>(stateList);
 
                 // Optionally set data in cache
-                await _cacheService.SetDataAsync("GetState", mappedData, DateTimeOffset.Now.AddSeconds(20)); // Example expiration
+                // await _cacheService.SetDataAsync("GetState", mappedData, DateTimeOffset.Now.AddSeconds(20)); // Example expiration
 
                 var data = new
                 {
@@ -766,7 +766,7 @@ namespace EAMS.Controllers
             {
                 AssignedCount = mappedData.Count,
                 UnAssignedCount = unAssignedMappedData.Count,
-                Assigned = mappedData.OrderBy(p => Int32.Parse(p.BoothCode_No)),
+                Assigned = mappedData,
                 Unassigned = unAssignedMappedData
             };
             return Ok(data);
@@ -782,7 +782,7 @@ namespace EAMS.Controllers
             var data = new
             {
                 count = mappedData.Count,
-                data = mappedData.OrderBy(p => Int32.Parse(p.BoothCode_No)),
+                data = mappedData,
             };
             return Ok(data);
         }
@@ -804,7 +804,7 @@ namespace EAMS.Controllers
             var data = new
             {
                 Count = mappedData.Count,
-                Data = mappedData.OrderBy(p => Int32.Parse(p.BoothCode_No)),
+                Data = mappedData,
             };
             return Ok(data);
         }
@@ -826,7 +826,7 @@ namespace EAMS.Controllers
             var data = new
             {
                 count = mappedData.Count,
-                data = mappedData.OrderBy(p => Int32.Parse(p.BoothCode_No)),
+                data = mappedData,
             };
             return Ok(data);
         }
@@ -848,7 +848,7 @@ namespace EAMS.Controllers
             var data = new
             {
                 count = mappedData.Count,
-                data = mappedData.OrderBy(p => Int32.Parse(p.BoothCode_No)),
+                data = mappedData,
             };
             return Ok(data);
         }
@@ -869,8 +869,7 @@ namespace EAMS.Controllers
             var data = new
             {
                 count = mappedData.Count,
-                data = mappedData.OrderBy(p =>
-                 string.IsNullOrEmpty(p.BoothCode_No) ? int.MaxValue : Int32.Parse(p.BoothCode_No)),
+                data = mappedData,
             };
             return Ok(data);
         }
@@ -2491,10 +2490,10 @@ namespace EAMS.Controllers
                 return BadRequest("Invalid model state.");
             }
 
-          
+
 
             // Map view model to entity
-            var mappedData = _mapper.Map<UpdateEventActivity>(updateEventActivityViewModel); 
+            var mappedData = _mapper.Map<UpdateEventActivity>(updateEventActivityViewModel);
             mappedData.StateMasterId = stateMasterId;
             mappedData.DistrictMasterId = districtMasterId;
             mappedData.AssemblyMasterId = assemblyMasterId;
