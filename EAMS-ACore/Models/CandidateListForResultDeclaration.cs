@@ -36,5 +36,10 @@ namespace EAMS_ACore.Models
         public bool IsDraw { get; set; }//For Draw Candidates
         public bool IsDrawLottery { get; set; }//Choosen  of candidate by blindfolded  box
         public bool IsReCounting { get; set; } // ReCounting in case of draw candidates
+        public string Message
+        {
+            get;
+            set;
+        }
     }
 }

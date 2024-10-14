@@ -2895,45 +2895,6 @@ namespace EAMS.Controllers
             }
         }
 
-        //[HttpGet]
-        //[Route("GetPCWiseEventListById")]
-        //[Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,PC")]
-        //public async Task<IActionResult> EventListPCWiseById(string? stateId)
-        //{
-        //    string stateMasterId;
-        //    var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId").Value;
-        //    var stateMasterIdC = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId").Value;
-        //    if (stateId != null)
-        //    {
-        //        stateMasterId = stateId;
-        //    }
-        //    else
-        //    {
-        //        stateMasterId = stateMasterIdC.ToString();
-        //    }
-        //    var eventPCWiseList = await _EAMSService.GetEventListPCWiseById(stateMasterId, userId);
-        //    if (eventPCWiseList is not null)
-        //        return Ok(eventPCWiseList);
-        //    else
-        //        return NotFound();
-        //}
-
-        //[HttpGet]
-        //[Route("GetAssemblyWiseEventListById")]
-        //[Authorize(Roles = "SuperAdmin,StateAdmin,DistrictAdmin")]
-        //public async Task<IActionResult> EventListAssemblyWiseById(int? districtMasterId)
-        //{
-        //    var stateMasterId = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
-        //    if (string.IsNullOrEmpty(stateMasterId))
-        //    {
-        //        return BadRequest("StateMasterId is required.");
-        //    }
-        //    var eventAssemblyList = await _EAMSService.GetEventListAssemblyWiseById(Convert.ToInt32(stateMasterId), districtMasterId);
-        //    if (eventAssemblyList is not null)
-        //        return Ok(eventAssemblyList);
-        //    else
-        //        return NotFound();
-        //}
         [HttpGet]
         [Route("GetAssemblyWiseEventListById")]
         [Authorize(Roles = "SuperAdmin,StateAdmin,DistrictAdmin")]
@@ -3008,7 +2969,7 @@ namespace EAMS.Controllers
 
         [HttpGet]
         [Route("GetEventListFourthLevelHWiseById")]
-        [Authorize(Roles = "SuperAdmin,StateAdmin,DistrictAdmin")]
+        [Authorize(Roles = "SuperAdmin,StateAdmin,DistrictAdmin,LocalBodiesAdmin")]
         public async Task<IActionResult> EventListFourthLevelHWiseById(int? districtMasterId, int? assemblyMasterId)
         {
             var stateMasterId = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
@@ -3054,7 +3015,7 @@ namespace EAMS.Controllers
         /// 
         [HttpGet]
         [Route("GetPendingEventListFourthLevelHWiseById")]
-        [Authorize(Roles = "SuperAdmin,StateAdmin,DistrictAdmin")]
+        [Authorize(Roles = "SuperAdmin,StateAdmin,DistrictAdmin,LocalBodiesAdmin")]
         public async Task<IActionResult> EventPendingListFourthLevelHWiseById(int? districtMasterId, int? assemblyMasterId)
         {
             var stateMasterId = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;

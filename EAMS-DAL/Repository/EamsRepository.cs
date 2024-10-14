@@ -8068,7 +8068,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         {
             var result = await (from election in _context.ElectionInfoMaster
                                 join district in _context.DistrictMaster on election.DistrictMasterId equals district.DistrictMasterId
-                                where election.StateMasterId == stateMasterId
+                                where election.StateMasterId == stateMasterId &&
+                                      district.DistrictStatus == true
                                 group election by new
                                 {
                                     district.DistrictMasterId,
@@ -8103,90 +8104,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             return result;
         }
         ///This API fetches the district-wise event list for Pending events.
-
-        //public async Task<List<EventActivityCount>> GetPendingEventListDistrictWiseById(int stateMasterId)
-        //{
-        //    // Get grouped event counts by district
-        //    var result = await (from district in _context.DistrictMaster
-        //                        join election in _context.ElectionInfoMaster
-        //                             on district.DistrictMasterId equals election.DistrictMasterId into electionGroup
-        //                        from election in electionGroup.DefaultIfEmpty()
-        //                        where district.StateMasterId == stateMasterId
-        //                        && election == null  // Exclude districts where ElectionInfoMaster data exists
-        //                        group election by new
-        //                        {
-        //                            district.DistrictMasterId,
-        //                            district.DistrictCode,
-        //                            district.DistrictName
-        //                        } into g
-        //                        select new EventActivityCount
-        //                        {
-        //                            Key = stateMasterId + g.Key.DistrictMasterId + g.Key.DistrictName,
-        //                            MasterId = g.Key.DistrictMasterId,
-        //                            Name = g.Key.DistrictName,
-        //                            Type = "District",
-        //                            PartyDispatch = g.Sum(x => x != null && x.IsPartyDispatched ? 0 : 1).ToString(),
-        //                            PartyArrived = g.Sum(x => x != null && x.IsPartyReached ? 0 : 1).ToString(),
-        //                            SetupPollingStation = g.Sum(x => x != null && x.IsSetupOfPolling ? 0 : 1).ToString(),
-        //                            MockPollDone = g.Sum(x => x != null && x.IsMockPollDone ? 0 : 1).ToString(),
-        //                            PollStarted = g.Sum(x => x != null && x.IsPollStarted ? 0 : 1).ToString(),
-        //                            PollEnded = g.Sum(x => x != null && x.IsPollEnded ? 0 : 1).ToString(),
-        //                            MCEVMOff = g.Sum(x => x != null && x.IsMCESwitchOff ? 0 : 1).ToString(),
-        //                            PartyDeparted = g.Sum(x => x != null && x.IsPartyDeparted ? 0 : 1).ToString(),
-        //                            EVMDeposited = g.Sum(x => x != null && x.IsEVMDeposited ? 0 : 1).ToString(),
-        //                            PartyReachedAtCollection = g.Sum(x => x != null && x.IsPartyReachedCollectionCenter ? 0 : 1).ToString(),
-        //                            QueueValue = g.Sum(x => x != null && x.IsVoterInQueue ? 0 : 1).ToString(),
-        //                            FinalVotesValue = g.Sum(x => x != null && x.IsFinalVote ? 0 : 1).ToString(),
-        //                            VoterTurnOutValue = g.Sum(x => x != null && x.IsVoterTurnOut ? 0 : 1).ToString(),
-        //                            TotalSo = g.Sum(x => x.NoOfPollingAgents ?? 0), // Sum of NoOfPollingAgents
-        //                            Children = new List<object>() // Placeholder for children if needed
-        //                        }).OrderBy(d => d.Name).ToListAsync();
-        //    return result;
-        //}
-
-        //public async Task<List<EventActivityCount>> GetPendingEventListDistrictWiseById(int stateMasterId)
-        //{
-        //    // Get grouped event counts by district, including total booths from BoothMaster
-        //    var result = await (from district in _context.DistrictMaster
-        //                        join booth in _context.BoothMaster
-        //                            on district.DistrictMasterId equals booth.DistrictMasterId
-        //                        join election in _context.ElectionInfoMaster
-        //                             on booth.BoothMasterId equals election.BoothMasterId into electionGroup
-        //                        from election in electionGroup.DefaultIfEmpty() // Left join to include booths without election info
-        //                        where district.StateMasterId == stateMasterId
-        //                              && election == null  // Exclude booths where ElectionInfoMaster data exists
-        //                        group new { booth, election } by new
-        //                        {
-        //                            district.DistrictMasterId,
-        //                            district.DistrictCode,
-        //                            district.DistrictName
-        //                        } into g
-        //                        select new EventActivityCount
-        //                        {
-        //                            Key = stateMasterId + g.Key.DistrictMasterId + g.Key.DistrictName,
-        //                            MasterId = g.Key.DistrictMasterId,
-        //                            Name = g.Key.DistrictName,
-        //                            Type = "District",
-        //                            PartyDispatch = g.Sum(x => x.election != null && x.election.IsPartyDispatched ? 0 : 1).ToString(),
-        //                            PartyArrived = g.Sum(x => x.election != null && x.election.IsPartyReached ? 0 : 1).ToString(),
-        //                            SetupPollingStation = g.Sum(x => x.election != null && x.election.IsSetupOfPolling ? 0 : 1).ToString(),
-        //                            MockPollDone = g.Sum(x => x.election != null && x.election.IsMockPollDone ? 0 : 1).ToString(),
-        //                            PollStarted = g.Sum(x => x.election != null && x.election.IsPollStarted ? 0 : 1).ToString(),
-        //                            PollEnded = g.Sum(x => x.election != null && x.election.IsPollEnded ? 0 : 1).ToString(),
-        //                            MCEVMOff = g.Sum(x => x.election != null && x.election.IsMCESwitchOff ? 0 : 1).ToString(),
-        //                            PartyDeparted = g.Sum(x => x.election != null && x.election.IsPartyDeparted ? 0 : 1).ToString(),
-        //                            EVMDeposited = g.Sum(x => x.election != null && x.election.IsEVMDeposited ? 0 : 1).ToString(),
-        //                            PartyReachedAtCollection = g.Sum(x => x.election != null && x.election.IsPartyReachedCollectionCenter ? 0 : 1).ToString(),
-        //                            QueueValue = g.Sum(x => x.election != null && x.election.IsVoterInQueue ? 0 : 1).ToString(),
-        //                            FinalVotesValue = g.Sum(x => x.election != null && x.election.IsFinalVote ? 0 : 1).ToString(),
-        //                            VoterTurnOutValue = g.Sum(x => x.election != null && x.election.IsVoterTurnOut ? 0 : 1).ToString(),
-        //                            TotalSo = g.Sum(x => x.election != null ? x.election.NoOfPollingAgents ?? 0 : 0), // Sum of NoOfPollingAgents
-        //                            //TotalBooth = g.Count(x => x.booth != null), // Count of total booths
-        //                            Children = new List<object>() // Placeholder for children if needed
-        //                        }).OrderBy(d => d.Name).ToListAsync();
-
-        //    return result;
-        //}
 
         public async Task<List<EventActivityCount>> GetPendingEventListDistrictWiseById(int stateMasterId)
         {
@@ -8252,7 +8169,9 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         {
             var result = await (from election in _context.ElectionInfoMaster
                                 join assembly in _context.AssemblyMaster on election.AssemblyMasterId equals assembly.AssemblyMasterId
-                                where election.StateMasterId == stateMasterId && election.DistrictMasterId == districtMasterId
+                                where election.StateMasterId == stateMasterId &&
+                                election.DistrictMasterId == districtMasterId &&
+                                assembly.AssemblyStatus == true
                                 group election by new
                                 {
                                     assembly.AssemblyMasterId,
@@ -8353,56 +8272,15 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                 }).OrderBy(d => d.Name).ToListAsync();
             return result;
         }
-        //public async Task<List<AssemblyEventActivityCount>> GetPendingAssemblyWiseEventListById(int stateMasterId, int? districtMasterId)
-        //{
-        //    var result = await (from assembly in _context.AssemblyMaster
-        //                        join election in _context.ElectionInfoMaster
-        //                            on assembly.DistrictMasterId equals election.DistrictMasterId into electionGroup
-        //                        from election in electionGroup.DefaultIfEmpty() // Left join to include assemblies without election records
-        //                        where assembly.StateMasterId == stateMasterId
-        //                              && assembly.DistrictMasterId == districtMasterId
-        //                              && election == null // Exclude assemblies where ElectionInfoMaster data exists
-        //                        group election by new
-        //                        {
-        //                            assembly.AssemblyMasterId,
-        //                            assembly.AssemblyCode,
-        //                            assembly.AssemblyName
-        //                        } into g
-        //                        select new AssemblyEventActivityCount
-        //                        {
-        //                            Key = $"{stateMasterId}{districtMasterId}{g.Key.AssemblyMasterId}{g.Key.AssemblyName}", // Generate unique key
-        //                            MasterId = g.Key.AssemblyMasterId,
-        //                            StateMasterId = stateMasterId, // Added this back to capture StateMasterId
-        //                            DistrictMasterId = districtMasterId, // Capture DistrictMasterId
-        //                            Name = g.Key.AssemblyName,
-        //                            Type = "Assembly",
-        //                            AssemblyCode = g.Key.AssemblyCode,
-        //                            PartyDispatch = g.Sum(x => x != null && x.IsPartyDispatched ? 1 : 0).ToString(),
-        //                            PartyArrived = g.Sum(x => x != null && x.IsPartyReached ? 1 : 0).ToString(),
-        //                            SetupPollingStation = g.Sum(x => x != null && x.IsSetupOfPolling ? 1 : 0).ToString(),
-        //                            MockPollDone = g.Sum(x => x != null && x.IsMockPollDone ? 1 : 0).ToString(),
-        //                            PollStarted = g.Sum(x => x != null && x.IsPollStarted ? 1 : 0).ToString(),
-        //                            PollEnded = g.Sum(x => x != null && x.IsPollEnded ? 1 : 0).ToString(),
-        //                            MCEVMOff = g.Sum(x => x != null && x.IsMCESwitchOff ? 1 : 0).ToString(),
-        //                            PartyDeparted = g.Sum(x => x != null && x.IsPartyDeparted ? 1 : 0).ToString(),
-        //                            EVMDeposited = g.Sum(x => x != null && x.IsEVMDeposited ? 1 : 0).ToString(),
-        //                            PartyReachedAtCollection = g.Sum(x => x != null && x.IsPartyReachedCollectionCenter ? 1 : 0).ToString(),
-        //                            QueueValue = g.Sum(x => x != null && x.IsVoterInQueue ? 1 : 0).ToString(),
-        //                            FinalVotesValue = g.Sum(x => x != null && x.IsFinalVote ? 1 : 0).ToString(),
-        //                            VoterTurnOutValue = g.Sum(x => x != null && x.IsVoterTurnOut ? 1 : 0).ToString(),
-        //                            TotalSo = g.Sum(x => x.NoOfPollingAgents ?? 0), // Sum of NoOfPollingAgents
-        //                            Children = new List<object>() // Placeholder for children if needed
-        //                        }).OrderBy(d => d.Name).ToListAsync();
-
-        //    return result;
-        //}
-
 
         public async Task<List<FourthLevelEventActivityCount>> GetEventListFourthLevelHWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId)
         {
             var result = await (from election in _context.ElectionInfoMaster
                                 join fourthLevel in _context.FourthLevelH on election.FourthLevelMasterId equals fourthLevel.FourthLevelHMasterId
-                                where election.StateMasterId == stateMasterId && election.DistrictMasterId == districtMasterId && election.AssemblyMasterId == assemblyMasterId
+                                where election.StateMasterId == stateMasterId &&
+                                election.DistrictMasterId == districtMasterId &&
+                                election.AssemblyMasterId == assemblyMasterId &&
+                                fourthLevel.HierarchyStatus == true
                                 group election by new
                                 {
                                     fourthLevel.FourthLevelHMasterId,
@@ -8508,51 +8386,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                 }).OrderBy(d => d.Name).ToListAsync();
             return result;
         }
-        //public async Task<List<FourthLevelEventActivityCount>> GetPendingEventListFourthLevelHWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId)
-        //{
-        //    var result = await (from fourthLevel in _context.FourthLevelH
-        //                        join election in _context.ElectionInfoMaster
-        //                            on fourthLevel.AssemblyMasterId equals election.AssemblyMasterId into electionGroup
-        //                        from election in electionGroup.DefaultIfEmpty() // Left join to include FourthLevelH without election records
-        //                        where fourthLevel.StateMasterId == stateMasterId
-        //                              && fourthLevel.DistrictMasterId == districtMasterId
-        //                              && fourthLevel.AssemblyMasterId == assemblyMasterId
-        //                              && election == null // Exclude FourthLevelH where ElectionInfoMaster data exists
-        //                        group election by new
-        //                        {
-        //                            fourthLevel.FourthLevelHMasterId,
-        //                            fourthLevel.HierarchyCode,
-        //                            fourthLevel.HierarchyName
-        //                        } into g
-        //                        select new FourthLevelEventActivityCount // Ensure correct class type is used here
-        //                        {
-        //                            Key = $"{stateMasterId}{districtMasterId}{assemblyMasterId}{g.Key.FourthLevelHMasterId}{g.Key.HierarchyName}", // Generate unique key
-        //                            MasterId = g.Key.FourthLevelHMasterId,
-        //                            StateMasterId = stateMasterId, // Capture StateMasterId
-        //                            DistrictMasterId = districtMasterId, // Capture DistrictMasterId
-        //                            Name = g.Key.HierarchyName,
-        //                            Type = "FourthLevel",
-        //                            PartyDispatch = g.Sum(x => x != null && x.IsPartyDispatched ? 1 : 0).ToString(),
-        //                            PartyArrived = g.Sum(x => x != null && x.IsPartyReached ? 1 : 0).ToString(),
-        //                            SetupPollingStation = g.Sum(x => x != null && x.IsSetupOfPolling ? 1 : 0).ToString(),
-        //                            MockPollDone = g.Sum(x => x != null && x.IsMockPollDone ? 1 : 0).ToString(),
-        //                            PollStarted = g.Sum(x => x != null && x.IsPollStarted ? 1 : 0).ToString(),
-        //                            PollEnded = g.Sum(x => x != null && x.IsPollEnded ? 1 : 0).ToString(),
-        //                            MCEVMOff = g.Sum(x => x != null && x.IsMCESwitchOff ? 1 : 0).ToString(),
-        //                            PartyDeparted = g.Sum(x => x != null && x.IsPartyDeparted ? 1 : 0).ToString(),
-        //                            EVMDeposited = g.Sum(x => x != null && x.IsEVMDeposited ? 1 : 0).ToString(),
-        //                            PartyReachedAtCollection = g.Sum(x => x != null && x.IsPartyReachedCollectionCenter ? 1 : 0).ToString(),
-        //                            QueueValue = g.Sum(x => x != null && x.IsVoterInQueue ? 1 : 0).ToString(),
-        //                            FinalVotesValue = g.Sum(x => x != null && x.IsFinalVote ? 1 : 0).ToString(),
-        //                            VoterTurnOutValue = g.Sum(x => x != null && x.IsVoterTurnOut ? 1 : 0).ToString(),
-        //                            TotalSo = g.Sum(x => x.NoOfPollingAgents ?? 0), // Sum of NoOfPollingAgents, safely handling null
-        //                            Children = new List<object>() // Placeholder for children if needed
-        //                        }).OrderBy(d => d.Name).ToListAsync();
-
-        //    return result;
-        //}
-
-
         public async Task<List<EventActivityBoothWise>> GetEventListBoothWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelHMasterId)
         {
             var result = await (from election in _context.ElectionInfoMaster
@@ -16964,49 +16797,49 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             var baseUrl = "https://lbpams.punjab.gov.in/LBPAMSDOC/";
 
             // Base query
-            var kycList =await( from k in _context.Kyc
-                          join state in _context.StateMaster on k.StateMasterId equals state.StateMasterId
-                          join district in _context.DistrictMaster on k.DistrictMasterId equals district.DistrictMasterId into districts
-                          from d in districts.DefaultIfEmpty()
-                          join assembly in _context.AssemblyMaster on k.AssemblyMasterId equals assembly.AssemblyMasterId into assemblies
-                          from a in assemblies.DefaultIfEmpty()
-                          join fourthLevel in _context.FourthLevelH on k.FourthLevelHMasterId equals fourthLevel.FourthLevelHMasterId into fourthLevels
-                          from fl in fourthLevels.DefaultIfEmpty()
-                          join psZone in _context.PSZonePanchayat on k.PSZonePanchayatMasterId equals psZone.PSZonePanchayatMasterId into psZones
-                          from pz in psZones.DefaultIfEmpty()
-                          join gpWard in _context.GPPanchayatWards on k.GPPanchayatWardsMasterId equals gpWard.GPPanchayatWardsMasterId into gpWards
-                          from gw in gpWards.DefaultIfEmpty()
-                          where
-                                k.StateMasterId == stateMasterId &&
-                                k.DistrictMasterId == districtMasterId &&
-                                k.AssemblyMasterId == assemblyMasterId &&
-                                k.FourthLevelHMasterId == fourthLevelMasterId
-                                && (!wardMasterId.HasValue || k.GPPanchayatWardsMasterId == wardMasterId.Value)
+            var kycList = await (from k in _context.Kyc
+                                 join state in _context.StateMaster on k.StateMasterId equals state.StateMasterId
+                                 join district in _context.DistrictMaster on k.DistrictMasterId equals district.DistrictMasterId into districts
+                                 from d in districts.DefaultIfEmpty()
+                                 join assembly in _context.AssemblyMaster on k.AssemblyMasterId equals assembly.AssemblyMasterId into assemblies
+                                 from a in assemblies.DefaultIfEmpty()
+                                 join fourthLevel in _context.FourthLevelH on k.FourthLevelHMasterId equals fourthLevel.FourthLevelHMasterId into fourthLevels
+                                 from fl in fourthLevels.DefaultIfEmpty()
+                                 join psZone in _context.PSZonePanchayat on k.PSZonePanchayatMasterId equals psZone.PSZonePanchayatMasterId into psZones
+                                 from pz in psZones.DefaultIfEmpty()
+                                 join gpWard in _context.GPPanchayatWards on k.GPPanchayatWardsMasterId equals gpWard.GPPanchayatWardsMasterId into gpWards
+                                 from gw in gpWards.DefaultIfEmpty()
+                                 where
+                                       k.StateMasterId == stateMasterId &&
+                                       k.DistrictMasterId == districtMasterId &&
+                                       k.AssemblyMasterId == assemblyMasterId &&
+                                       k.FourthLevelHMasterId == fourthLevelMasterId
+                                       && (!wardMasterId.HasValue || k.GPPanchayatWardsMasterId == wardMasterId.Value)
 
-                          select new KycList
-                          {
-                              KycMasterId = k.KycMasterId,
-                              StateName = state.StateName,
-                              StateMasterId = k.StateMasterId,
-                              DistrictName = d.DistrictName,
-                              DistrictMasterId = k.DistrictMasterId,
-                              AssemblyName = a.AssemblyName,
-                              AssemblyMasterId = k.AssemblyMasterId,
-                              FourthLevelHName = fl.HierarchyName,
-                              HierarchyType = fl.HierarchyType,
-                              FourthLevelHMasterId = k.FourthLevelHMasterId,
-                              GPPanchayatWardsName = gw.GPPanchayatWardsName,
-                              GPPanchayatWardsCategory = gw.GPPanchayatWardsCategory,
-                              GPPanchayatWardsMasterId = k.GPPanchayatWardsMasterId,
-                              CandidateType = k.GPPanchayatWardsMasterId == 0 ? "Sarpanch" : "Panch",
-                              CandidateName = k.CandidateName,
-                              FatherName = k.FatherName,
-                              IsUnOppossed = k.IsUnOppossed,
-                              Age = k.Age,
-                              NominationPdfPath = $"{baseUrl}{k.NominationPdfPath}",
-                          }).ToListAsync();
+                                 select new KycList
+                                 {
+                                     KycMasterId = k.KycMasterId,
+                                     StateName = state.StateName,
+                                     StateMasterId = k.StateMasterId,
+                                     DistrictName = d.DistrictName,
+                                     DistrictMasterId = k.DistrictMasterId,
+                                     AssemblyName = a.AssemblyName,
+                                     AssemblyMasterId = k.AssemblyMasterId,
+                                     FourthLevelHName = fl.HierarchyName,
+                                     HierarchyType = fl.HierarchyType,
+                                     FourthLevelHMasterId = k.FourthLevelHMasterId,
+                                     GPPanchayatWardsName = gw.GPPanchayatWardsName,
+                                     GPPanchayatWardsCategory = gw.GPPanchayatWardsCategory,
+                                     GPPanchayatWardsMasterId = k.GPPanchayatWardsMasterId,
+                                     CandidateType = k.GPPanchayatWardsMasterId == 0 ? "Sarpanch" : "Panch",
+                                     CandidateName = k.CandidateName,
+                                     FatherName = k.FatherName,
+                                     IsUnOppossed = k.IsUnOppossed,
+                                     Age = k.Age,
+                                     NominationPdfPath = $"{baseUrl}{k.NominationPdfPath}",
+                                 }).ToListAsync();
 
-            return   kycList;
+            return kycList;
         }
 
         public async Task<KycList> GetKycById(int kycMasterId)
@@ -18575,18 +18408,92 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 return new ServiceResponse { IsSucceed = true, Message = "Record Deleted successfully" };
             }
         }
+        //public async Task<List<CandidateListForResultDeclaration>> GetPanchListById(
+        // int stateMasterId,
+        // int districtMasterId,
+        // int electionTypeMasterId,
+        // int assemblyMasterId,
+        // int fourthLevelHMasterId,
+        // int gPPanchayatWardsMasterId)
+        //{
+        //    // Query Kyc Table with join on ResultDeclaration
+        //    var candidatesWithResults = await (from k in _context.Kyc
+        //                                       join gpPanchayatWards in _context.GPPanchayatWards
+        //                               on k.GPPanchayatWardsMasterId equals gpPanchayatWards.GPPanchayatWardsMasterId
+        //                                       join r in _context.ResultDeclaration on k.KycMasterId equals r.KycMasterId into results
+        //                                       from result in results.DefaultIfEmpty() // Left join
+        //                                       where k.StateMasterId == stateMasterId &&
+        //                                             k.DistrictMasterId == districtMasterId &&
+        //                                             k.ElectionTypeMasterId == electionTypeMasterId &&
+        //                                             k.AssemblyMasterId == assemblyMasterId &&
+        //                                             k.FourthLevelHMasterId == fourthLevelHMasterId &&
+        //                                             k.GPPanchayatWardsMasterId == gPPanchayatWardsMasterId
+        //                                       select new
+        //                                       {
+        //                                           kycCandidate = k,
+        //                                           result, // this will be null if there's no match
+        //                                           gpPanchayatWards
+        //                                       }).ToListAsync();
+
+        //    // Project the results into the desired format, handling nulls
+        //    var candidateList = candidatesWithResults.Select(c => new CandidateListForResultDeclaration
+        //    {
+        //        KycMasterId = c.kycCandidate.KycMasterId,
+        //        CandidateName = c.kycCandidate.CandidateName,
+        //        FatherName = c.kycCandidate.FatherName,
+        //        IsUnOppossed = c.kycCandidate.IsUnOppossed,
+        //        IsCC = c.gpPanchayatWards.IsCC,
+        //        IsNN = c.gpPanchayatWards.IsNN,
+        //        IsWinner = c.result?.IsWinner ?? false, // Default to false if result is null
+        //        IsResultDeclared = c.result?.IsResultDeclared ?? false, // Default to false if result is null
+        //        IsDraw = c.result?.IsDraw ?? false, // Default to false if result is null
+        //        IsDrawLottery = c.result?.IsDrawLottery ?? false, // Default to false if result is null
+        //        IsReCounting = c.result?.IsReCounting ?? false // Default to false if result is null
+        //    }).ToList();
+
+        //    return candidateList;
+        //}
+
         public async Task<List<CandidateListForResultDeclaration>> GetPanchListById(
-         int stateMasterId,
-         int districtMasterId,
-         int electionTypeMasterId,
-         int assemblyMasterId,
-         int fourthLevelHMasterId,
-         int gPPanchayatWardsMasterId)
+    int stateMasterId,
+    int districtMasterId,
+    int electionTypeMasterId,
+    int assemblyMasterId,
+    int fourthLevelHMasterId,
+    int gPPanchayatWardsMasterId)
         {
-            // Query Kyc Table with join on ResultDeclaration
+            // Query Kyc Table with join on ResultDeclaration and check poll status in a single query
+            var hasActivePolls = await _context.GPPanchayatWards
+                                    .Where(g => g.GPPanchayatWardsMasterId == gPPanchayatWardsMasterId &&
+                                                g.StateMasterId == stateMasterId &&
+                                                g.DistrictMasterId == districtMasterId &&
+                                                g.AssemblyMasterId == assemblyMasterId &&
+                                                g.GPPanchayatWardsMasterId == gPPanchayatWardsMasterId)
+                                    .Join(_context.BoothMaster,
+                                        gp => gp.FourthLevelHMasterId, // Assuming you join on FourthLevelHMasterId
+                                        b => b.FourthLevelHMasterId,
+                                        (gp, b) => new { GPPanchayatWard = gp, Booth = b })
+                                    .GroupJoin(_context.ElectionInfoMaster,
+                                        gb => gb.Booth.BoothMasterId,
+                                        e => e.BoothMasterId,
+                                        (gb, e) => new { gb.Booth, ElectionRecords = e })
+                                    .SelectMany(be => be.ElectionRecords.DefaultIfEmpty(), (be, e) => new { be.Booth, Election = e })
+                                    .ToListAsync();
+
+            // Determine if there are any active polls or no election records
+            bool hasPollActive = hasActivePolls.Any(x => x.Election != null && !x.Election.IsPollEnded);
+            bool hasNoRecords = !hasActivePolls.Any(x => x.Election != null);
+
+            // If poll hasn't ended for all booths, return an error message
+            if (hasPollActive || hasNoRecords)
+            {
+                return new List<CandidateListForResultDeclaration> { new() { Message = "You can't declare the result until poll end activity is done for all assigned booths." } };
+            }
+
+
             var candidatesWithResults = await (from k in _context.Kyc
-                                               join gpPanchayatWards in _context.GPPanchayatWards
-                                       on k.GPPanchayatWardsMasterId equals gpPanchayatWards.GPPanchayatWardsMasterId
+                                               join fourthLevelH in _context.FourthLevelH
+                                       on k.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
                                                join r in _context.ResultDeclaration on k.KycMasterId equals r.KycMasterId into results
                                                from result in results.DefaultIfEmpty() // Left join
                                                where k.StateMasterId == stateMasterId &&
@@ -18599,7 +18506,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                                {
                                                    kycCandidate = k,
                                                    result, // this will be null if there's no match
-                                                   gpPanchayatWards
+                                                   fourthLevelH // Include the FourthLevelH entity to access IsCC and IsNN
                                                }).ToListAsync();
 
             // Project the results into the desired format, handling nulls
@@ -18609,8 +18516,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 CandidateName = c.kycCandidate.CandidateName,
                 FatherName = c.kycCandidate.FatherName,
                 IsUnOppossed = c.kycCandidate.IsUnOppossed,
-                IsCC = c.gpPanchayatWards.IsCC,
-                IsNN = c.gpPanchayatWards.IsNN,
+                IsCC = c.fourthLevelH.IsCC,
+                IsNN = c.fourthLevelH.IsNN,
                 IsWinner = c.result?.IsWinner ?? false, // Default to false if result is null
                 IsResultDeclared = c.result?.IsResultDeclared ?? false, // Default to false if result is null
                 IsDraw = c.result?.IsDraw ?? false, // Default to false if result is null
@@ -18624,6 +18531,35 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         public async Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
+
+            var hasActivePolls = await _context.GPPanchayatWards
+                                     .Where(g => g.FourthLevelHMasterId == fourthLevelHMasterId &&
+                                                 g.StateMasterId == stateMasterId &&
+                                                 g.DistrictMasterId == districtMasterId &&
+                                                 g.AssemblyMasterId == assemblyMasterId &&
+                                                 g.GPPanchayatWardsMasterId == 0)
+                                     .Join(_context.BoothMaster,
+                                         gp => gp.FourthLevelHMasterId, // Assuming you join on FourthLevelHMasterId
+                                         b => b.FourthLevelHMasterId,
+                                         (gp, b) => new { GPPanchayatWard = gp, Booth = b })
+                                     .GroupJoin(_context.ElectionInfoMaster,
+                                         gb => gb.Booth.BoothMasterId,
+                                         e => e.BoothMasterId,
+                                         (gb, e) => new { gb.Booth, ElectionRecords = e })
+                                     .SelectMany(be => be.ElectionRecords.DefaultIfEmpty(), (be, e) => new { be.Booth, Election = e })
+                                     .ToListAsync();
+
+            // Determine if there are any active polls or no election records
+            //bool hasPollActive = hasActivePolls.Any(x => x.Election != null && !x.Election.IsPollEnded);
+            //bool hasNoRecords = !hasActivePolls.Any(x => x.Election != null);
+
+            // If poll hasn't ended for all booths, return an error message
+            if (hasActivePolls.Any(x => x.Election != null && !x.Election.IsPollEnded) ||
+                !hasActivePolls.Any(e => e != null))
+            {
+                return new List<CandidateListForResultDeclaration> { new() { Message = "You can't declare the result until poll end activity is done for all assigned booths." } };
+            }
+
             var candidatesWithResults = await (from k in _context.Kyc
                                                join fourthLevelH in _context.FourthLevelH
                                        on k.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
@@ -18660,6 +18596,47 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return candidateList;
         }
+        //public async Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        //{
+        //    // Get the candidates and check the poll status in a single query
+        //    var candidatesWithResults = await (from k in _context.Kyc
+        //                                       join fourthLevelH in _context.FourthLevelH on k.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
+        //                                       join r in _context.ResultDeclaration on k.KycMasterId equals r.KycMasterId into results
+        //                                       from result in results.DefaultIfEmpty() // Left join
+        //                                       where k.StateMasterId == stateMasterId &&
+        //                                             k.DistrictMasterId == districtMasterId &&
+        //                                             k.ElectionTypeMasterId == electionTypeMasterId &&
+        //                                             k.AssemblyMasterId == assemblyMasterId &&
+        //                                             k.FourthLevelHMasterId == fourthLevelHMasterId &&
+        //                                             k.GPPanchayatWardsMasterId == 0
+        //                                       let pollEndedForAllBooths = _context.ElectionInfoMaster
+        //                                           .Where(e => e.StateMasterId == stateMasterId &&
+        //                                                       e.DistrictMasterId == districtMasterId &&
+        //                                                       e.ElectionTypeMasterId == electionTypeMasterId &&
+        //                                                       e.AssemblyMasterId == assemblyMasterId &&
+        //                                                       e.FourthLevelMasterId == fourthLevelHMasterId &&
+        //                                                       e.EventStatus == true)
+        //                                           .All(e => e.IsPollEnded)
+        //                                       select new CandidateListForResultDeclaration
+        //                                       {
+        //                                           KycMasterId = k.KycMasterId,
+        //                                           CandidateName = k.CandidateName,
+        //                                           FatherName = k.FatherName,
+        //                                           IsUnOppossed = k.IsUnOppossed,
+        //                                           IsCC = fourthLevelH.IsCC,
+        //                                           IsNN = fourthLevelH.IsNN,
+        //                                           IsWinner = result == null ? false : result.IsWinner, // Handle null check without coalescing
+        //                                           IsResultDeclared = result == null ? false : result.IsResultDeclared, // Handle null check without coalescing
+        //                                           IsDraw = result == null ? false : result.IsDraw, // Handle null check without coalescing
+        //                                           IsDrawLottery = result == null ? false : result.IsDrawLottery, // Handle null check without coalescing
+        //                                           IsReCounting = result == null ? false : result.IsReCounting, // Handle null check without coalescing
+        //                                           Message = pollEndedForAllBooths ? null : "You can't declare the result until poll end activity is done for all assigned booths."
+        //                                       }).ToListAsync();
+
+        //    // Filter out candidates with the error message if poll hasn't ended
+        //    return candidatesWithResults.Where(c => c.Message == null).ToList();
+        //}
+
         public async Task<List<ResultDeclarationList>> GetResultDeclarationsByElectionType(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId)
         {
             // Define base query for ResultDeclaration

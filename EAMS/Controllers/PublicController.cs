@@ -740,12 +740,12 @@ namespace EAMS.Controllers
             int fieldOfficerMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("FieldOfficerMasterId"));
 
             // Check if all assigned booths have polls ended
-            var pollCheckResponse = await _eamsService.CheckIfAllBoothsPollEnded(fieldOfficerMasterId);
+            //var pollCheckResponse = await _eamsService.CheckIfAllBoothsPollEnded(fieldOfficerMasterId);
 
-            if (!pollCheckResponse.IsSucceed)
-            {
-                return BadRequest(pollCheckResponse.Message);
-            }
+            //if (!pollCheckResponse.IsSucceed)
+            //{
+            //    return BadRequest(pollCheckResponse.Message);
+            //}
             // Map ViewModel to Entity
             var mappedData = _mapper.Map<List<ResultDeclaration>>(resultDeclarationViewModel.resultDeclarationLists);
 
@@ -785,6 +785,12 @@ namespace EAMS.Controllers
             int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
             var result = await _eamsService.GetSarpanchListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId);
 
+            // Check for a message indicating the poll has not ended
+            if (result.Any() && !string.IsNullOrEmpty(result.First().Message))
+            {
+                return BadRequest(result.First().Message); // Return the error message if the poll has not ended
+            }
+
             if (result.Count != 0 || result != null)
             {
                 var data = new
@@ -814,6 +820,12 @@ namespace EAMS.Controllers
             int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
 
             var result = await _eamsService.GetPanchListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId, gPPanchayatWardsMasterId);
+
+            // Check for a message indicating the poll has not ended
+            if (result.Any() && !string.IsNullOrEmpty(result.First().Message))
+            {
+                return BadRequest(result.First().Message); // Return the error message if the poll has not ended
+            }
 
             if (result.Count != 0 || result != null)
             {
