@@ -12,6 +12,8 @@ namespace EAMS_ACore.Models.EventActivityModels
         public int DistrictMasterId { get; set; }
         public int AssemblyMasterId { get; set; }
         public int ElectionTypeMasterId { get; set; }
+        public string FieldOfficerMasterId { get; set; }
+        public string AROUserId { get; set; }
         public int BoothMasterId { get; set; }
         public int EventMasterId { get; set; }
         public string EventABBR { get; set; }

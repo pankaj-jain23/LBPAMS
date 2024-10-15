@@ -431,5 +431,9 @@ namespace EAMS_ACore.IRepository
         Task<List<CombinedPanchayatMaster>> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId,  string roId);
         Task<List<CombinedPanchayatMaster>> GetUnassignedPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, string assginedType);
         #endregion
+
+        //Task<List<Disaster>> GetFieldAllOfficerMaster();
+        //Task<List<int>> GetFOAsginedBooth(int foId);
+        //Task<ServiceResponse> PushDisasterEvent(List<ElectionInfoMaster> electionInfoMaster);
     }
 }

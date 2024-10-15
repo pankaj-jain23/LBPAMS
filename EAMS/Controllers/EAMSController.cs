@@ -18,6 +18,7 @@ using LBPAMS.ViewModels.EventActivityViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using System.Security.Claims;
 
 namespace EAMS.Controllers
@@ -2419,6 +2420,9 @@ namespace EAMS.Controllers
             {
                 return BadRequest("Invalid model state.");
             }
+            var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
+            string userId = userClaims.GetValueOrDefault("UserId");
+           
 
             var mappedData = _mapper.Map<UpdateEventActivity>(updateEventActivityViewModel);
             // Set IDs from claims
@@ -2426,7 +2430,7 @@ namespace EAMS.Controllers
             mappedData.DistrictMasterId = districtMasterId;
             mappedData.AssemblyMasterId = assemblyMasterId;
             mappedData.ElectionTypeMasterId = electionTypeMasterId;
-
+            mappedData.AROUserId = userId;
             var result = await _EAMSService.UpdateEventActivity(mappedData);
             if (result.IsSucceed == true)
             {
@@ -2527,12 +2531,12 @@ namespace EAMS.Controllers
             if (!TryGetClaimValue(User, "StateMasterId", out int stateMasterId) ||
                 !TryGetClaimValue(User, "DistrictMasterId", out int districtMasterId) ||
                 !TryGetClaimValue(User, "AssemblyMasterId", out int assemblyMasterId) ||
-                !TryGetClaimValue(User, "ElectionTypeMasterId", out int electionTypeMasterId))
+                !TryGetClaimValue(User, "ElectionTypeMasterId", out int electionTypeMasterId) 
+                || !TryGetClaimValue(User, "FieldOfficerMasterId", out int fieldOfficerMasterId))
             {
                 return BadRequest("Missing or invalid claims.");
             }
-
-            // Map view model to entity
+             
             var mappedData = _mapper.Map<UpdateEventActivity>(updateEventActivityViewModel);
 
             // Set IDs from claims
@@ -2540,7 +2544,7 @@ namespace EAMS.Controllers
             mappedData.DistrictMasterId = districtMasterId;
             mappedData.AssemblyMasterId = assemblyMasterId;
             mappedData.ElectionTypeMasterId = electionTypeMasterId;
-
+            mappedData.FieldOfficerMasterId = fieldOfficerMasterId.ToString();
             var result = await _EAMSService.UpdateEventActivity(mappedData);
             if (result.IsSucceed == true)
             {
@@ -4944,5 +4948,51 @@ namespace EAMS.Controllers
             };
         }
         #endregion
+
+        //[HttpPost("PushDisasterEvent")]
+        //public async Task<IActionResult> PushDisasterEvent()
+        //{
+        //    // Step 1: Fetch all field officers matching the criteria
+        //    var getFieldAllOfficerMaster = await _EAMSService.GetFieldAllOfficerMaster();
+
+        //    // Step 2: Process records in parallel and collect the ElectionInfoMaster instances
+        //    var electionInfoTasks = getFieldAllOfficerMaster.SelectMany(disaster =>
+        //    {
+        //        // Create a list of tasks, one for each BoothMasterId in the disaster
+        //        return disaster.BoothMasterId.Select(boothId =>
+        //        {
+        //            // Create and return ElectionInfoMaster for each BoothMasterId
+        //            var electionInfo = new ElectionInfoMaster
+        //            {
+        //                StateMasterId = disaster.StateMasterId,
+        //                ElectionTypeMasterId = disaster.ElectionTypeMasterId,
+        //                DistrictMasterId = disaster.DistrictMasterId,
+        //                AssemblyMasterId = disaster.AssemblyMasterId, 
+        //                BoothMasterId = boothId,
+        //                FOUserId = disaster.FieldOfficerMasterId.ToString(),
+        //                AROUserId = null,
+        //                ElectionInfoStatus = false,
+        //                EventMasterId = 1,
+        //                IsPartyDispatched = true,
+        //                NoOfPollingAgents = null,
+        //                IsVoterInQueue = false,
+        //                EDC = null,
+        //                EventABBR = "PD",
+        //                EventSequence = 1,
+        //                EventName = "Party Dispatched",
+        //                EventStatus = true
+        //            };
+
+        //            return electionInfo;
+        //        });
+        //    }).ToList();
+
+        //    // Step 3: Save the ElectionInfoMaster list to the database
+        //    var getList= electionInfoTasks.ToList();
+        //    var result = await _EAMSService.PushDisasterEvent(getList);
+        //    return Ok(electionInfoTasks.Count);
+        //}
+
+
     }
 }

@@ -99,7 +99,7 @@ namespace EAMS_ACore.Interfaces
         #region EventMaster
 
         Task<List<EventMaster>> GetEventListById(int stateMasterId, int electionTypeMasterId);
-        Task<List<EventAbbr>> GetEventAbbrList( );
+        Task<List<EventAbbr>> GetEventAbbrList();
         Task<ServiceResponse> AddEvent(EventMaster eventMaster);
         Task<ServiceResponse> UpdateEvent(EventMaster eventMaster);
         Task<ServiceResponse> UpdateEventStaus(EventMaster eventMaster);
@@ -125,8 +125,9 @@ namespace EAMS_ACore.Interfaces
 
         #region Event Activity
         Task<ServiceResponse> EventActivity(ElectionInfoMaster electionInfoMaster);
+       
         Task<ServiceResponse> UpdateEventActivity(UpdateEventActivity updateEventActivity);
-        Task<List<BoothEvents>> GetBoothEventListById(int stateMasterId,int electionTypeMasterId,int boothMasterId);
+        Task<List<BoothEvents>> GetBoothEventListById(int stateMasterId, int electionTypeMasterId, int boothMasterId);
         Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(int boothMasterId);
         Task<Models.Queue> GetVoterInQueue(string boothMasterId);
 
@@ -227,7 +228,7 @@ namespace EAMS_ACore.Interfaces
         Task<List<VTReportModel>> GetVoterTurnOutConsolidatedReports(BoothReportModel boothReportModel);
         //Task<List<VTReportModel>> GetSlotBasedVoterTurnOutReport(SlotVTReportModel boothReportModel);
 
-       
+
 
         #region HelpDesk
         Task<Response> AddHelpDeskInfo(HelpDeskDetail helpDeskDetail);
@@ -306,13 +307,13 @@ namespace EAMS_ACore.Interfaces
         Task<List<KycList>> GetKYCDetailByFourthAndWardId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelMasterId, int? wardMasterId);
         Task<List<KycList>> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId, string userId);
         Task<ServiceResponse> DeleteKycById(int kycMasterId);
-        
+
         #endregion
 
         #region UnOpposed Public Details
         Task<ServiceResponse> AddUnOpposedDetails(UnOpposed unOpposed);
         Task<List<UnOpposed>> GetUnOpposedDetails();
-        Task<List<UnOpposedList>> GetUnOpposedDetailsByAssemblyId(int electionType,int stateMasterId, int districtMasterId, int assemblyMasterId );
+        Task<List<UnOpposedList>> GetUnOpposedDetailsByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId);
         Task<ServiceResponse> UpdateUnOpposedDetails(UnOpposed unOpposed);
         Task<UnOpposedList> GetUnOpposedById(int unOpposedMasterId);
         Task<ServiceResponse> DeleteUnOpposedById(int unOpposedMasterId);
@@ -324,7 +325,7 @@ namespace EAMS_ACore.Interfaces
 
         #region  FourthLevelH
         Task<Response> AddFourthLevelH(FourthLevelH fourthLevelH);
-        Task<List<FourthLevelH>> GetFourthLevelHListById(int stateMasterId, int districtMasterId, int assemblyMasterId); 
+        Task<List<FourthLevelH>> GetFourthLevelHListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
         Task<FourthLevelH> GetFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
         Task<Response> UpdateFourthLevelH(FourthLevelH fourthLevelH);
         Task<ServiceResponse> DeleteFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
@@ -335,7 +336,7 @@ namespace EAMS_ACore.Interfaces
         Task<List<PSZonePanchayat>> GetPSZonePanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
         Task<PSZonePanchayat> GetPSZonePanchayatById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int psZonePanchayatMasterId);
         Task<Response> UpdatePSZonePanchayat(PSZonePanchayat psZonePanchayat);
-        Task<ServiceResponse> DeletePSZonePanchayatById( int psZonePanchayatMasterId);
+        Task<ServiceResponse> DeletePSZonePanchayatById(int psZonePanchayatMasterId);
         #endregion
 
         #region GPPanchayatWards
@@ -367,7 +368,7 @@ namespace EAMS_ACore.Interfaces
         Task<List<ResultDeclarationList>> GetResultDeclarationsByElectionType(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId);
         Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId);
         Task<List<CandidateListForResultDeclaration>> GetPanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gPPanchayatWardsMasterId);
-        
+
         #endregion
 
         #region PanchaytaMapping
@@ -377,5 +378,8 @@ namespace EAMS_ACore.Interfaces
         Task<List<CombinedPanchayatMaster>> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId, string roId);
         Task<List<CombinedPanchayatMaster>> GetUnassignedPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, string assginedType);
         #endregion
+        //Task<List<Disaster>> GetFieldAllOfficerMaster();
+        //Task<List<int>> GetFOAsginedBooth(int foId);
+        //Task<ServiceResponse> PushDisasterEvent(List<ElectionInfoMaster> electionInfoMaster);
     }
 }

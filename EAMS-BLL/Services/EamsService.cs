@@ -1959,5 +1959,19 @@ namespace EAMS_BLL.Services
         }
 
         #endregion
+
+
+        //public async Task<List<Disaster>> GetFieldAllOfficerMaster()
+        //{
+        //    return await _eamsRepository.GetFieldAllOfficerMaster();
+        //}
+        //public async Task<List<int>> GetFOAsginedBooth(int foId)
+        //{
+        //    return await _eamsRepository.GetFOAsginedBooth(foId);
+        //}
+        //public async Task<ServiceResponse> PushDisasterEvent(List<ElectionInfoMaster> electionInfoMaster)
+        //{
+        //    return await _eamsRepository.PushDisasterEvent(electionInfoMaster);
+        //}
     }
 }

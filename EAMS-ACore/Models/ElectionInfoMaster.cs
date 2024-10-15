@@ -25,7 +25,8 @@ namespace EAMS_ACore.Models
         public bool ElectionInfoStatus { get; set; }
         public string? FOUserId { get; set; }
         public string? AROUserId { get; set; }
-
+        public int? VotesPolled {  get; set; }
+        public DateTime? VotesPolledLastUpdate { get; set; }
         public bool IsPartyDispatched { get; set; }
         public DateTime? PartyDispatchedLastUpdate { get; set; }
 

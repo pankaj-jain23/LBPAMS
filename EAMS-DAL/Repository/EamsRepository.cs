@@ -5540,18 +5540,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         public async Task<CheckEventActivity> GetNextEvent(UpdateEventActivity updateEventActivity)
         {
-            // Try to retrieve the event list from cache
-            var eventList = await _cacheService.GetDataAsync<List<EventMaster>>("GetNextEventList");
 
-            // If cache is empty, retrieve from repository and set it in cache
-            if (eventList == null || !eventList.Any())
-            {
-                eventList = await GetEventListForBooth(updateEventActivity.StateMasterId, updateEventActivity.ElectionTypeMasterId);
-                await _cacheService.SetDataAsync("GetNextEventList", eventList, BharatTimeDynamic(0, 0, 0, 0, 20)); // Cache for 5 minutes
-            }
-
-            // Sort the event list by sequence in ascending order
-            var sortedEventList = eventList.OrderBy(e => e.EventSequence).ToList();
+            var sortedEventList = await GetEventListForBooth(updateEventActivity.StateMasterId, updateEventActivity.ElectionTypeMasterId);
 
             // Find the current event based on EventABBR and EventSequence
             var currentEvent = sortedEventList.FirstOrDefault(e => e.EventABBR == updateEventActivity.EventABBR && e.EventSequence == updateEventActivity.EventSequence);
@@ -5600,19 +5590,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         public async Task<CheckEventActivity> GetPreviousEvent(UpdateEventActivity updateEventActivity)
         {
-            // Try to retrieve the event list from cache
-            var eventList = await _cacheService.GetDataAsync<List<EventMaster>>("GetEventList");
 
-            // If cache is empty, retrieve from repository and set it in cache
-            if (eventList == null || !eventList.Any())
-            {
-                eventList = await GetEventListForBooth(updateEventActivity.StateMasterId, updateEventActivity.ElectionTypeMasterId);
-                await _cacheService.SetDataAsync("GetEventList", eventList, BharatTimeDynamic(0, 0, 0, 0, 20)); // Cache for 5 minutes
-            }
-
-            // Sort the event list by sequence in ascending order
-            var sortedEventList = eventList.OrderBy(e => e.EventSequence).ToList();
-
+            var sortedEventList = await GetEventListForBooth(updateEventActivity.StateMasterId, updateEventActivity.ElectionTypeMasterId);
             // Find the current event based on EventABBR and EventSequence
             var currentEvent = sortedEventList.FirstOrDefault(e => e.EventABBR == updateEventActivity.EventABBR && e.EventSequence == updateEventActivity.EventSequence);
 
@@ -5670,6 +5649,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             // If the record exists, update it
             if (result is not null)
             {
+                result.FOUserId = updateEventActivity.FieldOfficerMasterId;
+                result.AROUserId = updateEventActivity.AROUserId;
                 result.EventMasterId = updateEventActivity.EventMasterId;
                 result.EventSequence = updateEventActivity.EventSequence;
                 result.EventABBR = updateEventActivity.EventABBR;
@@ -5707,7 +5688,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     ElectionInfoStatus = updateEventActivity.EventStatus,
                     IsPartyDispatched = updateEventActivity.EventStatus,
                     EventStatus = updateEventActivity.EventStatus,
-                    PartyDispatchedLastUpdate = BharatDateTime()
+                    PartyDispatchedLastUpdate = BharatDateTime(),
+                    AROUserId = updateEventActivity.AROUserId,
+                    FOUserId = updateEventActivity.FieldOfficerMasterId
+
                 };
 
                 // Add the new record to the database
@@ -5946,7 +5930,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             result.EventSequence = updateEventActivity.EventSequence;
             result.EventABBR = updateEventActivity.EventABBR;
             result.ElectionInfoStatus = updateEventActivity.EventStatus;
-
+            result.VotesPolled = updateEventActivity.VotesPolled;
+            result.VotesPolledLastUpdate = DateTime.UtcNow;
             if (getLatestSlot != null && getLatestSlot.IsLastSlot == true)
             {
                 result.IsVoterTurnOut = true;
@@ -6488,12 +6473,22 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 d.ElectionTypeMasterId == checkEventActivity.ElectionTypeMasterId &&
                 d.BoothMasterId == checkEventActivity.BoothMasterId
             );
+            var getLatestSlot = await GetLastExceededSlotWithCurrentTime(checkEventActivity.StateMasterId, checkEventActivity.ElectionTypeMasterId);
+
             if (isPollDetailExist is true && isVoterTurnOut == false)
             {
                 return new ServiceResponse()
                 {
                     IsSucceed = true,
                 };
+            }
+            if (isVoterTurnOut == true && getLatestSlot is true && isPollDetailExist is true)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = true,
+                };
+
             }
             if (isVoterTurnOut == true && isPollDetailExist is true)
             {
@@ -6879,19 +6874,19 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             // Step 4: Get voter slot availability
             var getVoterSlotAvailable = await GetVoterSlotAvailable(getBooth.StateMasterId, getBooth.ElectionTypeMasterId);
             var getLastSlot = await GetLastSlot(electionInfo.StateMasterId, electionInfo.ElectionTypeMasterId);
-            var lastVotesPolled = await _context.PollDetails
-                                          .Where(d => d.StateMasterId == electionInfo.StateMasterId &&
-                                                      d.AssemblyMasterId == electionInfo.AssemblyMasterId &&
-                                                      d.DistrictMasterId == electionInfo.DistrictMasterId &&
-                                                      d.ElectionTypeMasterId == electionInfo.ElectionTypeMasterId &&
-                                                      d.BoothMasterId == electionInfo.BoothMasterId)
-                                          .OrderByDescending(d => d.VotesPolledRecivedTime)
-                                          .Select(d => new
-                                          {
-                                              d.VotesPolledRecivedTime,
-                                              d.VotesPolled
-                                          })
-                                          .FirstOrDefaultAsync();
+            //var lastVotesPolled = await _context.PollDetails
+            //                              .Where(d => d.StateMasterId == electionInfo.StateMasterId &&
+            //                                          d.AssemblyMasterId == electionInfo.AssemblyMasterId &&
+            //                                          d.DistrictMasterId == electionInfo.DistrictMasterId &&
+            //                                          d.ElectionTypeMasterId == electionInfo.ElectionTypeMasterId &&
+            //                                          d.BoothMasterId == electionInfo.BoothMasterId)
+            //                              .OrderByDescending(d => d.VotesPolledRecivedTime)
+            //                              .Select(d => new
+            //                              {
+            //                                  d.VotesPolledRecivedTime,
+            //                                  d.VotesPolled
+            //                              })
+            //                              .FirstOrDefaultAsync();
 
             // Step 5: Populate ViewModel and return
             VoterTurnOutPolledDetailViewModel voterTurnOutPolledDetailViewModel = new VoterTurnOutPolledDetailViewModel
@@ -6904,8 +6899,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 EventName = currentEvent.EventName,
                 EventSequence = currentEvent.EventSequence,
                 TotalVoters = getBooth.TotalVoters,
-                VotesPolled = lastVotesPolled?.VotesPolled ?? 0,
-                VotesPolledRecivedTime = lastVotesPolled?.VotesPolledRecivedTime ?? DateTime.Now
+                VotesPolled = electionInfo?.VotesPolled ?? 0,
+                VotesPolledRecivedTime = electionInfo?.VotesPolledLastUpdate ?? DateTime.Now
 
             };
             if (getLastSlot.IsLastSlot == true && getLastSlot.LockTime.HasValue)
@@ -6970,24 +6965,41 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         private async Task<SlotManagementMaster> GetLastSlot(int stateMasterId, int electionTypeMasterId)
         {
 
-            var lastSlot = _context.SlotManagementMaster.Where(p => p.StateMasterId == stateMasterId
-            && p.ElectionTypeMasterId == electionTypeMasterId && p.IsLastSlot == true).FirstOrDefault();
-
-            if (lastSlot == null)
-            {
-                return null;
-
-            }
-            else
-            {
-                return lastSlot;
-
-
-
-            }
+            return await _context.SlotManagementMaster.Where(p => p.StateMasterId == stateMasterId
+           && p.ElectionTypeMasterId == electionTypeMasterId && p.IsLastSlot == true).FirstOrDefaultAsync();
 
 
         }
+        private async Task<bool> GetLastExceededSlotWithCurrentTime(int stateMasterId, int electionTypeMasterId)
+        {
+            // Get the last slot with IsLastSlot == true
+            var lastSlot = await _context.SlotManagementMaster
+                .Where(p => p.StateMasterId == stateMasterId
+                            && p.ElectionTypeMasterId == electionTypeMasterId
+                            && p.IsLastSlot == true)
+                .FirstOrDefaultAsync();
+
+            // If no slot is found, return false
+            if (lastSlot == null)
+            {
+                return false;
+            }
+
+            // Compare the current time with EndTime or LockTime if EndTime is null
+            var currentTime = TimeOnly.FromDateTime(DateTime.Now);
+            if (lastSlot.EndTime.HasValue)
+            {
+                return lastSlot.EndTime < currentTime;
+            }
+            else if (lastSlot.LockTime.HasValue)
+            {
+                return lastSlot.LockTime < currentTime;
+            }
+
+            // If no EndTime or LockTime is present, return false
+            return false;
+        }
+
 
         public bool GetLastSlotEntryDone(int boothMasterId, int stateMasterId, int districtMasterId, int assemblyMasterid, int eventmasterid, int slotMgmtId)
         {
@@ -7517,17 +7529,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             {
                 return null; // Handle case when no election info is found
             }
-            var votesPolled = await _context.PollDetails
-                .Where(d => d.StateMasterId == electionInfo.StateMasterId
-                            && d.DistrictMasterId == electionInfo.DistrictMasterId
-                            && d.AssemblyMasterId == electionInfo.AssemblyMasterId
-                            && d.BoothMasterId == electionInfo.BoothMasterId
-                            && d.ElectionTypeMasterId == electionInfo.ElectionTypeMasterId
-                            && d.EventABBR == currentEvent.EventABBR
-                            && d.EventSequence == currentEvent.EventSequence
-                            && d.EventMasterId == currentEvent.EventMasterId)
-                .OrderByDescending(d => d.PollDetailMasterId) // Ensure ordering before using LastOrDefault
-                .LastOrDefaultAsync();
+
 
             if (electionInfo is null && electionInfo.IsVoterInQueue == false)
             {
@@ -7539,7 +7541,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 BoothMasterId = boothMasterId,
                 ElectionTypeMasterId = getBooth.ElectionTypeMasterId,
                 TotalVoters = getBooth.TotalVoters,
-                LastVotesPolled = votesPolled?.VotesPolled ?? 0,
+                LastVotesPolled = electionInfo?.VotesPolled ?? 0,
                 TotalAvailableMale = getBooth.Male,
                 TotalAvailableFemale = getBooth.Female,
                 TotalAvailableTransgender = getBooth.Transgender,
@@ -8089,11 +8091,9 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         {
             var result = await (from election in _context.ElectionInfoMaster
                                 join district in _context.DistrictMaster on election.DistrictMasterId equals district.DistrictMasterId
-                                join pollDetail in _context.PollDetails on district.DistrictMasterId equals pollDetail.DistrictMasterId
                                 where election.StateMasterId == stateMasterId &&
-                                      pollDetail.StateMasterId == stateMasterId && // Ensure PollDetails matches the same state
                                       district.DistrictStatus == true
-                                group new { election, pollDetail } by new
+                                group election by new
                                 {
                                     district.DistrictMasterId,
                                     district.DistrictCode,
@@ -8105,21 +8105,20 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                     MasterId = g.Key.DistrictMasterId, // Group key
                                     Name = g.Key.DistrictName, // Group key
                                     Type = "District",
-                                    PartyDispatch = g.Sum(x => x.election.IsPartyDispatched ? 1 : 0).ToString(),
-                                    PartyArrived = g.Sum(x => x.election.IsPartyReached ? 1 : 0).ToString(),
-                                    SetupPollingStation = g.Sum(x => x.election.IsSetupOfPolling ? 1 : 0).ToString(),
-                                    MockPollDone = g.Sum(x => x.election.IsMockPollDone ? 1 : 0).ToString(),
-                                    PollStarted = g.Sum(x => x.election.IsPollStarted ? 1 : 0).ToString(),
-                                    PollEnded = g.Sum(x => x.election.IsPollEnded ? 1 : 0).ToString(),
-                                    MCEVMOff = g.Sum(x => x.election.IsMCESwitchOff ? 1 : 0).ToString(),
-                                    PartyDeparted = g.Sum(x => x.election.IsPartyDeparted ? 1 : 0).ToString(),
-                                    EVMDeposited = g.Sum(x => x.election.IsEVMDeposited ? 1 : 0).ToString(),
-                                    PartyReachedAtCollection = g.Sum(x => x.election.IsPartyReachedCollectionCenter ? 1 : 0).ToString(),
-                                    QueueValue = g.Sum(x => x.election.IsVoterInQueue ? 1 : 0).ToString(),
-                                    FinalVotesValue = g.Sum(x => x.election.FinalVote).ToString(),
-                                    //VoterTurnOutValue = g.Sum(x => x.election.IsVoterTurnOut ? 1 : 0).ToString(),
-                                    VoterTurnOutValue = g.Sum(x => x.pollDetail.VotesPolled).ToString(), // Sum of VotesPolled from PollDetails
-                                    TotalSo = g.Sum(x => x.election.NoOfPollingAgents ?? 0), // Sum of NoOfPollingAgents
+                                    PartyDispatch = g.Sum(x => x.IsPartyDispatched ? 1 : 0).ToString(),
+                                    PartyArrived = g.Sum(x => x.IsPartyReached ? 1 : 0).ToString(),
+                                    SetupPollingStation = g.Sum(x => x.IsSetupOfPolling ? 1 : 0).ToString(),
+                                    MockPollDone = g.Sum(x => x.IsMockPollDone ? 1 : 0).ToString(),
+                                    PollStarted = g.Sum(x => x.IsPollStarted ? 1 : 0).ToString(),
+                                    PollEnded = g.Sum(x => x.IsPollEnded ? 1 : 0).ToString(),
+                                    MCEVMOff = g.Sum(x => x.IsMCESwitchOff ? 1 : 0).ToString(),
+                                    PartyDeparted = g.Sum(x => x.IsPartyDeparted ? 1 : 0).ToString(),
+                                    EVMDeposited = g.Sum(x => x.IsEVMDeposited ? 1 : 0).ToString(),
+                                    PartyReachedAtCollection = g.Sum(x => x.IsPartyReachedCollectionCenter ? 1 : 0).ToString(),
+                                    QueueValue = g.Sum(x => x.VoterInQueue).ToString(),
+                                    FinalVotesValue = g.Sum(x => x.FinalVote).ToString(),
+                                    VoterTurnOutValue = g.Sum(x => x.VotesPolled).ToString(), // Sum of VotesPolled from PollDetails
+                                    //TotalSo = g.Sum(x => x.election.NoOfPollingAgents ?? 0), // Sum of NoOfPollingAgents
                                     Children = new List<object>() // Placeholder for children if needed
                                 }).OrderBy(d => d.Name).ToListAsync();
 
@@ -8189,12 +8188,11 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         public async Task<List<AssemblyEventActivityCount>> GetEventListAssemblyWiseById(int stateMasterId, int? districtMasterId)
         {
             var result = await (from election in _context.ElectionInfoMaster
-                                join assembly in _context.AssemblyMaster on election.AssemblyMasterId equals assembly.AssemblyMasterId
-                                join pollDetail in _context.PollDetails on assembly.AssemblyMasterId equals pollDetail.AssemblyMasterId
+                                join assembly in _context.AssemblyMaster on election.AssemblyMasterId equals assembly.AssemblyMasterId 
                                 where election.StateMasterId == stateMasterId &&
-                                election.DistrictMasterId == districtMasterId && 
+                                election.DistrictMasterId == districtMasterId &&
                                 assembly.AssemblyStatus == true
-                                group new {election, pollDetail } by new
+                                group   election  by new
                                 {
                                     assembly.AssemblyMasterId,
                                     assembly.AssemblyCode,
@@ -8209,22 +8207,21 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                     Name = g.Key.AssemblyName,
                                     Type = "Assembly",
                                     AssemblyCode = g.Key.AssemblyCode,
-                                    PartyDispatch = g.Sum(x => x.election.IsPartyDispatched ? 1 : 0).ToString(),
-                                    PartyArrived = g.Sum(x => x.election.IsPartyReached ? 1 : 0).ToString(),
-                                    SetupPollingStation = g.Sum(x => x.election.IsSetupOfPolling ? 1 : 0).ToString(),
-                                    MockPollDone = g.Sum(x => x.election.IsMockPollDone ? 1 : 0).ToString(),
-                                    PollStarted = g.Sum(x => x.election.IsPollStarted ? 1 : 0).ToString(),
-                                    PollEnded = g.Sum(x => x.election.IsPollEnded ? 1 : 0).ToString(),
-                                    MCEVMOff = g.Sum(x => x.election.IsMCESwitchOff ? 1 : 0).ToString(),
-                                    PartyDeparted = g.Sum(x => x.election.IsPartyDeparted ? 1 : 0).ToString(),
-                                    EVMDeposited = g.Sum(x => x.election.IsEVMDeposited ? 1 : 0).ToString(),
-                                    PartyReachedAtCollection = g.Sum(x => x.election.IsPartyReachedCollectionCenter ? 1 : 0).ToString(),
-                                    QueueValue = g.Sum(x => x.election.IsVoterInQueue ? 1 : 0).ToString(),
-                                    FinalVotesValue = g.Sum(x => x.election.FinalVote).ToString(),
-                                    VoterTurnOutValue = g.Sum(x => x.pollDetail.VotesPolled).ToString(),
-                                    TotalSo = g.Sum(x => x.election.NoOfPollingAgents ?? 0),
-                                    TotalSoCount = g.Count(),
-                                    Children = new List<object>()
+                                    PartyDispatch = g.Sum(x => x.IsPartyDispatched ? 1 : 0).ToString(),
+                                    PartyArrived = g.Sum(x => x.IsPartyReached ? 1 : 0).ToString(),
+                                    SetupPollingStation = g.Sum(x => x.IsSetupOfPolling ? 1 : 0).ToString(),
+                                    MockPollDone = g.Sum(x => x.IsMockPollDone ? 1 : 0).ToString(),
+                                    PollStarted = g.Sum(x => x.IsPollStarted ? 1 : 0).ToString(),
+                                    PollEnded = g.Sum(x => x.IsPollEnded ? 1 : 0).ToString(),
+                                    MCEVMOff = g.Sum(x => x.IsMCESwitchOff ? 1 : 0).ToString(),
+                                    PartyDeparted = g.Sum(x => x.IsPartyDeparted ? 1 : 0).ToString(),
+                                    EVMDeposited = g.Sum(x => x.IsEVMDeposited ? 1 : 0).ToString(),
+                                    PartyReachedAtCollection = g.Sum(x => x.IsPartyReachedCollectionCenter ? 1 : 0).ToString(),
+                                    QueueValue = g.Sum(x => x.VoterInQueue).ToString(),
+                                    FinalVotesValue = g.Sum(x => x.FinalVote).ToString(),
+                                    VoterTurnOutValue = g.Sum(x => x.VotesPolled).ToString(), // Sum of VotesPolled from PollDetails
+                                    //TotalSo = g.Sum(x => x.election.NoOfPollingAgents ?? 0), // Sum of NoOfPollingAgents
+                                    Children = new List<object>() // Placeholder for children if needed
                                 }).OrderBy(d => d.Name).ToListAsync();
 
 
@@ -8298,13 +8295,12 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         public async Task<List<FourthLevelEventActivityCount>> GetEventListFourthLevelHWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId)
         {
             var result = await (from election in _context.ElectionInfoMaster
-                                join fourthLevel in _context.FourthLevelH on election.FourthLevelMasterId equals fourthLevel.FourthLevelHMasterId
-                                join pollDetail in _context.PollDetails on fourthLevel.FourthLevelHMasterId equals pollDetail.FourthLevelHMasterId
+                                join fourthLevel in _context.FourthLevelH on election.FourthLevelMasterId equals fourthLevel.FourthLevelHMasterId 
                                 where election.StateMasterId == stateMasterId &&
                                 election.DistrictMasterId == districtMasterId &&
                                 election.AssemblyMasterId == assemblyMasterId &&
                                 fourthLevel.HierarchyStatus == true
-                                group new { pollDetail, election } by new
+                                group   election   by new
                                 {
                                     fourthLevel.FourthLevelHMasterId,
                                     fourthLevel.HierarchyCode,
@@ -8321,22 +8317,21 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                     Name = g.Key.HierarchyName,
                                     Type = "FourthLevel",
                                     HierarchyCode = g.Key.HierarchyCode,
-                                    PartyDispatch = g.Sum(x => x.election.IsPartyDispatched ? 1 : 0).ToString(),
-                                    PartyArrived = g.Sum(x => x.election.IsPartyReached ? 1 : 0).ToString(),
-                                    SetupPollingStation = g.Sum(x => x.election.IsSetupOfPolling ? 1 : 0).ToString(),
-                                    MockPollDone = g.Sum(x => x.election.IsMockPollDone ? 1 : 0).ToString(),
-                                    PollStarted = g.Sum(x => x.election.IsPollStarted ? 1 : 0).ToString(),
-                                    PollEnded = g.Sum(x => x.election.IsPollEnded ? 1 : 0).ToString(),
-                                    MCEVMOff = g.Sum(x => x.election.IsMCESwitchOff ? 1 : 0).ToString(),
-                                    PartyDeparted = g.Sum(x => x.election.IsPartyDeparted ? 1 : 0).ToString(),
-                                    EVMDeposited = g.Sum(x => x.election.IsEVMDeposited ? 1 : 0).ToString(),
-                                    PartyReachedAtCollection = g.Sum(x => x.election.IsPartyReachedCollectionCenter ? 1 : 0).ToString(),
-                                    QueueValue = g.Sum(x => x.election.IsVoterInQueue ? 1 : 0).ToString(),
-                                    FinalVotesValue = g.Sum(x => x.election.FinalVote).ToString(),
-                                    VoterTurnOutValue = g.Sum(x => x.pollDetail.VotesPolled).ToString(),
-                                    TotalSo = g.Sum(x => x.election.NoOfPollingAgents ?? 0),
-                                    TotalSoCount = g.Count(),
-                                    Children = new List<object>()
+                                    PartyDispatch = g.Sum(x => x.IsPartyDispatched ? 1 : 0).ToString(),
+                                    PartyArrived = g.Sum(x => x.IsPartyReached ? 1 : 0).ToString(),
+                                    SetupPollingStation = g.Sum(x => x.IsSetupOfPolling ? 1 : 0).ToString(),
+                                    MockPollDone = g.Sum(x => x.IsMockPollDone ? 1 : 0).ToString(),
+                                    PollStarted = g.Sum(x => x.IsPollStarted ? 1 : 0).ToString(),
+                                    PollEnded = g.Sum(x => x.IsPollEnded ? 1 : 0).ToString(),
+                                    MCEVMOff = g.Sum(x => x.IsMCESwitchOff ? 1 : 0).ToString(),
+                                    PartyDeparted = g.Sum(x => x.IsPartyDeparted ? 1 : 0).ToString(),
+                                    EVMDeposited = g.Sum(x => x.IsEVMDeposited ? 1 : 0).ToString(),
+                                    PartyReachedAtCollection = g.Sum(x => x.IsPartyReachedCollectionCenter ? 1 : 0).ToString(),
+                                    QueueValue = g.Sum(x => x.VoterInQueue).ToString(),
+                                    FinalVotesValue = g.Sum(x => x.FinalVote).ToString(),
+                                    VoterTurnOutValue = g.Sum(x => x.VotesPolled).ToString(), // Sum of VotesPolled from PollDetails
+                                    //TotalSo = g.Sum(x => x.election.NoOfPollingAgents ?? 0), // Sum of NoOfPollingAgents
+                                    Children = new List<object>() // Placeholder for children if needed
                                 }).ToListAsync();
 
 
@@ -8450,9 +8445,9 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                     PartyDeparted = g.Sum(x => x.IsPartyDeparted ? 1 : 0).ToString(),
                                     EVMDeposited = g.Sum(x => x.IsEVMDeposited ? 1 : 0).ToString(),
                                     PartyReachedAtCollection = g.Sum(x => x.IsPartyReachedCollectionCenter ? 1 : 0).ToString(),
-                                    QueueValue = g.Sum(x => x.IsVoterInQueue ? 1 : 0).ToString(),
-                                    FinalVotesValue = g.Sum(x => x.IsFinalVote ? 1 : 0).ToString(),
-                                    VoterTurnOutValue = g.Sum(x => x.IsVoterTurnOut ? 1 : 0).ToString(),
+                                    QueueValue = g.Sum(x => x.VoterInQueue).ToString(),
+                                    FinalVotesValue = g.Sum(x => x.FinalVote).ToString(),
+                                    VoterTurnOutValue = g.Sum(x => x.VotesPolled).ToString(), 
                                     AssignedFOName = g.Key.FieldOfficerName,
                                     AssignedFOMobile = g.Key.FieldOfficerMobile
                                 }).ToListAsync();
@@ -9776,7 +9771,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         {
             // Start building the base query
             IQueryable<PollInterruption> pollInterruptions = _context.PollInterruptions
-                .Where(e => e.StateMasterId == stateMasterId && e.IsPollInterrupted == true); // Filter for poll interruptions directly
+                .Where(e => e.StateMasterId == stateMasterId && e.IsPollInterrupted == true);
 
             // Apply role-specific filters in a single conditional block
             switch (role)
@@ -9795,16 +9790,15 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                                                      e.AssemblyMasterId == assemblyMasterId);
                     break;
 
-                    // Uncomment and adjust if needed for SubLocalBodiesAdmin
-                    // case "SubLocalBodiesAdmin":
-                    //     pollInterruptions = pollInterruptions.Where(e => e.DistrictMasterId == districtMasterId &&
-                    //                                                      e.AssemblyMasterId == assemblyMasterId &&
-                    //                                                      e.FourthLevelMasterId == fourthLevelMasterId);
-                    //     break;
             }
 
-            // Perform the count directly on the database
-            return await pollInterruptions.CountAsync();
+            // Group by BoothMasterId to get distinct records and select the latest record for each group
+            var distinctLatestBoothInterruptionCount = await pollInterruptions
+                .GroupBy(e => e.BoothMasterId)
+                .Select(g => g.OrderByDescending(e => e.CreatedAt).FirstOrDefault()) // Select the latest record per BoothMasterId
+                .CountAsync();
+
+            return distinctLatestBoothInterruptionCount;
         }
 
 
@@ -12141,9 +12135,9 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             IQueryable<ElectionInfoMaster> electionQuery = _context.ElectionInfoMaster
                 .Where(e => e.StateMasterId == stateMasterId);
             IQueryable<BoothMaster> totalBooths = _context.BoothMaster
-                .Where(e => e.StateMasterId == stateMasterId && e.BoothStatus == true);
-            IQueryable<PollDetail> totalVotesPolled = _context.PollDetails
-                .Where(e => e.StateMasterId == stateMasterId);
+                .Where(e => e.StateMasterId == stateMasterId && e.BoothStatus == true && e.AssignedTo != null);
+            //IQueryable<PollDetail> totalVotesPolled = _context.PollDetails
+            //    .Where(e => e.StateMasterId == stateMasterId);
 
             if (role.Equals("DistrictAdmin", StringComparison.OrdinalIgnoreCase))
             {
@@ -12151,8 +12145,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     .Where(e => e.DistrictMasterId == districtMasterId);
                 totalBooths = totalBooths
                     .Where(e => e.DistrictMasterId == districtMasterId);
-                totalVotesPolled = totalVotesPolled
-                    .Where(e => e.DistrictMasterId == districtMasterId);
+                //totalVotesPolled = totalVotesPolled
+                //    .Where(e => e.DistrictMasterId == districtMasterId);
             }
             else if (role.Equals("LocalBodiesAdmin", StringComparison.OrdinalIgnoreCase) || role.Equals("RO", StringComparison.OrdinalIgnoreCase))
             {
@@ -12160,8 +12154,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     .Where(e => e.DistrictMasterId == districtMasterId && e.AssemblyMasterId == assemblyMasterId);
                 totalBooths = totalBooths
                     .Where(e => e.DistrictMasterId == districtMasterId && e.AssemblyMasterId == assemblyMasterId);
-                totalVotesPolled = totalVotesPolled
-                    .Where(e => e.DistrictMasterId == districtMasterId && e.AssemblyMasterId == assemblyMasterId);
+                //totalVotesPolled = totalVotesPolled
+                //    .Where(e => e.DistrictMasterId == districtMasterId && e.AssemblyMasterId == assemblyMasterId);
             }
             else if (role.Equals("SubLocalBodiesAdmin", StringComparison.OrdinalIgnoreCase))
             {
@@ -12169,15 +12163,17 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     .Where(e => e.DistrictMasterId == districtMasterId && e.AssemblyMasterId == assemblyMasterId && e.FourthLevelMasterId == fourthLevelMasterId);
                 totalBooths = totalBooths
                     .Where(e => e.DistrictMasterId == districtMasterId && e.AssemblyMasterId == assemblyMasterId && e.FourthLevelHMasterId == fourthLevelMasterId);
-                totalVotesPolled = totalVotesPolled
-                    .Where(e => e.DistrictMasterId == districtMasterId && e.AssemblyMasterId == assemblyMasterId && e.FourthLevelHMasterId == fourthLevelMasterId);
+                //totalVotesPolled = totalVotesPolled
+                //    .Where(e => e.DistrictMasterId == districtMasterId && e.AssemblyMasterId == assemblyMasterId && e.FourthLevelHMasterId == fourthLevelMasterId);
             }
 
             var totalBoothsCount = await totalBooths.CountAsync();
             var totalVoters = await totalBooths.SumAsync(d => d.TotalVoters);
-            var totalVotesPolledSum = await totalVotesPolled.GroupBy(d => d.BoothMasterId)
-                .Select(group => group.OrderByDescending(d => d.VotesPolledRecivedTime).FirstOrDefault().VotesPolled)
-                .SumAsync();
+
+            //var totalVotesPolledSum = await totalVotesPolled.GroupBy(d => d.BoothMasterId)
+            //    .Select(group => group.OrderByDescending(d => d.VotesPolledRecivedTime).FirstOrDefault().VotesPolled)
+            //    .SumAsync();
+
             var dashboardCount = new DashBoardRealTimeCount
             {
                 Total = totalBoothsCount,
@@ -12198,6 +12194,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     VoterInQueueCount = g.Sum(x => x.IsVoterInQueue ? 1 : 0),
                     FinalVotesCount = g.Sum(x => x.IsFinalVote ? 1 : 0),
                     FinalVote = g.Sum(x => x.FinalVote),
+                    VotesPolled = g.Sum(x => x.VotesPolled),
                     PollEndedCount = g.Sum(x => x.IsPollEnded ? 1 : 0),
                     EVMVVPATOffCount = g.Sum(x => x.IsMCESwitchOff ? 1 : 0),
                     PartyDepartedCount = g.Sum(x => x.IsPartyDeparted ? 1 : 0),
@@ -12230,10 +12227,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     { "PR", electionInfos.PartyReachedAtCollectionCount },
                     { "ED", electionInfos.EVMDepositedCount }
                 };
-                var votesPolledCount = totalVotesPolledSum;
+
                 var totalVotersCount = totalVoters;
                 var VotesInQueueCount = electionInfos.VoterInQueue;
-                var votesPolledPercentage = totalVoters > 0 ? Math.Round((decimal)(totalVotesPolledSum * 100.0 / totalVoters), 1) : 0;
+                var votesPolledPercentage = totalVoters > 0 ? Math.Round((decimal)(electionInfos.VotesPolled * 100.0 / totalVoters), 1) : 0;
                 var finalVotesSum = electionInfos.FinalVote; // Assuming this is the correct source for final votes
                 var finalVotesPercentage = totalVoters > 0 ? Math.Round((decimal)(electionInfos.FinalVote * 100.0 / totalVoters), 1) : 0;
 
@@ -12245,7 +12242,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                     EventAbbrName = activeEvent.EventABBR,
                                     Count = eventCounts.TryGetValue(activeEvent.EventABBR, out var count) ? count : 0,
                                     VotesInQueueCount = VotesInQueueCount,
-                                    VotesPolledCount = votesPolledCount,
+                                    VotesPolledCount = electionInfos.VotesPolled,
                                     TotalVotersCount = totalVotersCount,
                                     VotesPolledPercentage = votesPolledPercentage,
                                     FinalVotesCount = finalVotesSum,
@@ -13056,9 +13053,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             return dashboardCount;
         }
 
-        #endregion
-
-
+        #endregion 
         #endregion
 
         #region VoterTurn Out Consolidated Report
@@ -18952,5 +18947,66 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
 
         #endregion
+
+
+        //public async Task<List<Disaster>> GetFieldAllOfficerMaster()
+        //{
+        //    // Step 1: Fetch the field officers matching the criteria
+        //    var result = await (from fo in _context.FieldOfficerMaster
+        //                        join bm in _context.BoothMaster
+        //                        on fo.FieldOfficerMasterId.ToString() equals bm.AssignedTo
+        //                        where fo.StateMasterId == 1
+        //                              && fo.ElectionTypeMasterId == 1
+        //                              && fo.FieldOfficerStatus == true
+        //                              && fo.OTP != null
+        //                              && bm.BoothStatus == true
+        //                        select new
+        //                        {
+        //                            fo.FieldOfficerMasterId,
+        //                            fo.StateMasterId,
+        //                            fo.DistrictMasterId,
+        //                            fo.AssemblyMasterId,
+        //                            BoothMasterId = bm.BoothMasterId 
+        //                        })
+        //                        .ToListAsync();
+
+        //    // Step 2: Group by the FieldOfficerMasterId to collect multiple BoothMasterIds under one officer
+        //    var groupedResult = result
+        //        .GroupBy(x => new
+        //        {
+        //            x.FieldOfficerMasterId,
+        //            x.StateMasterId,           // Include all necessary fields in the group key
+        //            x.DistrictMasterId,
+        //            x.AssemblyMasterId 
+        //        })
+        //        .Select(g => new Disaster
+        //        {
+        //            FieldOfficerMasterId = g.Key.FieldOfficerMasterId,
+        //            StateMasterId = g.Key.StateMasterId,
+        //            DistrictMasterId = g.Key.DistrictMasterId,
+        //            AssemblyMasterId = (int)g.Key.AssemblyMasterId, 
+        //            ElectionTypeMasterId = 1,  // Assuming static value for now
+        //            BoothMasterId = g.Select(b => b.BoothMasterId).ToList()  // Collect BoothMasterIds
+        //        })
+        //        .ToList();
+
+        //    return groupedResult;
+        //}
+
+        //public async Task<List<int>> GetFOAsginedBooth(int foId)
+        //{
+        //    return await _context.BoothMaster.Where(d => d.AssignedTo == foId.ToString() && d.BoothStatus == true).Select(d => d.BoothMasterId).ToListAsync();
+        //}
+        //public async Task<ServiceResponse> PushDisasterEvent(List<ElectionInfoMaster> electionInfoMaster)
+        //{
+        //   await _context.ElectionInfoMaster.AddRangeAsync(electionInfoMaster);
+        //    await _context.SaveChangesAsync();
+        //    return new ServiceResponse()
+        //    {
+        //        IsSucceed=true,
+        //        Message="dopn"
+        //    };
+        //}
+
     }
 }
