@@ -46,12 +46,13 @@ namespace EAMS.Controllers
             if (records == null || !records.Any())
             {
                 // Return NoContent if there are no records
-                return NoContent();
+                return NotFound();
             }
 
             // Return Ok with the result
             return Ok(records);
         }
+
         [HttpPost]
         [Route("GetConsolidatedBoothReport")]
         [Authorize]

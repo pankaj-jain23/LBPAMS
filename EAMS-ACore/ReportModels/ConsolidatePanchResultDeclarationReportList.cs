@@ -49,6 +49,8 @@ namespace EAMS_ACore.ReportModels
             get;
             set;
         }
+        public string GPPanchayatWardsType { get; set; }
+
         public int? ResultDeclarationMasterId
         {
             get;

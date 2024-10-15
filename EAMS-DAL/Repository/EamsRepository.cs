@@ -6481,7 +6481,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     IsSucceed = true,
                 };
             }
-            if (isVoterTurnOut == true && getLatestSlot is true && isPollDetailExist is true)
+            if ( getLatestSlot is true  )
             {
                 return new ServiceResponse()
                 {
@@ -6497,6 +6497,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 };
 
             }
+             
             else
             {
                 return new ServiceResponse()
@@ -18936,9 +18937,11 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
 
         #endregion
+
         #region Get Result Consolidate Report
         public async Task<List<ConsolidatePanchResultDeclarationReportList>> GetConsolidatedPanchResultDeclarationReport(ResultDeclaration resultDeclaration)
         {
+            // Step 1: Initial query setup, fetching necessary data
             var query = from rd in _context.ResultDeclaration
                         join state in _context.StateMaster on rd.StateMasterId equals state.StateMasterId
                         join district in _context.DistrictMaster on rd.DistrictMasterId equals district.DistrictMasterId into districtJoin
@@ -18951,9 +18954,9 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                         from gpPanchayatWards in gpPanchayatWardsJoin.DefaultIfEmpty()
                         join kyc in _context.Kyc on rd.KycMasterId equals kyc.KycMasterId into kycJoin
                         from kyc in kycJoin.DefaultIfEmpty()
-                        join electionType in _context.ElectionTypeMaster on rd.ElectionTypeMasterId equals electionType.ElectionTypeMasterId into electionTypeJoin
-                        from electionType in electionTypeJoin.DefaultIfEmpty()
-                        where rd.ElectionTypeMasterId == resultDeclaration.ElectionTypeMasterId && resultDeclaration.IsWinner == true
+                        where rd.ElectionTypeMasterId == resultDeclaration.ElectionTypeMasterId
+                              && rd.IsWinner == true&&rd.StateMasterId==resultDeclaration.StateMasterId&&gpPanchayatWards.GPPanchayatWardsStatus==true
+                              
                         select new
                         {
                             rd,
@@ -18961,11 +18964,9 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                             district,
                             assembly,
                             fourthLevel,
-                            kyc,
                             gpPanchayatWards,
-                            electionType
+                            kyc
                         };
-
             string reportType = "";
 
             //District
@@ -19004,25 +19005,22 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             //}
 
             var totalVotesByWard = await query
-                .GroupBy(d => d.rd.GPPanchayatWardsMasterId)
-                .Select(g => new
-                {
-                    GPPanchayatWardsMasterId = g.Key,
-                    TotalVoteMargin = g.Sum(x => Convert.ToInt32(x.rd.VoteMargin))
-                })
-                .ToListAsync();
+                                    .GroupBy(d => new { d.rd.FourthLevelHMasterId, d.rd.GPPanchayatWardsMasterId })
+                                    .Select(g => new
+                                    {
+                                        GPPanchayatWardsMasterId = g.Key.GPPanchayatWardsMasterId,
+                                        FourthLevelHMasterId = g.Key.FourthLevelHMasterId,
+                                        TotalVoteMargin = g.Sum(x => Convert.ToInt32(x.rd.VoteMargin))
+                                    })
+                                    .ToListAsync();
 
-            // Create a dictionary for quick lookup of total votes by GPPanchayatWardsMasterId
-            var totalVotesLookup = totalVotesByWard.ToDictionary(x => x.GPPanchayatWardsMasterId, x => x.TotalVoteMargin);
+            // Step 3: Calculate the total votes margin across all wards for the specified FourthLevelHMasterId
+            var totalVotesForFourthLevel = totalVotesByWard.Sum(v => v.TotalVoteMargin);
 
-            // Assuming you have a variable for total votes across all wards.
-            int totalVotes = totalVotesByWard.Sum(v => v.TotalVoteMargin);
 
             return await query.Select(d => new ConsolidatePanchResultDeclarationReportList
             {
-                Header = resultDeclaration.GPPanchayatWardsMasterId != 0
-                ? $"{d.state.StateName} ({d.state.StateCode}) {d.district.DistrictName} ({d.district.DistrictCode}) {d.assembly.AssemblyName} ({d.assembly.AssemblyCode}) {d.fourthLevel.HierarchyName} ({d.fourthLevel.HierarchyCode})  "
-                : resultDeclaration.FourthLevelHMasterId != 0
+                Header =resultDeclaration.FourthLevelHMasterId != 0
                 ? $"{d.state.StateName} ({d.state.StateCode}) {d.district.DistrictName} ({d.district.DistrictCode}) {d.assembly.AssemblyName} ({d.assembly.AssemblyCode}) {d.fourthLevel.HierarchyName} ({d.fourthLevel.HierarchyCode})"
                 : resultDeclaration.AssemblyMasterId != 0
                 ? $"{d.state.StateName} ({d.state.StateCode}) {d.district.DistrictName} ({d.district.DistrictCode}) {d.assembly.AssemblyName} ({d.assembly.AssemblyCode})"
@@ -19045,18 +19043,18 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 Type = reportType,
                 Code = d.gpPanchayatWards.GPPanchayatWardsCode.ToString(),
                 Name = d.gpPanchayatWards.GPPanchayatWardsName,
+                GPPanchayatWardsType = d.gpPanchayatWards.GPPanchayatWardsType,
+                StateName=d.state.StateName,
                 DistrictName = d.district.DistrictName,
                 AssemblyName = d.assembly.AssemblyName,
-                FourthLevelHName = d.fourthLevel.HierarchyName,
-                ElectionTypeName = d.electionType.ElectionType,
+                FourthLevelHName = d.fourthLevel.HierarchyName, 
                 ResultDeclarationMasterId = d.rd.ResultDeclarationMasterId,
                 KycMasterId = d.kyc.KycMasterId,
                 CandidateName = d.kyc.CandidateName,
                 VotesGained = d.rd.VoteMargin.ToString(),
-                VotesGainedPercentage = totalVotes > 0 ?
-        ((Convert.ToInt32(d.rd.VoteMargin) / (double)totalVotes) * 100).ToString("0.00") :
-        "0.00" // Calculate the percentage
-
+                VotesGainedPercentage = totalVotesForFourthLevel > 0
+            ? ((Convert.ToInt32(d.rd.VoteMargin) / (double)totalVotesForFourthLevel) * 100).ToString("0.00")
+            : "0.00" // Calculate percentage of vote margin
             }).ToListAsync();
         }
 
