@@ -1346,6 +1346,11 @@ namespace EAMS_BLL.Services
         #endregion
 
         #region Reports
+        public async Task<List<ConsolidatePanchResultDeclarationReportList>> GetConsolidatedPanchResultDeclarationReport(ResultDeclaration resultDeclaration)
+        {
+
+            return await _eamsRepository.GetConsolidatedPanchResultDeclarationReport(resultDeclaration);
+        }
         public async Task<List<ConsolidateBoothReport>> GetConsolidateBoothReports(BoothReportModel boothReportModel)
         {
 

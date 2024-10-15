@@ -991,6 +991,14 @@ namespace EAMS.Helper
      .ForMember(dest => dest.IsDraw, opt => opt.MapFrom(src => src.IsDraw))
      .ForMember(dest => dest.IsDrawLottery, opt => opt.MapFrom(src => src.IsDrawLottery))
      .ReverseMap();
+
+            CreateMap<PanchResultDeclarationReportListViewModel, ResultDeclaration>()
+    .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+    .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+    .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+    .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+    .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
+    .ReverseMap();
             #endregion
 
             #region UpdateResultDeclarationViewModel  ResultDeclaration
