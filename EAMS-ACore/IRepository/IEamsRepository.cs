@@ -259,7 +259,6 @@ namespace EAMS_ACore.IRepository
         #endregion
 
         #region Reports
-        Task<List<ConsolidatePanchResultDeclarationReportList>> GetConsolidatedPanchResultDeclarationReport(ResultDeclaration resultDeclaration);
         Task<List<ConsolidateBoothReport>> GetConsolidateBoothReports(BoothReportModel boothReportModel);
         Task<List<ConsolidateBoothReport>> GetConsolidateGPWardReports(BoothReportModel boothReportModel);
         Task<List<SoReport>> GetSOReport(BoothReportModel boothReportModel);

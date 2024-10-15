@@ -1,9 +1,7 @@
 ﻿using AutoMapper;
 using EAMS.ViewModels.ReportViewModel;
 using EAMS_ACore.Interfaces;
-using EAMS_ACore.Models.PublicModels;
 using EAMS_ACore.ReportModels;
-using LBPAMS.ViewModels.PublicModels;
 using LBPAMS.ViewModels.ReportViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,33 +23,7 @@ namespace EAMS.Controllers
             _mapper = mapper;
             _logger = logger;
         }
-        [HttpPost]
-        [Route("GetConsolidatedPanchResultDeclarationReport")]
-        [Authorize]
-        public async Task<IActionResult> GetConsolidatedPanchResultDeclarationReport([FromBody] PanchResultDeclarationReportListViewModel panchResultDeclarationReportListViewModel)
-        {
-            if (!ModelState.IsValid)
-            {
-                // Return BadRequest with validation errors
-                return BadRequest(ModelState);
-            }
 
-            // Map the incoming view model to the data model
-            var mappedData = _mapper.Map<ResultDeclaration>(panchResultDeclarationReportListViewModel);
-
-            // Get the consolidated report
-            var records = await _EAMSService.GetConsolidatedPanchResultDeclarationReport(mappedData);
-
-            // Check if records were found
-            if (records == null || !records.Any())
-            {
-                // Return NoContent if there are no records
-                return NoContent();
-            }
-
-            // Return Ok with the result
-            return Ok(records);
-        }
         [HttpPost]
         [Route("GetConsolidatedBoothReport")]
         [Authorize]
