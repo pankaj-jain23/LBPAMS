@@ -83,7 +83,7 @@
         }
         public bool ResultDecStatus { get; set; }
     }
-    public class PanchResultDeclarationReportListViewModel
+    public class ResultDeclarationReportListViewModel
     {
         
         public int StateMasterId

@@ -26,9 +26,37 @@ namespace EAMS.Controllers
             _logger = logger;
         }
         [HttpPost]
+        [Route("GetConsolidatedSarPanchResultDeclarationReport")]
+        [Authorize]
+        public async Task<IActionResult> GetConsolidatedSarPanchResultDeclarationReport([FromBody] ResultDeclarationReportListViewModel panchResultDeclarationReportListViewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                // Return BadRequest with validation errors
+                return BadRequest(ModelState);
+            }
+
+
+            var mappedData = _mapper.Map<ResultDeclarationReportListModel>(panchResultDeclarationReportListViewModel);
+
+            // Get the consolidated report
+            var records = await _EAMSService.GetConsolidatedSarPanchResultDeclarationReport(mappedData);
+
+            // Check if records were found
+            if (records == null || !records.Any())
+            {
+                // Return NoContent if there are no records
+                return NotFound();
+            }
+
+            // Return Ok with the result
+            return Ok(records);
+        }
+      
+        [HttpPost]
         [Route("GetConsolidatedPanchResultDeclarationReport")]
         [Authorize]
-        public async Task<IActionResult> GetConsolidatedPanchResultDeclarationReport([FromBody] PanchResultDeclarationReportListViewModel panchResultDeclarationReportListViewModel)
+        public async Task<IActionResult> GetConsolidatedPanchResultDeclarationReport([FromBody] ResultDeclarationReportListViewModel panchResultDeclarationReportListViewModel)
         {
             if (!ModelState.IsValid)
             {
@@ -41,6 +69,62 @@ namespace EAMS.Controllers
 
             // Get the consolidated report
             var records = await _EAMSService.GetConsolidatedPanchResultDeclarationReport(mappedData);
+
+            // Check if records were found
+            if (records == null || !records.Any())
+            {
+                // Return NoContent if there are no records
+                return NotFound();
+            }
+
+            // Return Ok with the result
+            return Ok(records);
+        }
+        
+        [HttpPost]
+        [Route("GetConsolidatedElectedSarPanchResultDeclarationReport")]
+        [Authorize]
+        public async Task<IActionResult> GetConsolidatedElectedSarPanchResultDeclarationReport([FromBody] ResultDeclarationReportListViewModel panchResultDeclarationReportListViewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                // Return BadRequest with validation errors
+                return BadRequest(ModelState);
+            }
+
+
+            var mappedData = _mapper.Map<ResultDeclarationReportListModel>(panchResultDeclarationReportListViewModel);
+
+            // Get the consolidated report
+            var records = await _EAMSService.GetConsolidatedElectedSarPanchResultDeclarationReport(mappedData);
+
+            // Check if records were found
+            if (records == null || !records.Any())
+            {
+                // Return NoContent if there are no records
+                return NotFound();
+            }
+
+            // Return Ok with the result
+            return Ok(records);
+        }
+      
+        [HttpPost]
+        [Route("GetConsolidatedElectedPanchResultDeclarationReport")]
+        [Authorize]
+        public async Task<IActionResult> GetConsolidatedElectedPanchResultDeclarationReport([FromBody] ResultDeclarationReportListViewModel panchResultDeclarationReportListViewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                // Return BadRequest with validation errors
+                return BadRequest(ModelState);
+            }
+
+            // Map the incoming view model to the data model
+            var mappedData = _mapper.Map<ResultDeclaration>(panchResultDeclarationReportListViewModel);
+
+            // Get the consolidated report
+            var records = await _EAMSService.GetConsolidatedElectedPanchResultDeclarationReport(mappedData);
 
             // Check if records were found
             if (records == null || !records.Any())

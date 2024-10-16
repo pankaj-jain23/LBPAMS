@@ -1350,6 +1350,21 @@ namespace EAMS_BLL.Services
         {
 
             return await _eamsRepository.GetConsolidatedPanchResultDeclarationReport(resultDeclaration);
+        } 
+        public async Task<List<ConsolidateSarPanchResultDeclarationReportList>> GetConsolidatedSarPanchResultDeclarationReport(ResultDeclarationReportListModel resultDeclaration)
+        {
+
+            return await _eamsRepository.GetConsolidatedSarPanchResultDeclarationReport(resultDeclaration);
+        }
+        public async Task<List<ConsolidatePanchResultDeclarationReportList>> GetConsolidatedElectedPanchResultDeclarationReport(ResultDeclaration resultDeclaration)
+        {
+
+            return await _eamsRepository.GetConsolidatedElectedPanchResultDeclarationReport(resultDeclaration);
+        } 
+        public async Task<List<ConsolidateSarPanchResultDeclarationReportList>> GetConsolidatedElectedSarPanchResultDeclarationReport(ResultDeclarationReportListModel resultDeclaration)
+        {
+
+            return await _eamsRepository.GetConsolidatedElectedSarPanchResultDeclarationReport(resultDeclaration);
         }
         public async Task<List<ConsolidateBoothReport>> GetConsolidateBoothReports(BoothReportModel boothReportModel)
         {
