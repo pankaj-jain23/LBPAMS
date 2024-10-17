@@ -66,6 +66,11 @@ namespace EAMS_ACore.ReportModels
             get;
             set;
         }
+        public string CandidateFatherName
+        {
+            get;
+            set;
+        }
         public string VotesGained
         {
             get;
@@ -128,6 +133,11 @@ namespace EAMS_ACore.ReportModels
             set;
         }
         public string CandidateName
+        {
+            get;
+            set;
+        }
+        public string CandidateFatherName
         {
             get;
             set;

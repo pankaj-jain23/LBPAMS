@@ -19031,6 +19031,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
               AssemblyName = d.AssemblyRecord?.AssemblyName,
               FourthLevelHName = d.FourthLevelRecord?.HierarchyName,
               CandidateName = d.KycRecord?.CandidateName,
+              CandidateFatherName=d.KycRecord?.FatherName,
               VotesGained = d.VoteMargin.ToString(),
               VotesGainedPercentage = g.TotalVotesForWard > 0
                   ? ((Convert.ToInt32(d.VoteMargin) / (double)g.TotalVotesForWard) * 100).ToString("0.00")
@@ -19118,6 +19119,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     AssemblyName = g.First().AssemblyRecord.AssemblyName,
                     HierarchyName = g.First().FourthLevelRecord.HierarchyName,
                     CandidateName = g.First().KycRecord.CandidateName,
+                    CandidateFatherName = g.First().KycRecord.CandidateName,
                     VotesGained = g.First().ResultDeclaration.VoteMargin,
                     BoothTotalVoters = g.First().BoothRecord.TotalVoters,
                 })
@@ -19149,6 +19151,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 AssemblyName = d.AssemblyName,
                 FourthLevelHName = d.HierarchyName,
                 CandidateName = d.CandidateName,
+                CandidateFatherName = d.CandidateFatherName,
                 VotesGained = d.VotesGained.ToString(),
                 VotesGainedPercentage = (d.BoothTotalVoters != null && d.BoothTotalVoters > 0)
                     ? ((Convert.ToDouble(d.VotesGained) / Convert.ToDouble(d.BoothTotalVoters)) * 100).ToString("0.00")
@@ -19256,6 +19259,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
               AssemblyName = d.AssemblyRecord?.AssemblyName,
               FourthLevelHName = d.FourthLevelRecord?.HierarchyName,
               CandidateName = d.KycRecord?.CandidateName,
+              CandidateFatherName = d.KycRecord?.FatherName,
               VotesGained = d.VoteMargin.ToString(),
               VotesGainedPercentage = g.TotalVotesForWard > 0
                   ? ((Convert.ToInt32(d.VoteMargin) / (double)g.TotalVotesForWard) * 100).ToString("0.00")
@@ -19343,6 +19347,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     AssemblyName = g.First().AssemblyRecord.AssemblyName,
                     HierarchyName = g.First().FourthLevelRecord.HierarchyName,
                     CandidateName = g.First().KycRecord.CandidateName,
+                    CandidateFatherName = g.First().KycRecord.FatherName,
                     VotesGained = g.First().ResultDeclaration.VoteMargin,
                     BoothTotalVoters = g.First().BoothRecord.TotalVoters,
                 })
@@ -19374,6 +19379,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 AssemblyName = d.AssemblyName,
                 FourthLevelHName = d.HierarchyName,
                 CandidateName = d.CandidateName,
+                CandidateFatherName = d.CandidateFatherName,
                 VotesGained = d.VotesGained.ToString(),
                 VotesGainedPercentage = (d.BoothTotalVoters != null && d.BoothTotalVoters > 0)
                     ? ((Convert.ToDouble(d.VotesGained) / Convert.ToDouble(d.BoothTotalVoters)) * 100).ToString("0.00")
