@@ -765,6 +765,74 @@ namespace EAMS.Controllers
 
             return Ok(result.Message);
         }
+        [HttpPost("UpdateResultDeclarationForPortal")]
+        [Authorize]
+        public async Task<IActionResult> UpdateResultDeclarationForPortal(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId, UpdateResultDeclarationViewModel updateResultDeclarationViewModel)
+        {
+            if (updateResultDeclarationViewModel == null)
+            {
+                return BadRequest("No data provided.");
+            }
+
+            // Retrieve claims efficiently
+            //var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
+            //string userId = Convert.ToInt32(userClaims.GetValueOrDefault("UserId")).ToString();
+
+            //// Map ViewModel to Entity
+            //var mappedData = _mapper.Map<ResultDeclaration>(updateResultDeclarationViewModel);
+
+            //// Assign common values
+            //mappedData.StateMasterId = stateMasterId;
+            //mappedData.DistrictMasterId = districtMasterId;
+            //mappedData.AssemblyMasterId = assemblyMasterId;
+            //mappedData.ElectionTypeMasterId = electionTypeMasterId;
+            //mappedData.ResultDeclaredByPortal = userId;
+
+            //// Call service method to update the record
+            //var result = await _eamsService.UpdateResultDeclarationDetails(mappedData);
+
+            //// Handle the result
+            //if (!result.IsSu)
+            //{
+            //    return BadRequest(result.Message);
+            //}
+
+            //return Ok(result.Message);
+            var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
+
+            string userId = Convert.ToInt32(userClaims.GetValueOrDefault("UserId")).ToString();
+
+            // Check if all assigned booths have polls ended
+            //var pollCheckResponse = await _eamsService.CheckIfAllBoothsPollEnded(fieldOfficerMasterId);
+
+            //if (!pollCheckResponse.IsSucceed)
+            //{
+            //    return BadRequest(pollCheckResponse.Message);
+            //}
+            // Map ViewModel to Entity
+            var mappedData = _mapper.Map<List<ResultDeclaration>>(updateResultDeclarationViewModel.updateResultDeclarationLists);
+
+            // Assign common values
+            mappedData.ForEach(resultDeclaration =>
+            {
+                resultDeclaration.StateMasterId = stateMasterId;
+                resultDeclaration.DistrictMasterId = districtMasterId;
+                resultDeclaration.AssemblyMasterId = assemblyMasterId;
+                resultDeclaration.ElectionTypeMasterId = electionTypeMasterId;
+                resultDeclaration.ResultDeclaredByPortal = userId;
+            });
+
+            // Save the mapped data
+            var result = await _eamsService.UpdateResultDeclarationForPortal(mappedData);
+
+            // Handle the result
+            if (!result.IsSucceed)
+            {
+                return BadRequest(result.Message);
+            }
+
+            return Ok(result.Message);
+        }
 
         #endregion
 

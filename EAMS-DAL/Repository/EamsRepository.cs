@@ -18168,6 +18168,74 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return new ServiceResponse { IsSucceed = true, Message = "Result declarations successfully processed." };
         }
+        public async Task<ServiceResponse> UpdateResultDeclarationForPortal(List<ResultDeclaration> resultDeclaration)
+        {
+            foreach (var resultCandidate in resultDeclaration)
+            {
+                // Check if an existing record is present for the candidate
+                var existingResult = await _context.ResultDeclaration
+                    .FirstOrDefaultAsync(d => d.StateMasterId == resultCandidate.StateMasterId &&
+                                               d.DistrictMasterId == resultCandidate.DistrictMasterId &&
+                                               d.ElectionTypeMasterId == resultCandidate.ElectionTypeMasterId &&
+                                               d.AssemblyMasterId == resultCandidate.AssemblyMasterId &&
+                                               d.FourthLevelHMasterId == resultCandidate.FourthLevelHMasterId &&
+                                               d.BoothMasterId == resultCandidate.BoothMasterId &&
+                                               d.GPPanchayatWardsMasterId == resultCandidate.GPPanchayatWardsMasterId &&
+                                               d.KycMasterId == resultCandidate.KycMasterId);
+
+                if (existingResult != null)
+                {
+                    // Update existing record with new details
+                    existingResult.VoteMargin = resultCandidate.VoteMargin;
+                    existingResult.IsWinner = resultCandidate.IsWinner;
+                    existingResult.IsResultDeclared = resultCandidate.IsResultDeclared;
+                    existingResult.IsDraw = resultCandidate.IsDraw;
+                    existingResult.IsDrawLottery = resultCandidate.IsDrawLottery;
+                    existingResult.IsReCounting = resultCandidate.IsReCounting;
+                    existingResult.ResultDecUpdatedAt = DateTime.UtcNow; // Update timestamp
+                }
+                //else
+                //{
+                //    // If no existing record, treat it as an insert
+                //    await _context.ResultDeclaration.AddAsync(resultCandidate);
+                //}
+
+                //// Add history entry for non-winner candidates
+                //if (!resultCandidate.IsWinner)
+                //{
+                //    var historyEntry = new ResultDeclarationHistory
+                //    {
+                //        StateMasterId = resultCandidate.StateMasterId,
+                //        DistrictMasterId = resultCandidate.DistrictMasterId,
+                //        ElectionTypeMasterId = resultCandidate.ElectionTypeMasterId,
+                //        AssemblyMasterId = resultCandidate.AssemblyMasterId,
+                //        FourthLevelHMasterId = resultCandidate.FourthLevelHMasterId,
+                //        ResultDeclaredByMobile = resultCandidate.ResultDeclaredByMobile,
+                //        ResultDeclaredByPortal = resultCandidate.ResultDeclaredByPortal,
+                //        GPPanchayatWardsMasterId = resultCandidate.GPPanchayatWardsMasterId,
+                //        KycMasterId = resultCandidate.KycMasterId,
+                //        VoteMargin = resultCandidate.VoteMargin,
+                //        IsWinner = resultCandidate.IsWinner,
+                //        IsResultDeclared = resultCandidate.IsResultDeclared,
+                //        IsDraw = resultCandidate.IsDraw,
+                //        IsDrawLottery = resultCandidate.IsDrawLottery,
+                //        IsReCounting = resultCandidate.IsReCounting,
+                //        ResultDecCreatedAt = DateTime.UtcNow,
+                //        ResultDecUpdatedAt = DateTime.UtcNow,
+                //        ResultDecStatus = true
+                //    };
+
+                //    historyEntry.ResultDeclarationMasterId = existingResult?.ResultDeclarationMasterId ?? resultCandidate.ResultDeclarationMasterId;
+                //    await _context.ResultDeclarationHistory.AddAsync(historyEntry);
+                //}
+            }
+
+            // Save all changes to the database
+            await _context.SaveChangesAsync();
+
+            return new ServiceResponse { IsSucceed = true, Message = "Result declarations updated successfully." };
+        }
+
         public async Task<ServiceResponse> CheckIfAllBoothsPollEnded(int fieldOfficerMasterId)
         {
             bool anyPollActive = await _context.BoothMaster

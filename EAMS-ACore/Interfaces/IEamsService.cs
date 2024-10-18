@@ -365,6 +365,7 @@ namespace EAMS_ACore.Interfaces
 
         #region ResultDeclaration
         Task<ServiceResponse> AddResultDeclarationDetails(List<ResultDeclaration> resultDeclaration);
+        Task<ServiceResponse> UpdateResultDeclarationForPortal(List<ResultDeclaration> resultDeclaration);
         Task<ServiceResponse> CheckIfAllBoothsPollEnded(int fieldOfficerMasterId);
         Task<Response> UpdateResultDeclarationDetails(ResultDeclaration resultDeclaration);
         Task<ResultDeclaration> GetResultDeclarationById(int resultDeclarationMasterId);
