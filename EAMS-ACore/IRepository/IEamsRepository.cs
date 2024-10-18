@@ -145,7 +145,7 @@ namespace EAMS_ACore.IRepository
         #endregion
 
         #region Activity Events
-         
+
         Task<ServiceResponse> PartyDispatch(UpdateEventActivity updateEventActivity);
         Task<ServiceResponse> PartyArrived(UpdateEventActivity updateEventActivity);
         Task<ServiceResponse> SetupPollingStation(UpdateEventActivity updateEventActivity);
@@ -171,7 +171,7 @@ namespace EAMS_ACore.IRepository
         Task<bool> CanFinalValueStart(int boothMasterId);
 
 
-        Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(int boothMasterId );
+        Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(int boothMasterId);
         Task<Models.Queue> GetVoterInQueue(string boothMasterId);
         Task<VotesPolledPercentage> GetVotesPolledPercentage(ClaimsIdentity claimsIdentity);
         Task<FinalViewModel> GetFinalVotes(int boothMasterId);
@@ -194,9 +194,9 @@ namespace EAMS_ACore.IRepository
         Task<List<AssemblyEventActivityCount>> GetEventListAssemblyWiseById(int stateMasterId, int? districtMasterId);
         ///This API fetches the Assembly-wise event list for Pending events.
         Task<List<AssemblyEventActivityCount>> GetPendingAssemblyWiseEventListById(int stateMasterId, int? districtMasterId);
-        Task<List<FourthLevelEventActivityCount>> GetEventListFourthLevelHWiseById(int stateMasterId, int? districtMasterId,int? assemblyMasterId);
+        Task<List<FourthLevelEventActivityCount>> GetEventListFourthLevelHWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId);
         ///This API fetches the FourthLevelH-wise event list for Pending events.
-        Task<List<FourthLevelEventActivityCount>> GetPendingEventListFourthLevelHWiseById(int stateMasterId, int? districtMasterId,int? assemblyMasterId);
+        Task<List<FourthLevelEventActivityCount>> GetPendingEventListFourthLevelHWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId);
         //Task<List<AssemblyEventActivityCount>> GetEventListAssemblyWiseByStateId(string stateId);
         Task<List<AssemblyEventActivityCountPCWise>> GetEventListAssemblyWiseByPCId(string stateId, string pcId);
         Task<List<EventActivityBoothWise>> GetEventListBoothWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelHMasterId);
@@ -210,7 +210,7 @@ namespace EAMS_ACore.IRepository
 
         #region SendDashBoardCount
         Task<DashBoardRealTimeCount> GetDashBoardCount(ClaimsIdentity claimsIdentity);
-        Task<DashBoardRealTimeCount> GetEventActivityDashBoardCount(string role,int electionTypeMasterId, int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelMasterId);
+        Task<DashBoardRealTimeCount> GetEventActivityDashBoardCount(string role, int electionTypeMasterId, int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelMasterId);
         Task<List<DashboardConnectedUser>> DashboardConnectedUser(DahboardMastersId dashboardMastersId, string roleType);
 
         #endregion
@@ -380,7 +380,7 @@ namespace EAMS_ACore.IRepository
 
         #region  FourthLevelH
         Task<Response> AddFourthLevelH(FourthLevelH fourthLevelH);
-        Task<List<FourthLevelH>> GetFourthLevelHListById(int stateMasterId, int districtMasterId, int assemblyMasterId); 
+        Task<List<FourthLevelH>> GetFourthLevelHListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
         Task<FourthLevelH> GetFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
         Task<Response> UpdateFourthLevelH(FourthLevelH fourthLevelH);
         Task<ServiceResponse> DeleteFourthLevelHById(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
@@ -417,7 +417,14 @@ namespace EAMS_ACore.IRepository
 
         #region ResultDeclaration
         Task<ServiceResponse> AddResultDeclarationDetails(List<ResultDeclaration> resultDeclaration);
+
         Task<ServiceResponse> UpdateResultDeclarationForPortal(List<ResultDeclaration> resultDeclaration);
+
+        Task<ResultDeclarationBoothWardList> GetResultByBoothId(int boothMasterId);
+        Task<List<BoothResultList>> GetBoothResultListByFourthLevelId(int fourthlevelMasterId);
+        Task<ResultDeclarationBoothWardList> GetResultByWardId(int wardMasterId);
+        Task<List<BoothResultList>> GetWardResultListByFourthLevelId(int fourthlevelMasterId);
+
         Task<ServiceResponse> CheckIfAllBoothsPollEnded(int fieldOfficerMasterId);
         Task<Response> UpdateResultDeclarationDetails(ResultDeclaration resultDeclaration);
         Task<ResultDeclaration> GetResultDeclarationById(int resultDeclarationMasterId);
@@ -430,10 +437,10 @@ namespace EAMS_ACore.IRepository
         #endregion
 
         #region PanchaytaMapping
-        Task<Response> PanchayatMapping(List<FourthLevelH> fourthLevels); 
+        Task<Response> PanchayatMapping(List<FourthLevelH> fourthLevels);
         Task<Response> ReleasePanchayat(FourthLevelH fourthLevels);
-        Task<List<CombinedPanchayatMaster>> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId,  string roId,string assginedType);
-        Task<List<CombinedPanchayatMaster>> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId,  string roId);
+        Task<List<CombinedPanchayatMaster>> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId, string roId, string assginedType);
+        Task<List<CombinedPanchayatMaster>> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId, string roId);
         Task<List<CombinedPanchayatMaster>> GetUnassignedPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, string assginedType);
         #endregion
 

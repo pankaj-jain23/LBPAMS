@@ -992,7 +992,7 @@ namespace EAMS.Helper
      .ForMember(dest => dest.IsDrawLottery, opt => opt.MapFrom(src => src.IsDrawLottery))
      .ReverseMap();
 
-            CreateMap<UpdateResultDeclarationViewModel, ResultDeclaration>()
+            CreateMap<UpdateResultDeclarationListViewModel, ResultDeclaration>()
      .ForMember(dest => dest.ResultDeclarationMasterId, opt => opt.MapFrom(src => src.ResultDeclarationMasterId))
      .ForMember(dest => dest.BoothMasterId, opt => opt.MapFrom(src => src.BoothMasterId))
      .ForMember(dest => dest.KycMasterId, opt => opt.MapFrom(src => src.KycMasterId))
@@ -1020,21 +1020,21 @@ namespace EAMS.Helper
     .ReverseMap();
             #endregion
 
-            #region UpdateResultDeclarationViewModel  ResultDeclaration
-            CreateMap<UpdateResultDeclarationViewModel, ResultDeclaration>()
-                 .ForMember(dest => dest.ResultDeclarationMasterId, opt => opt.MapFrom(src => src.ResultDeclarationMasterId))
-                 .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
-                 .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
-                 .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
-                 .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
-                 .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
-                 .ForMember(dest => dest.GPPanchayatWardsMasterId, opt => opt.MapFrom(src => src.GPPanchayatWardsMasterId))
-                 //.ForMember(dest => dest.CandidateName, opt => opt.MapFrom(src => src.CandidateName))
-                 //.ForMember(dest => dest.FatherName, opt => opt.MapFrom(src => src.FatherName))
-                 .ForMember(dest => dest.VoteMargin, opt => opt.MapFrom(src => src.VoteMargin))
-                 .ForMember(dest => dest.ResultDecStatus, opt => opt.MapFrom(src => src.ResultDecStatus))
-                 .ReverseMap();
-            #endregion
+            //#region UpdateResultDeclarationViewModel  ResultDeclaration
+            //CreateMap<UpdateResultDeclarationViewModel, ResultDeclaration>()
+            //     .ForMember(dest => dest.ResultDeclarationMasterId, opt => opt.MapFrom(src => src.ResultDeclarationMasterId))
+            //     .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+            //     .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+            //     .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+            //     .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+            //     .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
+            //     .ForMember(dest => dest.GPPanchayatWardsMasterId, opt => opt.MapFrom(src => src.GPPanchayatWardsMasterId))
+            //     //.ForMember(dest => dest.CandidateName, opt => opt.MapFrom(src => src.CandidateName))
+            //     //.ForMember(dest => dest.FatherName, opt => opt.MapFrom(src => src.FatherName))
+            //     .ForMember(dest => dest.VoteMargin, opt => opt.MapFrom(src => src.VoteMargin))
+            //     .ForMember(dest => dest.ResultDecStatus, opt => opt.MapFrom(src => src.ResultDecStatus))
+            //     .ReverseMap();
+            //#endregion
 
             #region EventByBoothViewModel  EventByBooth
             CreateMap<EventByBoothViewModel, EventByBooth>()

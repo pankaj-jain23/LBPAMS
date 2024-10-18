@@ -48,7 +48,7 @@ namespace EAMS.Controllers
                 return BadRequest("Only PDF files are allowed.");
             }
 
-            const long MaxFileSize = 7 * 1024 * 1024;  
+            const long MaxFileSize = 7 * 1024 * 1024;
 
             // Check if the file exceeds the maximum size
             if (kycViewModel.NominationPdf.Length > MaxFileSize)
@@ -57,7 +57,7 @@ namespace EAMS.Controllers
             }
             // Generate a unique file name for the PDF file
             var fileName = Guid.NewGuid().ToString() + Path.GetExtension(kycViewModel.NominationPdf.FileName);
-            var folderPath = @"C:\inetpub\wwwroot\LBPAMSDOC\kyc";  
+            var folderPath = @"C:\inetpub\wwwroot\LBPAMSDOC\kyc";
             var filePath = Path.Combine(folderPath, fileName);
 
             // Ensure the directory exists
@@ -95,7 +95,7 @@ namespace EAMS.Controllers
             var kycList = await _eamsService.GetKYCDetails();
 
             var request = HttpContext.Request;
-            var baseUrl = $"{request.Scheme}://{request.Host}/LBPAMSDOC/kyc"; 
+            var baseUrl = $"{request.Scheme}://{request.Host}/LBPAMSDOC/kyc";
             var kycResponses = kycList.Select(kyc => new KycResponseViewModel
             {
                 KycMasterId = kyc.KycMasterId,
@@ -722,7 +722,7 @@ namespace EAMS.Controllers
         #region Result Declaration for Portal
         [HttpPost("AddResultDeclarationForPortal")]
         [Authorize]
-        public async Task<IActionResult> AddResultDeclarationForPortal(int stateMasterId,int districtMasterId,int assemblyMasterId,int electionTypeMasterId,ResultDeclarationViewModel resultDeclarationViewModel)
+        public async Task<IActionResult> AddResultDeclarationForPortal(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId, ResultDeclarationViewModel resultDeclarationViewModel)
         {
             if (resultDeclarationViewModel.resultDeclarationLists == null || !resultDeclarationViewModel.resultDeclarationLists.Any())
             {
@@ -731,17 +731,10 @@ namespace EAMS.Controllers
 
             // Retrieve claims efficiently
             var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
-             
+
             string userId = Convert.ToInt32(userClaims.GetValueOrDefault("UserId")).ToString();
 
-            // Check if all assigned booths have polls ended
-            //var pollCheckResponse = await _eamsService.CheckIfAllBoothsPollEnded(fieldOfficerMasterId);
 
-            //if (!pollCheckResponse.IsSucceed)
-            //{
-            //    return BadRequest(pollCheckResponse.Message);
-            //}
-            // Map ViewModel to Entity
             var mappedData = _mapper.Map<List<ResultDeclaration>>(resultDeclarationViewModel.resultDeclarationLists);
 
             // Assign common values
@@ -749,7 +742,7 @@ namespace EAMS.Controllers
             {
                 resultDeclaration.StateMasterId = stateMasterId;
                 resultDeclaration.DistrictMasterId = districtMasterId;
-                resultDeclaration.AssemblyMasterId = assemblyMasterId; 
+                resultDeclaration.AssemblyMasterId = assemblyMasterId;
                 resultDeclaration.ElectionTypeMasterId = electionTypeMasterId;
                 resultDeclaration.ResultDeclaredByPortal = userId;
             });
@@ -834,6 +827,72 @@ namespace EAMS.Controllers
             return Ok(result.Message);
         }
 
+        [HttpGet("GetResultByBoothId")]
+        //[Authorize]
+        public async Task<IActionResult> GetResultByBoothId(int boothMasterId)
+        {
+            if (boothMasterId is 0)
+            {
+                return BadRequest("Booth MasterId is Required");
+            }
+            var result =await _eamsService.GetResultByBoothId(boothMasterId);
+            if(result is null)
+            {
+                return BadRequest();
+            }
+            return Ok(result);
+
+        }
+
+        [HttpGet("GetBoothResultListByFourthLevelId")]
+        //[Authorize]
+        public async Task<IActionResult> GetBoothResultListByFourthLevelId(int fourthLevelHMasterId)
+        {
+            if (fourthLevelHMasterId is 0)
+            {
+                return BadRequest("Booth MasterId is Required");
+            }
+            var result =await _eamsService.GetBoothResultListByFourthLevelId(fourthLevelHMasterId);
+            if(result is null)
+            {
+                return BadRequest();
+            }
+            return Ok(result);
+
+        }
+        [HttpGet("GetResultByWardId")]
+        //[Authorize]
+        public async Task<IActionResult> GetResultByWardId(int wardMasterId)
+        {
+            if (wardMasterId is 0)
+            {
+                return BadRequest("Booth MasterId is Required");
+            }
+            var result = await _eamsService.GetResultByWardId(wardMasterId);
+            if (result is null)
+            {
+                return BadRequest();
+            }
+            return Ok(result);
+
+        }
+
+        [HttpGet("GetWardResultListByFourthLevelId")]
+        //[Authorize]
+        public async Task<IActionResult> GetWardResultListByFourthLevelId(int fourthLevelHMasterId)
+        {
+            if (fourthLevelHMasterId is 0)
+            {
+                return BadRequest("Booth MasterId is Required");
+            }
+            var result = await _eamsService.GetWardResultListByFourthLevelId(fourthLevelHMasterId);
+            if (result is null)
+            {
+                return BadRequest();
+            }
+            return Ok(result);
+
+        }
         #endregion
 
         #region ResultDeclaration For Mobile

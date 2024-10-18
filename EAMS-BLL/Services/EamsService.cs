@@ -2055,6 +2055,26 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetResultDeclarationsByElectionType(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId, gpPanchayatWardsMasterId);
         }
+
+        public async Task<ResultDeclarationBoothWardList> GetResultByBoothId(int boothMasterId)
+        {
+            return await _eamsRepository.GetResultByBoothId(boothMasterId);
+        }
+
+        public async Task<List<BoothResultList>> GetBoothResultListByFourthLevelId(int fourthlevelMasterId)
+        {
+            return await _eamsRepository.GetBoothResultListByFourthLevelId(fourthlevelMasterId);
+        }
+
+        public async Task<ResultDeclarationBoothWardList> GetResultByWardId(int boothMasterId)
+        {
+            return await _eamsRepository.GetResultByWardId(boothMasterId);
+        }
+
+        public async Task<List<BoothResultList>> GetWardResultListByFourthLevelId(int fourthlevelMasterId)
+        {
+            return await _eamsRepository.GetWardResultListByFourthLevelId(fourthlevelMasterId);
+        }
         #endregion
 
         #region PancahyatMapping

@@ -369,6 +369,10 @@ namespace EAMS_ACore.Interfaces
         Task<ServiceResponse> CheckIfAllBoothsPollEnded(int fieldOfficerMasterId);
         Task<Response> UpdateResultDeclarationDetails(ResultDeclaration resultDeclaration);
         Task<ResultDeclaration> GetResultDeclarationById(int resultDeclarationMasterId);
+        Task<ResultDeclarationBoothWardList> GetResultByBoothId(int boothId);
+        Task<ResultDeclarationBoothWardList> GetResultByWardId(int wardMasterId);
+        Task<List<BoothResultList>> GetBoothResultListByFourthLevelId(int fourthlevelMasterId);
+        Task<List<BoothResultList>> GetWardResultListByFourthLevelId(int fourthlevelMasterId);
         Task<ServiceResponse> DeleteResultDeclarationById(int resultDeclarationMasterId);
         Task<List<ResultDeclarationList>> GetResultDeclarationsByElectionType(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId);
         Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId);

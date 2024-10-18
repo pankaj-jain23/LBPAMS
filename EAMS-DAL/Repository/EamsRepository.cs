@@ -18253,6 +18253,154 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             };
         }
 
+        public async Task<ResultDeclarationBoothWardList> GetResultByBoothId(int boothMasterId)
+        {
+            var resultList = await (from booth in _context.BoothMaster
+                                    join district in _context.DistrictMaster on booth.DistrictMasterId equals district.DistrictMasterId
+                                    join state in _context.StateMaster on booth.StateMasterId equals state.StateMasterId
+                                    join assembly in _context.AssemblyMaster on booth.AssemblyMasterId equals assembly.AssemblyMasterId
+                                    join fourthLevel in _context.FourthLevelH on booth.FourthLevelHMasterId equals fourthLevel.FourthLevelHMasterId
+                                    join elec in _context.ElectionTypeMaster on booth.ElectionTypeMasterId equals elec.ElectionTypeMasterId into elcJoin
+                                    from elec in elcJoin.DefaultIfEmpty()
+                                    where booth.BoothMasterId == boothMasterId
+                                    select new ResultDeclarationBoothWardList
+                                    {
+                                        StateMasterId = state.StateMasterId,
+                                        StateName = state.StateName,
+                                        DistrictMasterId = district.DistrictMasterId,
+                                        DistrictName = district.DistrictName,
+                                        ElectionTypeMasterId = booth.ElectionTypeMasterId,
+                                        AssemblyMasterId = booth.AssemblyMasterId,
+                                        AssemblyName = assembly.AssemblyName,
+                                        FourthLevelHMasterId = booth.FourthLevelHMasterId,
+                                        FourthLevelName = fourthLevel.HierarchyName,
+                                        BoothMasterId = booth.BoothMasterId,
+                                        BoothName = booth.BoothName,
+                                        ElectionType = elec.ElectionType,
+
+                                        // Join Kyc and ResultDeclaration with BoothMasterId condition applied on ResultDeclaration
+                                        ResultCandidates = (from resultDecl in _context.ResultDeclaration
+                                                            join kyc in _context.Kyc
+                                                                on resultDecl.KycMasterId equals kyc.KycMasterId
+                                                            where resultDecl.BoothMasterId == booth.BoothMasterId
+                                                            select new ResultCandidate
+                                                            {
+                                                                ResultDeclarationMasterId = resultDecl.ResultDeclarationMasterId,
+                                                                KycMasterId = kyc.KycMasterId,
+                                                                IsUnOpposed=kyc.IsUnOppossed,
+                                                                CandidateName = kyc.CandidateName,
+                                                                FatherName = kyc.FatherName,
+                                                                VoteMargin = resultDecl.VoteMargin, // From ResultDeclaration
+                                                                IsWinner = resultDecl.IsWinner,     // From ResultDeclaration
+                                                                IsResultDeclared = resultDecl.IsResultDeclared,
+                                                                ResultDeclaredByMobile = resultDecl.ResultDeclaredByMobile,
+                                                                ResultDeclaredByPortal = resultDecl.ResultDeclaredByPortal,
+                                                                IsDraw = resultDecl.IsDraw,
+                                                                IsDrawLottery = resultDecl.IsDrawLottery,
+                                                                IsReCounting = resultDecl.IsReCounting,
+                                                                ResultDecStatus = resultDecl.ResultDecStatus
+                                                            }).ToList()
+                                    }).FirstOrDefaultAsync();
+
+            return resultList;
+        }
+
+        public async Task<List<BoothResultList>> GetBoothResultListByFourthLevelId(int fourthlevelMasterId)
+        {
+            var resultList = await (from booth in _context.BoothMaster
+                                    join resultDecl in _context.ResultDeclaration
+                                        on booth.BoothMasterId equals resultDecl.BoothMasterId
+                                    where booth.FourthLevelHMasterId == fourthlevelMasterId
+                                    group new { booth, resultDecl } by booth.BoothMasterId into grouped
+                                    select new BoothResultList
+                                    {
+                                        // ResultDeclarationMasterId = grouped.Select(g => g.resultDecl.ResultDeclarationMasterId).FirstOrDefault(),
+                                        StateMasterId = grouped.Select(g => g.booth.StateMasterId).FirstOrDefault(),
+                                        DistrictMasterId = grouped.Select(g => g.booth.DistrictMasterId).FirstOrDefault(),
+                                        AssemblyMasterId = grouped.Select(g => g.booth.AssemblyMasterId).FirstOrDefault(),
+                                        FourthLevelHMasterId = grouped.Select(g => g.booth.FourthLevelHMasterId).FirstOrDefault(),
+                                        BoothMasterId = grouped.Key,
+                                        BoothName = grouped.Select(g => g.booth.BoothName).FirstOrDefault(),
+                                    }).ToListAsync();
+
+            return resultList;
+        }
+
+        public async Task<ResultDeclarationBoothWardList> GetResultByWardId(int wardMasterId)
+        {
+            var resultList = await (from ward in _context.GPPanchayatWards
+                                    join district in _context.DistrictMaster on ward.DistrictMasterId equals district.DistrictMasterId
+                                    join state in _context.StateMaster on ward.StateMasterId equals state.StateMasterId
+                                    join assembly in _context.AssemblyMaster on ward.AssemblyMasterId equals assembly.AssemblyMasterId
+                                    join fourthLevel in _context.FourthLevelH on ward.FourthLevelHMasterId equals fourthLevel.FourthLevelHMasterId
+                                    join elec in _context.ElectionTypeMaster on ward.ElectionTypeMasterId equals elec.ElectionTypeMasterId into elcJoin
+                                    from elec in elcJoin.DefaultIfEmpty()
+                                    where ward.GPPanchayatWardsMasterId == wardMasterId
+                                    select new ResultDeclarationBoothWardList
+                                    {
+                                        StateMasterId = state.StateMasterId,
+                                        StateName = state.StateName,
+                                        DistrictMasterId = district.DistrictMasterId,
+                                        DistrictName = district.DistrictName,
+                                        ElectionTypeMasterId = ward.ElectionTypeMasterId,
+                                        AssemblyMasterId = ward.AssemblyMasterId,
+                                        AssemblyName = assembly.AssemblyName,
+                                        FourthLevelHMasterId = ward.FourthLevelHMasterId,
+                                        FourthLevelName = fourthLevel.HierarchyName,
+                                        GPPanchayatWardsMasterId = ward.GPPanchayatWardsMasterId,
+                                        GPPanchayatWardsName = ward.GPPanchayatWardsName,
+                                        ElectionType = elec.ElectionType,
+
+                                        // Join Kyc and ResultDeclaration with BoothMasterId condition applied on ResultDeclaration
+                                        ResultCandidates = (from kyc in _context.Kyc
+                                                            where kyc.GPPanchayatWardsMasterId == wardMasterId
+                                                            join resultDecl in _context.ResultDeclaration
+                                                                on kyc.KycMasterId equals resultDecl.KycMasterId
+                                                            select new ResultCandidate
+                                                            {
+                                                                ResultDeclarationMasterId = resultDecl.ResultDeclarationMasterId,
+                                                                KycMasterId = kyc.KycMasterId,
+                                                                IsUnOpposed = kyc.IsUnOppossed,
+                                                                CandidateName = kyc.CandidateName,
+                                                                FatherName = kyc.FatherName,
+                                                                VoteMargin = resultDecl.VoteMargin, // From ResultDeclaration
+                                                                IsWinner = resultDecl.IsWinner,     // From ResultDeclaration
+                                                                IsResultDeclared = resultDecl.IsResultDeclared,
+                                                                ResultDeclaredByMobile = resultDecl.ResultDeclaredByMobile,
+                                                                ResultDeclaredByPortal = resultDecl.ResultDeclaredByPortal,
+                                                                IsDraw = resultDecl.IsDraw,
+                                                                IsDrawLottery = resultDecl.IsDrawLottery,
+                                                                IsReCounting = resultDecl.IsReCounting,
+                                                                ResultDecStatus = resultDecl.ResultDecStatus
+                                                            }).ToList()
+                                    }).FirstOrDefaultAsync();
+
+            return resultList;
+        }
+        public async Task<List<BoothResultList>> GetWardResultListByFourthLevelId(int fourthlevelMasterId)
+        {
+            var resultList = await (from gpWard in _context.GPPanchayatWards
+                                    join kyc in _context.Kyc
+                                        on gpWard.GPPanchayatWardsMasterId equals kyc.GPPanchayatWardsMasterId
+                                    join resultDecl in _context.ResultDeclaration
+                                        on kyc.KycMasterId equals resultDecl.KycMasterId
+                                    where kyc.FourthLevelHMasterId == fourthlevelMasterId
+                                          && kyc.GPPanchayatWardsMasterId != 0
+                                    select new BoothResultList
+                                    {
+                                        StateMasterId = gpWard.StateMasterId, // Assuming gpWard has this field
+                                        DistrictMasterId = gpWard.DistrictMasterId,
+                                        AssemblyMasterId = gpWard.AssemblyMasterId,
+                                        FourthLevelHMasterId = kyc.FourthLevelHMasterId,
+                                        GPPanchayatWardsMasterId = gpWard.GPPanchayatWardsMasterId, // Assuming there's a BoothMasterId in gpWard
+                                        GPPanchayatWardsName = gpWard.GPPanchayatWardsName // Assuming there's a BoothName in gpWard
+                                    }).Distinct() // Ensure distinct results
+                                     .ToListAsync();
+
+            return resultList;
+        }
+
+
 
         //public async Task<ServiceResponse> AddResultDeclarationDetails(List<ResultDeclaration> resultDeclaration)
         //{
@@ -19099,7 +19247,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
               AssemblyName = d.AssemblyRecord?.AssemblyName,
               FourthLevelHName = d.FourthLevelRecord?.HierarchyName,
               CandidateName = d.KycRecord?.CandidateName,
-              CandidateFatherName=d.KycRecord?.FatherName,
+              CandidateFatherName = d.KycRecord?.FatherName,
               VotesGained = d.VoteMargin.ToString(),
               VotesGainedPercentage = g.TotalVotesForWard > 0
                   ? ((Convert.ToInt32(d.VoteMargin) / (double)g.TotalVotesForWard) * 100).ToString("0.00")
@@ -19168,7 +19316,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     d.ResultDeclaration.ResultDeclarationMasterId,
                     d.StateRecord.StateMasterId,
                     d.DistrictRecord.DistrictMasterId,
-                    d.AssemblyRecord.AssemblyMasterId, 
+                    d.AssemblyRecord.AssemblyMasterId,
                     d.KycRecord.FourthLevelHMasterId // Group by FourthLevelHMasterId (from KYC)
                 })
                 .Select(g => new
@@ -19354,7 +19502,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                         from fourthLevel in fourthLevelJoin.DefaultIfEmpty()
                         join booth in _context.BoothMaster on rd.BoothMasterId equals booth.BoothMasterId into boothJoin
                         from booth in boothJoin.DefaultIfEmpty()
-                        where kyc.GPPanchayatWardsMasterId == 0 && rd.IsWinner==true
+                        where kyc.GPPanchayatWardsMasterId == 0 && rd.IsWinner == true
                         select new
                         {
                             ResultDeclaration = rd,
