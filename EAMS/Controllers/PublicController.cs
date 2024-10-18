@@ -719,6 +719,55 @@ namespace EAMS.Controllers
         }
         #endregion
 
+        #region Result Declaration for Portal
+        [HttpPost("AddResultDeclarationForPortal")]
+        [Authorize]
+        public async Task<IActionResult> AddResultDeclarationForPortal(int stateMasterId,int districtMasterId,int assemblyMasterId,int electionTypeMasterId,ResultDeclarationViewModel resultDeclarationViewModel)
+        {
+            if (resultDeclarationViewModel.resultDeclarationLists == null || !resultDeclarationViewModel.resultDeclarationLists.Any())
+            {
+                return BadRequest("No data provided.");
+            }
+
+            // Retrieve claims efficiently
+            var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
+             
+            string userId = Convert.ToInt32(userClaims.GetValueOrDefault("UserId")).ToString();
+
+            // Check if all assigned booths have polls ended
+            //var pollCheckResponse = await _eamsService.CheckIfAllBoothsPollEnded(fieldOfficerMasterId);
+
+            //if (!pollCheckResponse.IsSucceed)
+            //{
+            //    return BadRequest(pollCheckResponse.Message);
+            //}
+            // Map ViewModel to Entity
+            var mappedData = _mapper.Map<List<ResultDeclaration>>(resultDeclarationViewModel.resultDeclarationLists);
+
+            // Assign common values
+            mappedData.ForEach(resultDeclaration =>
+            {
+                resultDeclaration.StateMasterId = stateMasterId;
+                resultDeclaration.DistrictMasterId = districtMasterId;
+                resultDeclaration.AssemblyMasterId = assemblyMasterId; 
+                resultDeclaration.ElectionTypeMasterId = electionTypeMasterId;
+                resultDeclaration.ResultDeclaredByPortal = userId;
+            });
+
+            // Save the mapped data
+            var result = await _eamsService.AddResultDeclarationDetails(mappedData);
+
+            // Handle the result
+            if (!result.IsSucceed)
+            {
+                return BadRequest(result.Message);
+            }
+
+            return Ok(result.Message);
+        }
+
+        #endregion
+
         #region ResultDeclaration For Mobile
 
         [HttpPost("AddResultDeclarationDetails")]
