@@ -732,7 +732,7 @@ namespace EAMS.Controllers
             // Retrieve claims efficiently
             var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
 
-            string userId = Convert.ToInt32(userClaims.GetValueOrDefault("UserId")).ToString();
+            string userId =  userClaims.GetValueOrDefault("UserId").ToString();
 
 
             var mappedData = _mapper.Map<List<ResultDeclaration>>(resultDeclarationViewModel.resultDeclarationLists);
@@ -835,8 +835,8 @@ namespace EAMS.Controllers
             {
                 return BadRequest("Booth MasterId is Required");
             }
-            var result =await _eamsService.GetResultByBoothId(boothMasterId);
-            if(result is null)
+            var result = await _eamsService.GetResultByBoothId(boothMasterId);
+            if (result is null)
             {
                 return BadRequest();
             }
@@ -852,8 +852,8 @@ namespace EAMS.Controllers
             {
                 return BadRequest("Booth MasterId is Required");
             }
-            var result =await _eamsService.GetBoothResultListByFourthLevelId(fourthLevelHMasterId);
-            if(result is null)
+            var result = await _eamsService.GetBoothResultListByFourthLevelId(fourthLevelHMasterId);
+            if (result is null)
             {
                 return BadRequest();
             }
@@ -948,6 +948,8 @@ namespace EAMS.Controllers
             return Ok(result.Message);
         }
 
+
+
         [HttpGet("GetSarpanchListById")]
         [Authorize]
         public async Task<IActionResult> GetSarpanchListById(int fourthLevelHMasterId)
@@ -959,6 +961,34 @@ namespace EAMS.Controllers
             int assemblyMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AssemblyMasterId"));
             //int fourthLevelHMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("FourthLevelHMasterId"));
             int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
+            var result = await _eamsService.GetSarpanchListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId);
+
+            // Check for a message indicating the poll has not ended
+            if (result.Any() && !string.IsNullOrEmpty(result.First().Message))
+            {
+                return BadRequest(result.First().Message); // Return the error message if the poll has not ended
+            }
+
+            if (result.Count != 0 || result != null)
+            {
+                var data = new
+                {
+                    count = result.Count,
+                    resultDeclaration = result.Where(k => k.KycMasterId != 0).ToList(),
+
+                };
+                return Ok(data);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpGet("GetSarpanchListByIdForPortal")]
+        [Authorize]
+        public async Task<IActionResult> GetSarpanchListByIdForPortal(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        {
             var result = await _eamsService.GetSarpanchListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId);
 
             // Check for a message indicating the poll has not ended
@@ -1018,6 +1048,36 @@ namespace EAMS.Controllers
                 return NotFound();
             }
         }
+
+        [HttpGet("GetPanchListByIdForPortal")]
+        [Authorize]
+        public async Task<IActionResult> GetPanchListByIdForPortal(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gPPanchayatWardsMasterId)
+        {
+
+            var result = await _eamsService.GetPanchListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId, gPPanchayatWardsMasterId);
+
+            // Check for a message indicating the poll has not ended
+            if (result.Any() && !string.IsNullOrEmpty(result.First().Message))
+            {
+                return BadRequest(result.First().Message); // Return the error message if the poll has not ended
+            }
+
+            if (result.Count != 0 || result != null)
+            {
+                var data = new
+                {
+                    count = result.Count,
+                    resultDeclaration = result.Where(k => k.KycMasterId != 0).ToList(),
+
+                };
+                return Ok(data);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
 
         [HttpPut("UpdateResultDeclarationDetails")]
         [Authorize]
