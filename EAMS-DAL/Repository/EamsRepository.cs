@@ -18705,13 +18705,53 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         //    }
 
 
+        //public async Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        //{
+
+        //    var candidatesWithResults = await (from k in _context.Kyc
+        //                                       join fourthLevelH in _context.FourthLevelH
+        //                               on k.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
+        //                                       join r in _context.ResultDeclaration on k.KycMasterId equals r.KycMasterId into results
+        //                                       from result in results.DefaultIfEmpty() // Left join
+        //                                       where k.StateMasterId == stateMasterId &&
+        //                                             k.DistrictMasterId == districtMasterId &&
+        //                                             k.ElectionTypeMasterId == electionTypeMasterId &&
+        //                                             k.AssemblyMasterId == assemblyMasterId &&
+        //                                             k.FourthLevelHMasterId == fourthLevelHMasterId &&
+        //                                             k.GPPanchayatWardsMasterId == 0
+        //                                       select new
+        //                                       {
+        //                                           kycCandidate = k,
+        //                                           result, // this will be null if there's no match
+        //                                           fourthLevelH // Include the FourthLevelH entity to access IsCC and IsNN
+        //                                       }).ToListAsync();
+
+        //    // Project the results into the desired format, handling nulls
+        //    var candidateList = candidatesWithResults.Select(c => new CandidateListForResultDeclaration
+        //    {
+        //        KycMasterId = c.kycCandidate.KycMasterId,
+        //        CandidateName = c.kycCandidate.CandidateName,
+        //        FatherName = c.kycCandidate.FatherName,
+        //        IsUnOppossed = c.kycCandidate.IsUnOppossed,
+        //        IsCC = c.fourthLevelH.IsCC,
+        //        IsNN = c.fourthLevelH.IsNN,
+        //        IsWinner = c.result?.IsWinner ?? false, // Default to false if result is null
+        //        IsResultDeclared = c.result?.IsResultDeclared ?? false, // Default to false if result is null
+        //        IsDraw = c.result?.IsDraw ?? false, // Default to false if result is null
+        //        IsDrawLottery = c.result?.IsDrawLottery ?? false, // Default to false if result is null
+        //        IsReCounting = c.result?.IsReCounting ?? false // Default to false if result is null
+        //    }).ToList();
+
+        //    return candidateList;
+        //}
+
         public async Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
-
             var candidatesWithResults = await (from k in _context.Kyc
                                                join fourthLevelH in _context.FourthLevelH
-                                       on k.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
-                                               join r in _context.ResultDeclaration on k.KycMasterId equals r.KycMasterId into results
+                                               on k.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
+                                               join r in _context.ResultDeclaration
+                                               on k.KycMasterId equals r.KycMasterId into results
                                                from result in results.DefaultIfEmpty() // Left join
                                                where k.StateMasterId == stateMasterId &&
                                                      k.DistrictMasterId == districtMasterId &&
@@ -18719,11 +18759,12 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                                      k.AssemblyMasterId == assemblyMasterId &&
                                                      k.FourthLevelHMasterId == fourthLevelHMasterId &&
                                                      k.GPPanchayatWardsMasterId == 0
+                                               group new { k, result, fourthLevelH } by k.KycMasterId into groupedResults
                                                select new
                                                {
-                                                   kycCandidate = k,
-                                                   result, // this will be null if there's no match
-                                                   fourthLevelH // Include the FourthLevelH entity to access IsCC and IsNN
+                                                   kycCandidate = groupedResults.FirstOrDefault().k, // Get the first KYC entry
+                                                   result = groupedResults.FirstOrDefault(g => g.result != null).result, // Get the first non-null result, if any
+                                                   fourthLevelH = groupedResults.FirstOrDefault().fourthLevelH // Get the FourthLevelH entity
                                                }).ToListAsync();
 
             // Project the results into the desired format, handling nulls
@@ -18744,6 +18785,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return candidateList;
         }
+
         //public async Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         //{
         //    // Get the candidates and check the poll status in a single query
