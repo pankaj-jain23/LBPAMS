@@ -791,9 +791,10 @@ namespace EAMS.Controllers
             //}
 
             //return Ok(result.Message);
+            // Retrieve claims efficiently
             var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
 
-            string userId = Convert.ToInt32(userClaims.GetValueOrDefault("UserId")).ToString();
+            string userId = userClaims.GetValueOrDefault("UserId").ToString();
 
             // Check if all assigned booths have polls ended
             //var pollCheckResponse = await _eamsService.CheckIfAllBoothsPollEnded(fieldOfficerMasterId);
