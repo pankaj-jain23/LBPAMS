@@ -1872,7 +1872,7 @@ namespace EAMS_BLL.Services
                                 await _eamsRepository.AddResultDeclarationDetails(resultDeclaration); // Persist draw situation
                                 return new ServiceResponse
                                 {
-                                    IsSucceed = true,
+                                    IsSucceed = false,
                                     Message = "Recount detected a draw situation between the highest vote margins."
                                 };
                             }
@@ -1898,7 +1898,7 @@ namespace EAMS_BLL.Services
                             await _eamsRepository.AddResultDeclarationDetails(resultDeclaration); // Persist draw situation
                             return new ServiceResponse
                             {
-                                IsSucceed = true,
+                                IsSucceed = false,
                                 Message = $"Draw situation detected between candidates "
                             };
                         }
@@ -1976,7 +1976,7 @@ namespace EAMS_BLL.Services
                             await _eamsRepository.UpdateResultDeclarationForPortal(resultDeclaration); // Persist draw situation
                             return new ServiceResponse
                             {
-                                IsSucceed = true,
+                                IsSucceed = false,
                                 Message = "Recount detected a draw situation between the highest vote margins."
                             };
                         }
@@ -2002,7 +2002,7 @@ namespace EAMS_BLL.Services
                         await _eamsRepository.UpdateResultDeclarationForPortal(resultDeclaration); // Persist draw situation
                         return new ServiceResponse
                         {
-                            IsSucceed = true,
+                            IsSucceed = false,
                             Message = $"Draw situation detected between candidates."
                         };
                     }
