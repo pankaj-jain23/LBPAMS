@@ -18587,19 +18587,66 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 return new ServiceResponse { IsSucceed = true, Message = "Record Deleted successfully" };
             }
         }
+        //public async Task<List<CandidateListForResultDeclaration>> GetPanchListById(
+        // int stateMasterId,
+        // int districtMasterId,
+        // int electionTypeMasterId,
+        // int assemblyMasterId,
+        // int fourthLevelHMasterId,
+        // int gPPanchayatWardsMasterId)
+        //{
+        //    // Query Kyc Table with join on ResultDeclaration
+        //    var candidatesWithResults = await (from k in _context.Kyc
+        //                                       join gpPanchayatWards in _context.GPPanchayatWards
+        //                               on k.GPPanchayatWardsMasterId equals gpPanchayatWards.GPPanchayatWardsMasterId
+        //                                       join r in _context.ResultDeclaration on k.KycMasterId equals r.KycMasterId into results
+        //                                       from result in results.DefaultIfEmpty() // Left join
+        //                                       where k.StateMasterId == stateMasterId &&
+        //                                             k.DistrictMasterId == districtMasterId &&
+        //                                             k.ElectionTypeMasterId == electionTypeMasterId &&
+        //                                             k.AssemblyMasterId == assemblyMasterId &&
+        //                                             k.FourthLevelHMasterId == fourthLevelHMasterId &&
+        //                                             k.GPPanchayatWardsMasterId == gPPanchayatWardsMasterId
+        //                                       select new
+        //                                       {
+        //                                           kycCandidate = k,
+        //                                           result, // this will be null if there's no match
+        //                                           gpPanchayatWards
+        //                                       }).ToListAsync();
+
+        //    // Project the results into the desired format, handling nulls
+        //    var candidateList = candidatesWithResults.Select(c => new CandidateListForResultDeclaration
+        //    {
+        //        KycMasterId = c.kycCandidate.KycMasterId,
+        //        CandidateName = c.kycCandidate.CandidateName,
+        //        FatherName = c.kycCandidate.FatherName,
+        //        IsUnOppossed = c.kycCandidate.IsUnOppossed,
+        //        IsCC = c.gpPanchayatWards.IsCC,
+        //        IsNN = c.gpPanchayatWards.IsNN,
+        //        IsWinner = c.result?.IsWinner ?? false, // Default to false if result is null
+        //        IsResultDeclared = c.result?.IsResultDeclared ?? false, // Default to false if result is null
+        //        IsDraw = c.result?.IsDraw ?? false, // Default to false if result is null
+        //        IsDrawLottery = c.result?.IsDrawLottery ?? false, // Default to false if result is null
+        //        IsReCounting = c.result?.IsReCounting ?? false // Default to false if result is null
+        //    }).ToList();
+
+        //    return candidateList;
+        //}
+
         public async Task<List<CandidateListForResultDeclaration>> GetPanchListById(
-         int stateMasterId,
-         int districtMasterId,
-         int electionTypeMasterId,
-         int assemblyMasterId,
-         int fourthLevelHMasterId,
-         int gPPanchayatWardsMasterId)
+    int stateMasterId,
+    int districtMasterId,
+    int electionTypeMasterId,
+    int assemblyMasterId,
+    int fourthLevelHMasterId,
+    int gPPanchayatWardsMasterId)
         {
-            // Query Kyc Table with join on ResultDeclaration
+            // Grouping by KycMasterId to prevent multiple entries
             var candidatesWithResults = await (from k in _context.Kyc
                                                join gpPanchayatWards in _context.GPPanchayatWards
-                                       on k.GPPanchayatWardsMasterId equals gpPanchayatWards.GPPanchayatWardsMasterId
-                                               join r in _context.ResultDeclaration on k.KycMasterId equals r.KycMasterId into results
+                                               on k.GPPanchayatWardsMasterId equals gpPanchayatWards.GPPanchayatWardsMasterId
+                                               join r in _context.ResultDeclaration
+                                               on k.KycMasterId equals r.KycMasterId into results
                                                from result in results.DefaultIfEmpty() // Left join
                                                where k.StateMasterId == stateMasterId &&
                                                      k.DistrictMasterId == districtMasterId &&
@@ -18607,11 +18654,12 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                                      k.AssemblyMasterId == assemblyMasterId &&
                                                      k.FourthLevelHMasterId == fourthLevelHMasterId &&
                                                      k.GPPanchayatWardsMasterId == gPPanchayatWardsMasterId
+                                               group new { k, result, gpPanchayatWards } by k.KycMasterId into groupedResults
                                                select new
                                                {
-                                                   kycCandidate = k,
-                                                   result, // this will be null if there's no match
-                                                   gpPanchayatWards
+                                                   kycCandidate = groupedResults.FirstOrDefault().k, // First candidate record
+                                                   result = groupedResults.FirstOrDefault(g => g.result != null).result, // First non-null result
+                                                   gpPanchayatWards = groupedResults.FirstOrDefault().gpPanchayatWards // First GPPanchayatWards record
                                                }).ToListAsync();
 
             // Project the results into the desired format, handling nulls
@@ -18632,7 +18680,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return candidateList;
         }
-
 
         //    public async Task<List<CandidateListForResultDeclaration>> GetPanchListById(
         //int stateMasterId,
