@@ -18170,22 +18170,42 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         public async Task<ServiceResponse> UpdateResultDeclarationForPortal(List<ResultDeclaration> resultDeclaration)
         {
+            if (resultDeclaration == null || !resultDeclaration.Any())
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "No data provided." };
+            }
+
+            // Assume all entries in resultDeclaration share the same election context
+            var firstEntry = resultDeclaration.FirstOrDefault();
+            
+            // Step 1: Set all records for this election context as IsWinner = false
+            var relatedResults = await _context.ResultDeclaration
+                .Where(d => d.StateMasterId == firstEntry.StateMasterId &&
+                            d.DistrictMasterId == firstEntry.DistrictMasterId &&
+                            d.ElectionTypeMasterId == firstEntry.ElectionTypeMasterId &&
+                            d.AssemblyMasterId == firstEntry.AssemblyMasterId &&
+                            d.FourthLevelHMasterId == firstEntry.FourthLevelHMasterId &&
+                            d.BoothMasterId == firstEntry.BoothMasterId &&
+                            d.GPPanchayatWardsMasterId == firstEntry.GPPanchayatWardsMasterId)
+                .ToListAsync();
+
+            foreach (var result in relatedResults)
+            {
+                result.IsWinner = false; // Reset all winners
+            }
+            // Save this intermediate state
+            await _context.SaveChangesAsync();
+
+            // Step 2: Update the result declaration with the new data
             foreach (var resultCandidate in resultDeclaration)
             {
-                // Fetch the existing record that matches the criteria
-                var existingResult = await _context.ResultDeclaration
-                    .FirstOrDefaultAsync(d => d.StateMasterId == resultCandidate.StateMasterId &&
-                                               d.DistrictMasterId == resultCandidate.DistrictMasterId &&
-                                               d.ElectionTypeMasterId == resultCandidate.ElectionTypeMasterId &&
-                                               d.AssemblyMasterId == resultCandidate.AssemblyMasterId &&
-                                               d.FourthLevelHMasterId == resultCandidate.FourthLevelHMasterId &&
-                                               d.BoothMasterId == resultCandidate.BoothMasterId &&
-                                               d.GPPanchayatWardsMasterId == resultCandidate.GPPanchayatWardsMasterId &&
-                                               d.KycMasterId == resultCandidate.KycMasterId);
+                // Find the existing record that matches the criteria
+                var existingResult = relatedResults.FirstOrDefault(d =>
+                    d.KycMasterId == resultCandidate.KycMasterId);
 
                 if (existingResult != null)
                 {
-                    // Update the existing record with the new data from resultCandidate
+                    // Update the existing record with the new data
                     existingResult.VoteMargin = resultCandidate.VoteMargin;
                     existingResult.IsWinner = resultCandidate.IsWinner;
                     existingResult.IsResultDeclared = resultCandidate.IsResultDeclared;
@@ -18194,16 +18214,51 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     existingResult.IsReCounting = resultCandidate.IsReCounting;
                     existingResult.ResultDecUpdatedAt = DateTime.UtcNow; // Update timestamp
 
-                    // Mark the entity as modified in the context
                     _context.ResultDeclaration.Update(existingResult);
                 }
             }
 
-            // Save all changes to the database
+            // Step 3: Save the updated records with the newly declared winner
             await _context.SaveChangesAsync();
 
             return new ServiceResponse { IsSucceed = true, Message = "Result declarations updated successfully." };
         }
+        //public async Task<ServiceResponse> UpdateResultDeclarationForPortal(List<ResultDeclaration> resultDeclaration)
+        //{
+        //    foreach (var resultCandidate in resultDeclaration)
+        //    {
+        //        // Fetch the existing record that matches the criteria
+        //        var existingResult = await _context.ResultDeclaration
+        //            .FirstOrDefaultAsync(d => d.StateMasterId == resultCandidate.StateMasterId &&
+        //                                       d.DistrictMasterId == resultCandidate.DistrictMasterId &&
+        //                                       d.ElectionTypeMasterId == resultCandidate.ElectionTypeMasterId &&
+        //                                       d.AssemblyMasterId == resultCandidate.AssemblyMasterId &&
+        //                                       d.FourthLevelHMasterId == resultCandidate.FourthLevelHMasterId &&
+        //                                       d.BoothMasterId == resultCandidate.BoothMasterId &&
+        //                                       d.GPPanchayatWardsMasterId == resultCandidate.GPPanchayatWardsMasterId &&
+        //                                       d.KycMasterId == resultCandidate.KycMasterId);
+
+        //        if (existingResult != null)
+        //        {
+        //            // Update the existing record with the new data from resultCandidate
+        //            existingResult.VoteMargin = resultCandidate.VoteMargin;
+        //            existingResult.IsWinner = resultCandidate.IsWinner;
+        //            existingResult.IsResultDeclared = resultCandidate.IsResultDeclared;
+        //            existingResult.IsDraw = resultCandidate.IsDraw;
+        //            existingResult.IsDrawLottery = resultCandidate.IsDrawLottery;
+        //            existingResult.IsReCounting = resultCandidate.IsReCounting;
+        //            existingResult.ResultDecUpdatedAt = DateTime.UtcNow; // Update timestamp
+
+        //            // Mark the entity as modified in the context
+        //            _context.ResultDeclaration.Update(existingResult);
+        //        }
+        //    }
+
+        //    // Save all changes to the database
+        //    await _context.SaveChangesAsync();
+
+        //    return new ServiceResponse { IsSucceed = true, Message = "Result declarations updated successfully." };
+        //}
 
         //public async Task<ServiceResponse> UpdateResultDeclarationForPortal(List<ResultDeclaration> resultDeclaration)
         //{
