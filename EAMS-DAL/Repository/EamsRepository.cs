@@ -18273,10 +18273,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                         AssemblyMasterId = booth.AssemblyMasterId,
                                         AssemblyName = assembly.AssemblyName,
                                         FourthLevelHMasterId = booth.FourthLevelHMasterId,
-                                        FourthLevelName = fourthLevel.HierarchyName,
+                                        FourthLevelHName = fourthLevel.HierarchyName,
                                         BoothMasterId = booth.BoothMasterId,
                                         BoothName = booth.BoothName,
-                                        ElectionType = elec.ElectionType,
+                                        ElectionTypeName = elec.ElectionType,
 
                                         // Join Kyc and ResultDeclaration with BoothMasterId condition applied on ResultDeclaration
                                         ResultCandidates = (from resultDecl in _context.ResultDeclaration
@@ -18346,10 +18346,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                         AssemblyMasterId = ward.AssemblyMasterId,
                                         AssemblyName = assembly.AssemblyName,
                                         FourthLevelHMasterId = ward.FourthLevelHMasterId,
-                                        FourthLevelName = fourthLevel.HierarchyName,
+                                        FourthLevelHName = fourthLevel.HierarchyName,
                                         GPPanchayatWardsMasterId = ward.GPPanchayatWardsMasterId,
                                         GPPanchayatWardsName = ward.GPPanchayatWardsName,
-                                        ElectionType = elec.ElectionType,
+                                        ElectionTypeName = elec.ElectionType,
 
                                         // Join Kyc and ResultDeclaration with BoothMasterId condition applied on ResultDeclaration
                                         ResultCandidates = (from kyc in _context.Kyc

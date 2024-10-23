@@ -116,7 +116,7 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
-        public string ElectionType
+        public string ElectionTypeName
         {
             get;
             set;
@@ -139,7 +139,7 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
-        public string FourthLevelName
+        public string FourthLevelHName
         {
             get;
             set;
