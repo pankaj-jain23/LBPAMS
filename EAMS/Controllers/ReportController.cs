@@ -80,9 +80,10 @@ namespace EAMS.Controllers
             // Return Ok with the result
             return Ok(records);
         }
+
         [HttpPost]
         [Route("GetConsolidatedUnOppossedPanchResultDeclarationReport")]
-        
+        [Authorize]
         public async Task<IActionResult> GetConsolidatedUnOppossedPanchResultDeclarationReport([FromBody] ResultDeclarationReportListViewModel panchResultDeclarationReportListViewModel)
         {
             if (!ModelState.IsValid)
@@ -107,6 +108,35 @@ namespace EAMS.Controllers
             // Return Ok with the result
             return Ok(records);
         }
+
+        [HttpPost]
+        [Route("GetConsolidatedNoKycPanchResultDeclarationReport")]
+        [Authorize]
+        public async Task<IActionResult> GetConsolidatedNoKycPanchResultDeclarationReport([FromBody] ResultDeclarationReportListViewModel panchResultDeclarationReportListViewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                // Return BadRequest with validation errors
+                return BadRequest(ModelState);
+            }
+
+            // Map the incoming view model to the data model
+            var mappedData = _mapper.Map<ResultDeclaration>(panchResultDeclarationReportListViewModel);
+
+            // Get the consolidated report
+            var records = await _EAMSService.GetConsolidatedNoKycPanchResultDeclarationReport(mappedData);
+
+            // Check if records were found
+            if (records == null || !records.Any())
+            {
+                // Return NoContent if there are no records
+                return NotFound();
+            }
+
+            // Return Ok with the result
+            return Ok(records);
+        }
+
         [HttpPost]
         [Route("GetConsolidatedElectedSarPanchResultDeclarationReport")]
         [Authorize]
@@ -165,6 +195,7 @@ namespace EAMS.Controllers
 
         [HttpPost]
         [Route("GetConsolidatedUnOppossedSarPanchResultDeclarationReport")]
+        [Authorize]
         public async Task<IActionResult> GetConsolidatedUnOppossedSarPanchResultDeclarationReport([FromBody] ResultDeclarationReportListViewModel panchResultDeclarationReportListViewModel)
         {
             if (!ModelState.IsValid)
@@ -189,6 +220,35 @@ namespace EAMS.Controllers
             // Return Ok with the result
             return Ok(records);
         }
+
+        [HttpPost]
+        [Route("GetConsolidatedNoKycSarPanchResultDeclarationReport")]
+        [Authorize]
+        public async Task<IActionResult> GetConsolidatedNoKycSarPanchResultDeclarationReport([FromBody] ResultDeclarationReportListViewModel panchResultDeclarationReportListViewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                // Return BadRequest with validation errors
+                return BadRequest(ModelState);
+            }
+
+
+            var mappedData = _mapper.Map<ResultDeclarationReportListModel>(panchResultDeclarationReportListViewModel);
+
+            // Get the consolidated report
+            var records = await _EAMSService.GetConsolidatedNoKycSarPanchResultDeclarationReport(mappedData);
+
+            // Check if records were found
+            if (records == null || !records.Any())
+            {
+                // Return NoContent if there are no records
+                return NotFound();
+            }
+
+            // Return Ok with the result
+            return Ok(records);
+        }
+
         [HttpPost]
         [Route("GetConsolidatedBoothReport")]
         [Authorize]

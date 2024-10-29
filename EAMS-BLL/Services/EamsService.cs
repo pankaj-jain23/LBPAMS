@@ -1356,6 +1356,11 @@ namespace EAMS_BLL.Services
 
             return await _eamsRepository.GetConsolidatedUnOppossedPanchResultDeclarationReport(resultDeclaration);
         }
+        public async Task<List<ConsolidatedUnOpposedPanchSarPanchAndNoKycCandidateReportList>> GetConsolidatedNoKycPanchResultDeclarationReport(ResultDeclaration resultDeclaration)
+        {
+
+            return await _eamsRepository.GetConsolidatedNoKycPanchResultDeclarationReport(resultDeclaration);
+        }
         public async Task<List<ConsolidateSarPanchResultDeclarationReportList>> GetConsolidatedSarPanchResultDeclarationReport(ResultDeclarationReportListModel resultDeclaration)
         {
 
@@ -1365,6 +1370,12 @@ namespace EAMS_BLL.Services
         {
 
             return await _eamsRepository.GetConsolidatedUnOppossedSarPanchResultDeclarationReport(resultDeclaration);
+        }
+
+        public async Task<List<ConsolidatedUnOpposedPanchSarPanchAndNoKycCandidateReportList>> GetConsolidatedNoKycSarPanchResultDeclarationReport(ResultDeclarationReportListModel resultDeclaration)
+        {
+
+            return await _eamsRepository.GetConsolidatedNoKycSarPanchResultDeclarationReport(resultDeclaration);
         }
         public async Task<List<ConsolidatePanchResultDeclarationReportList>> GetConsolidatedElectedPanchResultDeclarationReport(ResultDeclaration resultDeclaration)
         {
