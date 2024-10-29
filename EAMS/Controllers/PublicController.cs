@@ -201,6 +201,7 @@ namespace EAMS.Controllers
                 }
             }
         }
+       
         [HttpGet("GetKYCDetailByAssemblyId")]
         public async Task<IActionResult> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId)
         {

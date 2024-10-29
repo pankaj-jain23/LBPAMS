@@ -18179,7 +18179,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             // Step 1: Set all records for this election context as IsWinner = false
             var relatedResults = await _context.ResultDeclaration
-                .Where(d => resultDeclarationIds.Contains(d.KycMasterId)) 
+                .Where(d => resultDeclarationIds.Contains(d.KycMasterId))
                 .ToListAsync();
 
             foreach (var result in relatedResults)
@@ -18372,7 +18372,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                                             {
                                                                 ResultDeclarationMasterId = resultDecl.ResultDeclarationMasterId,
                                                                 KycMasterId = kyc.KycMasterId,
-                                                                IsUnOpposed=kyc.IsUnOppossed,
+                                                                IsUnOpposed = kyc.IsUnOppossed,
                                                                 CandidateName = kyc.CandidateName,
                                                                 FatherName = kyc.FatherName,
                                                                 VoteMargin = resultDecl.VoteMargin, // From ResultDeclaration
@@ -18399,7 +18399,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                     group new { booth, resultDecl } by booth.BoothMasterId into grouped
                                     select new BoothResultList
                                     {
-                                        // ResultDeclarationMasterId = grouped.Select(g => g.resultDecl.ResultDeclarationMasterId).FirstOrDefault(),
+                                        ResultDeclarationMasterId = grouped.Select(g => g.resultDecl.ResultDeclarationMasterId).FirstOrDefault(),
                                         StateMasterId = grouped.Select(g => g.booth.StateMasterId).FirstOrDefault(),
                                         DistrictMasterId = grouped.Select(g => g.booth.DistrictMasterId).FirstOrDefault(),
                                         AssemblyMasterId = grouped.Select(g => g.booth.AssemblyMasterId).FirstOrDefault(),
@@ -19336,7 +19336,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                         from fourthLevel in fourthLevelJoin.DefaultIfEmpty()
                         join gpPanchayatWards in _context.GPPanchayatWards on kyc.GPPanchayatWardsMasterId equals gpPanchayatWards.GPPanchayatWardsMasterId into gpPanchayatWardsJoin
                         from gpPanchayatWards in gpPanchayatWardsJoin.DefaultIfEmpty()
-                        where kyc.GPPanchayatWardsMasterId != 0
+                        where kyc.GPPanchayatWardsMasterId != 0 &&kyc.IsUnOppossed==false
                         select new
                         {
                             ResultDeclaration = rd,
@@ -19458,7 +19458,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                         };
 
             // Apply filters based on input
-          string reportType = "State";
+            string reportType = "State";
 
             if (resultDeclaration.StateMasterId != 0 && resultDeclaration.DistrictMasterId != 0 && resultDeclaration.AssemblyMasterId == 0 && resultDeclaration.FourthLevelHMasterId == 0)
             {
@@ -19520,7 +19520,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                                .Select(rd => rd.KycMasterId)
                                                .Distinct()
                                                .ToList();
-
+             //Make it single query
             var query = from kyc in _context.Kyc
                         join state in _context.StateMaster on kyc.StateMasterId equals state.StateMasterId into stateJoin
                         from state in stateJoin.DefaultIfEmpty()
@@ -19617,7 +19617,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                         from fourthLevel in fourthLevelJoin.DefaultIfEmpty()
                         join booth in _context.BoothMaster on rd.BoothMasterId equals booth.BoothMasterId into boothJoin
                         from booth in boothJoin.DefaultIfEmpty()
-                        where kyc.GPPanchayatWardsMasterId == 0
+                        where kyc.GPPanchayatWardsMasterId == 0 && kyc.IsUnOppossed == false
                         select new
                         {
                             ResultDeclaration = rd,
@@ -19811,7 +19811,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                         from assembly in assemblyJoin.DefaultIfEmpty()
                         join fourthLevel in _context.FourthLevelH on kyc.FourthLevelHMasterId equals fourthLevel.FourthLevelHMasterId into fourthLevelJoin
                         from fourthLevel in fourthLevelJoin.DefaultIfEmpty()
-                        where kyc.IsUnOppossed == true
+                        where kyc.IsUnOppossed == false
                               && kyc.GPPanchayatWardsMasterId == 0
                               && !excludedKycMasterIds.Contains(kyc.KycMasterId) // Exclude records present in ResultDeclaration
                         select new
