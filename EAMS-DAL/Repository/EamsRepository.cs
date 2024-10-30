@@ -19336,7 +19336,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                         from fourthLevel in fourthLevelJoin.DefaultIfEmpty()
                         join gpPanchayatWards in _context.GPPanchayatWards on kyc.GPPanchayatWardsMasterId equals gpPanchayatWards.GPPanchayatWardsMasterId into gpPanchayatWardsJoin
                         from gpPanchayatWards in gpPanchayatWardsJoin.DefaultIfEmpty()
-                        where kyc.GPPanchayatWardsMasterId != 0 &&kyc.IsUnOppossed==false
+                        where kyc.GPPanchayatWardsMasterId != 0 && kyc.IsUnOppossed==false
                         select new
                         {
                             ResultDeclaration = rd,
@@ -19516,10 +19516,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         public async Task<List<ConsolidatedUnOpposedPanchSarPanchAndNoKycCandidateReportList>> GetConsolidatedNoKycPanchResultDeclarationReport(ResultDeclaration resultDeclaration)
         {
-            var excludedKycMasterIds = _context.ResultDeclaration
-                                               .Select(rd => rd.KycMasterId)
-                                               .Distinct()
-                                               .ToList();
+           
              //Make it single query
             var query = from kyc in _context.Kyc
                         join state in _context.StateMaster on kyc.StateMasterId equals state.StateMasterId into stateJoin
@@ -19534,7 +19531,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                         from gpPanchayatWards in gpPanchayatWardsJoin.DefaultIfEmpty()
                         where kyc.IsUnOppossed == false
                               && kyc.GPPanchayatWardsMasterId != 0
-                              && !excludedKycMasterIds.Contains(kyc.KycMasterId)
+                              && !_context.ResultDeclaration.Select(rd => rd.KycMasterId).Distinct().Contains(kyc.KycMasterId)
                         select new
                         {
                             KycRecord = kyc,
@@ -19796,12 +19793,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         public async Task<List<ConsolidatedUnOpposedPanchSarPanchAndNoKycCandidateReportList>> GetConsolidatedNoKycSarPanchResultDeclarationReport(ResultDeclarationReportListModel resultDeclaration)
         {
-            // Get the list of excluded KycMasterIds
-            var excludedKycMasterIds = _context.ResultDeclaration
-                                               .Select(rd => rd.KycMasterId)
-                                               .Distinct()
-                                               .ToList();
-
             var query = from kyc in _context.Kyc
                         join state in _context.StateMaster on kyc.StateMasterId equals state.StateMasterId into stateJoin
                         from state in stateJoin.DefaultIfEmpty()
@@ -19813,7 +19804,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                         from fourthLevel in fourthLevelJoin.DefaultIfEmpty()
                         where kyc.IsUnOppossed == false
                               && kyc.GPPanchayatWardsMasterId == 0
-                              && !excludedKycMasterIds.Contains(kyc.KycMasterId) // Exclude records present in ResultDeclaration
+                              && !_context.ResultDeclaration.Select(rd => rd.KycMasterId).Distinct().Contains(kyc.KycMasterId) // Exclude records present in ResultDeclaration
                         select new
                         {
                             KycRecord = kyc,
@@ -19892,7 +19883,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                         from fourthLevel in fourthLevelJoin.DefaultIfEmpty()
                         join gpPanchayatWards in _context.GPPanchayatWards on kyc.GPPanchayatWardsMasterId equals gpPanchayatWards.GPPanchayatWardsMasterId into gpPanchayatWardsJoin
                         from gpPanchayatWards in gpPanchayatWardsJoin.DefaultIfEmpty()
-                        where kyc.GPPanchayatWardsMasterId != 0 && rd.IsWinner == true
+                        where kyc.GPPanchayatWardsMasterId != 0 && rd.IsWinner == true && kyc.IsUnOppossed == false
                         select new
                         {
                             ResultDeclaration = rd,
@@ -20004,7 +19995,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                         from fourthLevel in fourthLevelJoin.DefaultIfEmpty()
                         join booth in _context.BoothMaster on rd.BoothMasterId equals booth.BoothMasterId into boothJoin
                         from booth in boothJoin.DefaultIfEmpty()
-                        where kyc.GPPanchayatWardsMasterId == 0 && rd.IsWinner == true
+                        where kyc.GPPanchayatWardsMasterId == 0 && rd.IsWinner == true && kyc.IsUnOppossed == false
                         select new
                         {
                             ResultDeclaration = rd,
