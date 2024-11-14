@@ -414,8 +414,8 @@ namespace EAMS_ACore.IRepository
         Task<ServiceResponse> AddGPVoterDetails(GPVoter gpVoterPdf);
         Task<ServiceResponse> UpdateGPVoterDetails(GPVoter gpVoterPdf);
         Task<GPVoterList> GetGPVoterById(int gpVoterMasterId);
-        Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
-        Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, string userId);
+        Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId,int electionTypeMasterId);
+        Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId, string userId);
         Task<ServiceResponse> DeleteGPVoterById(int gpVoterMasterId);
         #endregion
 

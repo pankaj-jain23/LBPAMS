@@ -23,7 +23,12 @@
             get;
             set;
         }
-        
+        public int? ElectionTypeMasterId
+
+        {
+            get;
+            set;
+        }
         public IFormFile? GPVoterPdf
         {
             get;
@@ -59,6 +64,12 @@
             set;
         }
         public int? FourthLevelHMasterId
+
+        {
+            get;
+            set;
+        }
+        public int? ElectionTypeMasterId
 
         {
             get;

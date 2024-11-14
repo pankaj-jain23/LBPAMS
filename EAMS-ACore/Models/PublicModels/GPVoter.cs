@@ -36,7 +36,12 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
-        
+        public int? ElectionTypeMasterId
+
+        {
+            get;
+            set;
+        }
         public string? GPVoterPdfPath
         {
             get;
@@ -102,6 +107,18 @@ namespace EAMS_ACore.Models.PublicModels
             set;
         }
         public string FourthLevelHName
+        {
+            get;
+            set;
+
+        }
+        public int? ElectionTypeMasterId
+
+        {
+            get;
+            set;
+        }
+        public string ElectionTypeName
         {
             get;
             set;

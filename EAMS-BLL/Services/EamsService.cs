@@ -1817,13 +1817,13 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetGPVoterById(gpVoterMasterId);
         }
-        public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
         {
-            return await _eamsRepository.GetGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId);
+            return await _eamsRepository.GetGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId);
         }
-        public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, string userId)
+        public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId, string userId)
         {
-            return await _eamsRepository.GetGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId, userId);
+            return await _eamsRepository.GetGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId, userId);
         }
         public async Task<ServiceResponse> DeleteGPVoterById(int gpVoterMasterId)
         {

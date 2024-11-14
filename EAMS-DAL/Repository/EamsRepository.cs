@@ -2790,7 +2790,10 @@ namespace EAMS_DAL.Repository
                                     LocationMasterId = bt.LocationMasterId,
                                     ElectionTypeMasterId = bt.ElectionTypeMasterId,
                                     ElectionTypeName = elec.ElectionType,
-
+                                    Male = bt.Male,
+                                    Female = bt.Female,
+                                    Transgender = bt.Transgender,
+                                    TotalVoters = bt.TotalVoters
 
                                 };
 
@@ -2861,7 +2864,11 @@ namespace EAMS_DAL.Repository
                                        ElectionTypeName = elec.ElectionType,
                                        FourthLevelHMasterId = bt.FourthLevelHMasterId,
                                        FourthLevelHName = frth.HierarchyName,
-                                       IsPrimaryBooth = bt.IsPrimaryBooth
+                                       IsPrimaryBooth = bt.IsPrimaryBooth,
+                                       Male = bt.Male,
+                                       Female = bt.Female,
+                                       Transgender = bt.Transgender,
+                                       TotalVoters = bt.TotalVoters
                                    })
                               .ToListAsync();
 
@@ -2932,7 +2939,11 @@ namespace EAMS_DAL.Repository
                                        FourthLevelHName = frth.HierarchyName,
                                        PSZoneMasterId = bt.PSZonePanchayatMasterId,
                                        PSZonePanchayatName = zp.PSZonePanchayatName, // Safely access the PSZonePanchayatName
-                                       IsPrimaryBooth = bt.IsPrimaryBooth
+                                       IsPrimaryBooth = bt.IsPrimaryBooth,
+                                       Male = bt.Male,
+                                       Female = bt.Female,
+                                       Transgender = bt.Transgender,
+                                       TotalVoters = bt.TotalVoters
                                    }).ToListAsync();
 
 
@@ -8072,7 +8083,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         {
             var result = await (from election in _context.ElectionInfoMaster
                                 join district in _context.DistrictMaster on election.DistrictMasterId equals district.DistrictMasterId
-                                where election.StateMasterId == stateMasterId &&election.ElectionTypeMasterId==electionTypeMasterId&&
+                                where election.StateMasterId == stateMasterId && election.ElectionTypeMasterId == electionTypeMasterId &&
                                       district.DistrictStatus == true
                                 group election by new
                                 {
@@ -8119,7 +8130,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                       booth.BoothStatus == true &&
                                       booth.AssignedTo != null &&
                                       election.ElectionTypeMasterId == electionTypeMasterId &&
-                                      district.DistrictStatus == true 
+                                      district.DistrictStatus == true
                                 // Exclude booths where event activity is completed
                                 && (election == null || (election != null && (
                                        !election.IsPartyDispatched ||
@@ -8455,7 +8466,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                 where booth.StateMasterId == stateMasterId
                                       && (!districtMasterId.HasValue || booth.DistrictMasterId == districtMasterId)
                                       && (!assemblyMasterId.HasValue || booth.AssemblyMasterId == assemblyMasterId)
-                                      && (!fourthLevelHMasterId.HasValue || booth.FourthLevelHMasterId == fourthLevelHMasterId) 
+                                      && (!fourthLevelHMasterId.HasValue || booth.FourthLevelHMasterId == fourthLevelHMasterId)
                                       && election.ElectionTypeMasterId == electionTypeMasterId
                                       && booth.BoothStatus == true
                                       && booth.AssignedTo != null  // Ensure AssignedTo is not null
@@ -16710,6 +16721,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                  where
                                        k.StateMasterId == stateMasterId &&
                                        k.DistrictMasterId == districtMasterId &&
+                                       k.ElectionTypeMasterId == electionType &&
                                        k.AssemblyMasterId == assemblyMasterId
                                  select new KycList
                                  {
@@ -16729,6 +16741,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                      CandidateName = k.CandidateName,
                                      FatherName = k.FatherName,
                                      IsUnOppossed = k.IsUnOppossed,
+                                     ElectionTypeMasterId = k.ElectionTypeMasterId,
                                      Age = k.Age,
                                      NominationPdfPath = $"{baseUrl}{k.NominationPdfPath}",
                                  }).ToListAsync();
@@ -16756,6 +16769,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                        k.StateMasterId == stateMasterId &&
                                        k.DistrictMasterId == districtMasterId &&
                                        k.AssemblyMasterId == assemblyMasterId &&
+                                       k.ElectionTypeMasterId == electionType &&
                                        fl.AssignedToRO == userId
 
                                  select new KycList
@@ -16774,6 +16788,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                      CandidateType = k.GPPanchayatWardsMasterId == 0 ? "Sarpanch" : "Panch",
                                      CandidateName = k.CandidateName,
                                      FatherName = k.FatherName,
+                                     ElectionTypeMasterId = k.ElectionTypeMasterId,
                                      IsUnOppossed = k.IsUnOppossed,
                                      Age = k.Age,
                                      NominationPdfPath = $"{baseUrl}{k.NominationPdfPath}",
@@ -16803,7 +16818,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                        k.StateMasterId == stateMasterId &&
                                        k.DistrictMasterId == districtMasterId &&
                                        k.AssemblyMasterId == assemblyMasterId &&
-                                       k.FourthLevelHMasterId == fourthLevelMasterId
+                                       k.FourthLevelHMasterId == fourthLevelMasterId &&
+                                       k.ElectionTypeMasterId == electionType
                                        && (!wardMasterId.HasValue || k.GPPanchayatWardsMasterId == wardMasterId.Value)
 
                                  select new KycList
@@ -16825,6 +16841,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                      CandidateName = k.CandidateName,
                                      FatherName = k.FatherName,
                                      IsUnOppossed = k.IsUnOppossed,
+                                     ElectionTypeMasterId = k.ElectionTypeMasterId,
                                      Age = k.Age,
                                      NominationPdfPath = $"{baseUrl}{k.NominationPdfPath}",
                                  }).ToListAsync();
@@ -17086,7 +17103,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                 where
                                          un.StateMasterId == stateMasterId &&
                                         un.DistrictMasterId == districtMasterId &&
-                                        un.AssemblyMasterId == assemblyMasterId
+                                        un.AssemblyMasterId == assemblyMasterId &&
+                                        un.ElectionTypeMasterId == electionType
                                 select new UnOpposedList
                                 {
                                     UnOpposedMasterId = un.UnOpposedMasterId,
@@ -17904,7 +17922,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     .Where(k => k.FourthLevelHMasterId == gpVoterPdf.FourthLevelHMasterId &&
                                 k.StateMasterId == gpVoterPdf.StateMasterId &&
                                 k.DistrictMasterId == gpVoterPdf.DistrictMasterId &&
-                                k.AssemblyMasterId == gpVoterPdf.AssemblyMasterId)
+                                k.AssemblyMasterId == gpVoterPdf.AssemblyMasterId &&
+                                k.ElectionTypeMasterId == gpVoterPdf.ElectionTypeMasterId)
                     .ToListAsync();
 
                 if (overlappingVoters.Any(voter =>
@@ -17922,6 +17941,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             existing.DistrictMasterId = gpVoterPdf.DistrictMasterId;
             existing.AssemblyMasterId = gpVoterPdf.AssemblyMasterId;
             existing.FourthLevelHMasterId = gpVoterPdf.FourthLevelHMasterId;
+            existing.ElectionTypeMasterId = gpVoterPdf.ElectionTypeMasterId;
             if (!string.IsNullOrEmpty(gpVoterPdf.GPVoterPdfPath))
             {
                 existing.GPVoterPdfPath = gpVoterPdf.GPVoterPdfPath;
@@ -17954,51 +17974,59 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             // Fetch the related GPVoter details and return as a single GPVoterList object
             var gpVoterDetail = await _context.GPVoter
-                .Where(gv => gv.GPVoterMasterId == gpVoterMasterId)
-                .Join(_context.StateMaster,
-                      gv => gv.StateMasterId,
-                      sm => sm.StateMasterId,
-                      (gv, sm) => new { GPVoter = gv, StateMaster = sm })
-                .Join(_context.DistrictMaster,
-                      j => j.GPVoter.DistrictMasterId,
-                      dm => dm.DistrictMasterId,
-                      (j, dm) => new { j.GPVoter, j.StateMaster, DistrictMaster = dm })
-                .Join(_context.AssemblyMaster,
-                      j => j.GPVoter.AssemblyMasterId,
-                      am => am.AssemblyMasterId,
-                      (j, am) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, AssemblyMaster = am })
-                .Join(_context.FourthLevelH,
-                      j => j.GPVoter.FourthLevelHMasterId,
-                      flh => flh.FourthLevelHMasterId,
-                      (j, flh) => new GPVoterList
-                      {
-                          GPVoterMasterId = j.GPVoter.GPVoterMasterId,
-                          StateMasterId = j.GPVoter.StateMasterId,
-                          DistrictMasterId = j.GPVoter.DistrictMasterId,
-                          AssemblyMasterId = j.GPVoter.AssemblyMasterId,
-                          GPVoterPdfPath = $"{baseUrl}{j.GPVoter.GPVoterPdfPath.Replace("\\", "/")}",
-                          StateName = j.StateMaster.StateName,
-                          DistrictName = j.DistrictMaster.DistrictName,
-                          AssemblyName = j.AssemblyMaster.AssemblyName,
-                          FourthLevelHMasterId = flh.FourthLevelHMasterId,
-                          FourthLevelHName = flh.HierarchyName,
-                          WardRange = j.GPVoter.WardRange,
-                          GPVoterStatus = j.GPVoter.GPVoterStatus
-                      })
-                .FirstOrDefaultAsync(); // Return a single GPVoterList object
+                                .Where(gv => gv.GPVoterMasterId == gpVoterMasterId)
+                                        .Join(_context.ElectionTypeMaster,
+                                              gv => gv.ElectionTypeMasterId,
+                                              el => el.ElectionTypeMasterId,
+                                              (gv, el) => new { GPVoter = gv, ElectionTypeMaster = el })
+                                        .Join(_context.StateMaster,
+                                              gv => gv.GPVoter.StateMasterId,
+                                              sm => sm.StateMasterId,
+                                              (gv, sm) => new { gv.GPVoter, gv.ElectionTypeMaster, StateMaster = sm })
+                                        .Join(_context.DistrictMaster,
+                                              j => j.GPVoter.DistrictMasterId,
+                                              dm => dm.DistrictMasterId,
+                                              (j, dm) => new { j.GPVoter, j.ElectionTypeMaster, j.StateMaster, DistrictMaster = dm })
+                                        .Join(_context.AssemblyMaster,
+                                              j => j.GPVoter.AssemblyMasterId,
+                                              am => am.AssemblyMasterId,
+                                              (j, am) => new { j.GPVoter, j.ElectionTypeMaster, j.StateMaster, j.DistrictMaster, AssemblyMaster = am })
+                                        .Join(_context.FourthLevelH,
+                                              j => j.GPVoter.FourthLevelHMasterId,
+                                              flh => flh.FourthLevelHMasterId,
+                                              (j, flh) => new GPVoterList
+                                              {
+                                                  GPVoterMasterId = j.GPVoter.GPVoterMasterId,
+                                                  StateMasterId = j.GPVoter.StateMasterId,
+                                                  DistrictMasterId = j.GPVoter.DistrictMasterId,
+                                                  AssemblyMasterId = j.GPVoter.AssemblyMasterId,
+                                                  GPVoterPdfPath = $"{baseUrl}{j.GPVoter.GPVoterPdfPath.Replace("\\", "/")}",
+                                                  StateName = j.StateMaster.StateName,
+                                                  DistrictName = j.DistrictMaster.DistrictName,
+                                                  AssemblyName = j.AssemblyMaster.AssemblyName,
+                                                  FourthLevelHMasterId = flh.FourthLevelHMasterId,
+                                                  FourthLevelHName = flh.HierarchyName,
+                                                  WardRange = j.GPVoter.WardRange,
+                                                  GPVoterStatus = j.GPVoter.GPVoterStatus,
+                                                  ElectionTypeMasterId = j.GPVoter.ElectionTypeMasterId,
+                                                  ElectionTypeName = j.ElectionTypeMaster.ElectionType // Assigning ElectionTypeName here
+                                              })
+                                .FirstOrDefaultAsync();
+            // Return a single GPVoterList object
 
             return gpVoterDetail;
         }
 
 
-        public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
         {
             var baseUrl = "https://lbpams.punjab.gov.in/lbpamsdoc/";
 
             var gpVoterList = await _context.GPVoter
                 .Where(gv => gv.StateMasterId == stateMasterId &&
                              gv.DistrictMasterId == districtMasterId &&
-                             gv.AssemblyMasterId == assemblyMasterId)
+                             gv.AssemblyMasterId == assemblyMasterId &&
+                             gv.ElectionTypeMasterId == electionTypeMasterId)
                 .Join(_context.StateMaster,
                       gv => gv.StateMasterId,
                       sm => sm.StateMasterId,
@@ -18014,7 +18042,11 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 .Join(_context.FourthLevelH,
                       j => j.GPVoter.FourthLevelHMasterId, // Assuming GPVoter has FourthLevelHMasterId
                       flh => flh.FourthLevelHMasterId,
-                      (j, flh) => new GPVoterList
+                      (j, flh) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, j.AssemblyMaster, FourthLevelH = flh })
+                .Join(_context.ElectionTypeMaster,
+                      j => j.GPVoter.ElectionTypeMasterId,
+                      el => el.ElectionTypeMasterId,
+                      (j, el) => new GPVoterList
                       {
                           GPVoterMasterId = j.GPVoter.GPVoterMasterId,
                           StateMasterId = j.GPVoter.StateMasterId,
@@ -18024,23 +18056,27 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                           StateName = j.StateMaster.StateName,
                           DistrictName = j.DistrictMaster.DistrictName,
                           AssemblyName = j.AssemblyMaster.AssemblyName,
-                          FourthLevelHMasterId = flh.FourthLevelHMasterId,
-                          FourthLevelHName = flh.HierarchyName,
+                          FourthLevelHMasterId = j.FourthLevelH.FourthLevelHMasterId,
+                          FourthLevelHName = j.FourthLevelH.HierarchyName,
                           WardRange = j.GPVoter.WardRange,
-                          GPVoterStatus = j.GPVoter.GPVoterStatus
+                          GPVoterStatus = j.GPVoter.GPVoterStatus,
+                          ElectionTypeMasterId = el.ElectionTypeMasterId,
+                          ElectionTypeName = el.ElectionType
                       })
                 .ToListAsync();
 
             return gpVoterList;
         }
-        public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, string userId)
+
+        public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId, string userId)
         {
             var baseUrl = "https://lbpams.punjab.gov.in/lbpamsdoc/";
 
             var gpVoterList = await _context.GPVoter
                 .Where(gv => gv.StateMasterId == stateMasterId &&
                              gv.DistrictMasterId == districtMasterId &&
-                             gv.AssemblyMasterId == assemblyMasterId)
+                             gv.AssemblyMasterId == assemblyMasterId &&
+                             gv.ElectionTypeMasterId == electionTypeMasterId)
                 .Join(_context.StateMaster,
                       gv => gv.StateMasterId,
                       sm => sm.StateMasterId,
@@ -18054,9 +18090,13 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                       am => am.AssemblyMasterId,
                       (j, am) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, AssemblyMaster = am })
                 .Join(_context.FourthLevelH.Where(flh => flh.AssignedToRO == userId),
-                      j => j.GPVoter.FourthLevelHMasterId, // Assuming GPVoter has FourthLevelHMasterId
+                      j => j.GPVoter.FourthLevelHMasterId,
                       flh => flh.FourthLevelHMasterId,
-                      (j, flh) => new GPVoterList
+                      (j, flh) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, j.AssemblyMaster, FourthLevelH = flh })
+                .Join(_context.ElectionTypeMaster,
+                      j => j.GPVoter.ElectionTypeMasterId,
+                      et => et.ElectionTypeMasterId,
+                      (j, et) => new GPVoterList
                       {
                           GPVoterMasterId = j.GPVoter.GPVoterMasterId,
                           StateMasterId = j.GPVoter.StateMasterId,
@@ -18066,10 +18106,12 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                           StateName = j.StateMaster.StateName,
                           DistrictName = j.DistrictMaster.DistrictName,
                           AssemblyName = j.AssemblyMaster.AssemblyName,
-                          FourthLevelHMasterId = flh.FourthLevelHMasterId,
-                          FourthLevelHName = flh.HierarchyName,
+                          FourthLevelHMasterId = j.FourthLevelH.FourthLevelHMasterId,
+                          FourthLevelHName = j.FourthLevelH.HierarchyName,
                           WardRange = j.GPVoter.WardRange,
-                          GPVoterStatus = j.GPVoter.GPVoterStatus
+                          GPVoterStatus = j.GPVoter.GPVoterStatus,
+                          ElectionTypeMasterId = et.ElectionTypeMasterId,
+                          ElectionTypeName = et.ElectionType
                       })
                 .ToListAsync();
 
@@ -19343,7 +19385,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                         from fourthLevel in fourthLevelJoin.DefaultIfEmpty()
                         join gpPanchayatWards in _context.GPPanchayatWards on kyc.GPPanchayatWardsMasterId equals gpPanchayatWards.GPPanchayatWardsMasterId into gpPanchayatWardsJoin
                         from gpPanchayatWards in gpPanchayatWardsJoin.DefaultIfEmpty()
-                        where kyc.GPPanchayatWardsMasterId != 0 && kyc.IsUnOppossed==false
+                        where kyc.GPPanchayatWardsMasterId != 0 && kyc.IsUnOppossed == false
                         select new
                         {
                             ResultDeclaration = rd,
@@ -19524,8 +19566,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         public async Task<List<ConsolidatedUnOpposedPanchSarPanchAndNoKycCandidateReportList>> GetConsolidatedNoKycPanchResultDeclarationReport(ResultDeclaration resultDeclaration)
         {
-           
-             //Make it single query
+
+            //Make it single query
             var query = from kyc in _context.Kyc
                         join state in _context.StateMaster on kyc.StateMasterId equals state.StateMasterId into stateJoin
                         from state in stateJoin.DefaultIfEmpty()
