@@ -4282,6 +4282,42 @@ namespace EAMS.Controllers
 
         #endregion
 
+        #region Stream-GetDashBoardCount
+        [HttpGet("stream-dashboard-count")]
+        [Authorize]
+        public async Task StreamDashboardCount(CancellationToken cancellationToken)
+        {
+            // Set the response headers for Server-Sent Events
+            Response.Headers.Append("Content-Type", "text/event-stream");
+            await Response.Body.FlushAsync(cancellationToken);
+
+            ClaimsIdentity claimsIdentity = User.Identity as ClaimsIdentity;
+            _logger.LogInformation("stream-dashboard-count -Under Request");
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                _logger.LogInformation("stream-dashboard-count -Under Working");
+                // Fetch the latest dashboard count data
+                var dashboardRecord = await _EAMSService.GetDashBoardCount(claimsIdentity);
+                _logger.LogInformation("stream-dashboard-count -Under query");
+                // Convert data to JSON format and send as SSE event
+                var jsonData = System.Text.Json.JsonSerializer.Serialize(dashboardRecord);
+                var message = $"data: {jsonData}\n\n";
+
+                byte[] data = System.Text.Encoding.UTF8.GetBytes(message);
+                await Response.Body.WriteAsync(data, 0, data.Length, cancellationToken);
+                _logger.LogInformation("stream-dashboard-count -Under Writing" + message);
+
+                // Flush to ensure the data is sent immediately
+                await Response.Body.FlushAsync(cancellationToken);
+                _logger.LogInformation("stream-dashboard-count -Under Flushed");
+
+                // Optional: Set a delay to control event frequency
+                await Task.Delay(30000, cancellationToken); // 30 seconds delay
+            }
+        }
+        #endregion
+
         #region GetDashBoardCount
         [HttpGet]
         [Route("GetDashBoardCount")]
@@ -4293,6 +4329,7 @@ namespace EAMS.Controllers
             var getDashboardRecord = await _EAMSService.GetDashBoardCount(claimsIdentity);
             return Ok(getDashboardRecord);
         }
+      
         [HttpGet]
         [Route("GetEventActivityDashBoardCount")]
         [Authorize]
