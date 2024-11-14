@@ -8068,11 +8068,11 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         //    return result;
         //}
-        public async Task<List<EventActivityCount>> GetEventListDistrictWiseById(int stateMasterId)
+        public async Task<List<EventActivityCount>> GetEventListDistrictWiseById(int stateMasterId, int electionTypeMasterId)
         {
             var result = await (from election in _context.ElectionInfoMaster
                                 join district in _context.DistrictMaster on election.DistrictMasterId equals district.DistrictMasterId
-                                where election.StateMasterId == stateMasterId &&
+                                where election.StateMasterId == stateMasterId &&election.ElectionTypeMasterId==electionTypeMasterId&&
                                       district.DistrictStatus == true
                                 group election by new
                                 {
@@ -8106,7 +8106,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             return result;
         }
 
-        public async Task<List<EventActivityCount>> GetPendingEventListDistrictWiseById(int stateMasterId)
+        public async Task<List<EventActivityCount>> GetPendingEventListDistrictWiseById(int stateMasterId, int electionTypeMasterId)
         {
             // Get grouped event counts by district
             var result = await (from district in _context.DistrictMaster
@@ -8118,7 +8118,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                 where district.StateMasterId == stateMasterId &&
                                       booth.BoothStatus == true &&
                                       booth.AssignedTo != null &&
-                                      district.DistrictStatus == true
+                                      election.ElectionTypeMasterId == electionTypeMasterId &&
+                                      district.DistrictStatus == true 
                                 // Exclude booths where event activity is completed
                                 && (election == null || (election != null && (
                                        !election.IsPartyDispatched ||
@@ -8166,12 +8167,13 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             return result;
         }
 
-        public async Task<List<AssemblyEventActivityCount>> GetEventListAssemblyWiseById(int stateMasterId, int? districtMasterId)
+        public async Task<List<AssemblyEventActivityCount>> GetEventListAssemblyWiseById(int stateMasterId, int? districtMasterId, int electionTypeMasterId)
         {
             var result = await (from election in _context.ElectionInfoMaster
                                 join assembly in _context.AssemblyMaster on election.AssemblyMasterId equals assembly.AssemblyMasterId
                                 where election.StateMasterId == stateMasterId &&
                                 election.DistrictMasterId == districtMasterId &&
+                                election.ElectionTypeMasterId == electionTypeMasterId &&
                                 assembly.AssemblyStatus == true
                                 group election by new
                                 {
@@ -8209,7 +8211,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             return result;
         }
         ///This API fetches the Assembly-wise event list for Pending events.
-        public async Task<List<AssemblyEventActivityCount>> GetPendingAssemblyWiseEventListById(int stateMasterId, int? districtMasterId)
+        public async Task<List<AssemblyEventActivityCount>> GetPendingAssemblyWiseEventListById(int stateMasterId, int? districtMasterId, int electionTypeMasterId)
         {
             // Get grouped event counts by district
             var result = await (from assembly in _context.AssemblyMaster
@@ -8222,6 +8224,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                       assembly.DistrictMasterId == districtMasterId &&
                                       booth.BoothStatus == true &&
                                       booth.AssignedTo != null &&
+                                      election.ElectionTypeMasterId == electionTypeMasterId &&
                                       assembly.AssemblyStatus == true
                                 // Exclude booths where event activity is completed
                                 && (election == null || (election != null && (
@@ -8273,13 +8276,14 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             return result;
         }
 
-        public async Task<List<FourthLevelEventActivityCount>> GetEventListFourthLevelHWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId)
+        public async Task<List<FourthLevelEventActivityCount>> GetEventListFourthLevelHWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId, int electionTypeMasterId)
         {
             var result = await (from election in _context.ElectionInfoMaster
                                 join fourthLevel in _context.FourthLevelH on election.FourthLevelMasterId equals fourthLevel.FourthLevelHMasterId
                                 where election.StateMasterId == stateMasterId &&
                                 election.DistrictMasterId == districtMasterId &&
                                 election.AssemblyMasterId == assemblyMasterId &&
+                                election.ElectionTypeMasterId == electionTypeMasterId &&
                                 fourthLevel.HierarchyStatus == true
                                 group election by new
                                 {
@@ -8319,7 +8323,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             return result;
         }
         ///This API fetches the FourthLevelH-wise event list for Pending events.
-        public async Task<List<FourthLevelEventActivityCount>> GetPendingEventListFourthLevelHWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId)
+        public async Task<List<FourthLevelEventActivityCount>> GetPendingEventListFourthLevelHWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId, int electionTypeMasterId)
         {
             // Get grouped event counts by district
             var result = await (from fourthLevelH in _context.FourthLevelH
@@ -8333,6 +8337,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                       fourthLevelH.AssemblyMasterId == assemblyMasterId &&
                                       booth.BoothStatus == true &&
                                       booth.AssignedTo != null &&
+                                      election.ElectionTypeMasterId == electionTypeMasterId &&
                                       fourthLevelH.HierarchyStatus == true
                                 // Exclude booths where event activity is completed
                                 && (election == null || (election != null && (
@@ -8386,7 +8391,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             return result;
         }
 
-        public async Task<List<EventActivityBoothWise>> GetEventListBoothWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelHMasterId)
+        public async Task<List<EventActivityBoothWise>> GetEventListBoothWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelHMasterId, int? electionTypeMasterId)
         {
             var result = await (from election in _context.ElectionInfoMaster
                                 join boothMaster in _context.BoothMaster on election.BoothMasterId equals boothMaster.BoothMasterId
@@ -8397,7 +8402,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                       && (election.AssemblyMasterId == assemblyMasterId)
                                       && (election.FourthLevelMasterId == fourthLevelHMasterId)
                                       && (boothMaster.BoothStatus == true)
-                                      && (boothMaster.AssignedTo != null)
+                                      && (boothMaster.AssignedTo != null) &&
+                                      election.ElectionTypeMasterId == electionTypeMasterId
                                 group election by new
                                 {
                                     boothMaster.BoothMasterId,
@@ -8436,7 +8442,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             return result;
         }
         ///This API fetches the Booth-wise event list for Pending events.
-        public async Task<List<EventActivityBoothWise>> GetPendingBoothWiseEventListById(int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelHMasterId)
+        public async Task<List<EventActivityBoothWise>> GetPendingBoothWiseEventListById(int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelHMasterId, int? electionTypeMasterId)
         {
             // Get grouped event counts by booth
             var result = await (from booth in _context.BoothMaster
@@ -8449,7 +8455,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                 where booth.StateMasterId == stateMasterId
                                       && (!districtMasterId.HasValue || booth.DistrictMasterId == districtMasterId)
                                       && (!assemblyMasterId.HasValue || booth.AssemblyMasterId == assemblyMasterId)
-                                      && (!fourthLevelHMasterId.HasValue || booth.FourthLevelHMasterId == fourthLevelHMasterId)
+                                      && (!fourthLevelHMasterId.HasValue || booth.FourthLevelHMasterId == fourthLevelHMasterId) 
+                                      && election.ElectionTypeMasterId == electionTypeMasterId
                                       && booth.BoothStatus == true
                                       && booth.AssignedTo != null  // Ensure AssignedTo is not null
                                 group new { booth, election } by new
