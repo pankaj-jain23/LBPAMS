@@ -135,9 +135,9 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
-        public int VoterTypeMasterId { get; set; }
+        public int? VoterTypeMasterId { get; set; }
 
-        public string VoterTypeName { get; set; }
+        public string? VoterTypeName { get; set; }
         public bool GPVoterStatus { get; set; }
 
     }
