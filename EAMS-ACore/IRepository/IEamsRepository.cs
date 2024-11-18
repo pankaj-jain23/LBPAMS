@@ -417,6 +417,7 @@ namespace EAMS_ACore.IRepository
         Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId,int electionTypeMasterId);
         Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId, string userId);
         Task<ServiceResponse> DeleteGPVoterById(int gpVoterMasterId);
+        Task<List<VoterType>> GetVoterTypeListById();
         #endregion
 
         #region ResultDeclaration

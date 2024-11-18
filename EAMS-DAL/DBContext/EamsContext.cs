@@ -72,6 +72,7 @@ public partial class EamsContext : IdentityDbContext<UserRegistration>
     public virtual DbSet<ResultDeclaration> ResultDeclaration { get; set; }
     public virtual DbSet<AROResultMaster> AROResultMaster { get; set; }
     public virtual DbSet<ResultDeclarationHistory> ResultDeclarationHistory { get; set; }
+    public virtual DbSet<VoterType> VoterType { get; set; }
     //  public virtual DbSet<BLOBoothMaster> BLOBoothMaster { get; set; } 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

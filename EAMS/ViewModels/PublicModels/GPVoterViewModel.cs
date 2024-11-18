@@ -40,6 +40,7 @@
             set;
         }
         public bool GPVoterStatus { get; set; }
+        public int VoterTypeMasterId { get; set; }
     }
     public class UpdateGPVoterViewModel
     {
@@ -86,5 +87,6 @@
             set;
         }
         public bool GPVoterStatus { get; set; }
+        public int VoterTypeMasterId { get; set; }
     }
 }

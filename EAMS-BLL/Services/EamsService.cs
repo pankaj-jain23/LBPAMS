@@ -1829,10 +1829,15 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.DeleteGPVoterById(gpVoterMasterId);
         }
+
+        public async Task<List<VoterType>> GetVoterTypeListById()
+        {
+            return await _eamsRepository.GetVoterTypeListById();
+        }
         #endregion
 
         #region ResultDeclaration
-       
+
         public async Task<ServiceResponse> AddResultDeclarationDetails(List<ResultDeclaration> resultDeclaration)
         {
             if (resultDeclaration != null && resultDeclaration.Any())

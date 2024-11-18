@@ -718,6 +718,27 @@ namespace EAMS.Controllers
                 }
             }
         }
+
+
+        [HttpGet("GetVoterTypeListById")]
+        public async Task<IActionResult> GetVoterTypeListById()
+        {
+            var result = await _eamsService.GetVoterTypeListById();
+
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            // Prepare the response data
+            var data = new
+            {
+                count = result.Count,
+                voterType = result,
+            };
+
+            return Ok(data);
+        }
         #endregion
 
         #region Result Declaration for Portal

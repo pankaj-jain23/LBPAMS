@@ -52,6 +52,7 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
+        public int VoterTypeMasterId { get; set; }
         public DateTime? GPVoterCreatedAt { get; set; }
 
         public DateTime? GPVoterUpdatedAt { get; set; }
@@ -134,6 +135,9 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
+        public int VoterTypeMasterId { get; set; }
+
+        public string VoterTypeName { get; set; }
         public bool GPVoterStatus { get; set; }
 
     }

@@ -17878,25 +17878,27 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         public async Task<ServiceResponse> AddGPVoterDetails(GPVoter gpVoterPdf)
         {
-            var existing = await _context.GPVoter
-                .Where(k => k.FourthLevelHMasterId == gpVoterPdf.FourthLevelHMasterId)
-                .ToListAsync();
-
-            if (existing.Any())
+            if (gpVoterPdf.ElectionTypeMasterId == 1)
             {
-                var newRange = gpVoterPdf.WardRange.Split(',').Select(int.Parse).OrderBy(x => x).ToArray();
-                int newMin = newRange[0], newMax = newRange[1];
+                var existing = await _context.GPVoter
+                    .Where(k => k.FourthLevelHMasterId == gpVoterPdf.FourthLevelHMasterId)
+                    .ToListAsync();
 
-                if (existing.Any(voter =>
+                if (existing.Any())
                 {
-                    var range = voter.WardRange.Split(',').Select(int.Parse).OrderBy(x => x).ToArray();
-                    return !(newMax < range[0] || newMin > range[1]);
-                }))
-                {
-                    return new ServiceResponse { IsSucceed = false, Message = "Ward Range overlaps with an existing range" };
+                    var newRange = gpVoterPdf.WardRange.Split(',').Select(int.Parse).OrderBy(x => x).ToArray();
+                    int newMin = newRange[0], newMax = newRange[1];
+
+                    if (existing.Any(voter =>
+                    {
+                        var range = voter.WardRange.Split(',').Select(int.Parse).OrderBy(x => x).ToArray();
+                        return !(newMax < range[0] || newMin > range[1]);
+                    }))
+                    {
+                        return new ServiceResponse { IsSucceed = false, Message = "Ward Range overlaps with an existing range" };
+                    }
                 }
             }
-
             await _context.GPVoter.AddAsync(gpVoterPdf);
             await _context.SaveChangesAsync();
             return new ServiceResponse { IsSucceed = true, Message = "Successfully added" };
@@ -17911,29 +17913,32 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
 
             // Split the new ward range
-            var newRange = gpVoterPdf.WardRange.Split(',').Select(int.Parse).OrderBy(x => x).ToArray();
-            int newMin = newRange[0],
-                newMax = newRange[1];
-
-            if (gpVoterPdf.WardRange != existing.WardRange)
+            if (gpVoterPdf.ElectionTypeMasterId == 1)
             {
-                // If WardRange is the same, check for overlap with existing GPVoters
-                var overlappingVoters = await _context.GPVoter
-                    .Where(k => k.FourthLevelHMasterId == gpVoterPdf.FourthLevelHMasterId &&
-                                k.StateMasterId == gpVoterPdf.StateMasterId &&
-                                k.DistrictMasterId == gpVoterPdf.DistrictMasterId &&
-                                k.AssemblyMasterId == gpVoterPdf.AssemblyMasterId &&
-                                k.ElectionTypeMasterId == gpVoterPdf.ElectionTypeMasterId)
-                    .ToListAsync();
+                var newRange = gpVoterPdf.WardRange.Split(',').Select(int.Parse).OrderBy(x => x).ToArray();
+                int newMin = newRange[0],
+                    newMax = newRange[1];
 
-                if (overlappingVoters.Any(voter =>
+                if (gpVoterPdf.WardRange != existing.WardRange)
                 {
-                    var range = voter.WardRange.Split(',').Select(int.Parse).OrderBy(x => x).ToArray();
-                    return !(newMax < range[0] || newMin > range[1]); // Check for overlap
-                }))
-                {
-                    // Return failure if there is an overlap
-                    return new ServiceResponse { IsSucceed = false, Message = "Existing data overlaps with the new Ward Range." };
+                    // If WardRange is the same, check for overlap with existing GPVoters
+                    var overlappingVoters = await _context.GPVoter
+                        .Where(k => k.FourthLevelHMasterId == gpVoterPdf.FourthLevelHMasterId &&
+                                    k.StateMasterId == gpVoterPdf.StateMasterId &&
+                                    k.DistrictMasterId == gpVoterPdf.DistrictMasterId &&
+                                    k.AssemblyMasterId == gpVoterPdf.AssemblyMasterId &&
+                                    k.ElectionTypeMasterId == gpVoterPdf.ElectionTypeMasterId)
+                        .ToListAsync();
+
+                    if (overlappingVoters.Any(voter =>
+                    {
+                        var range = voter.WardRange.Split(',').Select(int.Parse).OrderBy(x => x).ToArray();
+                        return !(newMax < range[0] || newMin > range[1]); // Check for overlap
+                    }))
+                    {
+                        // Return failure if there is an overlap
+                        return new ServiceResponse { IsSucceed = false, Message = "Existing data overlaps with the new Ward Range." };
+                    }
                 }
             }
 
@@ -17951,6 +17956,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 existing.GPVoterPdfPath = existing.GPVoterPdfPath;
             }
             existing.WardRange = gpVoterPdf.WardRange;
+            existing.VoterTypeMasterId = gpVoterPdf.VoterTypeMasterId;
 
             _context.GPVoter.Update(existing);
             await _context.SaveChangesAsync();
@@ -17960,63 +17966,58 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         public async Task<GPVoterList> GetGPVoterById(int gpVoterMasterId)
         {
-            // Fetch the GPVoter record by ID
-            var gpGPVoter = await _context.GPVoter
-                .Where(w => w.GPVoterMasterId == gpVoterMasterId)
-                .FirstOrDefaultAsync();
-
-            if (gpGPVoter == null)
-            {
-                return null; // Return null if the GPVoter record is not found
-            }
-
             var baseUrl = "https://lbpams.punjab.gov.in/lbpamsdoc/";
 
-            // Fetch the related GPVoter details and return as a single GPVoterList object
+            // Fetch the GPVoter details with the necessary joins
             var gpVoterDetail = await _context.GPVoter
                                 .Where(gv => gv.GPVoterMasterId == gpVoterMasterId)
-                                        .Join(_context.ElectionTypeMaster,
-                                              gv => gv.ElectionTypeMasterId,
-                                              el => el.ElectionTypeMasterId,
-                                              (gv, el) => new { GPVoter = gv, ElectionTypeMaster = el })
-                                        .Join(_context.StateMaster,
-                                              gv => gv.GPVoter.StateMasterId,
-                                              sm => sm.StateMasterId,
-                                              (gv, sm) => new { gv.GPVoter, gv.ElectionTypeMaster, StateMaster = sm })
-                                        .Join(_context.DistrictMaster,
-                                              j => j.GPVoter.DistrictMasterId,
-                                              dm => dm.DistrictMasterId,
-                                              (j, dm) => new { j.GPVoter, j.ElectionTypeMaster, j.StateMaster, DistrictMaster = dm })
-                                        .Join(_context.AssemblyMaster,
-                                              j => j.GPVoter.AssemblyMasterId,
-                                              am => am.AssemblyMasterId,
-                                              (j, am) => new { j.GPVoter, j.ElectionTypeMaster, j.StateMaster, j.DistrictMaster, AssemblyMaster = am })
-                                        .Join(_context.FourthLevelH,
-                                              j => j.GPVoter.FourthLevelHMasterId,
-                                              flh => flh.FourthLevelHMasterId,
-                                              (j, flh) => new GPVoterList
-                                              {
-                                                  GPVoterMasterId = j.GPVoter.GPVoterMasterId,
-                                                  StateMasterId = j.GPVoter.StateMasterId,
-                                                  DistrictMasterId = j.GPVoter.DistrictMasterId,
-                                                  AssemblyMasterId = j.GPVoter.AssemblyMasterId,
-                                                  GPVoterPdfPath = $"{baseUrl}{j.GPVoter.GPVoterPdfPath.Replace("\\", "/")}",
-                                                  StateName = j.StateMaster.StateName,
-                                                  DistrictName = j.DistrictMaster.DistrictName,
-                                                  AssemblyName = j.AssemblyMaster.AssemblyName,
-                                                  FourthLevelHMasterId = flh.FourthLevelHMasterId,
-                                                  FourthLevelHName = flh.HierarchyName,
-                                                  WardRange = j.GPVoter.WardRange,
-                                                  GPVoterStatus = j.GPVoter.GPVoterStatus,
-                                                  ElectionTypeMasterId = j.GPVoter.ElectionTypeMasterId,
-                                                  ElectionTypeName = j.ElectionTypeMaster.ElectionType // Assigning ElectionTypeName here
-                                              })
+                                .Join(_context.ElectionTypeMaster,
+                                      gv => gv.ElectionTypeMasterId,
+                                      el => el.ElectionTypeMasterId,
+                                      (gv, el) => new { GPVoter = gv, ElectionTypeMaster = el })
+                                .Join(_context.StateMaster,
+                                      gv => gv.GPVoter.StateMasterId,
+                                      sm => sm.StateMasterId,
+                                      (gv, sm) => new { gv.GPVoter, gv.ElectionTypeMaster, StateMaster = sm })
+                                .Join(_context.DistrictMaster,
+                                      j => j.GPVoter.DistrictMasterId,
+                                      dm => dm.DistrictMasterId,
+                                      (j, dm) => new { j.GPVoter, j.ElectionTypeMaster, j.StateMaster, DistrictMaster = dm })
+                                .Join(_context.AssemblyMaster,
+                                      j => j.GPVoter.AssemblyMasterId,
+                                      am => am.AssemblyMasterId,
+                                      (j, am) => new { j.GPVoter, j.ElectionTypeMaster, j.StateMaster, j.DistrictMaster, AssemblyMaster = am })
+                                .Join(_context.FourthLevelH,
+                                      j => j.GPVoter.FourthLevelHMasterId,
+                                      flh => flh.FourthLevelHMasterId,
+                                      (j, flh) => new { j.GPVoter, j.ElectionTypeMaster, j.StateMaster, j.DistrictMaster, j.AssemblyMaster, FourthLevelH = flh })
+                                .Join(_context.VoterType,
+                                      j => j.GPVoter.VoterTypeMasterId,
+                                      vt => vt.VoterTypeMasterId,
+                                      (j, vt) => new GPVoterList
+                                      {
+                                          GPVoterMasterId = j.GPVoter.GPVoterMasterId,
+                                          StateMasterId = j.GPVoter.StateMasterId,
+                                          DistrictMasterId = j.GPVoter.DistrictMasterId,
+                                          AssemblyMasterId = j.GPVoter.AssemblyMasterId,
+                                          GPVoterPdfPath = $"{baseUrl}{j.GPVoter.GPVoterPdfPath.Replace("\\", "/")}",
+                                          StateName = j.StateMaster.StateName,
+                                          DistrictName = j.DistrictMaster.DistrictName,
+                                          AssemblyName = j.AssemblyMaster.AssemblyName,
+                                          FourthLevelHMasterId = j.FourthLevelH.FourthLevelHMasterId,
+                                          FourthLevelHName = j.FourthLevelH.HierarchyName,
+                                          WardRange = j.GPVoter.WardRange,
+                                          GPVoterStatus = j.GPVoter.GPVoterStatus,
+                                          ElectionTypeMasterId = j.GPVoter.ElectionTypeMasterId,
+                                          ElectionTypeName = j.ElectionTypeMaster.ElectionType,
+                                          VoterTypeMasterId = j.GPVoter.VoterTypeMasterId,
+                                          VoterTypeName = vt.VoterTypeName // Assigning VoterTypeName here
+                                      })
                                 .FirstOrDefaultAsync();
-            // Return a single GPVoterList object
 
+            // Return the GPVoterList object
             return gpVoterDetail;
         }
-
 
         public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
         {
@@ -18040,13 +18041,17 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                       am => am.AssemblyMasterId,
                       (j, am) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, AssemblyMaster = am })
                 .Join(_context.FourthLevelH,
-                      j => j.GPVoter.FourthLevelHMasterId, // Assuming GPVoter has FourthLevelHMasterId
+                      j => j.GPVoter.FourthLevelHMasterId,
                       flh => flh.FourthLevelHMasterId,
                       (j, flh) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, j.AssemblyMaster, FourthLevelH = flh })
                 .Join(_context.ElectionTypeMaster,
                       j => j.GPVoter.ElectionTypeMasterId,
                       el => el.ElectionTypeMasterId,
-                      (j, el) => new GPVoterList
+                      (j, el) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, j.AssemblyMaster, j.FourthLevelH, ElectionTypeMaster = el })
+                .Join(_context.VoterType,
+                      j => j.GPVoter.VoterTypeMasterId,
+                      vt => vt.VoterTypeMasterId,
+                      (j, vt) => new GPVoterList
                       {
                           GPVoterMasterId = j.GPVoter.GPVoterMasterId,
                           StateMasterId = j.GPVoter.StateMasterId,
@@ -18060,8 +18065,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                           FourthLevelHName = j.FourthLevelH.HierarchyName,
                           WardRange = j.GPVoter.WardRange,
                           GPVoterStatus = j.GPVoter.GPVoterStatus,
-                          ElectionTypeMasterId = el.ElectionTypeMasterId,
-                          ElectionTypeName = el.ElectionType
+                          ElectionTypeMasterId = j.ElectionTypeMaster.ElectionTypeMasterId,
+                          ElectionTypeName = j.ElectionTypeMaster.ElectionType,
+                          VoterTypeMasterId = j.GPVoter.VoterTypeMasterId, // Include VoterTypeMasterId
+                          VoterTypeName = vt.VoterTypeName // Include VoterTypeName
                       })
                 .ToListAsync();
 
@@ -18096,7 +18103,11 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 .Join(_context.ElectionTypeMaster,
                       j => j.GPVoter.ElectionTypeMasterId,
                       et => et.ElectionTypeMasterId,
-                      (j, et) => new GPVoterList
+                      (j, et) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, j.AssemblyMaster, j.FourthLevelH, ElectionTypeMaster = et })
+                .Join(_context.VoterType,
+                      j => j.GPVoter.VoterTypeMasterId,
+                      vt => vt.VoterTypeMasterId,
+                      (j, vt) => new GPVoterList
                       {
                           GPVoterMasterId = j.GPVoter.GPVoterMasterId,
                           StateMasterId = j.GPVoter.StateMasterId,
@@ -18110,8 +18121,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                           FourthLevelHName = j.FourthLevelH.HierarchyName,
                           WardRange = j.GPVoter.WardRange,
                           GPVoterStatus = j.GPVoter.GPVoterStatus,
-                          ElectionTypeMasterId = et.ElectionTypeMasterId,
-                          ElectionTypeName = et.ElectionType
+                          ElectionTypeMasterId = j.ElectionTypeMaster.ElectionTypeMasterId,
+                          ElectionTypeName = j.ElectionTypeMaster.ElectionType,
+                          VoterTypeMasterId = j.GPVoter.VoterTypeMasterId, // Include VoterTypeMasterId
+                          VoterTypeName = vt.VoterTypeName // Include VoterTypeName
                       })
                 .ToListAsync();
 
@@ -18132,6 +18145,18 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 return new ServiceResponse { IsSucceed = true, Message = "Record Deleted successfully" };
             }
         }
+
+        public async Task<List<VoterType>> GetVoterTypeListById()
+        {
+            return await _context.VoterType
+                .Select(vt => new VoterType
+                {
+                    VoterTypeMasterId = vt.VoterTypeMasterId,
+                    VoterTypeName = vt.VoterTypeName
+                })
+                .ToListAsync();
+        }
+
         #endregion
 
         #region ResultDeclaration
