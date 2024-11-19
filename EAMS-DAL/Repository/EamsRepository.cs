@@ -18077,7 +18077,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                         ElectionTypeName = j.j.ElectionTypeMaster.ElectionType,
                         VoterTypeMasterId = vt.VoterTypeMasterId != 0 ? vt.VoterTypeMasterId : 0, // If VoterTypeMasterId is not 0, return it, otherwise return 0
                         VoterTypeName = vt.VoterTypeName ?? "null" // If VoterTypeName is null, return "Not Voter Type"
-                    })
+                    }).OrderBy(d => d.FourthLevelHMasterId)
                 .ToListAsync();
 
             return gpVoterList;
@@ -18136,7 +18136,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                         ElectionTypeName = j.j.ElectionTypeMaster.ElectionType,
                         VoterTypeName = vt.VoterTypeName ?? "null" // If VoterTypeName is null, return "Not Voter Type"
 
-                    })
+                    }).OrderBy(d => d.FourthLevelHMasterId)
                 .ToListAsync();
 
             return gpVoterList;
