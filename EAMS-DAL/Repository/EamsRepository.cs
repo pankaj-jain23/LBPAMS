@@ -17397,7 +17397,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         public async Task<List<FourthLevelH>> GetFourthLevelHListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
             var getFourthLevelH = await _context.FourthLevelH.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId
-                && d.AssemblyMasterId == assemblyMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.ElectionTypeMaster).ToListAsync();
+                && d.AssemblyMasterId == assemblyMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.ElectionTypeMaster).OrderBy(d=>d.HierarchyCode).ToListAsync();
             if (getFourthLevelH != null)
             {
                 return getFourthLevelH;
@@ -18045,10 +18045,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                       j => j.GPVoter.AssemblyMasterId,
                       am => am.AssemblyMasterId,
                       (j, am) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, AssemblyMaster = am })
-                .Join(_context.FourthLevelH,
-                      j => j.GPVoter.FourthLevelHMasterId,
-                      flh => flh.FourthLevelHMasterId,
-                      (j, flh) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, j.AssemblyMaster, FourthLevelH = flh })
+               .Join(_context.FourthLevelH.Where(flh => flh.HierarchyStatus == true), // Add condition here
+              j => j.GPVoter.FourthLevelHMasterId,
+              flh => flh.FourthLevelHMasterId,
+              (j, flh) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, j.AssemblyMaster, FourthLevelH = flh })
                 .Join(_context.ElectionTypeMaster,
                       j => j.GPVoter.ElectionTypeMasterId,
                       el => el.ElectionTypeMasterId,
@@ -18104,10 +18104,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                       j => j.GPVoter.AssemblyMasterId,
                       am => am.AssemblyMasterId,
                       (j, am) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, AssemblyMaster = am })
-                .Join(_context.FourthLevelH.Where(flh => flh.AssignedToRO == userId),
-                      j => j.GPVoter.FourthLevelHMasterId,
-                      flh => flh.FourthLevelHMasterId,
-                      (j, flh) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, j.AssemblyMaster, FourthLevelH = flh })
+               .Join(_context.FourthLevelH.Where(flh => flh.HierarchyStatus == true), // Add condition here
+                                  j => j.GPVoter.FourthLevelHMasterId,
+                                  flh => flh.FourthLevelHMasterId,
+                                  (j, flh) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, j.AssemblyMaster, FourthLevelH = flh })
                 .Join(_context.ElectionTypeMaster,
                       j => j.GPVoter.ElectionTypeMasterId,
                       et => et.ElectionTypeMasterId,
