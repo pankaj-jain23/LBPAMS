@@ -4815,7 +4815,7 @@ namespace EAMS.Controllers
         #region Election Type Master
         [HttpGet]
         [Route("GetElectionType")]
-        [Authorize]
+       // [Authorize]
         public async Task<IActionResult> GetAllElectionTypes()
         {
             var elecTypeList = await _EAMSService.GetAllElectionTypes();  // Corrected to await the asynchronous method

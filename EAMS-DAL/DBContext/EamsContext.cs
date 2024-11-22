@@ -17,10 +17,7 @@ using Microsoft.EntityFrameworkCore;
 namespace EAMS_DAL.DBContext;
 
 public partial class EamsContext : IdentityDbContext<UserRegistration>
-{
-    public EamsContext()
-    {
-    }
+{ 
 
     public EamsContext(DbContextOptions<EamsContext> options)
         : base(options)

@@ -528,12 +528,12 @@ namespace EAMS.Controllers
                     return BadRequest("Only PDF files are allowed.");
                 }
             }
-            const long MaxFileSize = 7 * 1024 * 1024; // 7 MB in bytes
+            const long MaxFileSize = 10 * 1024 * 1024; // 10 MB in bytes
 
             // Check if the file exceeds the maximum size
             if (gpVoterPdfViewModel.GPVoterPdf.Length > MaxFileSize)
             {
-                return BadRequest($"File size exceeds the 7 MB limit.");
+                return BadRequest($"File size exceeds the 10 MB limit.");
             }
             // Generate a unique file name for the PDF file
             var fileName = Guid.NewGuid().ToString() + Path.GetExtension(gpVoterPdfViewModel.GPVoterPdf.FileName);

@@ -15,4 +15,6 @@ namespace EAMS_ACore.Models.ElectionType
 
 
     }
+
+    
 }
