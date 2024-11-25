@@ -1656,7 +1656,7 @@ namespace EAMS_BLL.Services
             }
             else if (kyc.ElectionTypeMasterId == 4)
             {
-                return await _eamsRepository.AddKYCDetailsForMCorp(kyc);
+                return await _eamsRepository.AddKYCDetailsForMCorpMCounAndNP(kyc);
             }
             return null;
         }
@@ -1671,10 +1671,10 @@ namespace EAMS_BLL.Services
             {
                 return await _eamsRepository.UpdateKycDetailsForGP(kyc);
             }
-            // ElectionTypeMasterId == 4 For "Municipal Corporation"
-            else if (kyc.ElectionTypeMasterId == 4)
+            // ElectionTypeMasterId == 4 For "Municipal Corporation","Municipal Council" and "Nagar Panchayat"
+            else if (kyc.ElectionTypeMasterId == 4 || kyc.ElectionTypeMasterId == 5 || kyc.ElectionTypeMasterId == 6)
             {
-                return await _eamsRepository.UpdateKycDetailsForMCorp(kyc);
+                return await _eamsRepository.UpdateKycDetailsForMCorpMCounAndNP(kyc);
             }
             return null;
         }

@@ -17029,8 +17029,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
 
         #endregion
-        #region KYC For "Municipal Corporation" Public Details
-        public async Task<ServiceResponse> AddKYCDetailsForMCorp(Kyc kyc)
+        #region KYC For "Municipal Corporation","Municipal Council" and "Nagar Panchayat" Public Details
+        public async Task<ServiceResponse> AddKYCDetailsForMCorpMCounAndNP(Kyc kyc)
         {
             // Check if an unopposed Councillor exists
             bool existingCouncillor = await _context.Kyc.AnyAsync(k =>
@@ -17053,7 +17053,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             return new ServiceResponse { IsSucceed = true, Message = "Successfully added" };
         }
 
-        public async Task<ServiceResponse> UpdateKycDetailsForMCorp(Kyc kyc)
+        public async Task<ServiceResponse> UpdateKycDetailsForMCorpMCounAndNP(Kyc kyc)
         {
 
             // Check if the KYC record exists

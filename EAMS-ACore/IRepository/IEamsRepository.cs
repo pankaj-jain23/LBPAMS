@@ -369,9 +369,9 @@ namespace EAMS_ACore.IRepository
 
         #endregion
 
-        #region KYC For "Municipal Corporation" Public Details
-        Task<ServiceResponse> AddKYCDetailsForMCorp(Kyc kyc);
-        Task<ServiceResponse> UpdateKycDetailsForMCorp(Kyc kyc);
+        #region KYC For "Municipal Corporation","Municipal Council" and "Nagar Panchayat" Public Details
+        Task<ServiceResponse> AddKYCDetailsForMCorpMCounAndNP(Kyc kyc);
+        Task<ServiceResponse> UpdateKycDetailsForMCorpMCounAndNP(Kyc kyc);
         #endregion
 
         #region UnOpposed Public Details
