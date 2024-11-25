@@ -13,6 +13,7 @@ using EAMS_ACore.Models.QueueModel;
 using EAMS_ACore.ReportModels;
 using EAMS_ACore.SignalRModels;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace EAMS_ACore.IRepository
 {
@@ -354,9 +355,10 @@ namespace EAMS_ACore.IRepository
         Task<ServiceResponse> AddMobileVersion(MobileVersion mobileVersion);
         #endregion
 
-        #region KYC Public Details
-        Task<ServiceResponse> AddKYCDetails(Kyc kyc);
-        Task<ServiceResponse> UpdateKycDetails(Kyc kyc);
+        #region KYC For "Gram Panchayats" Public Details
+        Task<ServiceResponse> AddKYCDetailsForGP(Kyc kyc);
+        
+        Task<ServiceResponse> UpdateKycDetailsForGP(Kyc kyc);
         Task<List<Kyc>> GetKYCDetails();
         Task<KycList> GetKycById(int kycMasterId);
         Task<List<KycList>> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId);
@@ -364,6 +366,12 @@ namespace EAMS_ACore.IRepository
 
         Task<List<KycList>> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId, string userId);
         Task<ServiceResponse> DeleteKycById(int kycMasterId);
+
+        #endregion
+
+        #region KYC For "Municipal Corporation" Public Details
+        Task<ServiceResponse> AddKYCDetailsForMCorp(Kyc kyc);
+        Task<ServiceResponse> UpdateKycDetailsForMCorp(Kyc kyc);
         #endregion
 
         #region UnOpposed Public Details

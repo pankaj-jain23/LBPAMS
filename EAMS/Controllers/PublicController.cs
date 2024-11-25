@@ -195,10 +195,15 @@ namespace EAMS.Controllers
                 {
                     return BadRequest("UnOpposed Panch already exists.");
                 }
+                else if (result.Message.Contains("UnOpposed Councillor already exists"))
+                {
+                    return BadRequest("UnOpposed Councillor already exists.");
+                }
                 else
                 {
                     return BadRequest("Failed to update KYC data.");
                 }
+
             }
         }
        

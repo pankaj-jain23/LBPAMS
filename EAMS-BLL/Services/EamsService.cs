@@ -412,7 +412,7 @@ namespace EAMS_BLL.Services
 
         public async Task<List<AssemblyMaster>> GetAssemblyByDistrictId(string stateMasterid, string districtMasterId)
         {
-            return  await _eamsRepository.GetAssemblyByDistrictId(stateMasterid, districtMasterId);
+            return await _eamsRepository.GetAssemblyByDistrictId(stateMasterid, districtMasterId);
         }
 
         #endregion
@@ -695,7 +695,7 @@ namespace EAMS_BLL.Services
         //}
         public async Task<List<EventActivityCount>> GetEventListDistrictWiseById(int stateMasterId, int electionTypeMasterId)
         {
-            return await _eamsRepository.GetEventListDistrictWiseById(stateMasterId,electionTypeMasterId);
+            return await _eamsRepository.GetEventListDistrictWiseById(stateMasterId, electionTypeMasterId);
         }
         ///This API fetches the district-wise event list for Pending events.
 
@@ -732,7 +732,7 @@ namespace EAMS_BLL.Services
         }
         public async Task<List<EventActivityBoothWise>> GetEventListBoothWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelHMasterId, int? electionTypeMasterId)
         {
-            return await _eamsRepository.GetEventListBoothWiseById(stateMasterId,districtMasterId,assemblyMasterId, fourthLevelHMasterId, electionTypeMasterId);
+            return await _eamsRepository.GetEventListBoothWiseById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, electionTypeMasterId);
         }
         ///This API fetches the Booth-wise event list for Pending events.
         public async Task<List<EventActivityBoothWise>> GetPendingBoothWiseEventListById(int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelHMasterId, int? electionTypeMasterId)
@@ -752,7 +752,7 @@ namespace EAMS_BLL.Services
             return await _eamsRepository.GetDashBoardCount(claimsIdentity);
         }
         public async Task<DashBoardRealTimeCount> GetEventActivityDashBoardCount(string role, int electionTypeMasterId, int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelMasterId)
-        { 
+        {
 
             return await _eamsRepository.GetEventActivityDashBoardCount(role, electionTypeMasterId, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId);
         }
@@ -766,7 +766,7 @@ namespace EAMS_BLL.Services
         #endregion
 
         #region SlotManagement
-        public  async Task<Response> AddEventSlot(List<SlotManagementMaster> addEventSlot)
+        public async Task<Response> AddEventSlot(List<SlotManagementMaster> addEventSlot)
         {
             return await _eamsRepository.AddEventSlot(addEventSlot);
         }
@@ -1008,7 +1008,7 @@ namespace EAMS_BLL.Services
                         pollInterruptionData.OldBU = pollInterruption.OldBU;
 
                         return await _eamsRepository.AddPollInterruption(pollInterruptionData);
-                           
+
                     }
                     return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please Enter Old CU, Old BU Value" };
                 }
@@ -1023,7 +1023,7 @@ namespace EAMS_BLL.Services
                         pollInterruptionData.OldBU = pollInterruption.OldBU;
 
                         return await _eamsRepository.AddPollInterruption(pollInterruptionData);
-                          
+
                     }
                     return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please Enter New CU & New BU Value" };
                 }
@@ -1032,14 +1032,14 @@ namespace EAMS_BLL.Services
                      (InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.Other)
             {
                 return await _eamsRepository.AddPollInterruption(pollInterruptionData);
-                  
+
             }
 
             return new Response { Status = RequestStatusEnum.BadRequest, Message = "Reason is not valid" };
 
 
         }
-         
+
 
         public async Task<PollInterruption> GetPollInterruption(string boothMasterId)
         {
@@ -1126,7 +1126,7 @@ namespace EAMS_BLL.Services
 
         public async Task<PollInterruption> GetPollInterruptionbyId(string boothMasterId)
         {
-            return  await _eamsRepository.GetPollInterruptionData(boothMasterId);
+            return await _eamsRepository.GetPollInterruptionData(boothMasterId);
         }
 
         public async Task<List<PollInterruptionHistoryModel>> GetPollInterruptionHistoryById(string boothMasterId)
@@ -1650,7 +1650,15 @@ namespace EAMS_BLL.Services
             {
                 return new ServiceResponse { IsSucceed = false, Message = "Age must be 21 or above." };
             }
-            return await _eamsRepository.AddKYCDetails(kyc);
+            if (kyc.ElectionTypeMasterId == 1)
+            {
+                return await _eamsRepository.AddKYCDetailsForGP(kyc);
+            }
+            else if (kyc.ElectionTypeMasterId == 4)
+            {
+                return await _eamsRepository.AddKYCDetailsForMCorp(kyc);
+            }
+            return null;
         }
         public async Task<ServiceResponse> UpdateKycDetails(Kyc kyc)
         {
@@ -1658,7 +1666,17 @@ namespace EAMS_BLL.Services
             {
                 return new ServiceResponse { IsSucceed = false, Message = "Age must be 21 or above." };
             }
-            return await _eamsRepository.UpdateKycDetails(kyc);
+            // ElectionTypeMasterId == 1 For "Gram Panchayats"
+            if (kyc.ElectionTypeMasterId == 1)
+            {
+                return await _eamsRepository.UpdateKycDetailsForGP(kyc);
+            }
+            // ElectionTypeMasterId == 4 For "Municipal Corporation"
+            else if (kyc.ElectionTypeMasterId == 4)
+            {
+                return await _eamsRepository.UpdateKycDetailsForMCorp(kyc);
+            }
+            return null;
         }
 
         public async Task<List<Kyc>> GetKYCDetails()

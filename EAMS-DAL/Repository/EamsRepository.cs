@@ -16587,7 +16587,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
 
         #region KYC Public Details
-        public async Task<ServiceResponse> AddKYCDetails(Kyc kyc)
+        public async Task<ServiceResponse> AddKYCDetailsForGP(Kyc kyc)
         {
             // Check if an unopposed Sarpanch exists (GPPanchayatWardsMasterId == 0)
             bool existingSarpanch = await _context.Kyc.AnyAsync(k =>
@@ -16626,7 +16626,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return new ServiceResponse { IsSucceed = true, Message = "Successfully added" };
         }
-        public async Task<ServiceResponse> UpdateKycDetails(Kyc kyc)
+        public async Task<ServiceResponse> UpdateKycDetailsForGP(Kyc kyc)
         {
 
             // Check if the KYC record exists
@@ -17028,8 +17028,84 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
         }
 
-        #endregion 
+        #endregion
+        #region KYC For "Municipal Corporation" Public Details
+        public async Task<ServiceResponse> AddKYCDetailsForMCorp(Kyc kyc)
+        {
+            // Check if an unopposed Councillor exists
+            bool existingCouncillor = await _context.Kyc.AnyAsync(k =>
+                k.StateMasterId == kyc.StateMasterId &&
+                k.DistrictMasterId == kyc.DistrictMasterId &&
+                k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
+                k.AssemblyMasterId == kyc.AssemblyMasterId &&
+                k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
+                k.IsUnOppossed == true 
+            );
 
+            if (existingCouncillor)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "UnOpposed Councillor already exists." };
+            }
+
+            await _context.Kyc.AddAsync(kyc);
+            await _context.SaveChangesAsync();
+
+            return new ServiceResponse { IsSucceed = true, Message = "Successfully added" };
+        }
+
+        public async Task<ServiceResponse> UpdateKycDetailsForMCorp(Kyc kyc)
+        {
+
+            // Check if the KYC record exists
+            var existingKyc = await _context.Kyc.FirstOrDefaultAsync(k => k.KycMasterId == kyc.KycMasterId);
+
+            // If KYC record does not exist, return an error message
+            if (existingKyc == null)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "KYC not found." };
+            }
+
+            // Check if an unopposed Councillor exists
+            bool existingCouncillor = await _context.Kyc.AnyAsync(k =>
+                k.StateMasterId == kyc.StateMasterId &&
+                k.DistrictMasterId == kyc.DistrictMasterId &&
+                k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
+                k.AssemblyMasterId == kyc.AssemblyMasterId &&
+                k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
+                k.IsUnOppossed == true &&
+                k.KycMasterId != kyc.KycMasterId // Ensure we are not checking the current record
+            );
+
+
+            // If either an unopposed Councillor exists, return an error message
+            if (existingCouncillor)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "UnOpposed Councillor already exists." };
+            }
+
+            // Update properties of the existing Kyc entity
+            existingKyc.StateMasterId = kyc.StateMasterId;
+            existingKyc.DistrictMasterId = kyc.DistrictMasterId;
+            existingKyc.ElectionTypeMasterId = kyc.ElectionTypeMasterId;
+            existingKyc.AssemblyMasterId = kyc.AssemblyMasterId;
+            existingKyc.FourthLevelHMasterId = kyc.FourthLevelHMasterId;
+            existingKyc.CandidateName = kyc.CandidateName;
+            existingKyc.FatherName = kyc.FatherName;
+            existingKyc.IsUnOppossed = kyc.IsUnOppossed;
+            existingKyc.NominationPdfPath = string.IsNullOrEmpty(kyc.NominationPdfPath)
+                ? existingKyc.NominationPdfPath
+                : kyc.NominationPdfPath; // Update only if new path is provided
+            existingKyc.Age = kyc.Age;
+            existingKyc.Option2 = kyc.Option2;
+
+            // Save changes to the database
+            _context.Kyc.Update(existingKyc);
+            await _context.SaveChangesAsync();
+
+            return new ServiceResponse { IsSucceed = true, Message = "KYC updated successfully." };
+        }
+
+        #endregion
         #region UnOpposed Public Details
         public async Task<ServiceResponse> AddUnOpposedDetails(UnOpposed unOpposed)
         {
