@@ -8,6 +8,7 @@ using EAMS_ACore.Interfaces;
 using EAMS_ACore.IRepository;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
+using EAMS_ACore.Models.CommonModels;
 using EAMS_ACore.Models.ElectionType;
 using EAMS_ACore.Models.EventActivityModels;
 using EAMS_ACore.Models.Polling_Personal_Randomisation_Models;
@@ -1654,7 +1655,8 @@ namespace EAMS_BLL.Services
             {
                 return await _eamsRepository.AddKYCDetailsForGP(kyc);
             }
-            else if (kyc.ElectionTypeMasterId == 4)
+            // ElectionTypeMasterId == 4 For "Municipal Corporation","Municipal Council" and "Nagar Panchayat"
+            else if (kyc.ElectionTypeMasterId == 4 || kyc.ElectionTypeMasterId == 5 || kyc.ElectionTypeMasterId == 6)
             {
                 return await _eamsRepository.AddKYCDetailsForMCorpMCounAndNP(kyc);
             }
@@ -2148,7 +2150,13 @@ namespace EAMS_BLL.Services
 
         #endregion
 
+        #region CompletedVoterList
+        public async Task<List<CompletedVTList>> GetCompletedVTList(CommonReportModel commonReportModel)
+        {
 
+            return await _eamsRepository.GetCompletedVTList(commonReportModel);
+        }
+        #endregion
         //public async Task<List<Disaster>> GetFieldAllOfficerMaster()
         //{
         //    return await _eamsRepository.GetFieldAllOfficerMaster();

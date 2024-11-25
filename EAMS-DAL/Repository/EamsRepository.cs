@@ -7,6 +7,7 @@ using EAMS_ACore.IExternal;
 using EAMS_ACore.IRepository;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
+using EAMS_ACore.Models.CommonModels;
 using EAMS_ACore.Models.ElectionType;
 using EAMS_ACore.Models.EventActivityModels;
 using EAMS_ACore.Models.Polling_Personal_Randomisation_Models;
@@ -17473,7 +17474,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         public async Task<List<FourthLevelH>> GetFourthLevelHListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
             var getFourthLevelH = await _context.FourthLevelH.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId
-                && d.AssemblyMasterId == assemblyMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.ElectionTypeMaster).OrderBy(d=>d.HierarchyCode).ToListAsync();
+                && d.AssemblyMasterId == assemblyMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.ElectionTypeMaster).OrderBy(d => d.HierarchyCode).ToListAsync();
             if (getFourthLevelH != null)
             {
                 return getFourthLevelH;
@@ -20261,6 +20262,143 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     ? ((Convert.ToDouble(d.VotesGained) / Convert.ToDouble(d.BoothTotalVoters)) * 100).ToString("0.00")
                     : "0.00"
             }).ToList();
+        }
+
+        #endregion
+
+        #region CompletedVoterList
+        public async Task<List<CompletedVTList>> GetCompletedVTList(CommonReportModel commonReportModel)
+        {
+            List<CompletedVTList> report = new List<CompletedVTList>();
+
+            if (commonReportModel.Type == "State")
+            {
+                report = await (
+                    from fh in _context.FourthLevelH
+                        .Where(d => d.StateMasterId == commonReportModel.StateMasterId
+                                 && d.ElectionTypeMasterId == commonReportModel.ElectionTypeMasterId)
+                    join vt in _context.GPVoter
+                        on fh.FourthLevelHMasterId equals vt.FourthLevelHMasterId into voterGroup
+                    from voter in voterGroup.DefaultIfEmpty()
+                    join st in _context.StateMaster
+                        on commonReportModel.StateMasterId equals st.StateMasterId
+                    join ds in _context.DistrictMaster
+                        on fh.DistrictMasterId equals ds.DistrictMasterId
+                    join et in _context.ElectionTypeMaster
+                        on fh.ElectionTypeMasterId equals et.ElectionTypeMasterId
+                    group new { fh, voter } by new
+                    {
+
+                        ds.DistrictMasterId,
+                        st.StateName,
+                        ds.DistrictName,
+                        et.ElectionType
+                    } into groupedData
+                    select new CompletedVTList
+                    {
+                        Header = groupedData.Key.StateName,
+                        Type = "State",
+                        Title = groupedData.Key.StateName,
+                        StateName = groupedData.Key.StateName,
+                        DistrictName = groupedData.Key.DistrictName,
+                        ElectionTypeName = groupedData.Key.ElectionType,
+                        TotalWards = groupedData.Count(g => g.fh.FourthLevelHMasterId != null),
+                        EnteredWards = groupedData.Count(g => g.voter != null)
+                    }
+                ).ToListAsync();
+            }
+            else if (commonReportModel.Type == "District")
+            {
+                report = await (
+                    from vt in _context.GPVoter
+                        .Where(d => d.StateMasterId == commonReportModel.StateMasterId
+                                && d.DistrictMasterId == commonReportModel.DistrictMasterId
+                                && d.ElectionTypeMasterId == commonReportModel.ElectionTypeMasterId)  // Filtering on ElectionTypeMasterId
+                    join fh in _context.FourthLevelH
+                        on vt.FourthLevelHMasterId equals fh.FourthLevelHMasterId
+                        into voterGroup
+                    from fh in voterGroup.DefaultIfEmpty()
+                    join st in _context.StateMaster
+                        on commonReportModel.StateMasterId equals st.StateMasterId
+                    join ds in _context.DistrictMaster
+                        on fh.DistrictMasterId equals ds.DistrictMasterId
+                    join asm in _context.AssemblyMaster
+                        on fh.DistrictMasterId equals asm.DistrictMasterId
+                    join et in _context.ElectionTypeMaster
+                        on fh.ElectionTypeMasterId equals et.ElectionTypeMasterId
+                    where asm.ElectionTypeMasterId == commonReportModel.ElectionTypeMasterId  // Also filter on ElectionTypeMasterId in AssemblyMaster
+                    group new { fh, vt } by new
+                    {
+                        asm.AssemblyMasterId,
+                        asm.AssemblyName,
+                        ds.DistrictMasterId,
+                        st.StateName,
+                        ds.DistrictName,
+                        et.ElectionType
+                    } into groupedData
+                    select new CompletedVTList
+                    {
+                        Header = $"{groupedData.Key.StateName} - {groupedData.Key.DistrictName}",
+                        Type = "District",
+                        Title = groupedData.Key.DistrictName,
+                        StateName = groupedData.Key.StateName,
+                        DistrictMasterId = groupedData.Key.DistrictMasterId,
+                        DistrictName = groupedData.Key.DistrictName,
+                        AssemblyName = groupedData.Key.AssemblyName,
+                        ElectionTypeName = groupedData.Key.ElectionType,
+                        TotalWards = groupedData.Count(g => g.fh.FourthLevelHMasterId != null),
+                        EnteredWards = groupedData.Count(g => g.vt != null && g.vt.FourthLevelHMasterId != null)
+                    }
+                ).ToListAsync();
+            }
+
+            else if (commonReportModel.Type == "Assembly")
+            {
+                report = await (
+                    from fh in _context.FourthLevelH
+                        .Where(d => d.StateMasterId == commonReportModel.StateMasterId
+                                 && d.DistrictMasterId == commonReportModel.DistrictMasterId
+                                  && d.AssemblyMasterId == commonReportModel.AssemblyMasterId
+                                 && d.ElectionTypeMasterId == commonReportModel.ElectionTypeMasterId)
+                    join vt in _context.GPVoter
+                        on fh.FourthLevelHMasterId equals vt.FourthLevelHMasterId into voterGroup
+                    from voter in voterGroup.DefaultIfEmpty()
+                    join st in _context.StateMaster
+                      on commonReportModel.StateMasterId equals st.StateMasterId
+                    join ds in _context.DistrictMaster
+                        on fh.DistrictMasterId equals ds.DistrictMasterId
+                    join asm in _context.AssemblyMaster
+                                       on fh.DistrictMasterId equals asm.DistrictMasterId
+                    join et in _context.ElectionTypeMaster
+                        on fh.ElectionTypeMasterId equals et.ElectionTypeMasterId
+                    where asm.ElectionTypeMasterId == commonReportModel.ElectionTypeMasterId  // Also filter on ElectionTypeMasterId in AssemblyMaster
+                    group new { fh, voter } by new
+                    {
+                        fh.HierarchyName,
+                        asm.AssemblyName,
+                        ds.DistrictMasterId,
+                        st.StateName,
+                        ds.DistrictName,
+                        et.ElectionType
+                    } into groupedData
+                    select new CompletedVTList
+                    {
+                        Header = $"{groupedData.Key.StateName} -{groupedData.Key.DistrictName}-{groupedData.Key.AssemblyName}",
+                        Type = "Assembly",
+                        Title = groupedData.Key.AssemblyName,
+                        StateName = groupedData.Key.StateName,
+                        DistrictMasterId = groupedData.Key.DistrictMasterId,
+                        DistrictName = groupedData.Key.DistrictName,
+                        AssemblyName = groupedData.Key.AssemblyName,
+                        FourthLevelHName = groupedData.Key.HierarchyName,
+                        ElectionTypeName = groupedData.Key.ElectionType,
+                        TotalWards = groupedData.Count(g => g.fh.FourthLevelHMasterId != null),
+                        EnteredWards = groupedData.Count(g => g.voter != null)
+                    }
+                ).ToListAsync();
+            }
+            // Ensure the report always contains data
+            return report ?? new List<CompletedVTList>();
         }
 
         #endregion

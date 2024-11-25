@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using EAMS.ViewModels.ReportViewModel;
 using EAMS_ACore.Interfaces;
+using EAMS_ACore.Models.CommonModels;
 using EAMS_ACore.Models.PublicModels;
 using EAMS_ACore.ReportModels;
+using LBPAMS.ViewModels.CommonModels;
 using LBPAMS.ViewModels.PublicModels;
 using LBPAMS.ViewModels.ReportViewModel;
 using Microsoft.AspNetCore.Authorization;
@@ -52,7 +54,7 @@ namespace EAMS.Controllers
             // Return Ok with the result
             return Ok(records);
         }
-      
+
         [HttpPost]
         [Route("GetConsolidatedPanchResultDeclarationReport")]
         [Authorize]
@@ -164,7 +166,7 @@ namespace EAMS.Controllers
             // Return Ok with the result
             return Ok(records);
         }
-      
+
         [HttpPost]
         [Route("GetConsolidatedElectedPanchResultDeclarationReport")]
         [Authorize]
@@ -409,10 +411,10 @@ namespace EAMS.Controllers
                 ////Assembly
                 //else if (mappedData.AssemblyMasterId is not 0)
                 //{
-                    var records = await _EAMSService.GetVoterTurnOutPollingStationReports(mappedData);
-                    return Ok(records);
+                var records = await _EAMSService.GetVoterTurnOutPollingStationReports(mappedData);
+                return Ok(records);
 
-               // }
+                // }
 
 
 
@@ -490,7 +492,7 @@ namespace EAMS.Controllers
 
         #endregion
 
-        
+
 
 
         #region Voter Turn Out Consolidated
@@ -1010,7 +1012,63 @@ namespace EAMS.Controllers
         #endregion
 
 
+        #region CompletedVoterList
+        [HttpPost("GetCompletedVTList")]
+        public async Task<IActionResult> GetCompletedVTList(CommonReportViewModel commonReportViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Map the ViewModel to the Model
+                    var mappedData = _mapper.Map<CommonReportModel>(commonReportViewModel);
 
+                    // Fetch the data from the service
+                    var records = await _EAMSService.GetCompletedVTList(mappedData);
 
+                    // Check if records were found
+                    if (records == null || !records.Any())
+                    {
+                        return NotFound(new
+                        {
+                            Message = "No records found for the provided criteria.",
+                            Success = false,
+                            Data = records
+                        });
+                    }
+
+                    // Return the data with a success response
+                    return Ok(new
+                    {
+                        Message = "Records fetched successfully.",
+                        Success = true,
+                        Data = records
+                    });
+                }
+                catch (Exception ex)
+                {
+                    // Log the exception (assumes a logger is available)
+                    _logger.LogError(ex, "Error occurred while fetching the completed VT list.");
+
+                    // Return an internal server error response
+                    return StatusCode(StatusCodes.Status500InternalServerError, new
+                    {
+                        Message = "An error occurred while processing your request. Please try again later.",
+                        Success = false,
+                        Error = ex.Message
+                    });
+                }
+            }
+
+            // Return bad request response for invalid model state
+            return BadRequest(new
+            {
+                Message = "Invalid request data.",
+                Success = false,
+                Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()
+            });
+        }
+
+        #endregion
     }
 }

@@ -3,6 +3,7 @@ using EAMS.ViewModels.PSFormViewModel;
 using EAMS_ACore.HelperModels;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
+using EAMS_ACore.Models.CommonModels;
 using EAMS_ACore.Models.ElectionType;
 using EAMS_ACore.Models.EventActivityModels;
 using EAMS_ACore.Models.Polling_Personal_Randomisation_Models;
@@ -457,6 +458,9 @@ namespace EAMS_ACore.IRepository
         Task<List<CombinedPanchayatMaster>> GetUnassignedPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, string assginedType);
         #endregion
 
+        #region CompletedVoterList
+        Task<List<CompletedVTList>> GetCompletedVTList(CommonReportModel commonReportModel);
+        #endregion
         //Task<List<Disaster>> GetFieldAllOfficerMaster();
         //Task<List<int>> GetFOAsginedBooth(int foId);
         //Task<ServiceResponse> PushDisasterEvent(List<ElectionInfoMaster> electionInfoMaster);

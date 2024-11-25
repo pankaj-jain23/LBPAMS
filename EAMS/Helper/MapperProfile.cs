@@ -13,6 +13,7 @@ using EAMS_ACore.AuthModels;
 using EAMS_ACore.HelperModels;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
+using EAMS_ACore.Models.CommonModels;
 using EAMS_ACore.Models.EventActivityModels;
 using EAMS_ACore.Models.Polling_Personal_Randomisation_Models;
 using EAMS_ACore.Models.Polling_Personal_Randomization_Models;
@@ -22,6 +23,7 @@ using EAMS_ACore.Models.QueueModel;
 using EAMS_ACore.NotificationModels;
 using EAMS_ACore.ReportModels;
 using LBPAMS.ViewModels;
+using LBPAMS.ViewModels.CommonModels;
 using LBPAMS.ViewModels.EventActivityViewModels;
 using LBPAMS.ViewModels.PublicModels;
 using LBPAMS.ViewModels.ReportViewModel;
@@ -1010,7 +1012,7 @@ namespace EAMS.Helper
     .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
     .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
     .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
-    .ReverseMap();     
+    .ReverseMap();
             CreateMap<ResultDeclarationReportListViewModel, ResultDeclarationReportListModel>()
     .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
     .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
@@ -1082,6 +1084,18 @@ namespace EAMS.Helper
                 .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
                 .ForMember(dest => dest.ElectionTypeName, opt => opt.MapFrom(src => src.ElectionTypeName))
                 .ReverseMap();
+            #endregion
+
+
+            #region CommonReportViewModel CommonReportModel
+            CreateMap<CommonReportViewModel, CommonReportModel>()
+               .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+               .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+               .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+               .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
+               .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+               .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type))
+               .ReverseMap();
             #endregion
 
         }
