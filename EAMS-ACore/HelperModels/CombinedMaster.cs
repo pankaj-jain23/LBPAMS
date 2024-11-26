@@ -91,6 +91,10 @@
         public int HierarchyCode { get; set; }
         public bool IsAssigned { get; set; }
         public bool IsStatus { get; set; }
+        public int? Male { get; set; }
+        public int? Female { get; set; }
+        public int? Transgender { get; set; }
+        public int? TotalVoters { get; set; }
     }
 }
 

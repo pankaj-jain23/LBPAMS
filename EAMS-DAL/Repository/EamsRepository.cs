@@ -26,6 +26,7 @@ using Npgsql;
 using System.Data;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Security.Claims;
 
@@ -16591,8 +16592,44 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         #region KYC Public Details
         public async Task<ServiceResponse> AddKYCDetailsForGP(Kyc kyc)
         {
+            if (kyc.IsUnOppossed)
+            {
+                // Check if a contestant (non-unopposed) Sarpanch exists (GPPanchayatWardsMasterId == 0)
+                bool existingContestantSarpanch = await _context.Kyc.AnyAsync(k =>
+                k.StateMasterId == kyc.StateMasterId &&
+                k.DistrictMasterId == kyc.DistrictMasterId &&
+                k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
+                k.AssemblyMasterId == kyc.AssemblyMasterId &&
+                k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
+                k.IsUnOppossed == false && // Contestant (non-unopposed) candidate
+                k.GPPanchayatWardsMasterId == 0 // Sarpanch condition
+            );
+
+                // Check if a contestant (non-unopposed) Panch exists (GPPanchayatWardsMasterId != 0)
+                bool existingContestantPanch = await _context.Kyc.AnyAsync(k =>
+                    k.StateMasterId == kyc.StateMasterId &&
+                    k.DistrictMasterId == kyc.DistrictMasterId &&
+                    k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
+                    k.AssemblyMasterId == kyc.AssemblyMasterId &&
+                    k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
+                    k.IsUnOppossed == false && // Contestant (non-unopposed) candidate
+                    k.GPPanchayatWardsMasterId == kyc.GPPanchayatWardsMasterId // Panch condition
+                );
+
+                // If a contestant (non-unopposed) Sarpanch exists, return error message
+                if (existingContestantSarpanch && kyc.GPPanchayatWardsMasterId == 0)
+                {
+                    return new ServiceResponse { IsSucceed = false, Message = $"Contestant Sarpanch already exists. Please delete that entry first and then add an unopposed candidate." };
+                }
+
+                // If a contestant (non-unopposed) Panch exists, return error message
+                if (existingContestantPanch)
+                {
+                    return new ServiceResponse { IsSucceed = false, Message = $"Contestant Panch already exists for ward. Please delete that entry first and then add an unopposed candidate." };
+                }
+            }
             // Check if an unopposed Sarpanch exists (GPPanchayatWardsMasterId == 0)
-            bool existingSarpanch = await _context.Kyc.AnyAsync(k =>
+            bool existingUnOpposedSarpanch = await _context.Kyc.AnyAsync(k =>
                 k.StateMasterId == kyc.StateMasterId &&
                 k.DistrictMasterId == kyc.DistrictMasterId &&
                 k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
@@ -16603,7 +16640,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             );
 
             // Check if an unopposed Panch exists (GPPanchayatWardsMasterId != 0)
-            bool existingPanch = await _context.Kyc.AnyAsync(k =>
+            bool existingUnOpposedPanch = await _context.Kyc.AnyAsync(k =>
                 k.StateMasterId == kyc.StateMasterId &&
                 k.DistrictMasterId == kyc.DistrictMasterId &&
                 k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
@@ -16613,21 +16650,25 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 k.GPPanchayatWardsMasterId == kyc.GPPanchayatWardsMasterId
             );
 
-            if (existingSarpanch && kyc.GPPanchayatWardsMasterId == 0)
+            // If an unopposed Sarpanch exists, return error message
+            if (existingUnOpposedSarpanch && kyc.GPPanchayatWardsMasterId == 0)
             {
-                return new ServiceResponse { IsSucceed = false, Message = "UnOpposed Sarpanch already exists." };
-            }
-            if (existingPanch)
-            {
-                return new ServiceResponse { IsSucceed = false, Message = "UnOpposed Panch already exists." };
+                return new ServiceResponse { IsSucceed = false, Message = $"UnOpposed Sarpanch already." };
             }
 
+            // If an unopposed Panch exists, return error message
+            if (existingUnOpposedPanch)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = $"UnOpposed Panch already." };
+            }
 
+            // Add the new KYC record
             await _context.Kyc.AddAsync(kyc);
             await _context.SaveChangesAsync();
 
-            return new ServiceResponse { IsSucceed = true, Message = "Successfully added" };
+            return new ServiceResponse { IsSucceed = true, Message = "Successfully added." };
         }
+
         public async Task<ServiceResponse> UpdateKycDetailsForGP(Kyc kyc)
         {
 
@@ -16638,6 +16679,42 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             if (existingKyc == null)
             {
                 return new ServiceResponse { IsSucceed = false, Message = "KYC not found." };
+            }
+            if (kyc.IsUnOppossed)
+            {
+                // Check if a contestant (non-unopposed) Sarpanch exists (GPPanchayatWardsMasterId == 0)
+                bool existingContestantSarpanch = await _context.Kyc.AnyAsync(k =>
+                k.StateMasterId == kyc.StateMasterId &&
+                k.DistrictMasterId == kyc.DistrictMasterId &&
+                k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
+                k.AssemblyMasterId == kyc.AssemblyMasterId &&
+                k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
+                k.IsUnOppossed == false && // Contestant (non-unopposed) candidate
+                k.GPPanchayatWardsMasterId == 0 // Sarpanch condition
+            );
+
+                // Check if a contestant (non-unopposed) Panch exists (GPPanchayatWardsMasterId != 0)
+                bool existingContestantPanch = await _context.Kyc.AnyAsync(k =>
+                    k.StateMasterId == kyc.StateMasterId &&
+                    k.DistrictMasterId == kyc.DistrictMasterId &&
+                    k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
+                    k.AssemblyMasterId == kyc.AssemblyMasterId &&
+                    k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
+                    k.IsUnOppossed == false && // Contestant (non-unopposed) candidate
+                    k.GPPanchayatWardsMasterId == kyc.GPPanchayatWardsMasterId // Panch condition
+                );
+
+                // If a contestant (non-unopposed) Sarpanch exists, return error message
+                if (existingContestantSarpanch && kyc.GPPanchayatWardsMasterId == 0)
+                {
+                    return new ServiceResponse { IsSucceed = false, Message = $"Contestant Sarpanch already exists. Please delete that entry first and then update an unopposed candidate." };
+                }
+
+                // If a contestant (non-unopposed) Panch exists, return error message
+                if (existingContestantPanch)
+                {
+                    return new ServiceResponse { IsSucceed = false, Message = $"Contestant Panch already exists. Please delete that entry first and update an unopposed candidate." };
+                }
             }
 
             // Check if an unopposed Sarpanch exists (GPPanchayatWardsMasterId == 0)
@@ -16707,49 +16784,57 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         {
             var baseUrl = "https://lbpams.punjab.gov.in/LBPAMSDOC/";
 
-            // Execute the query with the necessary where conditions
+            // Query with necessary conditions and optimized joins
             var kycList = await (from k in _context.Kyc
                                  join state in _context.StateMaster on k.StateMasterId equals state.StateMasterId
                                  join district in _context.DistrictMaster on k.DistrictMasterId equals district.DistrictMasterId into districts
-                                 from d in districts.DefaultIfEmpty()
+                                 from d in districts.DefaultIfEmpty() // Left join
                                  join assembly in _context.AssemblyMaster on k.AssemblyMasterId equals assembly.AssemblyMasterId into assemblies
-                                 from a in assemblies.DefaultIfEmpty()
+                                 from a in assemblies.DefaultIfEmpty() // Left join
                                  join fourthLevel in _context.FourthLevelH on k.FourthLevelHMasterId equals fourthLevel.FourthLevelHMasterId into fourthLevels
-                                 from fl in fourthLevels.DefaultIfEmpty()
+                                 from fl in fourthLevels.DefaultIfEmpty() // Left join
                                  join psZone in _context.PSZonePanchayat on k.PSZonePanchayatMasterId equals psZone.PSZonePanchayatMasterId into psZones
-                                 from pz in psZones.DefaultIfEmpty()
+                                 from pz in psZones.DefaultIfEmpty() // Left join
                                  join gpWard in _context.GPPanchayatWards on k.GPPanchayatWardsMasterId equals gpWard.GPPanchayatWardsMasterId into gpWards
-                                 from gw in gpWards.DefaultIfEmpty()
-                                 where
-                                       k.StateMasterId == stateMasterId &&
+                                 from gw in gpWards.DefaultIfEmpty() // Left join
+                                 where k.StateMasterId == stateMasterId &&
                                        k.DistrictMasterId == districtMasterId &&
                                        k.ElectionTypeMasterId == electionType &&
                                        k.AssemblyMasterId == assemblyMasterId
-                                 select new KycList
+                                 select new
                                  {
-                                     KycMasterId = k.KycMasterId,
-                                     StateName = state.StateName,
-                                     StateMasterId = k.StateMasterId,
-                                     DistrictName = d.DistrictName,
-                                     DistrictMasterId = k.DistrictMasterId,
-                                     AssemblyName = a.AssemblyName,
-                                     AssemblyMasterId = k.AssemblyMasterId,
-                                     FourthLevelHName = fl.HierarchyName,
-                                     FourthLevelHMasterId = k.FourthLevelHMasterId,
-                                     GPPanchayatWardsName = gw.GPPanchayatWardsName,
-                                     GPPanchayatWardsCode = gw.GPPanchayatWardsCode,
-                                     GPPanchayatWardsMasterId = k.GPPanchayatWardsMasterId,
-                                     CandidateType = k.GPPanchayatWardsMasterId == 0 ? "Sarpanch" : "Panch",
-                                     CandidateName = k.CandidateName,
-                                     FatherName = k.FatherName,
-                                     IsUnOppossed = k.IsUnOppossed,
-                                     ElectionTypeMasterId = k.ElectionTypeMasterId,
-                                     Age = k.Age,
-                                     NominationPdfPath = $"{baseUrl}{k.NominationPdfPath}",
-                                 }).ToListAsync();
+                                     KycDetails = new KycList
+                                     {
+                                         KycMasterId = k.KycMasterId,
+                                         StateName = state.StateName,
+                                         StateMasterId = k.StateMasterId,
+                                         DistrictName = d.DistrictName,
+                                         DistrictMasterId = k.DistrictMasterId,
+                                         AssemblyName = a.AssemblyName,
+                                         AssemblyMasterId = k.AssemblyMasterId,
+                                         FourthLevelHName = fl != null ? fl.HierarchyName : null,
+                                         FourthLevelHMasterId = k.FourthLevelHMasterId,
+                                         GPPanchayatWardsName = gw.GPPanchayatWardsName,
+                                         GPPanchayatWardsCode = gw.GPPanchayatWardsCode,
+                                         GPPanchayatWardsMasterId = k.GPPanchayatWardsMasterId,
+                                         CandidateType = k.GPPanchayatWardsMasterId == 0 ? "Sarpanch" : "Panch",
+                                         CandidateName = k.CandidateName,
+                                         FatherName = k.FatherName,
+                                         IsUnOppossed = k.IsUnOppossed,
+                                         ElectionTypeMasterId = k.ElectionTypeMasterId,
+                                         Age = k.Age,
+                                         NominationPdfPath = k.NominationPdfPath != null ? $"{baseUrl}{k.NominationPdfPath}" : null,
+                                     },
+                                     HierarchyCode = fl != null ? fl.HierarchyCode : 0 // Add this to the select for ordering
+                                 })
+                      .OrderBy(d => d.HierarchyCode) // Sort by the added HierarchyCode field
+                      .Select(d => d.KycDetails) // Select only the KycList from the projected data
+                      .ToListAsync();
 
             return kycList;
+
         }
+
         public async Task<List<KycList>> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId, string userId)
         {
             var baseUrl = "https://lbpams.punjab.gov.in/LBPAMSDOC/";
@@ -16774,27 +16859,35 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                        k.ElectionTypeMasterId == electionType &&
                                        fl.AssignedToRO == userId
 
-                                 select new KycList
+                                 // Include HierarchyCode in the select statement for sorting
+                                 select new
                                  {
-                                     KycMasterId = k.KycMasterId,
-                                     StateName = state.StateName,
-                                     StateMasterId = k.StateMasterId,
-                                     DistrictName = d.DistrictName,
-                                     DistrictMasterId = k.DistrictMasterId,
-                                     AssemblyName = a.AssemblyName,
-                                     AssemblyMasterId = k.AssemblyMasterId,
-                                     FourthLevelHName = fl.HierarchyName,
-                                     FourthLevelHMasterId = k.FourthLevelHMasterId,
-                                     GPPanchayatWardsName = gw.GPPanchayatWardsName,
-                                     GPPanchayatWardsMasterId = k.GPPanchayatWardsMasterId,
-                                     CandidateType = k.GPPanchayatWardsMasterId == 0 ? "Sarpanch" : "Panch",
-                                     CandidateName = k.CandidateName,
-                                     FatherName = k.FatherName,
-                                     ElectionTypeMasterId = k.ElectionTypeMasterId,
-                                     IsUnOppossed = k.IsUnOppossed,
-                                     Age = k.Age,
-                                     NominationPdfPath = $"{baseUrl}{k.NominationPdfPath}",
-                                 }).ToListAsync();
+                                     KycDetails = new KycList
+                                     {
+                                         KycMasterId = k.KycMasterId,
+                                         StateName = state.StateName,
+                                         StateMasterId = k.StateMasterId,
+                                         DistrictName = d.DistrictName,
+                                         DistrictMasterId = k.DistrictMasterId,
+                                         AssemblyName = a.AssemblyName,
+                                         AssemblyMasterId = k.AssemblyMasterId,
+                                         FourthLevelHName = fl.HierarchyName,
+                                         FourthLevelHMasterId = k.FourthLevelHMasterId,
+                                         GPPanchayatWardsName = gw.GPPanchayatWardsName,
+                                         GPPanchayatWardsMasterId = k.GPPanchayatWardsMasterId,
+                                         CandidateType = k.GPPanchayatWardsMasterId == 0 ? "Sarpanch" : "Panch",
+                                         CandidateName = k.CandidateName,
+                                         FatherName = k.FatherName,
+                                         ElectionTypeMasterId = k.ElectionTypeMasterId,
+                                         IsUnOppossed = k.IsUnOppossed,
+                                         Age = k.Age,
+                                         NominationPdfPath = $"{baseUrl}{k.NominationPdfPath}",
+                                     },
+                                     HierarchyCode = fl != null ? fl.HierarchyCode : 0 // Include HierarchyCode for sorting
+                                 })
+                                 .OrderBy(x => x.HierarchyCode) // Sort by HierarchyCode
+                                 .Select(x => x.KycDetails) // Select the KycDetails after sorting
+                                 .ToListAsync();
 
             return kycList;
         }
@@ -17032,8 +17125,79 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         #endregion
         #region KYC For "Municipal Corporation","Municipal Council" and "Nagar Panchayat" Public Details
+        //public async Task<ServiceResponse> AddKYCDetailsForMCorpMCounAndNP(Kyc kyc)
+        //{
+        //    // Check if an unopposed Councillor exists
+        //    bool existingCouncillor = await _context.Kyc.AnyAsync(k =>
+        //        k.StateMasterId == kyc.StateMasterId &&
+        //        k.DistrictMasterId == kyc.DistrictMasterId &&
+        //        k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
+        //        k.AssemblyMasterId == kyc.AssemblyMasterId &&
+        //        k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
+        //        k.IsUnOppossed == true 
+        //    );
+
+        //    if (existingCouncillor)
+        //    {
+        //        return new ServiceResponse { IsSucceed = false, Message = "UnOpposed Councillor already exists." };
+        //    }
+
+        //    if (kyc.IsUnOppossed)
+        //    {
+        //        bool existingContestant = await _context.Kyc.AnyAsync(k =>
+        //            k.StateMasterId == kyc.StateMasterId &&
+        //            k.DistrictMasterId == kyc.DistrictMasterId &&
+        //            k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
+        //            k.AssemblyMasterId == kyc.AssemblyMasterId &&
+        //            k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
+        //            k.IsUnOppossed == false // Check for non-unopposed candidate
+        //        );
+
+        //        if (existingContestant)
+        //        {
+        //            return new ServiceResponse
+        //            {
+        //                IsSucceed = false,
+        //                Message = "Contestant Candidate already exists for this FourthLevelHMasterId. Please delete that entry first and then add an unopposed candidate."
+        //            };
+        //        }
+        //    }
+
+        //    await _context.Kyc.AddAsync(kyc);
+        //    await _context.SaveChangesAsync();
+
+        //    return new ServiceResponse { IsSucceed = true, Message = "Successfully added" };
+        //}
         public async Task<ServiceResponse> AddKYCDetailsForMCorpMCounAndNP(Kyc kyc)
         {
+            // Fetch the ward name (HierarchyName) from the FourthLevelH table
+            var wardName = await _context.FourthLevelH
+                .Where(h => h.FourthLevelHMasterId == kyc.FourthLevelHMasterId)
+                .Select(h => h.HierarchyName)
+                .FirstOrDefaultAsync();
+
+            if (kyc.IsUnOppossed)
+            {
+                // Check if a non-unopposed candidate exists
+                bool existingContestant = await _context.Kyc.AnyAsync(k =>
+                    k.StateMasterId == kyc.StateMasterId &&
+                    k.DistrictMasterId == kyc.DistrictMasterId &&
+                    k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
+                    k.AssemblyMasterId == kyc.AssemblyMasterId &&
+                    k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
+                    k.IsUnOppossed == false // Check for non-unopposed candidate
+                );
+
+                if (existingContestant)
+                {
+                    return new ServiceResponse
+                    {
+                        IsSucceed = false,
+                        Message = $"Contestant Councillor already exists for the ward '{wardName ?? "Unknown"}'. Please delete that entry first and then add an unopposed candidate."
+                    };
+                }
+            }
+
             // Check if an unopposed Councillor exists
             bool existingCouncillor = await _context.Kyc.AnyAsync(k =>
                 k.StateMasterId == kyc.StateMasterId &&
@@ -17041,22 +17205,87 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
                 k.AssemblyMasterId == kyc.AssemblyMasterId &&
                 k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
-                k.IsUnOppossed == true 
+                k.IsUnOppossed == true // Check for unopposed candidate
             );
 
             if (existingCouncillor)
             {
-                return new ServiceResponse { IsSucceed = false, Message = "UnOpposed Councillor already exists." };
+                return new ServiceResponse
+                {
+                    IsSucceed = false,
+                    Message = $"Unopposed Councillor already exists for the ward '{wardName ?? "Unknown"}'."
+                };
             }
 
+            // Add the KYC details
             await _context.Kyc.AddAsync(kyc);
             await _context.SaveChangesAsync();
 
-            return new ServiceResponse { IsSucceed = true, Message = "Successfully added" };
+            return new ServiceResponse
+            {
+                IsSucceed = true,
+                Message = $"Successfully added to the ward '{wardName ?? "Unknown"}'."
+            };
         }
 
+        //public async Task<ServiceResponse> UpdateKycDetailsForMCorpMCounAndNP(Kyc kyc)
+        //{
+
+        //    // Check if the KYC record exists
+        //    var existingKyc = await _context.Kyc.FirstOrDefaultAsync(k => k.KycMasterId == kyc.KycMasterId);
+
+        //    // If KYC record does not exist, return an error message
+        //    if (existingKyc == null)
+        //    {
+        //        return new ServiceResponse { IsSucceed = false, Message = "KYC not found." };
+        //    }
+
+        //    // Check if an unopposed Councillor exists
+        //    bool existingCouncillor = await _context.Kyc.AnyAsync(k =>
+        //        k.StateMasterId == kyc.StateMasterId &&
+        //        k.DistrictMasterId == kyc.DistrictMasterId &&
+        //        k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
+        //        k.AssemblyMasterId == kyc.AssemblyMasterId &&
+        //        k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
+        //        k.IsUnOppossed == true &&
+        //        k.KycMasterId != kyc.KycMasterId // Ensure we are not checking the current record
+        //    );
+
+
+        //    // If either an unopposed Councillor exists, return an error message
+        //    if (existingCouncillor)
+        //    {
+        //        return new ServiceResponse { IsSucceed = false, Message = "UnOpposed Councillor already exists." };
+        //    }
+
+        //    // Update properties of the existing Kyc entity
+        //    existingKyc.StateMasterId = kyc.StateMasterId;
+        //    existingKyc.DistrictMasterId = kyc.DistrictMasterId;
+        //    existingKyc.ElectionTypeMasterId = kyc.ElectionTypeMasterId;
+        //    existingKyc.AssemblyMasterId = kyc.AssemblyMasterId;
+        //    existingKyc.FourthLevelHMasterId = kyc.FourthLevelHMasterId;
+        //    existingKyc.CandidateName = kyc.CandidateName;
+        //    existingKyc.FatherName = kyc.FatherName;
+        //    existingKyc.IsUnOppossed = kyc.IsUnOppossed;
+        //    existingKyc.NominationPdfPath = string.IsNullOrEmpty(kyc.NominationPdfPath)
+        //        ? existingKyc.NominationPdfPath
+        //        : kyc.NominationPdfPath; // Update only if new path is provided
+        //    existingKyc.Age = kyc.Age;
+        //    existingKyc.Option2 = kyc.Option2;
+
+        //    // Save changes to the database
+        //    _context.Kyc.Update(existingKyc);
+        //    await _context.SaveChangesAsync();
+
+        //    return new ServiceResponse { IsSucceed = true, Message = "KYC updated successfully." };
+        //}
         public async Task<ServiceResponse> UpdateKycDetailsForMCorpMCounAndNP(Kyc kyc)
         {
+            // Fetch the ward name (HierarchyName) from the FourthLevelH table for the message
+            var wardName = await _context.FourthLevelH
+                .Where(h => h.FourthLevelHMasterId == kyc.FourthLevelHMasterId)
+                .Select(h => h.HierarchyName)
+                .FirstOrDefaultAsync();
 
             // Check if the KYC record exists
             var existingKyc = await _context.Kyc.FirstOrDefaultAsync(k => k.KycMasterId == kyc.KycMasterId);
@@ -17067,7 +17296,30 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 return new ServiceResponse { IsSucceed = false, Message = "KYC not found." };
             }
 
-            // Check if an unopposed Councillor exists
+            // If updating to an unopposed candidate (IsUnOppossed = true), check if a non-unopposed Councillor exists
+            if (kyc.IsUnOppossed)
+            {
+                bool existingContestant = await _context.Kyc.AnyAsync(k =>
+                    k.StateMasterId == kyc.StateMasterId &&
+                    k.DistrictMasterId == kyc.DistrictMasterId &&
+                    k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
+                    k.AssemblyMasterId == kyc.AssemblyMasterId &&
+                    k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
+                    k.IsUnOppossed == false && // Check for non-unopposed candidate
+                    k.KycMasterId != kyc.KycMasterId // Ensure we are not checking the current record
+                );
+
+                if (existingContestant)
+                {
+                    return new ServiceResponse
+                    {
+                        IsSucceed = false,
+                        Message = $"Contestant candidate already exists for the ward '{wardName ?? "Unknown"}'. Please delete that entry first and then update the unopposed candidate."
+                    };
+                }
+            }
+
+            // Check if an unopposed Councillor already exists
             bool existingCouncillor = await _context.Kyc.AnyAsync(k =>
                 k.StateMasterId == kyc.StateMasterId &&
                 k.DistrictMasterId == kyc.DistrictMasterId &&
@@ -17078,14 +17330,17 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 k.KycMasterId != kyc.KycMasterId // Ensure we are not checking the current record
             );
 
-
-            // If either an unopposed Councillor exists, return an error message
+            // If an unopposed Councillor already exists, return an error message
             if (existingCouncillor)
             {
-                return new ServiceResponse { IsSucceed = false, Message = "UnOpposed Councillor already exists." };
+                return new ServiceResponse
+                {
+                    IsSucceed = false,
+                    Message = $"Unopposed Councillor already exists for the ward '{wardName ?? "Unknown"}'."
+                };
             }
 
-            // Update properties of the existing Kyc entity
+            // Update properties of the existing KYC entity
             existingKyc.StateMasterId = kyc.StateMasterId;
             existingKyc.DistrictMasterId = kyc.DistrictMasterId;
             existingKyc.ElectionTypeMasterId = kyc.ElectionTypeMasterId;
@@ -17096,7 +17351,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             existingKyc.IsUnOppossed = kyc.IsUnOppossed;
             existingKyc.NominationPdfPath = string.IsNullOrEmpty(kyc.NominationPdfPath)
                 ? existingKyc.NominationPdfPath
-                : kyc.NominationPdfPath; // Update only if new path is provided
+                : kyc.NominationPdfPath; // Update only if a new path is provided
             existingKyc.Age = kyc.Age;
             existingKyc.Option2 = kyc.Option2;
 
@@ -17104,7 +17359,11 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             _context.Kyc.Update(existingKyc);
             await _context.SaveChangesAsync();
 
-            return new ServiceResponse { IsSucceed = true, Message = "KYC updated successfully." };
+            return new ServiceResponse
+            {
+                IsSucceed = true,
+                Message = $"KYC updated successfully for the ward '{wardName ?? "Unknown"}'."
+            };
         }
 
         #endregion
@@ -17537,7 +17796,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 existing.HierarchyStatus = fourthLevelH.HierarchyStatus;
                 existing.IsCC = fourthLevelH.IsCC;
                 existing.IsNN = fourthLevelH.IsNN;
-
+                existing.Male = fourthLevelH.Male;
+                existing.Female = fourthLevelH.Female;
+                existing.Transgender = fourthLevelH.Transgender;
+                existing.TotalVoters = fourthLevelH.TotalVoters;
                 // Save changes to the database
                 try
                 {
@@ -17876,6 +18138,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 existingGPPanchayatWards.GPPanchayatWardsStatus = gpPanchayatWards.GPPanchayatWardsStatus;
                 existingGPPanchayatWards.IsCC = gpPanchayatWards.IsCC;
                 existingGPPanchayatWards.IsNN = gpPanchayatWards.IsNN;
+                existingGPPanchayatWards.Male = gpPanchayatWards.Male;
+                existingGPPanchayatWards.Female = gpPanchayatWards.Female;
+                existingGPPanchayatWards.Transgender = gpPanchayatWards.Transgender;
+                existingGPPanchayatWards.TotalVoters = gpPanchayatWards.TotalVoters;
 
                 // Save changes to the database
                 try
@@ -19517,6 +19783,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                    IsStatus = ft.HierarchyStatus,
                                    ElectionTypeMasterId = ft.ElectionTypeMasterId,
                                    ElectionTypeName = elec.ElectionType,
+                                   Male = ft.Male,
+                                   Female = ft.Female,
+                                   Transgender = ft.Transgender,
+                                   TotalVoters = ft.TotalVoters,
                                };
 
             // Use AsNoTracking for better performance

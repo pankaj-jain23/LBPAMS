@@ -42,6 +42,10 @@
         public bool IsStatus { get; set; }
         public bool IsCC { get; set; }
         public bool IsNN { get; set; }
+        public int? Male { get; set; }
+        public int? Female { get; set; }
+        public int? Transgender { get; set; }
+        public int? TotalVoters { get; set; }
 
     }
 
@@ -88,6 +92,10 @@
         public bool IsStatus { get; set; }
         public bool IsCC { get; set; }
         public bool IsNN { get; set; }
+        public int? Male { get; set; }
+        public int? Female { get; set; }
+        public int? Transgender { get; set; }
+        public int? TotalVoters { get; set; }
 
     }
 
@@ -134,5 +142,9 @@
         public bool IsStatus { get; set; }
         public bool IsCC { get; set; }
         public bool IsNN { get; set; }
+        public int? Male { get; set; }
+        public int? Female { get; set; }
+        public int? Transgender { get; set; }
+        public int? TotalVoters { get; set; }
     }
 }
