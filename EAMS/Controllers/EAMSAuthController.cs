@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using EAMS.AuthViewModels;
 using EAMS.ViewModels;
+using EAMS_ACore;
 using EAMS_ACore.AuthInterfaces;
 using EAMS_ACore.AuthModels;
 using EAMS_ACore.HelperModels;
@@ -55,7 +56,32 @@ namespace EAMS.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
+        [HttpPut]
+        [Route("SwitchDashboardUser")]
+        [Authorize]
+        public async Task<IActionResult> SwitchDashboardUser(UpdateUserRegistrationViewModel viewModel)
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
 
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User not authenticated.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var result = await _authService.SwitchDashboardUser(userId, viewModel);
+
+            if (result.IsSucceed)
+            {
+                return Ok(result);
+            }
+
+            return BadRequest(result.Message);
+        }
         #endregion
 
         #region Login

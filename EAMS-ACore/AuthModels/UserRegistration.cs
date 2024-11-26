@@ -33,8 +33,12 @@ namespace EAMS_ACore.AuthModels
         public int OTPAttempts { get; set; }
         public string? RefreshToken { get; set; }
         public DateTime RefreshTokenExpiryTime { get; set; }
+        public DateTime ElectionTypeUpdatedTime { get; set; }
     }
-
+    public class UpdateUserRegistrationViewModel
+    {
+        public int ElectionTypeMasterId { get; set; }
+    }
 
 
 }

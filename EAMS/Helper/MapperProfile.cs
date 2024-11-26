@@ -52,7 +52,8 @@ namespace EAMS.Helper
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName))
             .ForMember(dest => dest.PasswordHash, opt => opt.MapFrom(src => src.Password));
 
-
+            CreateMap<UpdateUserRegistrationViewModel, UserRegistration>()
+            .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId));
             #endregion
 
             #region RoleViewModel Roles

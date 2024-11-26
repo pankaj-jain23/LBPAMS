@@ -189,6 +189,11 @@ namespace EAMS_BLL.AuthServices
             }
 
         }
+        public async Task<ServiceResponse> SwitchDashboardUser(string userId, UpdateUserRegistrationViewModel viewModel)
+        {
+            // Call the repository layer for update logic
+            return await _authRepository.SwitchDashboardUser(userId, viewModel);
+        }
         #endregion
 
         #region ValidateMobile && Generate OTP 

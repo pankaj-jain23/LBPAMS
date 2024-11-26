@@ -325,7 +325,25 @@ namespace EAMS_DAL.AuthRepository
                 };
             }
         }
+        public async Task<ServiceResponse> SwitchDashboardUser(string userId, UpdateUserRegistrationViewModel viewModel)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
+            if (user == null)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "User not found." };
+            }
+
+            // Update the ElectionTypeMasterId and ElectionTypeUpdatedTime
+            user.ElectionTypeMasterId = viewModel.ElectionTypeMasterId;
+            user.ElectionTypeUpdatedTime = DateTime.UtcNow;
+
+            // Save changes to the database
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            return new ServiceResponse { IsSucceed = true, Message = "Election Type updated successfully." };
+        }
         #endregion
 
         #region  UpdateUser
