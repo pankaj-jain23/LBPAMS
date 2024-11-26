@@ -24,6 +24,13 @@ namespace EAMS_ACore.Interfaces
         Task<ServiceResponse> DeleteMasterStatus(DeleteMasterStatus updateMasterStatus);
         #endregion
 
+        #region Clear Mappings
+        Task<ServiceResponse> IsClearBLOMappings(int stateMasterId, int electionTypeMasterId);
+        Task<ServiceResponse> IsClearSOMappings(int stateMasterId, int electionTypeMasterId);
+        Task<ServiceResponse> IsClearPollDetails(int stateMasterId, int electionTypeMasterId);
+        Task<ServiceResponse> IsClearElectionInfo(int stateMasterId, int electionTypeMasterId);
+        #endregion
+
         #region State Master
         Task<List<StateMaster>> GetState();
         Task<Response> UpdateStateById(StateMaster stateMaster);
@@ -103,7 +110,7 @@ namespace EAMS_ACore.Interfaces
         Task<List<EventAbbr>> GetEventAbbrList();
         Task<ServiceResponse> AddEvent(EventMaster eventMaster);
         Task<ServiceResponse> UpdateEvent(EventMaster eventMaster);
-        Task<ServiceResponse> UpdateEventStaus(EventMaster eventMaster);
+        Task<ServiceResponse> UpdateEventStatus(EventMaster eventMaster);
         Task<EventMaster> GetEventById(int eventMasterId);
         Task<List<EventMaster>> GetEventListForBooth(int stateMasterId, int electionTypeMasterId);
         Task<ServiceResponse> DeleteEventById(int eventMasterId);
@@ -125,6 +132,8 @@ namespace EAMS_ACore.Interfaces
         #endregion
 
         #region Event Activity
+        Task<ServiceResponse> IsVTEventTimeExtended(int stateMasterId, int electionTypeMasterId, bool isVTEventTimeExtended);
+
         Task<ServiceResponse> EventActivity(ElectionInfoMaster electionInfoMaster);
        
         Task<ServiceResponse> UpdateEventActivity(UpdateEventActivity updateEventActivity);

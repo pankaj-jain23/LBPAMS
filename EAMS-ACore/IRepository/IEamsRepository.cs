@@ -27,6 +27,13 @@ namespace EAMS_ACore.IRepository
 
         Task<Response> ResetAccounts(string stateMasterId);
 
+        #region Clear Mappings
+        Task<ServiceResponse> IsClearBLOMappings(int stateMasterId, int electionTypeMasterId);
+        Task<ServiceResponse> IsClearSOMappings(int stateMasterId, int electionTypeMasterId);
+        Task<ServiceResponse> IsClearPollDetails(int stateMasterId, int electionTypeMasterId);
+        Task<ServiceResponse> IsClearElectionInfo(int stateMasterId, int electionTypeMasterId);
+        #endregion
+
         #region State Master
         Task<List<StateMaster>> GetState();
         Task<Response> UpdateStateById(StateMaster stateMaster);
@@ -110,7 +117,7 @@ namespace EAMS_ACore.IRepository
         Task<List<EventAbbr>> GetEventAbbrList();
         Task<ServiceResponse> AddEvent(EventMaster eventMaster);
         Task<ServiceResponse> UpdateEvent(EventMaster eventMaster);
-        Task<ServiceResponse> UpdateEventStaus(EventMaster eventMaster);
+        Task<ServiceResponse> UpdateEventStatus(EventMaster eventMaster);
         Task<EventMaster> GetEventById(int eventMasterId);
         Task<ServiceResponse> DeleteEventById(int eventMasterId);
         Task<List<EventWiseBooth>> GetBoothListByEventId(string eventId, string soId);
@@ -130,6 +137,7 @@ namespace EAMS_ACore.IRepository
         #endregion
 
         #region Event Activity
+        Task<ServiceResponse> IsVTEventTimeExtended(int stateMasterId, int electionTypeMasterId, bool isVTEventTimeExtended);
 
         #region  IsCheckEvent 
         Task<ServiceResponse> IsPartyDispatch(CheckEventActivity checkEventActivity);
@@ -163,7 +171,7 @@ namespace EAMS_ACore.IRepository
         Task<ServiceResponse> PartyReachedAtCollection(UpdateEventActivity updateEventActivity);
         Task<ServiceResponse> EVMDeposited(UpdateEventActivity updateEventActivity);
         #endregion
-
+        Task<(bool IsToday, string StartDateString)> IsEventActivityValid(int stateMasterId, int electionTypeMasterId);
         Task<CheckEventActivity> GetNextEvent(UpdateEventActivity updateEventActivity);
         Task<CheckEventActivity> GetPreviousEvent(UpdateEventActivity updateEventActivity);
         Task<List<BoothEvents>> GetBoothEventListById(int stateMasterId, int electionTypeMasterId, int boothMasterId);

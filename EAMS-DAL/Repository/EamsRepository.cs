@@ -1070,6 +1070,206 @@ namespace EAMS_DAL.Repository
         }
         #endregion
 
+        #region Clear Mappings
+        public async Task<ServiceResponse> IsClearBLOMappings(int stateMasterId, int electionTypeMasterId)
+        {
+            var isPollExist = await IsPollExist(stateMasterId, electionTypeMasterId);
+            var isEventActivityExist = await IsElectionInFoExist(stateMasterId, electionTypeMasterId);
+
+            // If either Poll or Event Activity exists, return the respective response
+            if (isPollExist.IsSucceed == true)
+            {
+                return isPollExist;
+            }
+
+            if (isEventActivityExist.IsSucceed == true)
+            {
+                return isEventActivityExist;
+            }
+
+            // If both Poll and Event Activity do not exist, proceed with the update
+            if (isPollExist.IsSucceed == false && isEventActivityExist.IsSucceed == false)
+            {
+                // Update the AssignedToBLO to null where StateMasterId matches
+                var clearBloMappings = await _context.BoothMaster
+                    .Where(d => d.StateMasterId == stateMasterId && d.ElectionTypeMasterId == electionTypeMasterId)
+                   .ExecuteUpdateAsync(d => d.SetProperty(x => x.AssignedToBLO, (string?)null));
+
+                // Return success response
+                return new ServiceResponse
+                {
+                    IsSucceed = true,
+                    Message = "BLO has been cleared "
+                };
+            }
+
+            // Return a response indicating that no action was taken
+            return new ServiceResponse
+            {
+                IsSucceed = false,
+                Message = "No mapping exists to clear."
+            };
+        }
+
+        public async Task<ServiceResponse> IsClearSOMappings(int stateMasterId, int electionTypeMasterId)
+        {
+            var isPollExist = await IsPollExist(stateMasterId, electionTypeMasterId);
+            var isEventActivityExist = await IsElectionInFoExist(stateMasterId, electionTypeMasterId);
+
+            // If either Poll or Event Activity exists, return the respective response
+            if (isPollExist.IsSucceed == true)
+            {
+                return isPollExist;
+            }
+
+            if (isEventActivityExist.IsSucceed == true)
+            {
+                return isEventActivityExist;
+            }
+
+            // If both Poll and Event Activity do not exist, proceed with the update
+            if (isPollExist.IsSucceed == false && isEventActivityExist.IsSucceed == false)
+            {
+                // Update the AssignedToBLO to null where StateMasterId matches
+                var clearBloMappings = await _context.BoothMaster
+                    .Where(d =>d.StateMasterId == stateMasterId && d.ElectionTypeMasterId == electionTypeMasterId)
+                 .ExecuteUpdateAsync(d=> d.SetProperty(x => x.AssignedTo, (string?)null));
+
+
+                // Return success response
+                return new ServiceResponse
+                {
+                    IsSucceed = true,
+                    Message = "SO  has been cleared "
+                };
+            }
+
+            // Return a response indicating that no action was taken
+            return new ServiceResponse
+            {
+                IsSucceed = false,
+                Message = "No mapping exists to clear."
+            };
+        }
+        public async Task<ServiceResponse> IsPollExist(int stateMasterId, int electionTypeMasterId)
+        {
+            var isExist = await _context.PollDetails.AnyAsync(d => d.StateMasterId == stateMasterId
+                                                        &&d.ElectionTypeMasterId==electionTypeMasterId);
+            if (isExist == false)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "Poll Detail is Empty"
+                };
+            }
+            else
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = true,
+                    Message = "Poll Detail have Some data"
+                };
+            }
+        }
+        public async Task<ServiceResponse> IsElectionInFoExist(int stateMasterId, int electionTypeMasterId)
+        {
+            var isExist = await _context.ElectionInfoMaster.AnyAsync(d => d.StateMasterId == stateMasterId
+                                                    && d.ElectionTypeMasterId == electionTypeMasterId);
+            if (isExist == false)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "Election Activity is Empty"
+                };
+            }
+            else
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = true,
+                    Message = "Election Activity have Some data"
+                };
+            }
+        }
+
+        public async Task<ServiceResponse> IsClearPollDetails(int stateMasterId, int electionTypeMasterId)
+        {
+            try
+            {
+                // Deleting matching records from PollDetails table
+                var deletedCount = await _context.PollDetails
+                    .Where(d => d.StateMasterId == stateMasterId && d.ElectionTypeMasterId == electionTypeMasterId)
+                    .ExecuteDeleteAsync();
+
+                if (deletedCount > 0)
+                {
+                    return new ServiceResponse
+                    {
+                        IsSucceed = true,
+                        Message = $"{deletedCount} Poll Details successfully deleted."
+                    };
+                }
+                else
+                {
+                    return new ServiceResponse
+                    {
+                        IsSucceed = false,
+                        Message = "No Poll Details found for the given StateMasterId."
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle exception
+                return new ServiceResponse
+                {
+                    IsSucceed = false,
+                    Message = $"Error deleting Poll Details: {ex.Message}"
+                };
+            }
+        }
+
+        public async Task<ServiceResponse> IsClearElectionInfo(int stateMasterId, int electionTypeMasterId)
+        {
+            try
+            {
+                // Deleting matching records from ElectionInfoMaster table
+                var deletedCount = await _context.ElectionInfoMaster
+                    .Where(d => d.StateMasterId == stateMasterId && d.ElectionTypeMasterId == electionTypeMasterId)
+                    .ExecuteDeleteAsync();
+
+                if (deletedCount > 0)
+                {
+                    return new ServiceResponse
+                    {
+                        IsSucceed = true,
+                        Message = $"{deletedCount} Election Info successfully deleted."
+                    };
+                }
+                else
+                {
+                    return new ServiceResponse
+                    {
+                        IsSucceed = false,
+                        Message = "No Election Info found for the given StateMasterId."
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle exception
+                return new ServiceResponse
+                {
+                    IsSucceed = false,
+                    Message = $"Error deleting Election Info: {ex.Message}"
+                };
+            }
+        }
+
+        #endregion
+
 
         #region State Master
 
@@ -4499,28 +4699,45 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             return await _context.EventAbbr.ToListAsync();
 
         }
-        public async Task<ServiceResponse> UpdateEventStaus(EventMaster eventMaster)
+        public async Task<ServiceResponse> UpdateEventStatus(EventMaster eventMaster)
         {
-            var isExist = _context.EventMaster.Where(d => d.EventMasterId == eventMaster.EventMasterId).FirstOrDefault();
-            if (isExist != null)
-            {
-                isExist.Status = eventMaster.Status;
-                _context.EventMaster.Update(isExist);
-                await _context.SaveChangesAsync();
-                return new ServiceResponse
-                {
-                    IsSucceed = true,
+            // Check if the event activity has been performed
+            bool isEventPerformed = await _context.ElectionInfoMaster.AnyAsync(d =>
+                d.StateMasterId == eventMaster.StateMasterId &&
+                d.ElectionTypeMasterId == eventMaster.ElectionTypeMasterId);
 
-                };
-            }
-            else
+            if (isEventPerformed)
             {
                 return new ServiceResponse
                 {
                     IsSucceed = false,
+                    Message = "Event Activity is performed with used Events. Kindly clear EventActivity."
                 };
             }
+
+            // Fetch the event if it exists
+            var existingEvent = await _context.EventMaster.FindAsync(eventMaster.EventMasterId);
+            if (existingEvent == null)
+            {
+                return new ServiceResponse
+                {
+                    IsSucceed = false,
+                    Message = "Event not found."
+                };
+            }
+
+            // Update the event status
+            existingEvent.Status = eventMaster.Status;
+            _context.EventMaster.Update(existingEvent);
+            await _context.SaveChangesAsync();
+
+            return new ServiceResponse
+            {
+                IsSucceed = true,
+                Message = "Event status updated successfully."
+            };
         }
+
         public async Task<EventMaster> GetEventById(int eventMasterId)
         {
             return await _context.EventMaster
@@ -4530,6 +4747,17 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         public async Task<ServiceResponse> DeleteEventById(int eventMasterId)
         {
+            // Check if the event activity has been performed
+            bool isEventPerformed = await _context.ElectionInfoMaster.AnyAsync(d =>d.EventMasterId==eventMasterId);
+
+            if (isEventPerformed)
+            {
+                return new ServiceResponse
+                {
+                    IsSucceed = false,
+                    Message = "Event Activity is performed with used Events. Kindly clear EventActivity."
+                };
+            }
             // Check if the event exists
             var eventToDelete = await _context.EventMaster.FirstOrDefaultAsync(d => d.EventMasterId == eventMasterId);
 
@@ -5451,6 +5679,52 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
 
         #region EventActivity
+        public async Task<ServiceResponse> IsVTEventTimeExtended(int stateMasterId, int electionTypeMasterId, bool isVTEventTimeExtended)
+        {
+            // Fetch the last slot for the given state and election type
+            var lastSlot = await _context.SlotManagementMaster
+                .FirstOrDefaultAsync(d => d.StateMasterId == stateMasterId
+                                       && d.ElectionTypeMasterId == electionTypeMasterId
+                                       && d.IsLastSlot);
+
+            // If no slot is found, return an appropriate response
+            if (lastSlot == null)
+            {
+                return new ServiceResponse
+                {
+                    IsSucceed = false,
+                    Message = "No slot found for the given state and election type."
+                };
+            }
+
+            // Update the IsVTEventTimeExtended property and save changes
+            lastSlot.IsVTEventTimeExtended = isVTEventTimeExtended;
+            _context.SlotManagementMaster.Update(lastSlot);
+            await _context.SaveChangesAsync();
+
+            return new ServiceResponse
+            {
+                IsSucceed = true,
+                Message = "VT Event time extension status updated successfully."
+            };
+        }
+
+        public async Task<(bool IsToday, string StartDateString)> IsEventActivityValid(int stateMasterId , int electionTypeMasterId)
+        {
+            var lastSlot = await _context.SlotManagementMaster.Where(d => d.StateMasterId == stateMasterId
+                                                                &&d.ElectionTypeMasterId==electionTypeMasterId
+                                                                &&d.IsLastSlot==true)
+                                                               .Select(d => d.StartDate)
+                                                               .FirstOrDefaultAsync();
+
+            // Convert the date to string format
+            string dateString = lastSlot.ToString("yyyy-MM-dd");
+
+            // Check if lastSlot is the same as today's date
+            bool isToday = lastSlot == DateOnly.FromDateTime(DateTime.Today);
+
+            return (isToday, dateString);
+        }
         public async Task<List<BoothEvents>> GetBoothEventListById(int stateMasterId, int electionTypeMasterId, int boothMasterId)
         {
             // Step 1: Get the list of events for the given state and election type
@@ -6503,7 +6777,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 {
                     IsSucceed = true,
                 };
-            }            
+            }
 
             else
             {
@@ -17205,8 +17479,9 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 k.DistrictMasterId == kyc.DistrictMasterId &&
                 k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
                 k.AssemblyMasterId == kyc.AssemblyMasterId &&
-                k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
+                k.FourthLevelHMasterId == kyc.FourthLevelHMasterId && 
                 k.IsUnOppossed == true // Check for unopposed candidate
+ 
             );
 
             if (existingCouncillor)

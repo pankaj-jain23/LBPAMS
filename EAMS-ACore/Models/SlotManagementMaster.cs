@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using EAMS_ACore.HelperModels;
+using EAMS_ACore.IRepository;
+using System.ComponentModel.DataAnnotations;
 
 namespace EAMS_ACore.Models
 {
@@ -16,6 +18,8 @@ namespace EAMS_ACore.Models
         public TimeOnly? LockTime { get; set; }
         public bool IsLastSlot { get; set; }
         public DateTimeOffset SlotCreatedTime { get; set; } = DateTimeOffset.Now;
+
+        public bool IsVTEventTimeExtended { get; set; }
 
 
     }

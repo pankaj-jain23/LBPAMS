@@ -68,6 +68,24 @@ namespace EAMS_BLL.Services
         }
         #endregion
 
+        #region Clear Mappings
+        public async Task<ServiceResponse> IsClearBLOMappings(int stateMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.IsClearBLOMappings(stateMasterId, electionTypeMasterId);
+        }
+        public async Task<ServiceResponse> IsClearSOMappings(int stateMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.IsClearSOMappings(stateMasterId, electionTypeMasterId);
+        }
+        public async Task<ServiceResponse> IsClearPollDetails(int stateMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.IsClearPollDetails(stateMasterId, electionTypeMasterId);
+        }
+        public async Task<ServiceResponse> IsClearElectionInfo(int stateMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.IsClearElectionInfo(stateMasterId, electionTypeMasterId);
+        }
+        #endregion
 
         #region DeleteMaster
         public async Task<ServiceResponse> DeleteMasterStatus(DeleteMasterStatus updateMasterStatus)
@@ -326,6 +344,11 @@ namespace EAMS_BLL.Services
         #endregion
 
         #region Event Master
+        public async Task<ServiceResponse>IsVTEventTimeExtended(int stateMasterId, int electionTypeMasterId, bool isVTEventTimeExtended)
+        {
+
+            return await _eamsRepository.IsVTEventTimeExtended(  stateMasterId,   electionTypeMasterId,  isVTEventTimeExtended);
+        }
         public async Task<List<EventMaster>> GetEventListById(int stateMasterId, int electionTypeMasterId)
         {
             return await _eamsRepository.GetEventListById(stateMasterId, electionTypeMasterId);
@@ -346,9 +369,9 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.UpdateEvent(eventMaster);
         }
-        public async Task<ServiceResponse> UpdateEventStaus(EventMaster eventMaster)
+        public async Task<ServiceResponse> UpdateEventStatus(EventMaster eventMaster)
         {
-            var isSucced = await _eamsRepository.UpdateEventStaus(eventMaster);
+            var isSucced = await _eamsRepository.UpdateEventStatus(eventMaster);
             if (isSucced.IsSucceed)
             {
                 return new ServiceResponse
