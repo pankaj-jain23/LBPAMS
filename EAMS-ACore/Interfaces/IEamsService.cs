@@ -133,12 +133,12 @@ namespace EAMS_ACore.Interfaces
 
         #region Event Activity
         Task<ServiceResponse> IsVTEventTimeExtended(int stateMasterId, int electionTypeMasterId, bool isVTEventTimeExtended);
-
+        Task<(bool IsToday, string StartDateString,bool IsPrePolled)> IsEventActivityValid(int stateMasterId, int electionTypeMasterId,int eventMasterId);
         Task<ServiceResponse> EventActivity(ElectionInfoMaster electionInfoMaster);
        
-        Task<ServiceResponse> UpdateEventActivity(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> UpdateEventActivity(UpdateEventActivity updateEventActivity, string userType);
         Task<List<BoothEvents>> GetBoothEventListById(int stateMasterId, int electionTypeMasterId, int boothMasterId);
-        Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(int boothMasterId);
+        Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(int boothMasterId, string userType);
         Task<Models.Queue> GetVoterInQueue(string boothMasterId);
 
         Task<FinalViewModel> GetFinalVotes(int boothMasterId);

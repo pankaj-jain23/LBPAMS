@@ -18,6 +18,7 @@ using EAMS_ACore.Models.QueueModel;
 using EAMS_ACore.ReportModels;
 using EAMS_ACore.SignalRModels;
 using EAMS_DAL.DBContext;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -1132,8 +1133,8 @@ namespace EAMS_DAL.Repository
             {
                 // Update the AssignedToBLO to null where StateMasterId matches
                 var clearBloMappings = await _context.BoothMaster
-                    .Where(d =>d.StateMasterId == stateMasterId && d.ElectionTypeMasterId == electionTypeMasterId)
-                 .ExecuteUpdateAsync(d=> d.SetProperty(x => x.AssignedTo, (string?)null));
+                    .Where(d => d.StateMasterId == stateMasterId && d.ElectionTypeMasterId == electionTypeMasterId)
+                 .ExecuteUpdateAsync(d => d.SetProperty(x => x.AssignedTo, (string?)null));
 
 
                 // Return success response
@@ -1154,7 +1155,7 @@ namespace EAMS_DAL.Repository
         public async Task<ServiceResponse> IsPollExist(int stateMasterId, int electionTypeMasterId)
         {
             var isExist = await _context.PollDetails.AnyAsync(d => d.StateMasterId == stateMasterId
-                                                        &&d.ElectionTypeMasterId==electionTypeMasterId);
+                                                        && d.ElectionTypeMasterId == electionTypeMasterId);
             if (isExist == false)
             {
                 return new ServiceResponse()
@@ -4748,7 +4749,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         public async Task<ServiceResponse> DeleteEventById(int eventMasterId)
         {
             // Check if the event activity has been performed
-            bool isEventPerformed = await _context.ElectionInfoMaster.AnyAsync(d =>d.EventMasterId==eventMasterId);
+            bool isEventPerformed = await _context.ElectionInfoMaster.AnyAsync(d => d.EventMasterId == eventMasterId);
 
             if (isEventPerformed)
             {
@@ -5709,21 +5710,31 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             };
         }
 
-        public async Task<(bool IsToday, string StartDateString)> IsEventActivityValid(int stateMasterId , int electionTypeMasterId)
-        {
-            var lastSlot = await _context.SlotManagementMaster.Where(d => d.StateMasterId == stateMasterId
-                                                                &&d.ElectionTypeMasterId==electionTypeMasterId
-                                                                &&d.IsLastSlot==true)
-                                                               .Select(d => d.StartDate)
-                                                               .FirstOrDefaultAsync();
+        public async Task<(bool IsToday, string StartDateString, bool IsPrePolled)> IsEventActivityValid(int stateMasterId, int electionTypeMasterId, int eventMasterId)
+        {           
+            var isPrePolled = await _context.EventMaster.Where(d => d.StateMasterId == stateMasterId 
+                                                            && d.ElectionTypeMasterId == electionTypeMasterId
+                                                            && d.EventMasterId == eventMasterId).Select(d=>d.IsPrePolled).FirstOrDefaultAsync();
+            if (!isPrePolled)
+            {
+                var lastSlot = await _context.SlotManagementMaster.Where(d => d.StateMasterId == stateMasterId
+                                                               && d.ElectionTypeMasterId == electionTypeMasterId
+                                                               && d.IsLastSlot == true)
+                                                              .Select(d => d.StartDate)
+                                                              .FirstOrDefaultAsync();
+                // Convert the date to string format
+                string dateString = lastSlot.ToString("yyyy-MM-dd");
 
-            // Convert the date to string format
-            string dateString = lastSlot.ToString("yyyy-MM-dd");
+                // Check if lastSlot is the same as today's date
+                bool isToday = lastSlot == DateOnly.FromDateTime(DateTime.Today);
 
-            // Check if lastSlot is the same as today's date
-            bool isToday = lastSlot == DateOnly.FromDateTime(DateTime.Today);
+                return (isToday, dateString,true);
+            }
+            else
+            {
+                return (true,"",true);
+            }
 
-            return (isToday, dateString);
         }
         public async Task<List<BoothEvents>> GetBoothEventListById(int stateMasterId, int electionTypeMasterId, int boothMasterId)
         {
@@ -6140,10 +6151,11 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             };
         }
 
-        public async Task<ServiceResponse> VoterTurnOut(UpdateEventActivity updateEventActivity)
+        public async Task<ServiceResponse> VoterTurnOut(UpdateEventActivity updateEventActivity, string userType)
         {
-            // Get the latest slot from the SlotManagementMaster table
-            var getLatestSlot = await GetVoterSlotAvailable(updateEventActivity.StateMasterId, updateEventActivity.ElectionTypeMasterId);
+            // Passing an empty string for UserType because, in the VoterTurnOut method, 
+            // we are only checking whether the slot exists or not, and the UserType is not required for this check.
+            var getLatestSlot = await GetVoterSlotAvailable(updateEventActivity.StateMasterId, updateEventActivity.ElectionTypeMasterId, userType);
             var getLastSlot = await GetLastSlot(updateEventActivity.StateMasterId, updateEventActivity.ElectionTypeMasterId);
             //var currentTime = DateTimeOffset.Now;
 
@@ -6833,37 +6845,104 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 Message = "No slot available at this time."
             };
         }
-        private async Task<SlotManagementMaster> GetVoterSlotAvailable(int stateMasterId, int electionTypeMasterId)
+        //private async Task<SlotManagementMaster> GetVoterSlotAvailable(int stateMasterId, int electionTypeMasterId,string userType)
+        //{
+
+        //    var getSlotList = await _context.SlotManagementMaster
+        //         .Where(d => d.StateMasterId == stateMasterId &&
+        //                     d.ElectionTypeMasterId == electionTypeMasterId)
+        //         .ToListAsync();
+
+
+        //    // Get the current time
+        //    var currentTime = DateTimeOffset.Now;
+
+        //    if (userType == "DashBoardUser")
+        //    {
+
+        //    }
+        //    // Find the latest slot where the current time is between the EndTime and LockTime
+        //    var availableSlot = getSlotList.FirstOrDefault(slot =>
+        //        slot.StartDate == DateOnly.FromDateTime(currentTime.DateTime) && // Match the date
+        //        slot.EndTime.HasValue &&
+        //        slot.LockTime.HasValue &&
+        //        currentTime.TimeOfDay > slot.EndTime.Value.ToTimeSpan() &&      // Current time is after EndTime
+        //        currentTime.TimeOfDay < slot.LockTime.Value.ToTimeSpan());      // Current time is before LockTime
+
+        //    // If a valid slot is found, return success
+        //    if (availableSlot != null)
+        //    {
+        //        return availableSlot;
+        //    }
+        //    else
+        //    {
+        //        return null;
+        //    }
+        //    // Default response if no slot is available
+
+        //}
+        private async Task<SlotManagementMaster> GetVoterSlotAvailable(int stateMasterId, int electionTypeMasterId, string userType)
         {
+            // Fetch all slots for the given State and Election Type
+            var slots = await _context.SlotManagementMaster
+                .Where(d => d.StateMasterId == stateMasterId &&
+                            d.ElectionTypeMasterId == electionTypeMasterId)
+                .OrderBy(slot => slot.StartDate)
+                .ThenBy(slot => slot.StartTime)
+                .ToListAsync();
 
-            var getSlotList = await _context.SlotManagementMaster
-                 .Where(d => d.StateMasterId == stateMasterId &&
-                             d.ElectionTypeMasterId == electionTypeMasterId)
-                 .ToListAsync();
+            var isLastSlotTimeExtended = slots.Any(d => d.IsLastSlot == true&&d.IsVTEventTimeExtended==true);
 
-
-            // Get the current time
-            var currentTime = DateTimeOffset.Now;
-
-            // Find the latest slot where the current time is between the EndTime and LockTime
-            var availableSlot = getSlotList.FirstOrDefault(slot =>
-                slot.StartDate == DateOnly.FromDateTime(currentTime.DateTime) && // Match the date
-                slot.EndTime.HasValue &&
-                slot.LockTime.HasValue &&
-                currentTime.TimeOfDay > slot.EndTime.Value.ToTimeSpan() &&      // Current time is after EndTime
-                currentTime.TimeOfDay < slot.LockTime.Value.ToTimeSpan());      // Current time is before LockTime
-
-            // If a valid slot is found, return success
-            if (availableSlot != null)
+            // Logic for "DashBoardUser"
+            if (userType == "DashBoardUser"&&isLastSlotTimeExtended)
             {
-                return availableSlot;
+                // Get the current date and time
+                var currentDate = DateOnly.FromDateTime(DateTime.Now);
+                var currentTime = TimeOnly.FromDateTime(DateTime.Now);
+                // Iterate through the slots to check if the current time is between EndTime of one slot and StartTime of the next
+                for (int i = 0; i < slots.Count - 1; i++)
+                {
+                    var currentSlot = slots[i];
+                    var nextSlot = slots[i + 1];
+
+                    if (currentSlot.StartDate == currentDate && nextSlot.StartDate == currentDate)
+                    {
+                        // Check if EndTime of the current slot and StartTime of the next slot are valid
+                        if (currentSlot.EndTime.HasValue && nextSlot.StartTime > currentSlot.EndTime.Value)
+                        {
+                            // Check if current time is between currentSlot's EndTime and nextSlot's StartTime
+                            if (currentTime > currentSlot.EndTime.Value && currentTime < nextSlot.StartTime)
+                            {
+                                return currentSlot; // Return the current slot
+                            }
+                        }
+                    }
+                }
+
+                // If no matching slot is found for DashBoardUser, return null
+                return null;
             }
             else
             {
-                return null;
-            }
-            // Default response if no slot is available
+                var currentTime = DateTimeOffset.Now;
+                // Find the latest slot where the current time is between the EndTime and LockTime
+                var availableSlot = slots.FirstOrDefault(slot =>
+                    slot.StartDate == DateOnly.FromDateTime(currentTime.DateTime) && // Match the date
+                    slot.EndTime.HasValue &&
+                    slot.LockTime.HasValue &&
+                    currentTime.TimeOfDay > slot.EndTime.Value.ToTimeSpan() &&      // Current time is after EndTime
+                    currentTime.TimeOfDay < slot.LockTime.Value.ToTimeSpan());      // Current time is before LockTime
 
+                // If a valid slot is found, return success
+                if (availableSlot != null)
+                {
+                    return availableSlot;
+                }
+                else
+                {
+                    return null;
+                }
+            }
         }
 
         public async Task<ServiceResponse> IsVoterInQueue(CheckEventActivity checkEventActivity)
@@ -7077,7 +7156,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
         #endregion
 
-        public async Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(int boothMasterId)
+        public async Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(int boothMasterId, string userType)
         {
             // Step 1: Try to fetch BoothMaster details from cache
             var cacheKeyBooth = $"BoothMaster_{boothMasterId}";
@@ -7153,7 +7232,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
 
             // Step 4: Get voter slot availability
-            var getVoterSlotAvailable = await GetVoterSlotAvailable(getBooth.StateMasterId, getBooth.ElectionTypeMasterId);
+            var getVoterSlotAvailable = await GetVoterSlotAvailable(getBooth.StateMasterId, getBooth.ElectionTypeMasterId, userType);
             var getLastSlot = await GetLastSlot(electionInfo.StateMasterId, electionInfo.ElectionTypeMasterId);
             //var lastVotesPolled = await _context.PollDetails
             //                              .Where(d => d.StateMasterId == electionInfo.StateMasterId &&
@@ -17479,9 +17558,9 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 k.DistrictMasterId == kyc.DistrictMasterId &&
                 k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
                 k.AssemblyMasterId == kyc.AssemblyMasterId &&
-                k.FourthLevelHMasterId == kyc.FourthLevelHMasterId && 
+                k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
                 k.IsUnOppossed == true // Check for unopposed candidate
- 
+
             );
 
             if (existingCouncillor)

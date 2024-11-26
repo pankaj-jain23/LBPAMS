@@ -442,7 +442,11 @@ namespace EAMS_BLL.Services
         #endregion
 
         #region EventActivity
-        public async Task<ServiceResponse> UpdateEventActivity(UpdateEventActivity updateEventActivity)
+        public async Task<(bool IsToday, string StartDateString, bool IsPrePolled)> IsEventActivityValid(int stateMasterId, int electionTypeMasterId, int eventMasterId)
+        {
+            return await _eamsRepository.IsEventActivityValid(stateMasterId, electionTypeMasterId,eventMasterId);
+        }
+        public async Task<ServiceResponse> UpdateEventActivity(UpdateEventActivity updateEventActivity, string userType)
         {
             // Get the previous event status
             var previousEventStatus = await _eamsRepository.GetPreviousEvent(updateEventActivity);
@@ -473,7 +477,7 @@ namespace EAMS_BLL.Services
                         Message = "You have to undo Last updated Event"
                     };
                 }
-                return await UpdateEventsActivity(updateEventActivity);
+                return await UpdateEventsActivity(updateEventActivity, userType);
             }
 
             // Check if the event activity is done
@@ -498,7 +502,7 @@ namespace EAMS_BLL.Services
                 };
             }
             // If the event UpdateEventsActivity done, proceed with updating the activity
-            return await UpdateEventsActivity(updateEventActivity);
+            return await UpdateEventsActivity(updateEventActivity,userType);
         }
 
 
@@ -564,7 +568,7 @@ namespace EAMS_BLL.Services
 
         }
 
-        private async Task<ServiceResponse> UpdateEventsActivity(UpdateEventActivity updateEventActivity)
+        private async Task<ServiceResponse> UpdateEventsActivity(UpdateEventActivity updateEventActivity, string userType)
         {
             ServiceResponse response = null;
 
@@ -587,7 +591,7 @@ namespace EAMS_BLL.Services
                     response = await _eamsRepository.PollStarted(updateEventActivity);
                     break;
                 case "VT": // Voter Turn Out
-                    response = await _eamsRepository.VoterTurnOut(updateEventActivity);
+                    response = await _eamsRepository.VoterTurnOut(updateEventActivity, userType);
                     break;
                 case "VQ": // Voter In Queue
                     response = await _eamsRepository.VoterInQueue(updateEventActivity);
@@ -641,10 +645,10 @@ namespace EAMS_BLL.Services
             return await _eamsRepository.EventWiseBoothStatus(soId);
         }
 
-        public async Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(int boothMasterId)
+        public async Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(int boothMasterId, string userType)
 
         {
-            return await _eamsRepository.GetLastUpdatedPollDetail(boothMasterId);
+            return await _eamsRepository.GetLastUpdatedPollDetail(boothMasterId,   userType);
 
         }
         public async Task<EAMS_ACore.Models.Queue> GetVoterInQueue(string boothMasterId)

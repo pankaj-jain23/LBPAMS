@@ -273,17 +273,17 @@ namespace EAMS_BLL.AuthServices
                 }
 
                 var authClaims = new List<Claim>
-{
-    new Claim(ClaimTypes.Name, foRecords.FieldOfficerName),
-    new Claim(ClaimTypes.MobilePhone, foRecords.FieldOfficerMobile),
-    new Claim(ClaimTypes.Role, "FO"),
-    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-    new Claim("ElectionTypeMasterId", foRecords.ElectionTypeMasterId.ToString()),
-    new Claim("FieldOfficerMasterId", foRecords.FieldOfficerMasterId.ToString()),
-    new Claim("StateMasterId", foRecords.StateMasterId.ToString()),
-    new Claim("DistrictMasterId", foRecords.DistrictMasterId.ToString()),
-    new Claim("AssemblyMasterId", foRecords.AssemblyMasterId.ToString())
-};
+                {
+                    new Claim(ClaimTypes.Name, foRecords.FieldOfficerName),
+                    new Claim(ClaimTypes.MobilePhone, foRecords.FieldOfficerMobile),
+                    new Claim(ClaimTypes.Role, "FO"),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    new Claim("ElectionTypeMasterId", foRecords.ElectionTypeMasterId.ToString()),
+                    new Claim("FieldOfficerMasterId", foRecords.FieldOfficerMasterId.ToString()),
+                    new Claim("StateMasterId", foRecords.StateMasterId.ToString()),
+                    new Claim("DistrictMasterId", foRecords.DistrictMasterId.ToString()),
+                    new Claim("AssemblyMasterId", foRecords.AssemblyMasterId.ToString())
+                };
 
                 var token = GenerateToken(authClaims);
 

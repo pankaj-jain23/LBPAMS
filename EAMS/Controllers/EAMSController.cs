@@ -2493,8 +2493,6 @@ namespace EAMS.Controllers
 
 
 
-
-
         [HttpPut]
         [Route("UpdateEventActivityForPortal")]
         [Authorize]
@@ -2510,16 +2508,28 @@ namespace EAMS.Controllers
             }
             var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
             string userId = userClaims.GetValueOrDefault("UserId");
+            var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
 
+            string userType = userRole != null && (userRole.Contains("FO") || userRole.Contains("ARO"))
+                ? "MobileUser"
+                : "DashBoardUser";
 
             var mappedData = _mapper.Map<UpdateEventActivity>(updateEventActivityViewModel);
+
+            var isEventActivityValid = await _EAMSService.IsEventActivityValid(stateMasterId, electionTypeMasterId, updateEventActivityViewModel.EventMasterId);
+
+            //If election date is not same it will through msg
+            if (!isEventActivityValid.IsToday)
+            {
+                return BadRequest($"This activity is scheduled to start on the election day: {isEventActivityValid.StartDateString}.");
+            }
             // Set IDs from claims
             mappedData.StateMasterId = stateMasterId;
             mappedData.DistrictMasterId = districtMasterId;
             mappedData.AssemblyMasterId = assemblyMasterId;
             mappedData.ElectionTypeMasterId = electionTypeMasterId;
             mappedData.AROUserId = userId;
-            var result = await _EAMSService.UpdateEventActivity(mappedData);
+            var result = await _EAMSService.UpdateEventActivity(mappedData, userType);
             if (result.IsSucceed == true)
             {
                 return Ok(result.Message);
@@ -2546,8 +2556,18 @@ namespace EAMS.Controllers
                 return BadRequest("Invalid model state.");
             }
 
+            var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
 
+            string userType = userRole != null && (userRole.Contains("FO") || userRole.Contains("ARO"))
+                ? "MobileUser"
+                : "DashBoardUser";
+            var isEventActivityValid = await _EAMSService.IsEventActivityValid(stateMasterId, electionTypeMasterId, updateEventActivityViewModel.EventMasterId);
 
+            //If election date is not same it will through msg
+            if (!isEventActivityValid.IsToday)
+            {
+                return BadRequest($"This activity is scheduled to start on the election day: {isEventActivityValid.StartDateString}.");
+            }
             // Map view model to entity
             var mappedData = _mapper.Map<UpdateEventActivity>(updateEventActivityViewModel);
 
@@ -2556,7 +2576,7 @@ namespace EAMS.Controllers
             mappedData.AssemblyMasterId = assemblyMasterId;
             mappedData.ElectionTypeMasterId = electionTypeMasterId;
 
-            var result = await _EAMSService.UpdateEventActivity(mappedData);
+            var result = await _EAMSService.UpdateEventActivity(mappedData, userType);
             if (result.IsSucceed == true)
             {
                 return Ok(result.Message);
@@ -2582,8 +2602,18 @@ namespace EAMS.Controllers
                 return BadRequest("Invalid model state.");
             }
 
+            var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
 
+            string userType = userRole != null && (userRole.Contains("FO") || userRole.Contains("ARO"))
+                ? "MobileUser"
+                : "DashBoardUser";
+            var isEventActivityValid = await _EAMSService.IsEventActivityValid(stateMasterId, electionTypeMasterId, updateEventActivityViewModel.EventMasterId);
 
+            //If election date is not same it will through msg
+            if (!isEventActivityValid.IsToday)
+            {
+                return BadRequest($"This activity is scheduled to start on the election day: {isEventActivityValid.StartDateString}.");
+            }
             // Map view model to entity
             var mappedData = _mapper.Map<UpdateEventActivity>(updateEventActivityViewModel);
             mappedData.StateMasterId = stateMasterId;
@@ -2591,7 +2621,7 @@ namespace EAMS.Controllers
             mappedData.AssemblyMasterId = assemblyMasterId;
             mappedData.ElectionTypeMasterId = electionTypeMasterId;
 
-            var result = await _EAMSService.UpdateEventActivity(mappedData);
+            var result = await _EAMSService.UpdateEventActivity(mappedData, userType);
             if (result.IsSucceed == true)
             {
                 return Ok(result.Message);
@@ -2624,7 +2654,18 @@ namespace EAMS.Controllers
             {
                 return BadRequest("Missing or invalid claims.");
             }
+            var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
 
+            string userType = userRole != null && (userRole.Contains("FO") || userRole.Contains("ARO"))
+                ? "MobileUser"
+                : "DashBoardUser";
+            var isEventActivityValid = await _EAMSService.IsEventActivityValid(stateMasterId, electionTypeMasterId, updateEventActivityViewModel.EventMasterId);
+
+            //If election date is not same it will through msg
+            if (!isEventActivityValid.IsToday)
+            {
+                return BadRequest($"This activity is scheduled to start on the election day: {isEventActivityValid.StartDateString}.");
+            }
             var mappedData = _mapper.Map<UpdateEventActivity>(updateEventActivityViewModel);
 
             // Set IDs from claims
@@ -2633,7 +2674,7 @@ namespace EAMS.Controllers
             mappedData.AssemblyMasterId = assemblyMasterId;
             mappedData.ElectionTypeMasterId = electionTypeMasterId;
             mappedData.FieldOfficerMasterId = fieldOfficerMasterId.ToString();
-            var result = await _EAMSService.UpdateEventActivity(mappedData);
+            var result = await _EAMSService.UpdateEventActivity(mappedData, userType);
             if (result.IsSucceed == true)
             {
                 return Ok(result.Message);
@@ -2663,7 +2704,18 @@ namespace EAMS.Controllers
             {
                 return BadRequest("Missing or invalid claims.");
             }
+            var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
 
+            string userType = userRole != null && (userRole.Contains("FO") || userRole.Contains("ARO"))
+                ? "MobileUser"
+                : "DashBoardUser";
+            var isEventActivityValid = await _EAMSService.IsEventActivityValid(stateMasterId, electionTypeMasterId, updateEventActivityViewModel.EventMasterId);
+
+            //If election date is not same it will through msg
+            if (!isEventActivityValid.IsToday)
+            {
+                return BadRequest($"This activity is scheduled to start on the election day: {isEventActivityValid.StartDateString}.");
+            }
             // Map view model to entity
             var mappedData = _mapper.Map<UpdateEventActivity>(updateEventActivityViewModel);
 
@@ -2672,7 +2724,7 @@ namespace EAMS.Controllers
             mappedData.AssemblyMasterId = assemblyMasterId;
             mappedData.ElectionTypeMasterId = electionTypeMasterId;
 
-            var result = await _EAMSService.UpdateEventActivity(mappedData);
+            var result = await _EAMSService.UpdateEventActivity(mappedData, userType);
             if (result.IsSucceed == true)
             {
                 return Ok(result.Message);
@@ -2702,7 +2754,18 @@ namespace EAMS.Controllers
             {
                 return BadRequest("Missing or invalid claims.");
             }
+            var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
 
+            string userType = userRole != null && (userRole.Contains("FO") || userRole.Contains("ARO"))
+                ? "MobileUser"
+                : "DashBoardUser";
+            var isEventActivityValid = await _EAMSService.IsEventActivityValid(stateMasterId, electionTypeMasterId, updateEventActivityViewModel.EventMasterId);
+
+            //If election date is not same it will through msg
+            if (!isEventActivityValid.IsToday)
+            {
+                return BadRequest($"This activity is scheduled to start on the election day: {isEventActivityValid.StartDateString}.");
+            }
             // Map view model to entity
             var mappedData = _mapper.Map<UpdateEventActivity>(updateEventActivityViewModel);
 
@@ -2711,7 +2774,7 @@ namespace EAMS.Controllers
             mappedData.AssemblyMasterId = assemblyMasterId;
             mappedData.ElectionTypeMasterId = electionTypeMasterId;
 
-            var result = await _EAMSService.UpdateEventActivity(mappedData);
+            var result = await _EAMSService.UpdateEventActivity(mappedData, userType);
             if (result.IsSucceed == true)
             {
                 return Ok(result.Message);
@@ -2750,8 +2813,12 @@ namespace EAMS.Controllers
         [Authorize]
         public async Task<IActionResult> GetLastUpdatedPollDetail(int boothMasterId)
         {
+            var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
 
-            var result = await _EAMSService.GetLastUpdatedPollDetail(boothMasterId);
+            string userType = userRole != null && (userRole.Contains("FO") || userRole.Contains("ARO"))
+                ? "MobileUser"
+                : "DashBoardUser";
+            var result = await _EAMSService.GetLastUpdatedPollDetail(boothMasterId, userType);
             if (result is not null)
             {
                 return Ok(result);

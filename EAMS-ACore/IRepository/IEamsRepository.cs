@@ -162,7 +162,7 @@ namespace EAMS_ACore.IRepository
         Task<ServiceResponse> SetupPollingStation(UpdateEventActivity updateEventActivity);
         Task<ServiceResponse> MockPollDone(UpdateEventActivity updateEventActivity);
         Task<ServiceResponse> PollStarted(UpdateEventActivity updateEventActivity);
-        Task<ServiceResponse> VoterTurnOut(UpdateEventActivity updateEventActivity);
+        Task<ServiceResponse> VoterTurnOut(UpdateEventActivity updateEventActivity,string userType);
         Task<ServiceResponse> VoterInQueue(UpdateEventActivity updateEventActivity);
         Task<ServiceResponse> FinalVotesPolled(UpdateEventActivity updateEventActivity);
         Task<ServiceResponse> PollEnded(UpdateEventActivity updateEventActivity);
@@ -171,7 +171,7 @@ namespace EAMS_ACore.IRepository
         Task<ServiceResponse> PartyReachedAtCollection(UpdateEventActivity updateEventActivity);
         Task<ServiceResponse> EVMDeposited(UpdateEventActivity updateEventActivity);
         #endregion
-        Task<(bool IsToday, string StartDateString)> IsEventActivityValid(int stateMasterId, int electionTypeMasterId);
+        Task<(bool IsToday, string StartDateString, bool IsPrePolled)> IsEventActivityValid(int stateMasterId, int electionTypeMasterId, int eventMasterId);
         Task<CheckEventActivity> GetNextEvent(UpdateEventActivity updateEventActivity);
         Task<CheckEventActivity> GetPreviousEvent(UpdateEventActivity updateEventActivity);
         Task<List<BoothEvents>> GetBoothEventListById(int stateMasterId, int electionTypeMasterId, int boothMasterId);
@@ -182,7 +182,7 @@ namespace EAMS_ACore.IRepository
         Task<bool> CanFinalValueStart(int boothMasterId);
 
 
-        Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(int boothMasterId);
+        Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(int boothMasterId, string userType);
         Task<Models.Queue> GetVoterInQueue(string boothMasterId);
         Task<VotesPolledPercentage> GetVotesPolledPercentage(ClaimsIdentity claimsIdentity);
         Task<FinalViewModel> GetFinalVotes(int boothMasterId);
