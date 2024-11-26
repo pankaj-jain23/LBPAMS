@@ -29,6 +29,7 @@ namespace EAMS_ACore.Interfaces
         Task<ServiceResponse> IsClearSOMappings(int stateMasterId, int electionTypeMasterId);
         Task<ServiceResponse> IsClearPollDetails(int stateMasterId, int electionTypeMasterId);
         Task<ServiceResponse> IsClearElectionInfo(int stateMasterId, int electionTypeMasterId);
+        Task<ServiceResponse> IsClearSlotInfo(int stateMasterId, int electionTypeMasterId,int eventMasterId);
         #endregion
 
         #region State Master

@@ -125,7 +125,18 @@ namespace EAMS.Controllers
             }
             return BadRequest("Invalid StateMasterId");
         }
-
+        [HttpPost("ClearSlotInfo")]
+        [Authorize]
+        public async Task<IActionResult> ClearSlotInfo(int electionTypeMasterId, int eventMasterId)
+        {
+            var stateMasterIdStr = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            if (int.TryParse(stateMasterIdStr, out var stateMasterId))
+            {
+                var response = await _EAMSService.IsClearSlotInfo(stateMasterId, electionTypeMasterId, eventMasterId);
+                return Ok(response); // Assuming response is of type ServiceResponse
+            }
+            return BadRequest("Invalid StateMasterId");
+        }
 
         #endregion
 

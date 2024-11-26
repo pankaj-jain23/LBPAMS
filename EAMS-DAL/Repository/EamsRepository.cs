@@ -1268,6 +1268,42 @@ namespace EAMS_DAL.Repository
                 };
             }
         }
+        public async Task<ServiceResponse> IsClearSlotInfo(int stateMasterId, int electionTypeMasterId, int eventMasterId)
+        {
+            // Check if election info exists for the given state and election type
+            var isEventActivityPerformed = await IsElectionInFoExist(stateMasterId, electionTypeMasterId);
+
+            if (isEventActivityPerformed.IsSucceed)
+            {
+                // If event activity exists, return the response
+                return isEventActivityPerformed;
+            }
+
+            // Use ExecuteDelete for direct deletion without loading records into memory
+            var affectedRows = await _context.SlotManagementMaster
+                .Where(d => d.StateMasterId == stateMasterId &&
+                            d.ElectionTypeMasterId == electionTypeMasterId &&
+                            d.EventMasterId == eventMasterId)
+                .ExecuteDeleteAsync();
+
+            if (affectedRows > 0)
+            {
+                return new ServiceResponse
+                {
+                    IsSucceed = true,
+                    Message = "Records deleted successfully."
+                };
+            }
+            else
+            {
+                return new ServiceResponse
+                {
+                    IsSucceed = false,
+                    Message = "No records found to delete."
+                };
+            }
+        }
+
 
         #endregion
 
@@ -6907,19 +6943,35 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
                     if (currentSlot.StartDate == currentDate && nextSlot.StartDate == currentDate)
                     {
-                        // Check if EndTime of the current slot and StartTime of the next slot are valid
-                        if (currentSlot.EndTime.HasValue && nextSlot.StartTime > currentSlot.EndTime.Value)
+                         
+
+                        // If not, check if current time lies between the current slot's StartTime and the next slot's EndTime
+                        if (currentSlot.StartTime <= currentTime &&
+                            nextSlot.EndTime.HasValue &&
+                            currentTime < nextSlot.EndTime.Value)
                         {
-                            // Check if current time is between currentSlot's EndTime and nextSlot's StartTime
-                            if (currentTime > currentSlot.EndTime.Value && currentTime < nextSlot.StartTime)
-                            {
-                                return currentSlot; // Return the current slot
-                            }
+                            return currentSlot; // Return the current slot if the current time lies between
                         }
                     }
                 }
 
-                // If no matching slot is found for DashBoardUser, return null
+                // If no matching slot is found, extend the end time for the last slot
+                var lastSlot = slots.LastOrDefault();
+                if (lastSlot != null && lastSlot.EndTime.HasValue)
+                {
+                    var extendedEndTime = lastSlot.LockTime.Value.AddHours(2);
+                    if (currentTime < extendedEndTime)
+                    {
+                       
+                        lastSlot.LockTime = extendedEndTime;
+
+                         
+
+                        return lastSlot;
+                    }
+                }
+
+                // If no slots match even after extension, return null
                 return null;
             }
             else
@@ -7190,12 +7242,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             }
 
 
-            var currentEvent = await _cacheService.GetDataAsync<EventMaster>("GetVTEvent");
-
-            if (currentEvent == null)
-            {
-                // Fetch from database if not available in cache
-                currentEvent = await _context.EventMaster.AsNoTracking()
+            var currentEvent = await _context.EventMaster.AsNoTracking()
                                    .Where(d => d.StateMasterId == getBooth.StateMasterId
                                                          && d.ElectionTypeMasterId == getBooth.ElectionTypeMasterId
                                                          && d.EventABBR == "VT").Select(d => new EventMaster
@@ -7207,12 +7254,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
                                                          }).FirstOrDefaultAsync();
 
-                // Add to cache if found
-                if (currentEvent != null)
-                {
-                    await _cacheService.SetDataAsync("GetVTEvent", currentEvent, BharatTimeDynamic(0, 0, 0, 0, 20)); // Cache for 30 minutes
-                }
-            }
+                
+            
 
             if (currentEvent == null)
             {
@@ -9773,6 +9816,16 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         #region SlotManagement
         public async Task<Response> AddEventSlot(List<SlotManagementMaster> slotManagement)
         {
+            var isEventActivityPerformed = await IsElectionInFoExist(slotManagement.Select(d=>d.StateMasterId).FirstOrDefault(), slotManagement.Select(d => d.ElectionTypeMasterId).FirstOrDefault());
+            if (isEventActivityPerformed.IsSucceed == true)
+            {
+                return new Response()
+                {
+                    Status=RequestStatusEnum.BadRequest,
+                    Message=isEventActivityPerformed.Message
+                };
+            }
+            
             var masterIds = slotManagement.Select(d => new { d.StateMasterId, d.EventMasterId, d.ElectionTypeMasterId }).FirstOrDefault();
             var deleteRecord = _context.SlotManagementMaster
                 .Where(d => d.StateMasterId == masterIds.StateMasterId && d.ElectionTypeMasterId == masterIds.ElectionTypeMasterId && d.EventMasterId == masterIds.EventMasterId)

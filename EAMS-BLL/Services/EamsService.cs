@@ -85,6 +85,10 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.IsClearElectionInfo(stateMasterId, electionTypeMasterId);
         }
+        public async Task<ServiceResponse> IsClearSlotInfo(int stateMasterId, int electionTypeMasterId,int eventMasterId)
+        {
+            return await _eamsRepository.IsClearSlotInfo(stateMasterId, electionTypeMasterId, eventMasterId);
+        }
         #endregion
 
         #region DeleteMaster
