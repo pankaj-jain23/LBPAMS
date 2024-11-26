@@ -321,6 +321,7 @@ namespace EAMS.Helper
                 .ForMember(dest => dest.EventName, opt => opt.MapFrom(src => src.EventName))
                 .ForMember(dest => dest.EventSequence, opt => opt.MapFrom(src => src.EventSequence))
                 .ForMember(dest => dest.EventABBR, opt => opt.MapFrom(src => src.EventABBR))
+                .ForMember(dest => dest.IsPrePolled, opt => opt.MapFrom(src => src.IsPrePolled))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.IsStatus))
                 .ReverseMap();
             CreateMap<EventMasterListViewModel, EventMaster>()
@@ -330,6 +331,7 @@ namespace EAMS.Helper
                .ForMember(dest => dest.EventName, opt => opt.MapFrom(src => src.EventName))
                .ForMember(dest => dest.EventSequence, opt => opt.MapFrom(src => src.EventSequence))
                .ForMember(dest => dest.EventABBR, opt => opt.MapFrom(src => src.EventABBR))
+               .ForMember(dest => dest.IsPrePolled, opt => opt.MapFrom(src => src.IsPrePolled))
                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.IsStatus))
                .ReverseMap();
             CreateMap<EventMasterByIdViewModel, EventMaster>()
@@ -342,6 +344,7 @@ namespace EAMS.Helper
      .ForMember(dest => dest.EventSequence, opt => opt.MapFrom(src => src.EventSequence))
      .ForMember(dest => dest.EventABBR, opt => opt.MapFrom(src => src.EventABBR))
      .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.IsStatus))
+     .ForMember(dest => dest.IsPrePolled, opt => opt.MapFrom(src => src.IsPrePolled))
      .ForMember(dest => dest.StartDateTime, opt => opt.MapFrom(src => src.StartDateTime))
      .ForMember(dest => dest.EndDateTime, opt => opt.MapFrom(src => src.EndDateTime))
      .ReverseMap();
@@ -354,6 +357,7 @@ namespace EAMS.Helper
                 .ForMember(dest => dest.EventName, opt => opt.MapFrom(src => src.EventName))
                 .ForMember(dest => dest.EventSequence, opt => opt.MapFrom(src => src.EventSequence))
                 .ForMember(dest => dest.EventABBR, opt => opt.MapFrom(src => src.EventABBR))
+                .ForMember(dest => dest.IsPrePolled, opt => opt.MapFrom(src => src.IsPrePolled))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.IsStatus))
                 .ReverseMap();
             #endregion

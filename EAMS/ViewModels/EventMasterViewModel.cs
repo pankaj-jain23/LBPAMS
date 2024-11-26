@@ -15,7 +15,7 @@ namespace EAMS.ViewModels
         [Required(ErrorMessage = "ElectionTypeMasterId is required")]
         public int ElectionTypeMasterId { get; set; }
         [Required(ErrorMessage = "Active Status is required")]
-
+        public bool IsPrePolled { get; set; }
         public bool IsStatus { get; set; }
     }
     public class UpdateEventMasterViewModel
@@ -32,7 +32,7 @@ namespace EAMS.ViewModels
         [Required(ErrorMessage = "ElectionTypeMasterId is required")]
         public int ElectionTypeMasterId { get; set; }
         [Required(ErrorMessage = "Active Status is required")]
-
+        public bool IsPrePolled { get; set; }
         public bool IsStatus { get; set; }
     }
     public class EventMasterListViewModel
@@ -48,7 +48,7 @@ namespace EAMS.ViewModels
         [Required(ErrorMessage = "ElectionTypeMasterId is required")]
         public int ElectionTypeMasterId { get; set; }
         [Required(ErrorMessage = "Active Status is required")]
-
+        public bool IsPrePolled { get; set; }
         public bool IsStatus { get; set; }
     }
     public class EventMasterByIdViewModel
@@ -64,5 +64,6 @@ namespace EAMS.ViewModels
         public DateTime? StartDateTime { get; set; }
         public DateTime? EndDateTime { get; set; }
         public bool IsStatus { get; set; }
+        public bool IsPrePolled { get; private set; }
     }
 }

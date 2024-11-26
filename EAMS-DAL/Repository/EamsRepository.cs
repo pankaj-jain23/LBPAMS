@@ -4457,6 +4457,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             existingEvent.EventSequence = eventMaster.EventSequence;
             existingEvent.EventABBR = eventMaster.EventABBR;
             existingEvent.ElectionTypeMasterId = existingEvent.ElectionTypeMasterId;
+            existingEvent.IsPrePolled = existingEvent.IsPrePolled;
 
             _context.EventMaster.Update(existingEvent);
             await _context.SaveChangesAsync();

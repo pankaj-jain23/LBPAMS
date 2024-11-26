@@ -39,7 +39,7 @@ namespace EAMS_ACore
         public DateTime? StartDateTime { get; set; }
 
         public DateTime? EndDateTime { get; set; }
-
+        public bool IsPrePolled { get; set; }
         public bool Status { get; set; }
 
         public DateTime? CreatedAt { get; set; }
