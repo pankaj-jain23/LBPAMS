@@ -2032,6 +2032,11 @@ namespace EAMS.Controllers
         {
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && fourthLevelHMasterId != null)
             {
+                var isVoterAndKycExist = await _EAMSService.IsVoterAndKycExist(fourthLevelHMasterId);
+                if (isVoterAndKycExist.IsSucceed == true)
+                {
+                    return Ok(isVoterAndKycExist.Message);
+                }
                 var isSucceed = await _EAMSService.DeleteFourthLevelHById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);  // Corrected to await the asynchronous method
                 if (isSucceed.IsSucceed)
                 {

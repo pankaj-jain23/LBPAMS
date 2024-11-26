@@ -26,6 +26,7 @@ namespace EAMS_ACore.IRepository
         #endregion
 
         Task<Response> ResetAccounts(string stateMasterId);
+
         #region State Master
         Task<List<StateMaster>> GetState();
         Task<Response> UpdateStateById(StateMaster stateMaster);
@@ -420,6 +421,7 @@ namespace EAMS_ACore.IRepository
         #endregion
 
         #region GPVoter
+        Task<ServiceResponse> IsVoterAndKycExist(int fourthLevelMasterId);
         Task<ServiceResponse> AddGPVoterDetails(GPVoter gpVoterPdf);
         Task<ServiceResponse> UpdateGPVoterDetails(GPVoter gpVoterPdf);
         Task<GPVoterList> GetGPVoterById(int gpVoterMasterId);

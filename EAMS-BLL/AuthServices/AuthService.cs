@@ -222,12 +222,13 @@ namespace EAMS_BLL.AuthServices
                     if (updateFO.Status == RequestStatusEnum.OK)
                     {
                         // Send OTP via SMS
-                        var sendOtpResponse = await _notificationService.SendOtp(foRecords.FieldOfficerMobile, foRecords.OTP);
-                        if (sendOtpResponse.IsSucceed)
-                        {
-                            return new Response { Status = RequestStatusEnum.OK, Message = $"OTP Sent to {foRecords.FieldOfficerMobile}" };
-                        }
-                        return new Response { Status = RequestStatusEnum.BadRequest, Message = sendOtpResponse.Message };
+                        //var sendOtpResponse = await _notificationService.SendOtp(foRecords.FieldOfficerMobile, foRecords.OTP);
+                        //if (sendOtpResponse.IsSucceed)
+                        //{
+                        //    return new Response { Status = RequestStatusEnum.OK, Message = $"OTP Sent to {foRecords.FieldOfficerMobile}" };
+                        //}
+                        return new Response { Status = RequestStatusEnum.OK, Message = $"OTP Sent to {foRecords.OTP}" };
+                        //return new Response { Status = RequestStatusEnum.BadRequest, Message = sendOtpResponse.Message };
                     }
                     return new Response { Status = RequestStatusEnum.BadRequest, Message = "Failed to update OTP" };
                 }

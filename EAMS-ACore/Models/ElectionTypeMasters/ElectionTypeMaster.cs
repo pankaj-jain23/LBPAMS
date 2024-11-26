@@ -13,6 +13,8 @@ namespace EAMS_ACore.Models.ElectionType
         public string? Hierarchy1 { get; set; }
         public string? Hierarchy2 { get; set; }
 
+        public string ElectionArea { get; set; }
+
 
     }
 

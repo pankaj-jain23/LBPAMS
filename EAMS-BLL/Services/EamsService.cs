@@ -1824,6 +1824,10 @@ namespace EAMS_BLL.Services
         #endregion
 
         #region GPVoter
+        public async Task<ServiceResponse> IsVoterAndKycExist(int fourthLevelMasterId)
+        {
+            return await _eamsRepository.IsVoterAndKycExist(fourthLevelMasterId);
+        }
         public async Task<ServiceResponse> AddGPVoterDetails(GPVoter gpVoterPdf)
         {
             return await _eamsRepository.AddGPVoterDetails(gpVoterPdf);

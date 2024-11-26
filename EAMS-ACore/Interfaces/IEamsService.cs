@@ -360,6 +360,7 @@ namespace EAMS_ACore.Interfaces
         #endregion
 
         #region GPVoter
+        Task<ServiceResponse> IsVoterAndKycExist(int fourthLevelMasterId);
         Task<ServiceResponse> AddGPVoterDetails(GPVoter gpVoterPdf);
         Task<ServiceResponse> UpdateGPVoterDetails(GPVoter gpVoterPdf);
         Task<GPVoterList> GetGPVoterById(int gpVoterMasterId);

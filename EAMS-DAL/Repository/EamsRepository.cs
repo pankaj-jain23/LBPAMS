@@ -6119,6 +6119,9 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 result.FinalVoteLastUpdate = BharatDateTime();
                 result.EventName = updateEventActivity.EventName;
                 result.EventStatus = updateEventActivity.EventStatus;
+                result.Male = updateEventActivity.FinalMaleVotes;
+                result.Female = updateEventActivity.FinalFeMaleVotes;
+                result.Transgender = updateEventActivity.FinalTransgenderVotes;
                 _context.ElectionInfoMaster.Update(result);
             }
 
@@ -6484,23 +6487,21 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 d.ElectionTypeMasterId == checkEventActivity.ElectionTypeMasterId &&
                 d.BoothMasterId == checkEventActivity.BoothMasterId
             );
-            var getLatestSlot = await GetLastExceededSlotWithCurrentTime(checkEventActivity.StateMasterId, checkEventActivity.ElectionTypeMasterId);
-
+            //var getLatestSlot = await GetLastExceededSlotWithCurrentTime(checkEventActivity.StateMasterId, checkEventActivity.ElectionTypeMasterId);
+            if (isVoterTurnOut is true)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = true,
+                };
+            }
             if (isPollDetailExist is true)
             {
                 return new ServiceResponse()
                 {
                     IsSucceed = true,
                 };
-            }
-            if (getLatestSlot is true)
-            {
-                return new ServiceResponse()
-                {
-                    IsSucceed = true,
-                };
-
-            }
+            }            
 
             else
             {
@@ -17107,6 +17108,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
 
         #endregion
+
         #region UnOpposed Public Details
         public async Task<ServiceResponse> AddUnOpposedDetails(UnOpposed unOpposed)
         {
@@ -17952,6 +17954,48 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         #endregion
 
         #region GPVoter
+        public async Task<ServiceResponse> IsVoterAndKycExist(int fourthLevelMasterId)
+        {
+            // Check if a voter record exists
+            var isVTExist = await _context.GPVoter.AnyAsync(d => d.FourthLevelHMasterId == fourthLevelMasterId);
+
+            // Check if a KYC record exists
+            var isKYCExist = await _context.Kyc.AnyAsync(d => d.FourthLevelHMasterId == fourthLevelMasterId);
+
+            // Return appropriate response based on the existence of records
+            if (isKYCExist && isVTExist)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = true,
+                    Message = "Both Voter and KYC records exist"
+                };
+            }
+            else if (isKYCExist)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = true,
+                    Message = "Only KYC records exist"
+                };
+            }
+            else if (isVTExist)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = true,
+                    Message = "Only Voter records exist"
+                };
+            }
+            else
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "No records found for the given FourthLevelMasterId"
+                };
+            }
+        }
 
         public async Task<ServiceResponse> AddGPVoterDetails(GPVoter gpVoterPdf)
         {
