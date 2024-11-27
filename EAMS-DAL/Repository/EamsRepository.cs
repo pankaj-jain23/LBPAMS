@@ -17173,6 +17173,9 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             existingKyc.NominationPdfPath = string.IsNullOrEmpty(kyc.NominationPdfPath)
                 ? existingKyc.NominationPdfPath
                 : kyc.NominationPdfPath; // Update only if new path is provided
+            existingKyc.AffidavitPdfPath = string.IsNullOrEmpty(kyc.AffidavitPdfPath)
+              ? existingKyc.AffidavitPdfPath
+              : kyc.AffidavitPdfPath; // Update only if new path is provided
             existingKyc.Age = kyc.Age;
             existingKyc.Option2 = kyc.Option2;
 
@@ -17289,7 +17292,9 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                          ElectionTypeMasterId = k.ElectionTypeMasterId,
                                          IsUnOppossed = k.IsUnOppossed,
                                          Age = k.Age,
-                                         NominationPdfPath = $"{baseUrl}{k.NominationPdfPath}",
+                                         NominationPdfPath = $"{baseUrl}{k.NominationPdfPath}"
+                                         ,
+                                         AffidavitPdfPath = $"{baseUrl}{k.AffidavitPdfPath}",
                                      },
                                      HierarchyCode = fl != null ? fl.HierarchyCode : 0 // Include HierarchyCode for sorting
                                  })
@@ -17346,7 +17351,9 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                      IsUnOppossed = k.IsUnOppossed,
                                      ElectionTypeMasterId = k.ElectionTypeMasterId,
                                      Age = k.Age,
-                                     NominationPdfPath = $"{baseUrl}{k.NominationPdfPath}",
+                                     NominationPdfPath = $"{baseUrl}{k.NominationPdfPath}" 
+                                     ,
+                                     AffidavitPdfPath = $"{baseUrl}{k.AffidavitPdfPath}",
                                  }).ToListAsync();
 
             return kycList;
