@@ -62,6 +62,11 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
+        public string? AffidavitPdfPath
+        {
+            get;
+            set;
+        }
         public bool IsUnOppossed
         {
             get;
@@ -185,6 +190,11 @@ namespace EAMS_ACore.Models.PublicModels
             set;
         }
         public string NominationPdfPath
+        {
+            get;
+            set;
+        }
+        public string? AffidavitPdfPath
         {
             get;
             set;

@@ -332,13 +332,7 @@ namespace EAMS_DAL.AuthRepository
             if (user == null)
             {
                 return new ServiceResponse { IsSucceed = false, Message = "User not found" };
-            }
-
-            // Validate the new ElectionTypeMasterId
-            if (electionTypeMasterId <= 0)
-            {
-                return new ServiceResponse { IsSucceed = false, Message = "Invalid ElectionTypeMasterId" };
-            }
+            } 
 
             // Update the ElectionTypeMasterId and update time
             user.ElectionTypeMasterId = electionTypeMasterId;

@@ -56,6 +56,11 @@
             get;
             set;
         }
+        public IFormFile? AffidavitPdf
+        {
+            get;
+            set;
+        }
         public string CandidateName
         {
             get;
@@ -131,6 +136,11 @@
             get; set;
         }
         public IFormFile? NominationPdf
+        {
+            get;
+            set;
+        }
+        public IFormFile? AffidavitPdf
         {
             get;
             set;

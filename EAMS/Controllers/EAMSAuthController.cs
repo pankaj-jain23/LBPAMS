@@ -5,6 +5,7 @@ using EAMS_ACore;
 using EAMS_ACore.AuthInterfaces;
 using EAMS_ACore.AuthModels;
 using EAMS_ACore.HelperModels;
+using EAMS_ACore.Models.ElectionType;
 using LBPAMS.AuthViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -56,36 +57,11 @@ namespace EAMS.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
-        //[HttpPut]
-        //[Route("SwitchDashboardUser")]
-        //[Authorize]
-        //public async Task<IActionResult> SwitchDashboardUser(UpdateUserRegistrationViewModel viewModel)
-        //{
-        //    var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
-
-        //    if (string.IsNullOrEmpty(userId))
-        //    {
-        //        return Unauthorized("User not authenticated.");
-        //    }
-
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-
-        //    var result = await _authService.SwitchDashboardUser(userId, viewModel);
-
-        //    if (result.IsSucceed)
-        //    {
-        //        return Ok(result);
-        //    }
-
-        //    return BadRequest(result.Message);
-        //}
-        [HttpPost]
+ 
+        [HttpPut] 
         [Route("SwitchDashboardUser")]
         [Authorize]
-        public async Task<IActionResult> SwitchDashboardUser([FromBody] SwitchDashboardUserViewModel switchDashboardUserViewModel)
+        public async Task<IActionResult> SwitchDashboardUser( SwitchDashboardUserViewModel switchDashboardUserViewModel)
         {
             try
             {
@@ -99,7 +75,11 @@ namespace EAMS.Controllers
                 {
                     return Unauthorized("User doesn't exist.");
                 }
-
+                // Validate the new ElectionTypeMasterId
+                if (switchDashboardUserViewModel.ElectionTypeMasterId <= 0)
+                {
+                    return BadRequest("ElectionType doesn't exist.");
+                }
                 // Call the service to update the mobile number
                 var updateResult = await _authService.SwitchDashboardUser(userId, switchDashboardUserViewModel.ElectionTypeMasterId);
 
@@ -116,6 +96,7 @@ namespace EAMS.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while Switching Dashboard User.");
             }
         }
+       
         #endregion
 
         #region Login

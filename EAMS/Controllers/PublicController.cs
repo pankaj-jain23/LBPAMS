@@ -35,25 +35,74 @@ namespace EAMS.Controllers
         [HttpPost("AddKYCDetails")]
         public async Task<IActionResult> AddKyc([FromForm] KycViewModel kycViewModel)
         {
+            var uploadKycNomination = await UploadKycNominationPdfAsync(kycViewModel);
 
-
-            if (kycViewModel.NominationPdf == null || kycViewModel.NominationPdf.Length == 0)
+            if (uploadKycNomination.IsSucceed == false)
             {
-                return BadRequest("PDF file is missing.");
+                return BadRequest(uploadKycNomination.Message);
             }
 
+            // Map the ViewModel to the Model
+            var kyc = _mapper.Map<Kyc>(kycViewModel);
+            var fullpathNameNomination = Path.Combine("kyc", uploadKycNomination.Message); // Nomination
+            kyc.NominationPdfPath = $"{fullpathNameNomination.Replace("\\", "/")}";
+
+            // ElectionTypeMasterId == 4 For "Municipal Corporation","Municipal Council" and "Nagar Panchayat"
+            if (kycViewModel.ElectionTypeMasterId == 4 || kycViewModel.ElectionTypeMasterId == 5 || kycViewModel.ElectionTypeMasterId == 6)
+            {
+                var uploadKycAffidavit = await UploadKycAffidavitPdfAsync(kycViewModel);
+
+                if (uploadKycAffidavit.IsSucceed == false)
+                {
+                    return BadRequest(uploadKycAffidavit.Message);
+                }
+                var fullpathNameAffidavit = Path.Combine("kyc", uploadKycAffidavit.Message); // Nomination
+                kyc.AffidavitPdfPath = $"{fullpathNameAffidavit.Replace("\\", "/")}";
+
+            }
+            // Call your service method to add KYC details
+            var result = await _eamsService.AddKYCDetails(kyc);
+
+            // Check if adding GP Voter details was successful
+            if (!result.IsSucceed)
+            {
+                return BadRequest(result.Message);
+
+            }
+            return Ok(result.Message);
+        }
+
+        private async Task<ServiceResponse> UploadKycNominationPdfAsync(KycViewModel kycViewModel)
+        {
+            if (kycViewModel.NominationPdf == null || kycViewModel.NominationPdf.Length == 0)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "PDF file is missing"
+                };
+
+            }
 
             if (!kycViewModel.NominationPdf.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase))
             {
-                return BadRequest("Only PDF files are allowed.");
-            }
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "Only PDF files are allowed."
+                };
 
+            }
             const long MaxFileSize = 7 * 1024 * 1024;
 
             // Check if the file exceeds the maximum size
             if (kycViewModel.NominationPdf.Length > MaxFileSize)
             {
-                return BadRequest($"File size exceeds the 7 MB limit.");
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "File size exceeds the 7 MB limit"
+                };
             }
             // Generate a unique file name for the PDF file
             var fileName = Guid.NewGuid().ToString() + Path.GetExtension(kycViewModel.NominationPdf.FileName);
@@ -72,21 +121,161 @@ namespace EAMS.Controllers
                 await kycViewModel.NominationPdf.CopyToAsync(stream);
 
             }
-
-            // Map the ViewModel to the Model
-            var kyc = _mapper.Map<Kyc>(kycViewModel);
-            var fullpathName = Path.Combine("kyc", fileName); // Store relative path
-            kyc.NominationPdfPath = $"{fullpathName.Replace("\\", "/")}";
-            // Call your service method to add KYC details
-            var result = await _eamsService.AddKYCDetails(kyc);
-
-            // Check if adding GP Voter details was successful
-            if (!result.IsSucceed)
+            return new ServiceResponse() { IsSucceed = true, Message = fileName };
+        }
+        private async Task<ServiceResponse> UploadKycAffidavitPdfAsync(KycViewModel kycViewModel)
+        {
+            if (kycViewModel.AffidavitPdf == null || kycViewModel.AffidavitPdf.Length == 0)
             {
-                return BadRequest(result.Message);
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "PDF file is missing"
+                };
 
             }
-            return Ok(result.Message);
+
+            if (!kycViewModel.AffidavitPdf.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase))
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "Only PDF files are allowed."
+                };
+
+            }
+            const long MaxFileSize = 7 * 1024 * 1024;
+
+            // Check if the file exceeds the maximum size
+            if (kycViewModel.AffidavitPdf.Length > MaxFileSize)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "File size exceeds the 7 MB limit"
+                };
+            }
+            // Generate a unique file name for the PDF file
+            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(kycViewModel.AffidavitPdf.FileName);
+            var folderPath = @"C:\inetpub\wwwroot\LBPAMSDOC\kyc";
+            var filePath = Path.Combine(folderPath, fileName);
+
+            // Ensure the directory exists
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
+            }
+
+            // Save the file to the server
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await kycViewModel.AffidavitPdf.CopyToAsync(stream);
+
+            }
+            return new ServiceResponse() { IsSucceed = true, Message = fileName };
+        }
+
+        private async Task<ServiceResponse> UpdateKycNominationPdfAsync(UpdateKycViewModel updateKycViewModel)
+        {
+            if (updateKycViewModel.NominationPdf == null || updateKycViewModel.NominationPdf.Length == 0)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "PDF file is missing"
+                };
+
+            }
+
+            if (!updateKycViewModel.NominationPdf.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase))
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "Only PDF files are allowed."
+                };
+
+            }
+            const long MaxFileSize = 7 * 1024 * 1024;
+
+            // Check if the file exceeds the maximum size
+            if (updateKycViewModel.NominationPdf.Length > MaxFileSize)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "File size exceeds the 7 MB limit"
+                };
+            }
+            // Generate a unique file name for the PDF file
+            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(updateKycViewModel.NominationPdf.FileName);
+            var folderPath = @"C:\inetpub\wwwroot\LBPAMSDOC\kyc";
+            var filePath = Path.Combine(folderPath, fileName);
+
+            // Ensure the directory exists
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
+            }
+
+            // Save the file to the server
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await updateKycViewModel.NominationPdf.CopyToAsync(stream);
+
+            }
+            return new ServiceResponse() { IsSucceed = true, Message = fileName };
+        }
+        private async Task<ServiceResponse> UpdateKycAffidavitPdfAsync(UpdateKycViewModel updateKycViewModel)
+        {
+            if (updateKycViewModel.AffidavitPdf == null || updateKycViewModel.AffidavitPdf.Length == 0)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "PDF file is missing"
+                };
+
+            }
+
+            if (!updateKycViewModel.AffidavitPdf.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase))
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "Only PDF files are allowed."
+                };
+
+            }
+            const long MaxFileSize = 7 * 1024 * 1024;
+
+            // Check if the file exceeds the maximum size
+            if (updateKycViewModel.AffidavitPdf.Length > MaxFileSize)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "File size exceeds the 7 MB limit"
+                };
+            }
+            // Generate a unique file name for the PDF file
+            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(updateKycViewModel.AffidavitPdf.FileName);
+            var folderPath = @"C:\inetpub\wwwroot\LBPAMSDOC\kyc";
+            var filePath = Path.Combine(folderPath, fileName);
+
+            // Ensure the directory exists
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
+            }
+
+            // Save the file to the server
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await updateKycViewModel.AffidavitPdf.CopyToAsync(stream);
+
+            }
+            return new ServiceResponse() { IsSucceed = true, Message = fileName };
         }
 
         [HttpGet("GetKYCDetails")]
@@ -112,7 +301,9 @@ namespace EAMS.Controllers
                 NominationPdfPath = !string.IsNullOrEmpty(kyc.NominationPdfPath)
                     ? $"{baseUrl}/{Path.GetFileName(kyc.NominationPdfPath)}"
                     : null,
-
+                AffidavitPdfPath = !string.IsNullOrEmpty(kyc.AffidavitPdfPath)
+                    ? $"{baseUrl}/{Path.GetFileName(kyc.AffidavitPdfPath)}"
+                    : null,
             }).ToList();
 
             return Ok(kycResponses);
@@ -122,59 +313,43 @@ namespace EAMS.Controllers
         [HttpPut("UpdateKycDetails")]
         public async Task<IActionResult> UpdateKyc([FromForm] UpdateKycViewModel updateKycViewModel)
         {
-            // Check if the uploaded file is a PDF
-            if (updateKycViewModel.NominationPdf != null)
-            {
-                if (!updateKycViewModel.NominationPdf.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase) &&
-                !Path.GetExtension(updateKycViewModel.NominationPdf.FileName).Equals(".pdf", StringComparison.OrdinalIgnoreCase))
-                {
-                    return BadRequest("Only PDF files are allowed.");
-                }
-            }
-            const long MaxFileSize = 7 * 1024 * 1024; // 7 MB in bytes
-            // Check if the file exceeds the maximum size
-            if (updateKycViewModel.NominationPdf != null && updateKycViewModel.NominationPdf.Length > MaxFileSize)
-            {
-                return BadRequest($"File size exceeds the 7 MB limit.");
-            }
-            // Update properties of the existing KYC object (except NominationPdfPath)
             var mappedData = _mapper.Map<Kyc>(updateKycViewModel);
 
-            // Handle file upload (if applicable):
-            if (mappedData.NominationPdfPath != null && mappedData.NominationPdfPath.Length > 0)
+            if (updateKycViewModel.NominationPdf != null || updateKycViewModel.NominationPdf.Length != 0)
             {
-                // Generate a unique file name for the PDF file
-                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(updateKycViewModel.NominationPdf.FileName);
-                var folderPath = @"C:\inetpub\wwwroot\LBPAMSDOC\kyc";
-                var filePath = Path.Combine(folderPath, fileName);
 
-                // Ensure the directory exists
-                if (!Directory.Exists(folderPath))
+
+
+                var uploadKycNomination = await UpdateKycNominationPdfAsync(updateKycViewModel);
+
+                if (uploadKycNomination.IsSucceed == false)
                 {
-                    Directory.CreateDirectory(folderPath);
+                    return BadRequest(uploadKycNomination.Message);
                 }
+                var fullpathNameNomination = Path.Combine("kyc", uploadKycNomination.Message); // Nomination
+                mappedData.NominationPdfPath = $"{fullpathNameNomination.Replace("\\", "/")}";
+               
 
-                // Save the new file to the server
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await updateKycViewModel.NominationPdf.CopyToAsync(stream);
-                }
-
-                // Update NominationPdfPath with the new file name
-                mappedData.NominationPdfPath = Path.Combine("kyc", fileName);
-
-                // Optionally, delete the old file if needed
-                if (!string.IsNullOrEmpty(mappedData.NominationPdfPath))
-                {
-                    var oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", mappedData.NominationPdfPath);
-                    if (System.IO.File.Exists(oldFilePath))
-                    {
-                        System.IO.File.Delete(oldFilePath);
-                    }
-                }
             }
 
-            // Call your service method to update KYC details
+            if (updateKycViewModel.NominationPdf != null || updateKycViewModel.NominationPdf.Length != 0)
+            {
+                // ElectionTypeMasterId == 4 For "Municipal Corporation","Municipal Council" and "Nagar Panchayat"
+                if (updateKycViewModel.ElectionTypeMasterId == 4 || updateKycViewModel.ElectionTypeMasterId == 5 || updateKycViewModel.ElectionTypeMasterId == 6)
+                {
+                    var uploadKycAffidavit = await UpdateKycAffidavitPdfAsync(updateKycViewModel);
+
+                    if (uploadKycAffidavit.IsSucceed == false)
+                    {
+                        return BadRequest(uploadKycAffidavit.Message);
+                    }
+                    var fullpathNameAffidavit = Path.Combine("kyc", uploadKycAffidavit.Message); // Nomination
+                    mappedData.AffidavitPdfPath = $"{fullpathNameAffidavit.Replace("\\", "/")}";
+
+                }
+
+            }
+
             var result = await _eamsService.UpdateKycDetails(mappedData);
 
             if (result.IsSucceed)
@@ -183,30 +358,12 @@ namespace EAMS.Controllers
             }
             else
             {
-                if (result.Message.Contains("Age must be 21 or above"))
-                {
-                    return BadRequest("Age must be 21 or above.");
-                }
-                else if (result.Message.Contains("UnOpposed Sarpanch already exists"))
-                {
-                    return BadRequest("UnOpposed Sarpanch already exists.");
-                }
-                else if (result.Message.Contains("UnOpposed Panch already exists"))
-                {
-                    return BadRequest("UnOpposed Panch already exists.");
-                }
-                else if (result.Message.Contains("UnOpposed Councillor already exists"))
-                {
-                    return BadRequest("UnOpposed Councillor already exists.");
-                }
-                else
-                {
-                    return BadRequest("Failed to update KYC data.");
-                }
+                return BadRequest(result.Message);
+
 
             }
         }
-       
+
         [HttpGet("GetKYCDetailByAssemblyId")]
         public async Task<IActionResult> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
@@ -269,7 +426,6 @@ namespace EAMS.Controllers
             }
             else
             {
-
 
                 var resutlt = await _eamsService.GetKycById(KycMasterId);
                 if (resutlt is not null)
@@ -759,7 +915,7 @@ namespace EAMS.Controllers
             // Retrieve claims efficiently
             var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
 
-            string userId =  userClaims.GetValueOrDefault("UserId").ToString();
+            string userId = userClaims.GetValueOrDefault("UserId").ToString();
 
 
             var mappedData = _mapper.Map<List<ResultDeclaration>>(resultDeclarationViewModel.resultDeclarationLists);

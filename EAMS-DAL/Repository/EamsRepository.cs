@@ -17231,6 +17231,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                          ElectionTypeMasterId = k.ElectionTypeMasterId,
                                          Age = k.Age,
                                          NominationPdfPath = k.NominationPdfPath != null ? $"{baseUrl}{k.NominationPdfPath}" : null,
+                                         AffidavitPdfPath = k.AffidavitPdfPath != null ? $"{baseUrl}{k.AffidavitPdfPath}" : null,
                                      },
                                      HierarchyCode = fl != null ? fl.HierarchyCode : 0 // Add this to the select for ordering
                                  })
@@ -17395,7 +17396,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     FatherName = kyc.FatherName,
                     IsUnOppossed = kyc.IsUnOppossed,
                     Age = kyc.Age,
-                    NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}"
+                    NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}",
+                    AffidavitPdfPath = $"{baseUrl}{kyc.AffidavitPdfPath}"
                 };
 
                 return result;
@@ -17436,6 +17438,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     IsUnOppossed = kyc.IsUnOppossed,
                     Age = kyc.Age,
                     NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}"
+                    ,
+                    AffidavitPdfPath = $"{baseUrl}{kyc.AffidavitPdfPath}"
                 };
 
                 return result;
@@ -17473,7 +17477,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     FatherName = kyc.FatherName,
                     IsUnOppossed = kyc.IsUnOppossed,
                     Age = kyc.Age,
-                    NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}"
+                    NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}",
+                    AffidavitPdfPath = $"{baseUrl}{kyc.AffidavitPdfPath}"
                 };
 
                 return result;
@@ -17508,7 +17513,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     FatherName = kyc.FatherName,
                     IsUnOppossed = kyc.IsUnOppossed,
                     Age = kyc.Age,
-                    NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}"
+                    NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}",
+                    AffidavitPdfPath = $"{baseUrl}{kyc.AffidavitPdfPath}"
                 };
 
                 return result;

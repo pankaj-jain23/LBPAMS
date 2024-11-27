@@ -62,6 +62,11 @@
             get;
             set;
         }
+        public string? AffidavitPdfPath
+        {
+            get;
+            set;
+        }
         public string CandidateName
         {
             get;

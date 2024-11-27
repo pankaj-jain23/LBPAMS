@@ -46,6 +46,7 @@ namespace EAMS.AuthViewModels
     }
     public class SwitchDashboardUserViewModel
     {
+        [Required]
         public int ElectionTypeMasterId { get; set; }
     }
 
