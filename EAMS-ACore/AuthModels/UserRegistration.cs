@@ -35,10 +35,6 @@ namespace EAMS_ACore.AuthModels
         public DateTime RefreshTokenExpiryTime { get; set; }
         public DateTime ElectionTypeUpdatedTime { get; set; }
     }
-    public class UpdateUserRegistrationViewModel
-    {
-        public int ElectionTypeMasterId { get; set; }
-    }
-
+   
 
 }

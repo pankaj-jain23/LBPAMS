@@ -56,31 +56,65 @@ namespace EAMS.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
-        [HttpPut]
+        //[HttpPut]
+        //[Route("SwitchDashboardUser")]
+        //[Authorize]
+        //public async Task<IActionResult> SwitchDashboardUser(UpdateUserRegistrationViewModel viewModel)
+        //{
+        //    var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+
+        //    if (string.IsNullOrEmpty(userId))
+        //    {
+        //        return Unauthorized("User not authenticated.");
+        //    }
+
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
+
+        //    var result = await _authService.SwitchDashboardUser(userId, viewModel);
+
+        //    if (result.IsSucceed)
+        //    {
+        //        return Ok(result);
+        //    }
+
+        //    return BadRequest(result.Message);
+        //}
+        [HttpPost]
         [Route("SwitchDashboardUser")]
         [Authorize]
-        public async Task<IActionResult> SwitchDashboardUser(UpdateUserRegistrationViewModel viewModel)
+        public async Task<IActionResult> SwitchDashboardUser([FromBody] SwitchDashboardUserViewModel switchDashboardUserViewModel)
         {
-            var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
-
-            if (string.IsNullOrEmpty(userId))
+            try
             {
-                return Unauthorized("User not authenticated.");
-            }
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
 
-            if (!ModelState.IsValid)
+                // Assuming you have a logged-in user, you can fetch their ID from the current context
+                var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId").Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized("User doesn't exist.");
+                }
+
+                // Call the service to update the mobile number
+                var updateResult = await _authService.SwitchDashboardUser(userId, switchDashboardUserViewModel.ElectionTypeMasterId);
+
+                if (!updateResult.IsSucceed)
+                {
+                    return BadRequest(updateResult.Message);
+                }
+
+                return Ok(updateResult.Message);
+            }
+            catch (Exception ex)
             {
-                return BadRequest(ModelState);
+                _logger.LogError($"SwitchDashboardUser: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while Switching Dashboard User.");
             }
-
-            var result = await _authService.SwitchDashboardUser(userId, viewModel);
-
-            if (result.IsSucceed)
-            {
-                return Ok(result);
-            }
-
-            return BadRequest(result.Message);
         }
         #endregion
 

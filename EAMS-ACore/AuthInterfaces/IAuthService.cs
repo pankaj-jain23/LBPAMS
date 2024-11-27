@@ -8,7 +8,7 @@ namespace EAMS_ACore.AuthInterfaces
     public interface IAuthService
     {
         Task<ServiceResponse> RegisterAsync(UserRegistration userRegistration, List<string> roleIds);
-        Task<ServiceResponse> SwitchDashboardUser(string userId, UpdateUserRegistrationViewModel viewModel);
+        Task<ServiceResponse> SwitchDashboardUser(string userId, int electionTypeMasterId);
         Task<Token> LoginAsync(Login login);
         
 

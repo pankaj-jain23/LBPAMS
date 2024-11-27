@@ -189,10 +189,10 @@ namespace EAMS_BLL.AuthServices
             }
 
         }
-        public async Task<ServiceResponse> SwitchDashboardUser(string userId, UpdateUserRegistrationViewModel viewModel)
+        public async Task<ServiceResponse> SwitchDashboardUser(string userId, int electionTypeMasterId)
         {
             // Call the repository layer for update logic
-            return await _authRepository.SwitchDashboardUser(userId, viewModel);
+            return await _authRepository.SwitchDashboardUser(userId, electionTypeMasterId);
         }
         #endregion
 

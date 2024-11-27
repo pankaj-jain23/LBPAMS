@@ -26,7 +26,7 @@ namespace EAMS_ACore.IAuthRepository
         Task<UserRegistration> CheckUserLogin(Login login);
         Task<UserRegistration> GetUserById(string userId);
         Task<ServiceResponse> CreateUser(UserRegistration userRegistration, List<string> roleIds);
-        Task<ServiceResponse> SwitchDashboardUser(string userId, UpdateUserRegistrationViewModel viewModel);
+        Task<ServiceResponse> SwitchDashboardUser(string userId, int electionTypeMasterId);
 
         Task<ServiceResponse> UpdateUser(UserRegistration userRegistration);
         Task<List<Role>> GetRoleByUser(UserRegistration user);

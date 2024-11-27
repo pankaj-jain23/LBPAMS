@@ -325,25 +325,36 @@ namespace EAMS_DAL.AuthRepository
                 };
             }
         }
-        public async Task<ServiceResponse> SwitchDashboardUser(string userId, UpdateUserRegistrationViewModel viewModel)
+        public async Task<ServiceResponse> SwitchDashboardUser(string userId, int electionTypeMasterId)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
-
+            // Fetch the user by userId
+            var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return new ServiceResponse { IsSucceed = false, Message = "User not found." };
+                return new ServiceResponse { IsSucceed = false, Message = "User not found" };
             }
 
-            // Update the ElectionTypeMasterId and ElectionTypeUpdatedTime
-            user.ElectionTypeMasterId = viewModel.ElectionTypeMasterId;
+            // Validate the new ElectionTypeMasterId
+            if (electionTypeMasterId <= 0)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "Invalid ElectionTypeMasterId" };
+            }
+
+            // Update the ElectionTypeMasterId and update time
+            user.ElectionTypeMasterId = electionTypeMasterId;
             user.ElectionTypeUpdatedTime = DateTime.UtcNow;
 
-            // Save changes to the database
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
+            // Save the changes
+            var updateResult = await _userManager.UpdateAsync(user);
 
-            return new ServiceResponse { IsSucceed = true, Message = "Election Type updated successfully." };
+            if (!updateResult.Succeeded)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "Failed to update ElectionTypeMasterId" };
+            }
+
+            return new ServiceResponse { IsSucceed = true, Message = "Election type updated successfully" };
         }
+
         #endregion
 
         #region  UpdateUser
