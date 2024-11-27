@@ -138,6 +138,8 @@ namespace EAMS_BLL.AuthServices
         private async Task<List<Claim>> GenerateClaims(UserRegistration user)
         {
             var getElection = await _authRepository.GetElectionTypeById(user.ElectionTypeMasterId);
+            var userRoles = await _authRepository.GetRoleByUser(user);
+           
 
             var authClaims = new List<Claim>
             {
@@ -154,7 +156,10 @@ namespace EAMS_BLL.AuthServices
 
              };
 
-
+            foreach (var userRole in userRoles)
+            {
+                authClaims.Add(new Claim(ClaimTypes.Role, userRole.RoleName));
+            }
             return authClaims;
 
         }
