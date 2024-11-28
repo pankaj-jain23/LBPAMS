@@ -325,14 +325,14 @@ namespace EAMS.Controllers
                 }
                 var fullpathNameNomination = Path.Combine("kyc", uploadKycNomination.Message); // Nomination
                 mappedData.NominationPdfPath = $"{fullpathNameNomination.Replace("\\", "/")}";
-               
+
 
             }
 
-            if (updateKycViewModel.NominationPdf != null)
+            // ElectionTypeMasterId == 4 For "Municipal Corporation","Municipal Council" and "Nagar Panchayat"
+            if (updateKycViewModel.ElectionTypeMasterId == 4 || updateKycViewModel.ElectionTypeMasterId == 5 || updateKycViewModel.ElectionTypeMasterId == 6)
             {
-                // ElectionTypeMasterId == 4 For "Municipal Corporation","Municipal Council" and "Nagar Panchayat"
-                if (updateKycViewModel.ElectionTypeMasterId == 4 || updateKycViewModel.ElectionTypeMasterId == 5 || updateKycViewModel.ElectionTypeMasterId == 6)
+                if (updateKycViewModel.AffidavitPdf != null)
                 {
                     var uploadKycAffidavit = await UpdateKycAffidavitPdfAsync(updateKycViewModel);
 
