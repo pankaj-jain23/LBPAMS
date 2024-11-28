@@ -17804,6 +17804,9 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             existingKyc.NominationPdfPath = string.IsNullOrEmpty(kyc.NominationPdfPath)
                 ? existingKyc.NominationPdfPath
                 : kyc.NominationPdfPath; // Update only if a new path is provided
+            existingKyc.AffidavitPdfPath = string.IsNullOrEmpty(kyc.AffidavitPdfPath)
+                ? existingKyc.AffidavitPdfPath
+                : kyc.AffidavitPdfPath; // Update only if a new path is provided
             existingKyc.Age = kyc.Age;
             existingKyc.Option2 = kyc.Option2;
 
