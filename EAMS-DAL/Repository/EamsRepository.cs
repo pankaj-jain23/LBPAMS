@@ -4633,12 +4633,21 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             // If either Poll or Event Activity exists, return the respective response
             if (isPollExist.IsSucceed == true)
             {
-                return isPollExist;
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = isPollExist.Message
+                };
+
             }
 
             if (isEventActivityExist.IsSucceed == true)
             {
-                return isEventActivityExist;
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = isEventActivityExist.Message
+                };
             }
 
             // Check if the event already exists
@@ -4679,12 +4688,21 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             // If either Poll or Event Activity exists, return the respective response
             if (isPollExist.IsSucceed == true)
             {
-                return isPollExist;
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message= isPollExist.Message
+                };
+
             }
 
             if (isEventActivityExist.IsSucceed == true)
             {
-                return isEventActivityExist;
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = isEventActivityExist.Message
+                };
             }
 
             // Check if any other event has the same EventABBR and EventSequence
