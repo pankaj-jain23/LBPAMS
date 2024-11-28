@@ -66,7 +66,7 @@ namespace EAMS_ACore.IRepository
         #endregion
 
         #region SO Master
-        Task<List<FieldOfficerMaster>> GetFieldOfficersListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
+        Task<List<FieldOfficerMaster>> GetFieldOfficersListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId);
 
 
         Task<FieldOfficerProfile> GetFieldOfficerProfile(string foId);

@@ -78,14 +78,11 @@ namespace EAMS_BLL.AuthServices
             if (user is not null)
             {
 
-                var userRoles = await _authRepository.GetRoleByUser(user);
+              //  var userRoles = await _authRepository.GetRoleByUser(user);
                 var authClaims = await GenerateClaims(user);
 
                 // Add user roles to authClaims
-                foreach (var userRole in userRoles)
-                {
-                    authClaims.Add(new Claim(ClaimTypes.Role, userRole.RoleName));
-                }
+              
 
                 // Generate tokens
                 var token = GenerateToken(authClaims);
@@ -314,18 +311,18 @@ namespace EAMS_BLL.AuthServices
                 }
 
                 var authClaims = new List<Claim>
-{
-    new Claim(ClaimTypes.Name, aroRecords.AROName),
-    new Claim(ClaimTypes.MobilePhone, aroRecords.AROMobile),
-    new Claim(ClaimTypes.Role, "ARO"),
-    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-    new Claim("ElectionTypeMasterId", aroRecords.ElectionTypeMasterId.ToString()),
-    new Claim("AROMasterId", aroRecords.AROMasterId.ToString()),
-    new Claim("StateMasterId", aroRecords.StateMasterId.ToString()),
-    new Claim("DistrictMasterId", aroRecords.DistrictMasterId.ToString()),
-    new Claim("AssemblyMasterId", aroRecords.AssemblyMasterId?.ToString()),
-    new Claim("FourthLevelHMasterId", aroRecords.FourthLevelHMasterId?.ToString())
-};
+                            {
+                                new Claim(ClaimTypes.Name, aroRecords.AROName),
+                                new Claim(ClaimTypes.MobilePhone, aroRecords.AROMobile),
+                                new Claim(ClaimTypes.Role, "ARO"),
+                                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                                new Claim("ElectionTypeMasterId", aroRecords.ElectionTypeMasterId.ToString()),
+                                new Claim("AROMasterId", aroRecords.AROMasterId.ToString()),
+                                new Claim("StateMasterId", aroRecords.StateMasterId.ToString()),
+                                new Claim("DistrictMasterId", aroRecords.DistrictMasterId.ToString()),
+                                new Claim("AssemblyMasterId", aroRecords.AssemblyMasterId?.ToString()),
+                                new Claim("FourthLevelHMasterId", aroRecords.FourthLevelHMasterId?.ToString())
+                            };
 
                 var token = GenerateToken(authClaims);
 

@@ -2106,9 +2106,12 @@ namespace EAMS_DAL.Repository
         #endregion
 
         #region FO Master
-        public async Task<List<FieldOfficerMaster>> GetFieldOfficersListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        public async Task<List<FieldOfficerMaster>> GetFieldOfficersListById(int stateMasterId, int districtMasterId, int assemblyMasterId,int electionTypeMasterId)
         {
-            var foList = await _context.FieldOfficerMaster.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId).ToListAsync();
+            var foList = await _context.FieldOfficerMaster.Where(d => d.StateMasterId == stateMasterId 
+            && d.DistrictMasterId == districtMasterId 
+            && d.AssemblyMasterId == assemblyMasterId
+            &&d.ElectionTypeMasterId==electionTypeMasterId).ToListAsync();
             return foList;
         }
 
@@ -4624,6 +4627,20 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         #region Event Master
         public async Task<ServiceResponse> AddEvent(EventMaster eventMaster)
         {
+            var isPollExist = await IsPollExist(eventMaster.StateMasterId, eventMaster.ElectionTypeMasterId);
+            var isEventActivityExist = await IsElectionInFoExist(eventMaster.StateMasterId, eventMaster.ElectionTypeMasterId);
+
+            // If either Poll or Event Activity exists, return the respective response
+            if (isPollExist.IsSucceed == true)
+            {
+                return isPollExist;
+            }
+
+            if (isEventActivityExist.IsSucceed == true)
+            {
+                return isEventActivityExist;
+            }
+
             // Check if the event already exists
             var isExist = await _context.EventMaster.AnyAsync(d =>
                 d.StateMasterId == eventMaster.StateMasterId
@@ -4656,6 +4673,20 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         public async Task<ServiceResponse> UpdateEvent(EventMaster eventMaster)
         {
+            var isPollExist = await IsPollExist(eventMaster.StateMasterId, eventMaster.ElectionTypeMasterId);
+            var isEventActivityExist = await IsElectionInFoExist(eventMaster.StateMasterId, eventMaster.ElectionTypeMasterId);
+
+            // If either Poll or Event Activity exists, return the respective response
+            if (isPollExist.IsSucceed == true)
+            {
+                return isPollExist;
+            }
+
+            if (isEventActivityExist.IsSucceed == true)
+            {
+                return isEventActivityExist;
+            }
+
             // Check if any other event has the same EventABBR and EventSequence
             var duplicateEvent = await _context.EventMaster
                 .AnyAsync(d => d.StateMasterId == eventMaster.StateMasterId
@@ -4693,8 +4724,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             existingEvent.StateMasterId = eventMaster.StateMasterId;
             existingEvent.EventSequence = eventMaster.EventSequence;
             existingEvent.EventABBR = eventMaster.EventABBR;
-            existingEvent.ElectionTypeMasterId = existingEvent.ElectionTypeMasterId;
-            existingEvent.IsPrePolled = existingEvent.IsPrePolled;
+            existingEvent.ElectionTypeMasterId = eventMaster.ElectionTypeMasterId;
+            existingEvent.IsPrePolled = eventMaster.IsPrePolled;
 
             _context.EventMaster.Update(existingEvent);
             await _context.SaveChangesAsync();
@@ -18980,7 +19011,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         #region ResultDeclaration
         public async Task<ServiceResponse> AddResultDeclarationDetails(List<ResultDeclaration> resultDeclaration)
-        {
+        { 
             // Check if all items in the list have ElectionTypeMasterId == 1 (for Gram Panchayats)
             if (resultDeclaration.All(r => r.ElectionTypeMasterId == 1))
             {
@@ -18994,7 +19025,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             return new ServiceResponse { IsSucceed = true, Message = "Result declarations successfully processed." };
         }
         private async Task AddGramPanchayatResultDeclarationAsync(List<ResultDeclaration> resultDeclaration)
-        {
+        { 
             foreach (var resultCandidate in resultDeclaration)
             {
                 // Check if an existing record is present for the candidate

@@ -205,9 +205,9 @@ namespace EAMS_BLL.Services
         #endregion
 
         #region  FO Master
-        public async Task<List<FieldOfficerMaster>> GetFieldOfficersListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        public async Task<List<FieldOfficerMaster>> GetFieldOfficersListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
         {
-            return await _eamsRepository.GetFieldOfficersListById(stateMasterId, districtMasterId, assemblyMasterId);
+            return await _eamsRepository.GetFieldOfficersListById(stateMasterId, districtMasterId, assemblyMasterId,   electionTypeMasterId);
         }
 
         public async Task<List<CombinedMaster>> AppNotDownload(string stateMasterId)
@@ -2002,6 +2002,7 @@ namespace EAMS_BLL.Services
             // If no specific condition was met, proceed with default persistence
             return await _eamsRepository.AddResultDeclarationDetails(resultDeclaration);
         }
+
         public async Task<ServiceResponse> UpdateResultDeclarationForPortal(List<ResultDeclaration> resultDeclaration)
         {
             if (resultDeclaration == null || !resultDeclaration.Any())

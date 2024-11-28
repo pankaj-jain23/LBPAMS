@@ -682,9 +682,9 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetFieldOfficersListById")]
         [Authorize]
-        public async Task<IActionResult> GetFieldOfficersListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        public async Task<IActionResult> GetFieldOfficersListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
         {
-            var foList = await _EAMSService.GetFieldOfficersListById(stateMasterId, districtMasterId, assemblyMasterId);  // Corrected to await the asynchronous method
+            var foList = await _EAMSService.GetFieldOfficersListById(stateMasterId, districtMasterId, assemblyMasterId,  electionTypeMasterId);  // Corrected to await the asynchronous method
             if (foList != null)
             {
                 var data = new
@@ -1521,6 +1521,7 @@ namespace EAMS.Controllers
             return BadRequest(result.Message); // Return a 400 BadRequest with the error message if the service fails
 
         }
+
         [HttpPut]
         [Route("UpdateEventStatus")]
         [Authorize]

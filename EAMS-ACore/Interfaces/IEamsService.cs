@@ -62,7 +62,7 @@ namespace EAMS_ACore.Interfaces
         #endregion
 
         #region SO Master
-        Task<List<FieldOfficerMaster>> GetFieldOfficersListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
+        Task<List<FieldOfficerMaster>> GetFieldOfficersListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId);
         Task<FieldOfficerProfile> GetFieldOfficerProfile(string Id, string role);
         Task<Response> AddFieldOfficer(FieldOfficerMaster fieldOfficerViewModel);
         Task<Response> AddBLOOfficer(BLOMaster bLOMaster);
