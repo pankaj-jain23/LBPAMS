@@ -315,11 +315,8 @@ namespace EAMS.Controllers
         {
             var mappedData = _mapper.Map<Kyc>(updateKycViewModel);
 
-            if (updateKycViewModel.NominationPdf != null || updateKycViewModel.NominationPdf.Length != 0)
+            if (updateKycViewModel.NominationPdf != null)
             {
-
-
-
                 var uploadKycNomination = await UpdateKycNominationPdfAsync(updateKycViewModel);
 
                 if (uploadKycNomination.IsSucceed == false)
@@ -332,7 +329,7 @@ namespace EAMS.Controllers
 
             }
 
-            if (updateKycViewModel.NominationPdf != null || updateKycViewModel.NominationPdf.Length != 0)
+            if (updateKycViewModel.NominationPdf != null)
             {
                 // ElectionTypeMasterId == 4 For "Municipal Corporation","Municipal Council" and "Nagar Panchayat"
                 if (updateKycViewModel.ElectionTypeMasterId == 4 || updateKycViewModel.ElectionTypeMasterId == 5 || updateKycViewModel.ElectionTypeMasterId == 6)

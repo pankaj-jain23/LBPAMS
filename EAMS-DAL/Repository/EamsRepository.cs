@@ -5747,10 +5747,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
 
         public async Task<(bool IsToday, string StartDateString, bool IsPrePolled)> IsEventActivityValid(int stateMasterId, int electionTypeMasterId, int eventMasterId)
-        {           
-            var isPrePolled = await _context.EventMaster.Where(d => d.StateMasterId == stateMasterId 
+        {
+            var isPrePolled = await _context.EventMaster.Where(d => d.StateMasterId == stateMasterId
                                                             && d.ElectionTypeMasterId == electionTypeMasterId
-                                                            && d.EventMasterId == eventMasterId).Select(d=>d.IsPrePolled).FirstOrDefaultAsync();
+                                                            && d.EventMasterId == eventMasterId).Select(d => d.IsPrePolled).FirstOrDefaultAsync();
             if (!isPrePolled)
             {
                 var lastSlot = await _context.SlotManagementMaster.Where(d => d.StateMasterId == stateMasterId
@@ -5764,11 +5764,11 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 // Check if lastSlot is the same as today's date
                 bool isToday = lastSlot == DateOnly.FromDateTime(DateTime.Today);
 
-                return (isToday, dateString,true);
+                return (isToday, dateString, true);
             }
             else
             {
-                return (true,"",true);
+                return (true, "", true);
             }
 
         }
@@ -6927,10 +6927,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 .ThenBy(slot => slot.StartTime)
                 .ToListAsync();
 
-            var isLastSlotTimeExtended = slots.Any(d => d.IsLastSlot == true&&d.IsVTEventTimeExtended==true);
+            var isLastSlotTimeExtended = slots.Any(d => d.IsLastSlot == true && d.IsVTEventTimeExtended == true);
 
             // Logic for "DashBoardUser"
-            if (userType == "DashBoardUser"&&isLastSlotTimeExtended)
+            if (userType == "DashBoardUser" && isLastSlotTimeExtended)
             {
                 // Get the current date and time
                 var currentDate = DateOnly.FromDateTime(DateTime.Now);
@@ -6943,7 +6943,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
                     if (currentSlot.StartDate == currentDate && nextSlot.StartDate == currentDate)
                     {
-                         
+
 
                         // If not, check if current time lies between the current slot's StartTime and the next slot's EndTime
                         if (currentSlot.StartTime <= currentTime &&
@@ -6962,10 +6962,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     var extendedEndTime = lastSlot.LockTime.Value.AddHours(2);
                     if (currentTime < extendedEndTime)
                     {
-                       
+
                         lastSlot.LockTime = extendedEndTime;
 
-                         
+
 
                         return lastSlot;
                     }
@@ -7254,8 +7254,8 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
                                                          }).FirstOrDefaultAsync();
 
-                
-            
+
+
 
             if (currentEvent == null)
             {
@@ -9816,16 +9816,16 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         #region SlotManagement
         public async Task<Response> AddEventSlot(List<SlotManagementMaster> slotManagement)
         {
-            var isEventActivityPerformed = await IsElectionInFoExist(slotManagement.Select(d=>d.StateMasterId).FirstOrDefault(), slotManagement.Select(d => d.ElectionTypeMasterId).FirstOrDefault());
+            var isEventActivityPerformed = await IsElectionInFoExist(slotManagement.Select(d => d.StateMasterId).FirstOrDefault(), slotManagement.Select(d => d.ElectionTypeMasterId).FirstOrDefault());
             if (isEventActivityPerformed.IsSucceed == true)
             {
                 return new Response()
                 {
-                    Status=RequestStatusEnum.BadRequest,
-                    Message=isEventActivityPerformed.Message
+                    Status = RequestStatusEnum.BadRequest,
+                    Message = isEventActivityPerformed.Message
                 };
             }
-            
+
             var masterIds = slotManagement.Select(d => new { d.StateMasterId, d.EventMasterId, d.ElectionTypeMasterId }).FirstOrDefault();
             var deleteRecord = _context.SlotManagementMaster
                 .Where(d => d.StateMasterId == masterIds.StateMasterId && d.ElectionTypeMasterId == masterIds.ElectionTypeMasterId && d.EventMasterId == masterIds.EventMasterId)
@@ -18981,11 +18981,20 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         #region ResultDeclaration
         public async Task<ServiceResponse> AddResultDeclarationDetails(List<ResultDeclaration> resultDeclaration)
         {
-            if (resultDeclaration == null || !resultDeclaration.Any())
+            // Check if all items in the list have ElectionTypeMasterId == 1 (for Gram Panchayats)
+            if (resultDeclaration.All(r => r.ElectionTypeMasterId == 1))
             {
-                return new ServiceResponse { IsSucceed = false, Message = "No data provided." };
+                await AddGramPanchayatResultDeclarationAsync(resultDeclaration);
             }
-
+            // Check if any item in the list has ElectionTypeMasterId == 4, 5, or 6 (for Municipal Corporation, Municipal Council, and Nagar Panchayat)
+            else if (resultDeclaration.Any(r => r.ElectionTypeMasterId == 4 || r.ElectionTypeMasterId == 5 || r.ElectionTypeMasterId == 6))
+            {
+                await AddMCorpMCounAndNPResultDeclarationAsync(resultDeclaration);
+            }
+            return new ServiceResponse { IsSucceed = true, Message = "Result declarations successfully processed." };
+        }
+        private async Task AddGramPanchayatResultDeclarationAsync(List<ResultDeclaration> resultDeclaration)
+        {
             foreach (var resultCandidate in resultDeclaration)
             {
                 // Check if an existing record is present for the candidate
@@ -19058,15 +19067,83 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             // Save all changes to the database
             await _context.SaveChangesAsync();
-
-            return new ServiceResponse { IsSucceed = true, Message = "Result declarations successfully processed." };
         }
+        private async Task AddMCorpMCounAndNPResultDeclarationAsync(List<ResultDeclaration> resultDeclaration)
+        {
+            foreach (var resultCandidate in resultDeclaration)
+            {
+                // Check if an existing record is present for the candidate
+                var existingResult = await _context.ResultDeclaration
+                    .FirstOrDefaultAsync(d => d.StateMasterId == resultCandidate.StateMasterId &&
+                                               d.DistrictMasterId == resultCandidate.DistrictMasterId &&
+                                               d.ElectionTypeMasterId == resultCandidate.ElectionTypeMasterId &&
+                                               d.AssemblyMasterId == resultCandidate.AssemblyMasterId &&
+                                               d.FourthLevelHMasterId == resultCandidate.FourthLevelHMasterId &&
+                                               d.KycMasterId == resultCandidate.KycMasterId);
+
+                if (existingResult != null)
+                {
+                    // Update existing record with new details
+                    existingResult.VoteMargin = resultCandidate.VoteMargin;
+                    existingResult.IsWinner = resultCandidate.IsWinner;
+                    existingResult.IsResultDeclared = resultCandidate.IsResultDeclared;
+                    existingResult.IsDraw = resultCandidate.IsDraw;
+                    existingResult.IsDrawLottery = resultCandidate.IsDrawLottery;
+                    existingResult.IsReCounting = resultCandidate.IsReCounting;
+                    existingResult.ResultDecUpdatedAt = DateTime.UtcNow; // Update timestamp
+                }
+                else
+                {
+                    // Insert a new record if no existing record is found
+                    await _context.ResultDeclaration.AddAsync(resultCandidate);
+                    await _context.SaveChangesAsync(); // Save to generate IDs
+                }
+
+                // Add history entry if the candidate is not a winner
+                if (!resultCandidate.IsWinner)
+                {
+                    var historyEntry = new ResultDeclarationHistory
+                    {
+                        StateMasterId = resultCandidate.StateMasterId,
+                        DistrictMasterId = resultCandidate.DistrictMasterId,
+                        ElectionTypeMasterId = resultCandidate.ElectionTypeMasterId,
+                        AssemblyMasterId = resultCandidate.AssemblyMasterId,
+                        FourthLevelHMasterId = resultCandidate.FourthLevelHMasterId,
+                        ResultDeclaredByMobile = resultCandidate.ResultDeclaredByMobile,
+                        ResultDeclaredByPortal = resultCandidate.ResultDeclaredByPortal,
+                        KycMasterId = resultCandidate.KycMasterId,
+                        VoteMargin = resultCandidate.VoteMargin,
+                        IsWinner = resultCandidate.IsWinner, // Pass IsWinner value
+                        IsResultDeclared = false, // Assuming non-winners have this set to false
+                        IsDraw = resultCandidate.IsDraw, // Pass IsDraw value
+                        IsDrawLottery = resultCandidate.IsDrawLottery, // Pass IsDrawLottery value
+                        IsReCounting = resultCandidate.IsReCounting, // Pass IsReCounting value
+                        ResultDecCreatedAt = DateTime.UtcNow, // Set creation time
+                        ResultDecUpdatedAt = DateTime.UtcNow, // Set update time
+                        ResultDecStatus = true // Assuming you want to set this as active
+                    };
+
+                    // Link the foreign key to the appropriate ResultDeclaration
+                    if (existingResult is null)
+                    {
+                        historyEntry.ResultDeclarationMasterId = resultCandidate.ResultDeclarationMasterId;
+                    }
+                    else
+                    {
+                        historyEntry.ResultDeclarationMasterId = existingResult.ResultDeclarationMasterId;
+                    }
+
+                    await _context.ResultDeclarationHistory.AddAsync(historyEntry);
+                }
+            }
+
+            // Save all changes to the database
+            await _context.SaveChangesAsync();
+        }
+
+
         public async Task<ServiceResponse> UpdateResultDeclarationForPortal(List<ResultDeclaration> resultDeclaration)
         {
-            if (resultDeclaration == null || !resultDeclaration.Any())
-            {
-                return new ServiceResponse { IsSucceed = false, Message = "No data provided." };
-            }
             // Extract all KycMasterId values from the resultDeclaration list
             var resultDeclarationIds = resultDeclaration.Select(r => r.KycMasterId).ToList();
 
@@ -19109,111 +19186,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
             return new ServiceResponse { IsSucceed = true, Message = "Result declarations updated successfully." };
         }
-        //public async Task<ServiceResponse> UpdateResultDeclarationForPortal(List<ResultDeclaration> resultDeclaration)
-        //{
-        //    foreach (var resultCandidate in resultDeclaration)
-        //    {
-        //        // Fetch the existing record that matches the criteria
-        //        var existingResult = await _context.ResultDeclaration
-        //            .FirstOrDefaultAsync(d => d.StateMasterId == resultCandidate.StateMasterId &&
-        //                                       d.DistrictMasterId == resultCandidate.DistrictMasterId &&
-        //                                       d.ElectionTypeMasterId == resultCandidate.ElectionTypeMasterId &&
-        //                                       d.AssemblyMasterId == resultCandidate.AssemblyMasterId &&
-        //                                       d.FourthLevelHMasterId == resultCandidate.FourthLevelHMasterId &&
-        //                                       d.BoothMasterId == resultCandidate.BoothMasterId &&
-        //                                       d.GPPanchayatWardsMasterId == resultCandidate.GPPanchayatWardsMasterId &&
-        //                                       d.KycMasterId == resultCandidate.KycMasterId);
-
-        //        if (existingResult != null)
-        //        {
-        //            // Update the existing record with the new data from resultCandidate
-        //            existingResult.VoteMargin = resultCandidate.VoteMargin;
-        //            existingResult.IsWinner = resultCandidate.IsWinner;
-        //            existingResult.IsResultDeclared = resultCandidate.IsResultDeclared;
-        //            existingResult.IsDraw = resultCandidate.IsDraw;
-        //            existingResult.IsDrawLottery = resultCandidate.IsDrawLottery;
-        //            existingResult.IsReCounting = resultCandidate.IsReCounting;
-        //            existingResult.ResultDecUpdatedAt = DateTime.UtcNow; // Update timestamp
-
-        //            // Mark the entity as modified in the context
-        //            _context.ResultDeclaration.Update(existingResult);
-        //        }
-        //    }
-
-        //    // Save all changes to the database
-        //    await _context.SaveChangesAsync();
-
-        //    return new ServiceResponse { IsSucceed = true, Message = "Result declarations updated successfully." };
-        //}
-
-        //public async Task<ServiceResponse> UpdateResultDeclarationForPortal(List<ResultDeclaration> resultDeclaration)
-        //{
-        //    foreach (var resultCandidate in resultDeclaration)
-        //    {
-        //        // Check if an existing record is present for the candidate
-        //        var existingResult = await _context.ResultDeclaration
-        //            .FirstOrDefaultAsync(d => d.StateMasterId == resultCandidate.StateMasterId &&
-        //                                       d.DistrictMasterId == resultCandidate.DistrictMasterId &&
-        //                                       d.ElectionTypeMasterId == resultCandidate.ElectionTypeMasterId &&
-        //                                       d.AssemblyMasterId == resultCandidate.AssemblyMasterId &&
-        //                                       d.FourthLevelHMasterId == resultCandidate.FourthLevelHMasterId &&
-        //                                       d.BoothMasterId == resultCandidate.BoothMasterId &&
-        //                                       d.GPPanchayatWardsMasterId == resultCandidate.GPPanchayatWardsMasterId &&
-        //                                       d.KycMasterId == resultCandidate.KycMasterId);
-
-        //        if (existingResult != null)
-        //        {
-        //            // Update existing record with new details
-        //            existingResult.VoteMargin = resultCandidate.VoteMargin;
-        //            existingResult.IsWinner = resultCandidate.IsWinner;
-        //            existingResult.IsResultDeclared = resultCandidate.IsResultDeclared;
-        //            existingResult.IsDraw = resultCandidate.IsDraw;
-        //            existingResult.IsDrawLottery = resultCandidate.IsDrawLottery;
-        //            existingResult.IsReCounting = resultCandidate.IsReCounting;
-        //            existingResult.ResultDecUpdatedAt = DateTime.UtcNow; // Update timestamp
-        //        }
-        //        //else
-        //        //{
-        //        //    // If no existing record, treat it as an insert
-        //        //    await _context.ResultDeclaration.AddAsync(resultCandidate);
-        //        //}
-
-        //        //// Add history entry for non-winner candidates
-        //        //if (!resultCandidate.IsWinner)
-        //        //{
-        //        //    var historyEntry = new ResultDeclarationHistory
-        //        //    {
-        //        //        StateMasterId = resultCandidate.StateMasterId,
-        //        //        DistrictMasterId = resultCandidate.DistrictMasterId,
-        //        //        ElectionTypeMasterId = resultCandidate.ElectionTypeMasterId,
-        //        //        AssemblyMasterId = resultCandidate.AssemblyMasterId,
-        //        //        FourthLevelHMasterId = resultCandidate.FourthLevelHMasterId,
-        //        //        ResultDeclaredByMobile = resultCandidate.ResultDeclaredByMobile,
-        //        //        ResultDeclaredByPortal = resultCandidate.ResultDeclaredByPortal,
-        //        //        GPPanchayatWardsMasterId = resultCandidate.GPPanchayatWardsMasterId,
-        //        //        KycMasterId = resultCandidate.KycMasterId,
-        //        //        VoteMargin = resultCandidate.VoteMargin,
-        //        //        IsWinner = resultCandidate.IsWinner,
-        //        //        IsResultDeclared = resultCandidate.IsResultDeclared,
-        //        //        IsDraw = resultCandidate.IsDraw,
-        //        //        IsDrawLottery = resultCandidate.IsDrawLottery,
-        //        //        IsReCounting = resultCandidate.IsReCounting,
-        //        //        ResultDecCreatedAt = DateTime.UtcNow,
-        //        //        ResultDecUpdatedAt = DateTime.UtcNow,
-        //        //        ResultDecStatus = true
-        //        //    };
-
-        //        //    historyEntry.ResultDeclarationMasterId = existingResult?.ResultDeclarationMasterId ?? resultCandidate.ResultDeclarationMasterId;
-        //        //    await _context.ResultDeclarationHistory.AddAsync(historyEntry);
-        //        //}
-        //    }
-
-        //    // Save all changes to the database
-        //    await _context.SaveChangesAsync();
-
-        //    return new ServiceResponse { IsSucceed = true, Message = "Result declarations updated successfully." };
-        //}
-
         public async Task<ServiceResponse> CheckIfAllBoothsPollEnded(int fieldOfficerMasterId)
         {
             bool anyPollActive = await _context.BoothMaster
