@@ -18175,10 +18175,10 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 existing.HierarchyStatus = fourthLevelH.HierarchyStatus;
                 existing.IsCC = fourthLevelH.IsCC;
                 existing.IsNN = fourthLevelH.IsNN;
-                existing.Male = fourthLevelH.Male;
-                existing.Female = fourthLevelH.Female;
-                existing.Transgender = fourthLevelH.Transgender;
-                existing.TotalVoters = fourthLevelH.TotalVoters;
+                //existing.Male = fourthLevelH.Male;
+                //existing.Female = fourthLevelH.Female;
+                //existing.Transgender = fourthLevelH.Transgender;
+                //existing.TotalVoters = fourthLevelH.TotalVoters;
                 // Save changes to the database
                 try
                 {
