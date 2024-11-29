@@ -32,6 +32,7 @@ namespace EAMS_ACore.AuthModels
         public DateTime? OTPExpireTime { get; set; }
         public int OTPAttempts { get; set; }
         public string? RefreshToken { get; set; }
+        public string? CurrentToken { get; set; }
         public DateTime RefreshTokenExpiryTime { get; set; }
         public DateTime ElectionTypeUpdatedTime { get; set; }
     }

@@ -201,7 +201,7 @@ app.UseCors();
 app.UseWebSockets();
 
 app.UseAuthentication();
-//app.UseMiddleware<TokenExpirationMiddleware>();
+app.UseMiddleware<TokenExpirationMiddleware>();
 
 app.MapHub<DashBoardHub>("/DashBoardHub", options =>
 {

@@ -78,13 +78,7 @@ namespace EAMS_BLL.AuthServices
             if (user is not null)
             {
 
-              //  var userRoles = await _authRepository.GetRoleByUser(user);
                 var authClaims = await GenerateClaims(user);
-
-                // Add user roles to authClaims
-              
-
-                // Generate tokens
                 var token = GenerateToken(authClaims);
 
                 _Token.RefreshToken = GenerateRefreshToken();
@@ -96,6 +90,7 @@ namespace EAMS_BLL.AuthServices
                     var refreshTokenValidityInDays = Convert.ToInt64(_configuration["JWTKey:RefreshTokenValidityInDays"]);
                     user.RefreshToken = _Token.RefreshToken;
                     user.RefreshTokenExpiryTime = expireRefreshToken;
+                    user.CurrentToken=token;
 
                     // Update user and handle any exceptions
                     try
@@ -136,7 +131,7 @@ namespace EAMS_BLL.AuthServices
         {
             var getElection = await _authRepository.GetElectionTypeById(user.ElectionTypeMasterId);
             var userRoles = await _authRepository.GetRoleByUser(user);
-           
+
 
             var authClaims = new List<Claim>
             {
@@ -725,11 +720,13 @@ namespace EAMS_BLL.AuthServices
                 if (getCurrentUser != null)
                 {
 
+                    var getClaims = await GenerateClaims(getCurrentUser);
+                    var getAccessToken = GenerateToken(getClaims);
+                    getCurrentUser.CurrentToken = getAccessToken;
                     getCurrentUser.RefreshToken = GenerateRefreshToken();
                     getCurrentUser.RefreshTokenExpiryTime = BharatTimeDynamic(0, 7, 0, 0, 0);
                     var updateUser = await _authRepository.UpdateUser(getCurrentUser);
-                    var getClaims = await GenerateClaims(getCurrentUser);
-                    var getAccessToken = GenerateToken(getClaims);
+
                     if (updateUser.IsSucceed == true)
                     {
                         _Token.IsSucceed = true;

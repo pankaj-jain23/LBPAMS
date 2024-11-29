@@ -1,61 +1,54 @@
-﻿using System.Text;
+﻿using EAMS_ACore.AuthModels;
+using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
+using System.Text;
 
 namespace EAMS.Middleware
 {
     public class TokenExpirationMiddleware
     {
-        private readonly RequestDelegate _next; 
-
+        private readonly RequestDelegate _next;
         public TokenExpirationMiddleware(RequestDelegate next)
         {
             _next = next;
-            // Initialize encryption key from configuration or wherever it's stored
- 
+
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task Invoke(HttpContext context, IServiceProvider serviceProvider)
         {
-            //var encryptedTokenBytes1 = Convert.FromBase64String(context.User.Identity.AuthenticationType);
-
-            // Check if the user is authenticated
             if (context.User.Identity.IsAuthenticated)
             {
 
-                // Check for the existence of the "exp" claim
-                var expirationClaim = context.User.FindFirst("exp");
+                // Resolve scoped services within the request pipeline
+                var userManager = serviceProvider.GetRequiredService<UserManager<UserRegistration>>();
+                var userId = context.User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+                var userRole = context.User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
 
-                if (expirationClaim != null && long.TryParse(expirationClaim.Value, out long expirationTimestamp))
+
+                if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userRole))
                 {
-                    // Convert the expiration timestamp to DateTime 
-                    // var expirationTime = DateTimeOffset.FromUnixTimeSeconds(expirationTimestamp).UtcDateTime;
+                    await _next(context);
+                }
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    var user = await userManager.FindByIdAsync(userId);
+                    var token = context.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
-                    DateTimeOffset expirationTime = DateTimeOffset.FromUnixTimeSeconds(expirationTimestamp);
-                    TimeSpan istOffset = TimeSpan.FromHours(5) + TimeSpan.FromMinutes(30);
-                    DateTime expirationIST = expirationTime.UtcDateTime + istOffset;
-
-
-
-                    DateTime dateTime = DateTime.Now;
-                    DateTime utcDateTime = DateTime.SpecifyKind(dateTime.ToUniversalTime(), DateTimeKind.Utc);
-                    TimeZoneInfo istTimeZone = TimeZoneInfo.CreateCustomTimeZone("IST", istOffset, "IST", "IST");
-                    DateTime hiINDateTimeNow = TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, istTimeZone);
-
-                    // Check if the token is expired
-                    if (expirationIST < hiINDateTimeNow)
+                    if (user?.CurrentToken != token)
                     {
-                        // Token is expired, you can handle this as needed
-                        context.Response.StatusCode = 401; // Unauthorized
-                        await context.Response.WriteAsync("Token has expired.");
+                        context.Response.StatusCode = 440; // Custom status code for session expired
+                        var response = new
+                        {
+                            Code = 440,
+                            Message = "Session expired. Please log in again."
+                        };
+
+                        context.Response.ContentType = "application/json";
+                        await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(response));
                         return;
                     }
                 }
-                //else if ()
-                //{
-
-                //}
             }
-
-            // Continue to the next middleware in the pipeline
             await _next(context);
         }
     }
