@@ -17075,13 +17075,13 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 // If a contestant (non-unopposed) Sarpanch exists, return error message
                 if (existingContestantSarpanch && kyc.GPPanchayatWardsMasterId == 0)
                 {
-                    return new ServiceResponse { IsSucceed = false, Message = $"Contestant Sarpanch already exists. Please delete that entry first and then add an unopposed candidate." };
+                    return new ServiceResponse { IsSucceed = false, Message = $"Contesting Sarpanch already exists. Please delete that entry first and then add an unopposed candidate." };
                 }
 
                 // If a contestant (non-unopposed) Panch exists, return error message
                 if (existingContestantPanch)
                 {
-                    return new ServiceResponse { IsSucceed = false, Message = $"Contestant Panch already exists for ward. Please delete that entry first and then add an unopposed candidate." };
+                    return new ServiceResponse { IsSucceed = false, Message = $"Contesting Panch already exists for ward. Please delete that entry first and then add an unopposed candidate." };
                 }
             }
             // Check if an unopposed Sarpanch exists (GPPanchayatWardsMasterId == 0)
@@ -17163,13 +17163,13 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 // If a contestant (non-unopposed) Sarpanch exists, return error message
                 if (existingContestantSarpanch && kyc.GPPanchayatWardsMasterId == 0)
                 {
-                    return new ServiceResponse { IsSucceed = false, Message = $"Contestant Sarpanch already exists. Please delete that entry first and then update an unopposed candidate." };
+                    return new ServiceResponse { IsSucceed = false, Message = $"Contesting Sarpanch already exists. Please delete that entry first and then update an unopposed candidate." };
                 }
 
                 // If a contestant (non-unopposed) Panch exists, return error message
                 if (existingContestantPanch)
                 {
-                    return new ServiceResponse { IsSucceed = false, Message = $"Contestant Panch already exists. Please delete that entry first and update an unopposed candidate." };
+                    return new ServiceResponse { IsSucceed = false, Message = $"Contesting Panch already exists. Please delete that entry first and update an unopposed candidate." };
                 }
             }
 
@@ -17594,49 +17594,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         #endregion
         #region KYC For "Municipal Corporation","Municipal Council" and "Nagar Panchayat" Public Details
-        //public async Task<ServiceResponse> AddKYCDetailsForMCorpMCounAndNP(Kyc kyc)
-        //{
-        //    // Check if an unopposed Councillor exists
-        //    bool existingCouncillor = await _context.Kyc.AnyAsync(k =>
-        //        k.StateMasterId == kyc.StateMasterId &&
-        //        k.DistrictMasterId == kyc.DistrictMasterId &&
-        //        k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
-        //        k.AssemblyMasterId == kyc.AssemblyMasterId &&
-        //        k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
-        //        k.IsUnOppossed == true 
-        //    );
-
-        //    if (existingCouncillor)
-        //    {
-        //        return new ServiceResponse { IsSucceed = false, Message = "UnOpposed Councillor already exists." };
-        //    }
-
-        //    if (kyc.IsUnOppossed)
-        //    {
-        //        bool existingContestant = await _context.Kyc.AnyAsync(k =>
-        //            k.StateMasterId == kyc.StateMasterId &&
-        //            k.DistrictMasterId == kyc.DistrictMasterId &&
-        //            k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
-        //            k.AssemblyMasterId == kyc.AssemblyMasterId &&
-        //            k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
-        //            k.IsUnOppossed == false // Check for non-unopposed candidate
-        //        );
-
-        //        if (existingContestant)
-        //        {
-        //            return new ServiceResponse
-        //            {
-        //                IsSucceed = false,
-        //                Message = "Contestant Candidate already exists for this FourthLevelHMasterId. Please delete that entry first and then add an unopposed candidate."
-        //            };
-        //        }
-        //    }
-
-        //    await _context.Kyc.AddAsync(kyc);
-        //    await _context.SaveChangesAsync();
-
-        //    return new ServiceResponse { IsSucceed = true, Message = "Successfully added" };
-        //}
         public async Task<ServiceResponse> AddKYCDetailsForMCorpMCounAndNP(Kyc kyc)
         {
             // Fetch the ward name (HierarchyName) from the FourthLevelH table
@@ -17662,7 +17619,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     return new ServiceResponse
                     {
                         IsSucceed = false,
-                        Message = $"Contestant Councillor already exists for the ward '{wardName ?? "Unknown"}'. Please delete that entry first and then add an unopposed candidate."
+                        Message = $"Contesting Councillor already exists for the ward '{wardName ?? "Unknown"}'. Please delete that entry first and then add an unopposed candidate."
                     };
                 }
             }
@@ -17698,57 +17655,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             };
         }
 
-        //public async Task<ServiceResponse> UpdateKycDetailsForMCorpMCounAndNP(Kyc kyc)
-        //{
-
-        //    // Check if the KYC record exists
-        //    var existingKyc = await _context.Kyc.FirstOrDefaultAsync(k => k.KycMasterId == kyc.KycMasterId);
-
-        //    // If KYC record does not exist, return an error message
-        //    if (existingKyc == null)
-        //    {
-        //        return new ServiceResponse { IsSucceed = false, Message = "KYC not found." };
-        //    }
-
-        //    // Check if an unopposed Councillor exists
-        //    bool existingCouncillor = await _context.Kyc.AnyAsync(k =>
-        //        k.StateMasterId == kyc.StateMasterId &&
-        //        k.DistrictMasterId == kyc.DistrictMasterId &&
-        //        k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
-        //        k.AssemblyMasterId == kyc.AssemblyMasterId &&
-        //        k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
-        //        k.IsUnOppossed == true &&
-        //        k.KycMasterId != kyc.KycMasterId // Ensure we are not checking the current record
-        //    );
-
-
-        //    // If either an unopposed Councillor exists, return an error message
-        //    if (existingCouncillor)
-        //    {
-        //        return new ServiceResponse { IsSucceed = false, Message = "UnOpposed Councillor already exists." };
-        //    }
-
-        //    // Update properties of the existing Kyc entity
-        //    existingKyc.StateMasterId = kyc.StateMasterId;
-        //    existingKyc.DistrictMasterId = kyc.DistrictMasterId;
-        //    existingKyc.ElectionTypeMasterId = kyc.ElectionTypeMasterId;
-        //    existingKyc.AssemblyMasterId = kyc.AssemblyMasterId;
-        //    existingKyc.FourthLevelHMasterId = kyc.FourthLevelHMasterId;
-        //    existingKyc.CandidateName = kyc.CandidateName;
-        //    existingKyc.FatherName = kyc.FatherName;
-        //    existingKyc.IsUnOppossed = kyc.IsUnOppossed;
-        //    existingKyc.NominationPdfPath = string.IsNullOrEmpty(kyc.NominationPdfPath)
-        //        ? existingKyc.NominationPdfPath
-        //        : kyc.NominationPdfPath; // Update only if new path is provided
-        //    existingKyc.Age = kyc.Age;
-        //    existingKyc.Option2 = kyc.Option2;
-
-        //    // Save changes to the database
-        //    _context.Kyc.Update(existingKyc);
-        //    await _context.SaveChangesAsync();
-
-        //    return new ServiceResponse { IsSucceed = true, Message = "KYC updated successfully." };
-        //}
         public async Task<ServiceResponse> UpdateKycDetailsForMCorpMCounAndNP(Kyc kyc)
         {
             // Fetch the ward name (HierarchyName) from the FourthLevelH table for the message
@@ -17784,7 +17690,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                     return new ServiceResponse
                     {
                         IsSucceed = false,
-                        Message = $"Contestant candidate already exists for the ward '{wardName ?? "Unknown"}'. Please delete that entry first and then update the unopposed candidate."
+                        Message = $"Contesting candidate already exists for the ward '{wardName ?? "Unknown"}'. Please delete that entry first and then update the unopposed candidate."
                     };
                 }
             }
