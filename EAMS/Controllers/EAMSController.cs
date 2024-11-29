@@ -1932,7 +1932,7 @@ namespace EAMS.Controllers
         #region FourthLevelH
         [HttpPost]
         [Route("AddFourthLevelH")]
-        //[Authorize]
+        [Authorize]
         public async Task<IActionResult> AddFourthLevelH(AddFourthLevelHViewModel addFourthLevelHViewModel)
         {
             if (ModelState.IsValid)
@@ -2041,7 +2041,7 @@ namespace EAMS.Controllers
 
         [HttpPut]
         [Route("UpdateFourthLevelH")]
-        //[Authorize]
+        [Authorize]
         public async Task<IActionResult> UpdateFourthLevelH(UpdateFourthLevelHViewModel updateFourthLevelHViewModel)
         {
             if (ModelState.IsValid)

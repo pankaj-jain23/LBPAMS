@@ -2106,12 +2106,12 @@ namespace EAMS_DAL.Repository
         #endregion
 
         #region FO Master
-        public async Task<List<FieldOfficerMaster>> GetFieldOfficersListById(int stateMasterId, int districtMasterId, int assemblyMasterId,int electionTypeMasterId)
+        public async Task<List<FieldOfficerMaster>> GetFieldOfficersListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
         {
-            var foList = await _context.FieldOfficerMaster.Where(d => d.StateMasterId == stateMasterId 
-            && d.DistrictMasterId == districtMasterId 
+            var foList = await _context.FieldOfficerMaster.Where(d => d.StateMasterId == stateMasterId
+            && d.DistrictMasterId == districtMasterId
             && d.AssemblyMasterId == assemblyMasterId
-            &&d.ElectionTypeMasterId==electionTypeMasterId).ToListAsync();
+            && d.ElectionTypeMasterId == electionTypeMasterId).ToListAsync();
             return foList;
         }
 
@@ -3512,6 +3512,7 @@ namespace EAMS_DAL.Repository
                                         _context.BoothMaster.Update(existingBooth);
                                     }
                                     boothMaster.BoothCreatedAt = BharatDateTime();
+                                    await AddMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                     await _context.BoothMaster.AddAsync(boothMaster);
                                     await _context.SaveChangesAsync();
                                     return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
@@ -3519,6 +3520,7 @@ namespace EAMS_DAL.Repository
                                 else
                                 {// as it is save otherwise
                                     boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
+                                    await AddMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                     await _context.BoothMaster.AddAsync(boothMaster);
                                     await _context.SaveChangesAsync();
                                     return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
@@ -3528,6 +3530,7 @@ namespace EAMS_DAL.Repository
                             else
                             {
                                 boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
+                                await AddMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                 await _context.BoothMaster.AddAsync(boothMaster);
                                 await _context.SaveChangesAsync();
                                 return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
@@ -3536,6 +3539,7 @@ namespace EAMS_DAL.Repository
                         else
                         {
                             boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
+                            await AddMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                             await _context.BoothMaster.AddAsync(boothMaster);
                             await _context.SaveChangesAsync();
                             return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
@@ -3561,6 +3565,7 @@ namespace EAMS_DAL.Repository
                             if (boothMaster.Male + boothMaster.Female + boothMaster.Transgender == boothMaster.TotalVoters)
                             {
                                 boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
+                                await AddMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                 await _context.BoothMaster.AddAsync(boothMaster);
                                 await _context.SaveChangesAsync();
                                 return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
@@ -3608,6 +3613,7 @@ namespace EAMS_DAL.Repository
                                             _context.BoothMaster.Update(existingBooth);
                                         }
                                         boothMaster.BoothCreatedAt = BharatDateTime();
+                                        await AddMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                         await _context.BoothMaster.AddAsync(boothMaster);
                                         await _context.SaveChangesAsync();
                                         return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
@@ -3615,6 +3621,7 @@ namespace EAMS_DAL.Repository
                                     else
                                     {// as it is save otherwise
                                         boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
+                                        await AddMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                         await _context.BoothMaster.AddAsync(boothMaster);
                                         await _context.SaveChangesAsync();
                                         return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
@@ -3626,6 +3633,7 @@ namespace EAMS_DAL.Repository
                                 else
                                 {
                                     boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
+                                    await AddMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                     await _context.BoothMaster.AddAsync(boothMaster);
                                     await _context.SaveChangesAsync();
                                     return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
@@ -3642,6 +3650,7 @@ namespace EAMS_DAL.Repository
                             {
 
                                 boothMaster.BoothCreatedAt = BharatDateTime(); // Assuming BharatDateTime() returns the current date/time.
+                                await AddMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                 await _context.BoothMaster.AddAsync(boothMaster);
                                 await _context.SaveChangesAsync();
                                 return new Response { Status = RequestStatusEnum.OK, Message = $"Booth {boothMaster.BoothName} added successfully!" };
@@ -3946,7 +3955,7 @@ namespace EAMS_DAL.Repository
                                                             boothrecord.IsPrimaryBooth = false;
                                                             _context.BoothMaster.Update(boothrecord);
                                                         }
-
+                                                        await UpdateMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                                         // Update the single existing booth
                                                         existingbooth.LocationMasterId = null;
                                                         existingbooth.BoothName = boothMaster.BoothName;
@@ -3972,6 +3981,7 @@ namespace EAMS_DAL.Repository
                                                     }
                                                     else
                                                     {
+                                                        await UpdateMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                                         existingbooth.LocationMasterId = null;
                                                         existingbooth.BoothName = boothMaster.BoothName;
                                                         existingbooth.BoothCode_No = boothMaster.BoothCode_No;
@@ -3996,6 +4006,7 @@ namespace EAMS_DAL.Repository
                                                 }
                                                 else
                                                 {
+                                                    await UpdateMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                                     existingbooth.LocationMasterId = null;
                                                     existingbooth.BoothName = boothMaster.BoothName;
                                                     existingbooth.BoothCode_No = boothMaster.BoothCode_No;
@@ -4017,6 +4028,7 @@ namespace EAMS_DAL.Repository
                                             }
                                             else
                                             {
+                                                await UpdateMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                                 existingbooth.LocationMasterId = null;
                                                 existingbooth.BoothName = boothMaster.BoothName;
                                                 existingbooth.BoothCode_No = boothMaster.BoothCode_No;
@@ -4068,7 +4080,7 @@ namespace EAMS_DAL.Repository
                                                                 boothrecord.IsPrimaryBooth = false;
                                                                 _context.BoothMaster.Update(boothrecord);
                                                             }
-
+                                                            await UpdateMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                                             existingbooth.BoothName = boothMaster.BoothName;
                                                             existingbooth.BoothCode_No = boothMaster.BoothCode_No;
                                                             existingbooth.Longitude = boothMaster.Longitude;
@@ -4093,6 +4105,7 @@ namespace EAMS_DAL.Repository
                                                         }
                                                         else
                                                         {
+                                                            await UpdateMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                                             existingbooth.BoothName = boothMaster.BoothName;
                                                             existingbooth.BoothCode_No = boothMaster.BoothCode_No;
                                                             existingbooth.Longitude = boothMaster.Longitude;
@@ -4119,6 +4132,7 @@ namespace EAMS_DAL.Repository
                                                     }
                                                     else
                                                     {
+                                                        await UpdateMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                                         existingbooth.BoothName = boothMaster.BoothName;
                                                         existingbooth.BoothCode_No = boothMaster.BoothCode_No;
                                                         existingbooth.Longitude = boothMaster.Longitude;
@@ -4143,6 +4157,7 @@ namespace EAMS_DAL.Repository
                                                 }
                                                 else
                                                 {
+                                                    await UpdateMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                                     existingbooth.BoothName = boothMaster.BoothName;
                                                     existingbooth.BoothCode_No = boothMaster.BoothCode_No;
                                                     existingbooth.Longitude = boothMaster.Longitude;
@@ -4205,6 +4220,7 @@ namespace EAMS_DAL.Repository
                                                                 boothrecord.IsPrimaryBooth = false;
                                                                 _context.BoothMaster.Update(boothrecord);
                                                             }
+                                                            await UpdateMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                                             existingbooth.LocationMasterId = null;
                                                             existingbooth.BoothUpdatedAt = BharatDateTime();
                                                             existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
@@ -4220,6 +4236,7 @@ namespace EAMS_DAL.Repository
                                                         }
                                                         else
                                                         {
+                                                            await UpdateMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                                             existingbooth.LocationMasterId = null;
                                                             existingbooth.BoothUpdatedAt = BharatDateTime();
                                                             existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
@@ -4239,6 +4256,7 @@ namespace EAMS_DAL.Repository
                                                     }
                                                     else
                                                     {
+                                                        await UpdateMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                                         existingbooth.LocationMasterId = null;
                                                         existingbooth.BoothUpdatedAt = BharatDateTime();
                                                         existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
@@ -4255,6 +4273,7 @@ namespace EAMS_DAL.Repository
                                                 }
                                                 else
                                                 {
+                                                    await UpdateMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                                     existingbooth.LocationMasterId = null;
                                                     existingbooth.BoothUpdatedAt = BharatDateTime();
                                                     existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
@@ -4299,6 +4318,7 @@ namespace EAMS_DAL.Repository
                                                                     boothrecord.IsPrimaryBooth = false;
                                                                     _context.BoothMaster.Update(boothrecord);
                                                                 }
+                                                                await UpdateMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                                                 existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
                                                                 existingbooth.BoothUpdatedAt = BharatDateTime();
                                                                 existingbooth.TotalVoters = boothMaster.TotalVoters;
@@ -4314,6 +4334,7 @@ namespace EAMS_DAL.Repository
                                                             }
                                                             else
                                                             {
+                                                                await UpdateMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                                                 existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
                                                                 existingbooth.BoothUpdatedAt = BharatDateTime();
                                                                 existingbooth.TotalVoters = boothMaster.TotalVoters;
@@ -4333,6 +4354,7 @@ namespace EAMS_DAL.Repository
                                                         }
                                                         else
                                                         {
+                                                            await UpdateMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                                             existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
                                                             existingbooth.BoothUpdatedAt = BharatDateTime();
                                                             existingbooth.TotalVoters = boothMaster.TotalVoters;
@@ -4348,6 +4370,7 @@ namespace EAMS_DAL.Repository
                                                     }
                                                     else
                                                     {
+                                                        await UpdateMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                                         existingbooth.ElectionTypeMasterId = boothMaster.ElectionTypeMasterId;
                                                         existingbooth.BoothUpdatedAt = BharatDateTime();
                                                         existingbooth.TotalVoters = boothMaster.TotalVoters;
@@ -4388,9 +4411,10 @@ namespace EAMS_DAL.Repository
                                         {
                                             var existingBooths = await _context.BoothMaster.Where(p =>
 
-p.StateMasterId == boothMaster.StateMasterId &&
-p.AssemblyMasterId == boothMaster.AssemblyMasterId &&
-p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId).ToListAsync();
+                                            p.StateMasterId == boothMaster.StateMasterId &&
+                                            p.AssemblyMasterId == boothMaster.AssemblyMasterId &&
+                                            p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId 
+                                            && p.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId).ToListAsync();
 
                                             if (existingBooths.Any())
                                             {
@@ -4401,6 +4425,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                                         boothrecord.IsPrimaryBooth = false;
                                                         _context.BoothMaster.Update(boothrecord);
                                                     }
+                                                    await UpdateMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                                     existingbooth.IsPrimaryBooth = boothMaster.IsPrimaryBooth;
 
                                                     _context.BoothMaster.Update(existingbooth);
@@ -4410,6 +4435,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                                 }
                                                 else
                                                 {
+                                                    await UpdateMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                                     existingbooth.IsPrimaryBooth = boothMaster.IsPrimaryBooth;
 
                                                     _context.BoothMaster.Update(existingbooth);
@@ -4423,6 +4449,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                             }
                                             else
                                             {
+                                                await UpdateMFTVotersInFourthLevel(boothMaster);//to update MFT in Fourthlevel
                                                 existingbooth.IsPrimaryBooth = boothMaster.IsPrimaryBooth;
                                                 _context.BoothMaster.Update(existingbooth);
                                                 await _context.SaveChangesAsync();
@@ -4691,7 +4718,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 return new ServiceResponse()
                 {
                     IsSucceed = false,
-                    Message= isPollExist.Message
+                    Message = isPollExist.Message
                 };
 
             }
@@ -15278,10 +15305,6 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         #endregion
 
 
-        #region GetChartConsolidatedReport
-
-        #endregion
-
 
         #region AddHelpDeskInfo
         public async Task<Response> AddHelpDeskInfo(HelpDeskDetail helpDeskDetail)
@@ -17400,7 +17423,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                                      IsUnOppossed = k.IsUnOppossed,
                                      ElectionTypeMasterId = k.ElectionTypeMasterId,
                                      Age = k.Age,
-                                     NominationPdfPath = $"{baseUrl}{k.NominationPdfPath}" 
+                                     NominationPdfPath = $"{baseUrl}{k.NominationPdfPath}"
                                      ,
                                      AffidavitPdfPath = $"{baseUrl}{k.AffidavitPdfPath}",
                                  }).ToListAsync();
@@ -17593,6 +17616,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
         }
 
         #endregion
+
         #region KYC For "Municipal Corporation","Municipal Council" and "Nagar Panchayat" Public Details
         public async Task<ServiceResponse> AddKYCDetailsForMCorpMCounAndNP(Kyc kyc)
         {
@@ -18175,13 +18199,14 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
                 existing.HierarchyStatus = fourthLevelH.HierarchyStatus;
                 existing.IsCC = fourthLevelH.IsCC;
                 existing.IsNN = fourthLevelH.IsNN;
-                //existing.Male = fourthLevelH.Male;
-                //existing.Female = fourthLevelH.Female;
-                //existing.Transgender = fourthLevelH.Transgender;
-                //existing.TotalVoters = fourthLevelH.TotalVoters;
+                existing.Male = fourthLevelH.Male;
+                existing.Female = fourthLevelH.Female;
+                existing.Transgender = fourthLevelH.Transgender;
+                existing.TotalVoters = fourthLevelH.TotalVoters;
                 // Save changes to the database
                 try
                 {
+                    _context.FourthLevelH.Update(existing);
                     await _context.SaveChangesAsync();
                     return new Response
                     {
@@ -18273,6 +18298,128 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             catch (Exception ex)
             {
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Only To Update Male ,female,Transgender and total voters
+        /// </summary>
+        /// <param name="fourthLevelH"></param>
+        /// <returns></returns>
+        public async Task<ServiceResponse> AddMFTVotersInFourthLevel(BoothMaster boothMaster)
+        {
+            try
+            {
+                // Retrieve the existing entity
+                var existingfourth = await _context.FourthLevelH
+                    .FirstOrDefaultAsync(d => d.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId);
+
+                // Check if the entity exists
+                if (existingfourth == null)
+                {
+                    return new ServiceResponse
+                    {
+                        IsSucceed = false,
+                        Message = "Hierarchy not found."
+                    };
+                }
+
+                // Update the entity
+                existingfourth.Male += boothMaster.Male;
+                existingfourth.Female += boothMaster.Female;
+                existingfourth.Transgender += boothMaster.Transgender;
+                existingfourth.TotalVoters += boothMaster.TotalVoters;
+                _context.FourthLevelH.Update(existingfourth);
+                // Save changes
+                await _context.SaveChangesAsync();
+
+                return new ServiceResponse
+                {
+                    IsSucceed = true,
+                    Message = "Updated successfully."
+                };
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (optional, depending on your logging setup)
+                // _logger.LogError(ex, "Error updating voters in FourthLevelH.");
+
+                return new ServiceResponse
+                {
+                    IsSucceed = false,
+                    Message = $"An error occurred: {ex.Message}"
+                };
+            }
+        }
+
+        /// <summary>
+        /// In there first we have to fetch BoothData and then subtract it and then add updated data in ForuthLevel
+        /// </summary>
+        /// <param name="fourthLevelH"></param>
+        /// <param name="boothMasterId"></param>
+        /// <returns></returns>
+        public async Task<ServiceResponse> UpdateMFTVotersInFourthLevel(BoothMaster boothMaster)
+        {
+            try
+            {
+                // Fetch the BoothMaster record
+                var existingBooth = await _context.BoothMaster
+                    .FirstOrDefaultAsync(d => d.BoothMasterId == boothMaster.BoothMasterId);
+
+                if (existingBooth == null)
+                {
+                    return new ServiceResponse
+                    {
+                        IsSucceed = false,
+                        Message = "BoothMaster record not found."
+                    };
+                }
+
+                // Fetch the associated FourthLevelH record
+                var existingFourth = await _context.FourthLevelH
+                    .FirstOrDefaultAsync(d => d.FourthLevelHMasterId == boothMaster.FourthLevelHMasterId);
+
+                if (existingFourth == null)
+                {
+                    return new ServiceResponse
+                    {
+                        IsSucceed = false,
+                        Message = "Hierarchy not found."
+                    };
+                }
+
+                // Subtract the existing BoothMaster record values from FourthLevelH
+                existingFourth.Male -= existingBooth.Male;
+                existingFourth.Female -= existingBooth.Female;
+                existingFourth.Transgender -= existingBooth.Transgender;
+                existingFourth.TotalVoters -= existingBooth.TotalVoters;
+
+                // Add the updated BoothMaster values to FourthLevelH
+                existingFourth.Male += boothMaster.Male;
+                existingFourth.Female += boothMaster.Female;
+                existingFourth.Transgender += boothMaster.Transgender;
+                existingFourth.TotalVoters += boothMaster.TotalVoters;
+
+                _context.FourthLevelH.Update(existingFourth);
+                // Save changes to the database
+                await _context.SaveChangesAsync();
+
+                return new ServiceResponse
+                {
+                    IsSucceed = true,
+                    Message = "Fourth level hierarchy updated successfully."
+                };
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (optional, depending on your logging setup)
+                // _logger.LogError(ex, "Error updating voters in FourthLevelH.");
+
+                return new ServiceResponse
+                {
+                    IsSucceed = false,
+                    Message = $"An error occurred: {ex.Message}"
+                };
             }
         }
 
@@ -18938,7 +19085,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
 
         #region ResultDeclaration
         public async Task<ServiceResponse> AddResultDeclarationDetails(List<ResultDeclaration> resultDeclaration)
-        { 
+        {
             // Check if all items in the list have ElectionTypeMasterId == 1 (for Gram Panchayats)
             if (resultDeclaration.All(r => r.ElectionTypeMasterId == 1))
             {
@@ -18952,7 +19099,7 @@ p.ElectionTypeMasterId == boothMaster.ElectionTypeMasterId && p.FourthLevelHMast
             return new ServiceResponse { IsSucceed = true, Message = "Result declarations successfully processed." };
         }
         private async Task AddGramPanchayatResultDeclarationAsync(List<ResultDeclaration> resultDeclaration)
-        { 
+        {
             foreach (var resultCandidate in resultDeclaration)
             {
                 // Check if an existing record is present for the candidate

@@ -400,6 +400,7 @@ namespace EAMS.Helper
               .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
               .ReverseMap();
             #endregion
+
             #region AROResultMasterViewModel AROResultMaster
             CreateMap<AROResultMasterViewModel, AROResultMaster>()
               .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
@@ -430,6 +431,7 @@ namespace EAMS.Helper
               .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
               .ReverseMap();
             #endregion
+
             #region SectorOfficerBoothViewModel CombinedMaster
             CreateMap<FieldOfficerBoothViewModel, CombinedMaster>()
                 .ForMember(dest => dest.StateId, opt => opt.MapFrom(src => src.StateMasterId))
@@ -845,10 +847,10 @@ namespace EAMS.Helper
                  .ForMember(dest => dest.HierarchyStatus, opt => opt.MapFrom(src => src.IsStatus))
                  .ForMember(dest => dest.IsCC, opt => opt.MapFrom(src => src.IsCC))
                  .ForMember(dest => dest.IsNN, opt => opt.MapFrom(src => src.IsNN))
-                 //.ForMember(dest => dest.Male, opt => opt.MapFrom(src => src.Male))
-                 //.ForMember(dest => dest.Female, opt => opt.MapFrom(src => src.Female))
-                 //.ForMember(dest => dest.Transgender, opt => opt.MapFrom(src => src.Transgender))
-                 //.ForMember(dest => dest.TotalVoters, opt => opt.MapFrom(src => src.TotalVoters))
+                //.ForMember(dest => dest.Male, opt => opt.MapFrom(src => src.Male))
+                //.ForMember(dest => dest.Female, opt => opt.MapFrom(src => src.Female))
+                //.ForMember(dest => dest.Transgender, opt => opt.MapFrom(src => src.Transgender))
+                //.ForMember(dest => dest.TotalVoters, opt => opt.MapFrom(src => src.TotalVoters))
                 .ReverseMap();
             CreateMap<FourthLevelH, ListFourthLevelHViewModel>()
                    .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
