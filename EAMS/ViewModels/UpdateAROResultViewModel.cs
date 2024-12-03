@@ -14,13 +14,11 @@ namespace LBPAMS.ViewModels
             get;
             set;
         }
-        [Required(ErrorMessage = "Assembly MasterId is required")]
         public int? AssemblyMasterId
         {
             get;
             set;
         }
-        [Required(ErrorMessage = "Assembly MasterId is required")]
         public int? FourthLevelHMasterId
         {
             get;
