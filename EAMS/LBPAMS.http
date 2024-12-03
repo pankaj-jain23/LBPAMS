@@ -1,0 +1,10 @@
+﻿@LBPAMS_HostAddress = https://localhost:44312
+
+POST {{LBPAMS_HostAddress}}/api/eams/AddAROResult
+Content-Type: application/json
+
+{
+  //AROResultMasterViewModel
+}
+
+###
