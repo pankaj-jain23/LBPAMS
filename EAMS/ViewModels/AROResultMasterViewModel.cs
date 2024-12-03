@@ -38,5 +38,7 @@ namespace LBPAMS.ViewModels
         public string AROMobile { get; set; }
         public bool IsStatus { get; set; }
         public int ElectionTypeMasterId { get; set; }
+        [Required(ErrorMessage = "RO UserId is required")]
+        public string? ROUserId { get; set; }
     }
 }

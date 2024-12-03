@@ -54,5 +54,6 @@ namespace EAMS_ACore.Models
         public int AppPin { get; set; }
         public bool IsLocked { get; set; }
         public int ElectionTypeMasterId { get; set; }
+        public string? ROUserId { get; set; }
     }
 }

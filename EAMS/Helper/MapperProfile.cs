@@ -413,6 +413,7 @@ namespace EAMS.Helper
               .ForMember(dest => dest.ARODesignation, opt => opt.MapFrom(src => src.ARODesignation))
               .ForMember(dest => dest.IsStatus, opt => opt.MapFrom(src => src.IsStatus))
               .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+              .ForMember(dest => dest.ROUserId, opt => opt.MapFrom(src => src.ROUserId))
               .ReverseMap();
             #endregion
 
@@ -429,6 +430,7 @@ namespace EAMS.Helper
               .ForMember(dest => dest.ARODesignation, opt => opt.MapFrom(src => src.ARODesignation))
               .ForMember(dest => dest.IsStatus, opt => opt.MapFrom(src => src.IsStatus))
               .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+              .ForMember(dest => dest.ROUserId, opt => opt.MapFrom(src => src.ROUserId))
               .ReverseMap();
             #endregion
 

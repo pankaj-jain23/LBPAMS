@@ -40,6 +40,6 @@ namespace LBPAMS.ViewModels
         public string AROMobile { get; set; }
         public bool IsStatus { get; set; }
         public int ElectionTypeMasterId { get; set; }
-
+        public string? ROUserId { get; set; }
     }
 }

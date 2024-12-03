@@ -2856,7 +2856,7 @@ namespace EAMS_DAL.Repository
                           OTPAttempts = joined.AROResultMaster.OTPAttempts,
                           IsLocked = joined.AROResultMaster.IsLocked,
                           ElectionTypeMasterId = joined.AROResultMaster.ElectionTypeMasterId,
-                          ElectionTypeName = etm.ElectionType
+                          ElectionTypeName = etm.ElectionType,
                       })
                 .FirstOrDefaultAsync();
 
@@ -2922,6 +2922,7 @@ namespace EAMS_DAL.Repository
             existingOfficer.Officer.AppPin = aROResultMaster.AppPin;
             existingOfficer.Officer.IsLocked = aROResultMaster.IsLocked;
             existingOfficer.Officer.ElectionTypeMasterId = aROResultMaster.ElectionTypeMasterId;
+            existingOfficer.Officer.ROUserId = aROResultMaster.ROUserId;
 
             _context.AROResultMaster.Update(existingOfficer.Officer);
             await _context.SaveChangesAsync();
