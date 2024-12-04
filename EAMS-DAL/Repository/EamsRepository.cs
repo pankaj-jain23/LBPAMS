@@ -2812,56 +2812,52 @@ namespace EAMS_DAL.Repository
 
         public async Task<AROResultMasterList> GetAROResultById(int aroMasterId)
         {
-            var aroRecord = await _context.AROResultMaster
-                .Where(aro => aro.AROMasterId == aroMasterId)
-                .Join(_context.StateMaster,
-                      aro => aro.StateMasterId,
-                      sm => sm.StateMasterId,
-                      (aro, sm) => new { AROResultMaster = aro, StateMaster = sm })
-                .Join(_context.DistrictMaster,
-                      joined => joined.AROResultMaster.DistrictMasterId,
-                      dm => dm.DistrictMasterId,
-                      (joined, dm) => new { joined.AROResultMaster, joined.StateMaster, DistrictMaster = dm })
-                .Join(_context.AssemblyMaster,
-                      joined => joined.AROResultMaster.AssemblyMasterId,
-                      am => am.AssemblyMasterId,
-                      (joined, am) => new { joined.AROResultMaster, joined.StateMaster, joined.DistrictMaster, AssemblyMaster = am })
-                .Join(_context.FourthLevelH,
-                      joined => joined.AROResultMaster.FourthLevelHMasterId,
-                      flh => flh.FourthLevelHMasterId,
-                      (joined, flh) => new { joined.AROResultMaster, joined.StateMaster, joined.DistrictMaster, joined.AssemblyMaster, FourthLevelH = flh })
-                .Join(_context.ElectionTypeMaster,
-                      joined => joined.AROResultMaster.ElectionTypeMasterId,
-                      etm => etm.ElectionTypeMasterId,
-                      (joined, etm) => new AROResultMasterList
-                      {
-                          AROMasterId = joined.AROResultMaster.AROMasterId,
-                          StateMasterId = joined.StateMaster.StateMasterId,
-                          StateName = joined.StateMaster.StateName,
-                          DistrictMasterId = joined.DistrictMaster.DistrictMasterId,
-                          DistrictName = joined.DistrictMaster.DistrictName,
-                          AssemblyMasterId = joined.AssemblyMaster.AssemblyMasterId,
-                          AssemblyCode = joined.AssemblyMaster.AssemblyCode,
-                          AssemblyName = joined.AssemblyMaster.AssemblyName,
-                          FourthLevelHMasterId = joined.FourthLevelH.FourthLevelHMasterId,
-                          HierarchyName = joined.FourthLevelH.HierarchyName,
-                          AROName = joined.AROResultMaster.AROName,
-                          ARODesignation = joined.AROResultMaster.ARODesignation,
-                          AROOfficeName = joined.AROResultMaster.AROOfficeName,
-                          AROMobile = joined.AROResultMaster.AROMobile,
-                          IsStatus = joined.AROResultMaster.IsStatus,
-                          OTPGeneratedTime = joined.AROResultMaster.OTPGeneratedTime,
-                          OTP = joined.AROResultMaster.OTP,
-                          OTPExpireTime = joined.AROResultMaster.OTPExpireTime,
-                          OTPAttempts = joined.AROResultMaster.OTPAttempts,
-                          IsLocked = joined.AROResultMaster.IsLocked,
-                          ElectionTypeMasterId = joined.AROResultMaster.ElectionTypeMasterId,
-                          ElectionTypeName = etm.ElectionType,
-                      })
-                .FirstOrDefaultAsync();
+            var aroRecord = await (from aro in _context.AROResultMaster
+                                   where aro.AROMasterId == aroMasterId
+                                   join sm in _context.StateMaster
+                                       on aro.StateMasterId equals sm.StateMasterId into smGroup
+                                   from sm in smGroup.DefaultIfEmpty() // Left Join
+                                   join dm in _context.DistrictMaster
+                                       on aro.DistrictMasterId equals dm.DistrictMasterId into dmGroup
+                                   from dm in dmGroup.DefaultIfEmpty() // Left Join
+                                   join am in _context.AssemblyMaster
+                                       on aro.AssemblyMasterId equals am.AssemblyMasterId into amGroup
+                                   from am in amGroup.DefaultIfEmpty() // Left Join
+                                   join flh in _context.FourthLevelH
+                                       on aro.FourthLevelHMasterId equals flh.FourthLevelHMasterId into flhGroup
+                                   from flh in flhGroup.DefaultIfEmpty() // Left Join
+                                   join etm in _context.ElectionTypeMaster
+                                       on aro.ElectionTypeMasterId equals etm.ElectionTypeMasterId into etmGroup
+                                   from etm in etmGroup.DefaultIfEmpty() // Left Join
+                                   select new AROResultMasterList
+                                   {
+                                       AROMasterId = aro.AROMasterId,
+                                       StateMasterId = sm != null ? sm.StateMasterId : 0, // Provide default value
+                                       StateName = sm != null ? sm.StateName : null,
+                                       DistrictMasterId = dm != null ? dm.DistrictMasterId : 0, // Provide default value
+                                       DistrictName = dm != null ? dm.DistrictName : null,
+                                       AssemblyMasterId = am != null ? am.AssemblyMasterId : 0, // Provide default value
+                                       AssemblyCode = am != null ? am.AssemblyCode : 0,
+                                       AssemblyName = am != null ? am.AssemblyName : null,
+                                       FourthLevelHMasterId = flh != null ? flh.FourthLevelHMasterId : 0, // Provide default value
+                                       HierarchyName = flh != null ? flh.HierarchyName : null,
+                                       AROName = aro.AROName,
+                                       ARODesignation = aro.ARODesignation,
+                                       AROOfficeName = aro.AROOfficeName,
+                                       AROMobile = aro.AROMobile,
+                                       IsStatus = aro.IsStatus,
+                                       OTPGeneratedTime = aro.OTPGeneratedTime,
+                                       OTP = aro.OTP,
+                                       OTPExpireTime = aro.OTPExpireTime,
+                                       OTPAttempts = aro.OTPAttempts,
+                                       IsLocked = aro.IsLocked,
+                                       ElectionTypeMasterId = aro.ElectionTypeMasterId,
+                                       ElectionTypeName = etm != null ? etm.ElectionType : null,
+                                   }).FirstOrDefaultAsync();
 
             return aroRecord;
         }
+
         public async Task<Response> UpdateAROResult(AROResultMaster aROResultMaster)
         {
             // Fetch the existing officer and check for uniqueness of the mobile number in one query
