@@ -93,7 +93,7 @@ namespace EAMS_ACore.IRepository
         Task<Response> UpdateAROValidate(AROResultMaster aROResultMaster);
         Task<AROResultMasterList> GetAROResultById(int aroMasterId);
         Task<List<AROResultMaster>> GetAROListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
-
+        Task<IsRDProfileUpdated> IsRDProfileUpdated(int aroMasterId, string userId);
         #endregion
 
         #region Booth Master

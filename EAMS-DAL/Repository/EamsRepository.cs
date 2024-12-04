@@ -2987,6 +2987,28 @@ namespace EAMS_DAL.Repository
             && d.AssemblyMasterId == assemblyMasterId).ToListAsync();
             return aroList;
         }
+        public async Task<IsRDProfileUpdated> IsRDProfileUpdated(int aroMasterId, string userId)
+        {
+            var result = await _context.AROResultMaster
+                .Where(aro => aro.ROUserId == userId)
+                .Select(aro => new IsRDProfileUpdated
+                {
+                    AROMasterId = aro.AROMasterId,
+                    IsProfileUpdated = true
+                })
+                .FirstOrDefaultAsync();
+
+            if (result == null)
+            {
+                return new IsRDProfileUpdated
+                {
+                    AROMasterId = 0,
+                    IsProfileUpdated = false
+                };
+            }
+
+            return result;
+        }
         #endregion
 
         #region Booth Master 

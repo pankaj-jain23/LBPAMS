@@ -5110,7 +5110,24 @@ namespace EAMS.Controllers
             }
 
         }
+        /// <summary>
+        /// This API adds an entry in the ARO master table, allowing the RO to proceed with result declaration. 
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("IsRDProfileUpdated")]
+        [Authorize]
+        public async Task<IActionResult> IsRDProfileUpdated(int aroMasterId)
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
 
+            if (string.IsNullOrEmpty(userId))
+            {
+                return BadRequest("UserId not found in the token.");
+            }
+
+            var result = await _EAMSService.IsRDProfileUpdated(aroMasterId,userId);
+            return Ok(result);
+        }
 
         #endregion
 

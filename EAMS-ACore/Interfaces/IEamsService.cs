@@ -83,7 +83,7 @@ namespace EAMS_ACore.Interfaces
         Task<Response> UpdateAROResult(AROResultMaster aROResultMaster);
         Task<AROResultMasterList> GetAROResultById(int aroMasterId);
         Task<List<AROResultMaster>> GetAROListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
-
+        Task<IsRDProfileUpdated> IsRDProfileUpdated(int aroMasterId, string userId);
 
         #endregion
 

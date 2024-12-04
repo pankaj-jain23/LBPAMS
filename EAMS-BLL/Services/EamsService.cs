@@ -289,6 +289,10 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetAROListById(stateMasterId, districtMasterId, assemblyMasterId);
         }
+        public async Task<IsRDProfileUpdated> IsRDProfileUpdated(int aroMasterId, string userId)
+        {
+            return await _eamsRepository.IsRDProfileUpdated(aroMasterId, userId);
+        }
         #endregion
 
         #region Booth Master

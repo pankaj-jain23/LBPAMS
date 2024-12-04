@@ -60,4 +60,11 @@ namespace EAMS_ACore.Models
         public int ElectionTypeMasterId { get; set; }
         public string ElectionTypeName { get; set; }
     }
+
+    public class IsRDProfileUpdated
+    {
+        public int? AROMasterId { get; set; }
+        public bool IsProfileUpdated { get; set; }
+
+    }
 }
