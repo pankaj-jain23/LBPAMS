@@ -21335,12 +21335,10 @@ namespace EAMS_DAL.Repository
         /// </summary>
         /// <returns></returns>
         /// 
-
         public async Task<IsMasterEditable> IsMasterEditable(int masterId, string type, int electionTypeMasterId)
         {
             if (type.Equals("State", StringComparison.OrdinalIgnoreCase))
             {
-                // Check if the StateMasterId exists in DistrictMaster
                 var hasDependency = await _context.DistrictMaster
                     .AnyAsync(d => d.StateMasterId == masterId);
 
@@ -21350,12 +21348,14 @@ namespace EAMS_DAL.Repository
                     Type = type,
                     IsEditable = hasDependency ? "false" : "true",
                     ElectionTypeMasterId = electionTypeMasterId,
+                    Message = hasDependency
+                        ? "State is linked with one or more Districts."
+                        : "State is not linked with any District."
                 };
             }
 
             else if (type.Equals("District", StringComparison.OrdinalIgnoreCase))
             {
-                // Check if the DistrictMasterId exists in AssemblyMaster
                 var hasDependency = await _context.AssemblyMaster
                     .AnyAsync(a => a.DistrictMasterId == masterId && a.ElectionTypeMasterId == electionTypeMasterId);
 
@@ -21365,12 +21365,14 @@ namespace EAMS_DAL.Repository
                     Type = type,
                     IsEditable = hasDependency ? "false" : "true",
                     ElectionTypeMasterId = electionTypeMasterId,
+                    Message = hasDependency
+                        ? "District is linked with one or more Assemblies."
+                        : "District is not linked with any Assembly."
                 };
             }
 
             else if (type.Equals("Assembly", StringComparison.OrdinalIgnoreCase))
             {
-                // Check if the AssemblyMasterId exists in FourthLevelH
                 var hasDependency = await _context.FourthLevelH
                     .AnyAsync(f => f.AssemblyMasterId == masterId && f.ElectionTypeMasterId == electionTypeMasterId);
 
@@ -21380,27 +21382,79 @@ namespace EAMS_DAL.Repository
                     Type = type,
                     IsEditable = hasDependency ? "false" : "true",
                     ElectionTypeMasterId = electionTypeMasterId,
+                    Message = hasDependency
+                        ? "Assembly is linked with one or more Fourth Level Hierarchies."
+                        : "Assembly is not linked with any Fourth Level Hierarchy."
                 };
             }
 
-            else if (type.Equals("KYC", StringComparison.OrdinalIgnoreCase))
+            else if (type.Equals("FourthLevel", StringComparison.OrdinalIgnoreCase))
             {
-                // Check the dependency in the Kyc table for FourthLevelHMasterId
-                var hasDependency = await _context.Kyc
-                    .AnyAsync(k => k.FourthLevelHMasterId == masterId && k.ElectionTypeMasterId == electionTypeMasterId);
+                // Check if AssignedToARO is empty or null
+                var assignedToARO = await _context.FourthLevelH
+                                    .Where(f => f.FourthLevelHMasterId == masterId
+                                               && f.ElectionTypeMasterId == electionTypeMasterId
+                                               && f.AssignedToARO == null)
+                                    .FirstOrDefaultAsync();
 
-                return new IsMasterEditable
+                // Initialize the result object
+                IsMasterEditable result = new IsMasterEditable
                 {
                     MasterId = masterId,
                     Type = type,
-                    IsEditable = hasDependency ? "false" : "true",
-                    ElectionTypeMasterId = electionTypeMasterId,
+                    ElectionTypeMasterId = electionTypeMasterId
                 };
+
+                // If AssignedToARO is empty or null, allow the operation
+                if (assignedToARO != null)
+                {
+                    // If AssignedToARO is empty or null
+                    result.IsEditable = "true"; // Allow the operation
+                    result.Message = "Operation can be performed because this is not Assigned to ARO.";
+                    return result;
+                }
+                else
+                {
+                    // If AssignedToARO is not empty
+                    result.IsEditable = "false"; // Do not allow the operation
+                    result.Message = "Operation cannot be performed because this is Assigned to ARO.";
+                    return result;
+                }
+
+
+
+                // Check if there is a KYC dependency
+                var hasKycDependency = await _context.Kyc
+                    .AnyAsync(k => k.FourthLevelHMasterId == masterId && k.ElectionTypeMasterId == electionTypeMasterId);
+
+                if (hasKycDependency)
+                {
+                    result.IsEditable = "false"; // If KYC is linked, cannot be edited
+                    result.Message = "Fourth Level is linked with one or more KYC entries.";
+                    return result;
+                }
+
+                // Check if there is a Panchayat Ward dependency
+                var hasGPWardDependency = await _context.GPPanchayatWards
+                    .AnyAsync(w => w.FourthLevelHMasterId == masterId && w.ElectionTypeMasterId == electionTypeMasterId);
+
+                if (hasGPWardDependency)
+                {
+                    result.IsEditable = "false"; // If linked with Panchayat Wards, cannot be edited
+                    result.Message = "Fourth Level is linked with one or more Panchayat Wards.";
+                    return result;
+                }
+
+                // If no dependencies, set IsEditable to true
+                result.IsEditable = "true";
+                result.Message = "Fourth Level is not linked with any entries.";
+
+                return result;
             }
+
 
             else if (type.Equals("ResultDeclaration", StringComparison.OrdinalIgnoreCase))
             {
-                // Check the dependency in the ResultDeclaration table for KycMasterId
                 var hasDependency = await _context.ResultDeclaration
                     .AnyAsync(r => r.KycMasterId == masterId && r.ElectionTypeMasterId == electionTypeMasterId);
 
@@ -21440,14 +21494,16 @@ namespace EAMS_DAL.Repository
                     Type = type,
                     IsEditable = hasDependency ? "false" : "true",
                     ElectionTypeMasterId = electionTypeMasterId,
+                    Message = hasDependency
+                        ? "Result Declaration is linked with one or more KYC entries."
+                        : "Result Declaration is not linked with any KYC entry."
                 };
             }
 
             else if (type.Equals("Booth", StringComparison.OrdinalIgnoreCase))
             {
-                // Check the dependency in the ElectionInfoMaster table for BoothMasterId
                 var hasDependency = await _context.ElectionInfoMaster
-                     .AnyAsync(e => e.BoothMasterId == masterId && e.ElectionTypeMasterId == electionTypeMasterId);
+                    .AnyAsync(e => e.BoothMasterId == masterId && e.ElectionTypeMasterId == electionTypeMasterId);
 
                 return new IsMasterEditable
                 {
@@ -21455,21 +21511,24 @@ namespace EAMS_DAL.Repository
                     Type = type,
                     IsEditable = hasDependency ? "false" : "true",
                     ElectionTypeMasterId = electionTypeMasterId,
+                    Message = hasDependency
+                        ? "Booth is linked with one or more Election Info entries."
+                        : "Booth is not linked with any Election Info entry."
                 };
             }
+
             else
             {
-                // If the type is invalid, default to not editable
                 return new IsMasterEditable
                 {
                     MasterId = masterId,
                     Type = type,
                     IsEditable = "false",
                     ElectionTypeMasterId = electionTypeMasterId,
+                    Message = "Invalid type provided."
                 };
             }
         }
-
 
         ///
 

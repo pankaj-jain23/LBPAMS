@@ -12,5 +12,6 @@ namespace EAMS_ACore.Models
         public string Type { get; set; }
         public string IsEditable { get; set; }
         public int ElectionTypeMasterId { get; set; }
+        public string Message { get; set; }
     }
 }
