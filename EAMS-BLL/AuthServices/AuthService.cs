@@ -6,6 +6,7 @@ using EAMS_ACore.IAuthRepository;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.IRepository;
 using EAMS_ACore.Models;
+using EAMS_ACore.ReportModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -211,9 +212,15 @@ namespace EAMS_BLL.AuthServices
             if (string.IsNullOrEmpty(validateMobile.Otp) || validateMobile.Otp.Length != 6)
             {
                 string generatedOtp = GenerateOTP();
-
+                // Check if mobile number is the default number
+                if (foRecords != null && foRecords.FieldOfficerMobile == "9988823633")
+                {
+                    // If the mobile number is the default one, set OTP to "111111"
+                    generatedOtp = "111111";
+                }
                 if (foRecords != null)
                 {
+
                     // Generate a new OTP and update Field Officer's record
                     foRecords.OTP = generatedOtp;
                     foRecords.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 2, 0);
