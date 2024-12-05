@@ -472,6 +472,16 @@ namespace EAMS_ACore.IRepository
         #region CompletedVoterList
         Task<List<CompletedVTList>> GetCompletedVTList(CommonReportModel commonReportModel);
         #endregion
+
+        /// <summary>
+        /// This API checks for dependencies in descending order before performing the operation.
+        /// </summary>
+        /// <returns></returns>
+        /// 
+        Task<IsMasterEditable> IsMasterEditable(int masterId, string type, int electionTypeMasterId);
+
+        ///
+
         //Task<List<Disaster>> GetFieldAllOfficerMaster();
         //Task<List<int>> GetFOAsginedBooth(int foId);
         //Task<ServiceResponse> PushDisasterEvent(List<ElectionInfoMaster> electionInfoMaster);

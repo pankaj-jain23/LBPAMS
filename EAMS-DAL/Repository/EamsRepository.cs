@@ -20123,7 +20123,7 @@ namespace EAMS_DAL.Repository
         public async Task<Response> PanchayatMapping(List<FourthLevelH> fourthLevels)
         {
             //if RO wants to assgin fourthlevel same time to mobile user/Portal user
-            var aroMasterId = await _context.AROResultMaster.Where(d => d.ROUserId == fourthLevels.Select(d=>d.AssignedToRO).FirstOrDefault())
+            var aroMasterId = await _context.AROResultMaster.Where(d => d.ROUserId == fourthLevels.Select(d => d.AssignedToRO).FirstOrDefault())
                                                            .Select(d => d.AROMasterId.ToString()).FirstOrDefaultAsync();
             foreach (var fourthLevel in fourthLevels)
             {
@@ -21309,6 +21309,134 @@ namespace EAMS_DAL.Repository
         }
 
         #endregion
+
+        /// <summary>
+        /// This API checks for dependencies in descending order before performing the operation.
+        /// </summary>
+        /// <returns></returns>
+        /// 
+
+        public async Task<IsMasterEditable> IsMasterEditable(int masterId, string type, int electionTypeMasterId)
+        {
+            if (type.Equals("State", StringComparison.OrdinalIgnoreCase))
+            {
+                // Check if the StateMasterId exists in DistrictMaster
+                var hasDependency = await _context.DistrictMaster
+                    .AnyAsync(d => d.StateMasterId == masterId);
+
+                return new IsMasterEditable
+                {
+                    MasterId = masterId,
+                    Type = type,
+                    IsEditable = hasDependency ? "false" : "true",
+                    ElectionTypeMasterId = electionTypeMasterId,
+                };
+            }
+
+            else if (type.Equals("District", StringComparison.OrdinalIgnoreCase))
+            {
+                // Check if the DistrictMasterId exists in AssemblyMaster
+                var hasDependency = await _context.AssemblyMaster
+                    .AnyAsync(a => a.DistrictMasterId == masterId && a.ElectionTypeMasterId == electionTypeMasterId);
+
+                return new IsMasterEditable
+                {
+                    MasterId = masterId,
+                    Type = type,
+                    IsEditable = hasDependency ? "false" : "true",
+                    ElectionTypeMasterId = electionTypeMasterId,
+                };
+            }
+
+            else if (type.Equals("Assembly", StringComparison.OrdinalIgnoreCase))
+            {
+                // Check if the AssemblyMasterId exists in FourthLevelH
+                var hasDependency = await _context.FourthLevelH
+                    .AnyAsync(f => f.AssemblyMasterId == masterId && f.ElectionTypeMasterId == electionTypeMasterId);
+
+                return new IsMasterEditable
+                {
+                    MasterId = masterId,
+                    Type = type,
+                    IsEditable = hasDependency ? "false" : "true",
+                    ElectionTypeMasterId = electionTypeMasterId,
+                };
+            }
+
+            else if (type.Equals("KYC", StringComparison.OrdinalIgnoreCase))
+            {
+                // Check the dependency in the Kyc table for FourthLevelHMasterId
+                var hasDependency = await _context.Kyc
+                    .AnyAsync(k => k.FourthLevelHMasterId == masterId && k.ElectionTypeMasterId == electionTypeMasterId);
+
+                return new IsMasterEditable
+                {
+                    MasterId = masterId,
+                    Type = type,
+                    IsEditable = hasDependency ? "false" : "true",
+                    ElectionTypeMasterId = electionTypeMasterId,
+                };
+            }
+
+            else if (type.Equals("ResultDeclaration", StringComparison.OrdinalIgnoreCase))
+            {
+                // Check the dependency in the ResultDeclaration table for KycMasterId
+                var hasDependency = await _context.ResultDeclaration
+                    .AnyAsync(k => k.KycMasterId == masterId && k.ElectionTypeMasterId == electionTypeMasterId);
+
+                return new IsMasterEditable
+                {
+                    MasterId = masterId,
+                    Type = type,
+                    IsEditable = hasDependency ? "false" : "true",
+                    ElectionTypeMasterId = electionTypeMasterId,
+                };
+            }
+
+            else if (type.Equals("Ward", StringComparison.OrdinalIgnoreCase))
+            {
+                // Check the dependency in the GPPanchayatWards table for FourthLevelHMasterId
+                var hasDependency = await _context.GPPanchayatWards
+                     .AnyAsync(k => k.FourthLevelHMasterId == masterId && k.ElectionTypeMasterId == electionTypeMasterId);
+
+                return new IsMasterEditable
+                {
+                    MasterId = masterId,
+                    Type = type,
+                    IsEditable = hasDependency ? "false" : "true",
+                    ElectionTypeMasterId = electionTypeMasterId,
+                };
+            }
+
+            else if (type.Equals("Voter", StringComparison.OrdinalIgnoreCase))
+            {
+                // Check the dependency in the GPVoter table for FourthLevelHMasterId
+                var hasDependency = await _context.GPVoter
+                     .AnyAsync(k => k.FourthLevelHMasterId == masterId && k.ElectionTypeMasterId == electionTypeMasterId);
+
+                return new IsMasterEditable
+                {
+                    MasterId = masterId,
+                    Type = type,
+                    IsEditable = hasDependency ? "false" : "true",
+                    ElectionTypeMasterId = electionTypeMasterId,
+                };
+            }
+            else
+            {
+                // If the type is invalid, default to not editable
+                return new IsMasterEditable
+                {
+                    MasterId = masterId,
+                    Type = type,
+                    IsEditable = "false"
+                };
+            }
+        }
+
+
+        ///
+
 
         //public async Task<List<Disaster>> GetFieldAllOfficerMaster()
         //{

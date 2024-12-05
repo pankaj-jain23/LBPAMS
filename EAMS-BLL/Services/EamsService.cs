@@ -2197,6 +2197,21 @@ namespace EAMS_BLL.Services
             return await _eamsRepository.GetCompletedVTList(commonReportModel);
         }
         #endregion
+
+
+        /// <summary>
+        /// This API checks for dependencies in descending order before performing the operation.
+        /// </summary>
+        /// <returns></returns>
+        /// 
+        public async Task<IsMasterEditable> IsMasterEditable(int masterId, string type,int electionTypeMasterId)
+        {
+            return await _eamsRepository.IsMasterEditable(masterId, type, electionTypeMasterId);
+        }
+
+        ///
+
+
         //public async Task<List<Disaster>> GetFieldAllOfficerMaster()
         //{
         //    return await _eamsRepository.GetFieldAllOfficerMaster();

@@ -19,6 +19,7 @@ using LBPAMS.ViewModels.EventActivityViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System.Globalization;
 using System.Security.Claims;
 
@@ -5253,6 +5254,24 @@ namespace EAMS.Controllers
             };
         }
         #endregion
+
+        /// <summary>
+        /// This API checks for dependencies in descending order before performing the operation.
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("IsMasterEditable")]
+        public async Task<IActionResult> IsMasterEditable(int masterId, string type,int electionTypeMasterId)
+        {
+            if (masterId < 0)
+            {
+                return BadRequest("masterId not found.");
+            }
+
+            var result = await _EAMSService.IsMasterEditable(masterId, type, electionTypeMasterId);
+            return Ok(result);
+        }
+        ///
+
 
         //[HttpPost("PushDisasterEvent")]
         //public async Task<IActionResult> PushDisasterEvent()
