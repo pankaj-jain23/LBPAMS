@@ -21382,7 +21382,7 @@ namespace EAMS_DAL.Repository
             {
                 // Check the dependency in the ResultDeclaration table for KycMasterId
                 var hasDependency = await _context.ResultDeclaration
-                    .AnyAsync(k => k.KycMasterId == masterId && k.ElectionTypeMasterId == electionTypeMasterId);
+                    .AnyAsync(r => r.KycMasterId == masterId && r.ElectionTypeMasterId == electionTypeMasterId);
 
                 return new IsMasterEditable
                 {
@@ -21397,7 +21397,7 @@ namespace EAMS_DAL.Repository
             {
                 // Check the dependency in the GPPanchayatWards table for FourthLevelHMasterId
                 var hasDependency = await _context.GPPanchayatWards
-                     .AnyAsync(k => k.FourthLevelHMasterId == masterId && k.ElectionTypeMasterId == electionTypeMasterId);
+                     .AnyAsync(w => w.FourthLevelHMasterId == masterId && w.ElectionTypeMasterId == electionTypeMasterId);
 
                 return new IsMasterEditable
                 {
@@ -21412,7 +21412,22 @@ namespace EAMS_DAL.Repository
             {
                 // Check the dependency in the GPVoter table for FourthLevelHMasterId
                 var hasDependency = await _context.GPVoter
-                     .AnyAsync(k => k.FourthLevelHMasterId == masterId && k.ElectionTypeMasterId == electionTypeMasterId);
+                     .AnyAsync(v => v.FourthLevelHMasterId == masterId && v.ElectionTypeMasterId == electionTypeMasterId);
+
+                return new IsMasterEditable
+                {
+                    MasterId = masterId,
+                    Type = type,
+                    IsEditable = hasDependency ? "false" : "true",
+                    ElectionTypeMasterId = electionTypeMasterId,
+                };
+            }
+
+            else if (type.Equals("Booth", StringComparison.OrdinalIgnoreCase))
+            {
+                // Check the dependency in the ElectionInfoMaster table for BoothMasterId
+                var hasDependency = await _context.ElectionInfoMaster
+                     .AnyAsync(e => e.BoothMasterId == masterId && e.ElectionTypeMasterId == electionTypeMasterId);
 
                 return new IsMasterEditable
                 {
@@ -21429,7 +21444,8 @@ namespace EAMS_DAL.Repository
                 {
                     MasterId = masterId,
                     Type = type,
-                    IsEditable = "false"
+                    IsEditable = "false",
+                    ElectionTypeMasterId = electionTypeMasterId,
                 };
             }
         }
