@@ -20122,9 +20122,21 @@ namespace EAMS_DAL.Repository
         #region PanchaytaMapping
         public async Task<Response> PanchayatMapping(List<FourthLevelH> fourthLevels)
         {
-            //if RO wants to assgin fourthlevel same time to mobile user/Portal user
-            var aroMasterId = await _context.AROResultMaster.Where(d => d.ROUserId == fourthLevels.Select(d => d.AssignedToRO).FirstOrDefault())
-                                                           .Select(d => d.AROMasterId.ToString()).FirstOrDefaultAsync();
+            var aroMaster = (dynamic)null;  
+
+            if (!string.IsNullOrWhiteSpace(fourthLevels.Select(d => d.AssignedToARO).FirstOrDefault()))
+            {
+                //if RO wants to assgin fourthlevel same time to mobile user/Portal user
+                 aroMaster = await _context.AROResultMaster.Where(d => d.AROMasterId == Convert.ToInt32(fourthLevels.Select(d => d.AssignedToARO).FirstOrDefault()))
+                                                               .Select(d => new { d.AROMasterId, d.ROUserId }).FirstOrDefaultAsync();
+
+
+            }
+            else
+            {
+                 aroMaster = await _context.AROResultMaster.Where(d => d.ROUserId == fourthLevels.Select(d => d.AssignedToRO).FirstOrDefault())
+                                                              .Select(d => new { d.AROMasterId, d.ROUserId }).FirstOrDefaultAsync();
+            }
             foreach (var fourthLevel in fourthLevels)
             {
                 var existingPanchayat = await _context.FourthLevelH.FirstOrDefaultAsync(b =>
@@ -20148,7 +20160,7 @@ namespace EAMS_DAL.Repository
                 // Update based on AssignedType (RO or ARO)
                 if (!string.IsNullOrWhiteSpace(fourthLevel.AssignedToRO))
                 {
-                    existingPanchayat.AssignedToARO = aroMasterId;//If RO want to declare result in Mobile we have to assgin it's id to ARO 
+                    existingPanchayat.AssignedToARO = aroMaster.AROMasterId.ToString();//If RO want to declare result in Mobile we have to assgin it's Id to ARO 
                     existingPanchayat.IsAssignedARO = fourthLevel.IsAssignedRO;
 
                     existingPanchayat.AssignedToRO = fourthLevel.AssignedToRO;
@@ -20157,6 +20169,10 @@ namespace EAMS_DAL.Repository
                 }
                 else if (!string.IsNullOrWhiteSpace(fourthLevel.AssignedToARO))
                 {
+                    existingPanchayat.AssignedToRO = aroMaster.ROUserId;//If ARO want to declare result in Portal we have to assgin it's Id to RO 
+                    existingPanchayat.IsAssignedRO = fourthLevel.IsAssignedARO;
+
+
                     existingPanchayat.AssignedToARO = fourthLevel.AssignedToARO;
                     existingPanchayat.IsAssignedARO = fourthLevel.IsAssignedARO;
                     existingPanchayat.AROAssignedBy = fourthLevel.AROAssignedBy;
@@ -20220,6 +20236,10 @@ namespace EAMS_DAL.Repository
                     existingPanchayat.AssignedToARO = string.Empty; // Clear ARO assignment
                     existingPanchayat.AROAssignedBy = string.Empty; // Clear assigned by ARO
                     existingPanchayat.IsAssignedARO = false; // Mark as unassigned from ARO
+
+                    existingPanchayat.AssignedToRO = string.Empty; // Clear RO assignment 
+                    existingPanchayat.IsAssignedRO = false; // Mark as unassigned from RO
+
                 }
                 else
                 {
@@ -21393,7 +21413,7 @@ namespace EAMS_DAL.Repository
                 };
             }
 
-            else if (type.Equals("Ward", StringComparison.OrdinalIgnoreCase))
+            else if (type.Equals("GPWard", StringComparison.OrdinalIgnoreCase))
             {
                 // Check the dependency in the GPPanchayatWards table for FourthLevelHMasterId
                 var hasDependency = await _context.GPPanchayatWards

@@ -5259,6 +5259,7 @@ namespace EAMS.Controllers
         /// This API checks for dependencies in descending order before performing the operation.
         /// </summary>
         /// <returns></returns>
+       
         [HttpGet("IsMasterEditable")]
         public async Task<IActionResult> IsMasterEditable(int masterId, string type,int electionTypeMasterId)
         {
@@ -5270,7 +5271,7 @@ namespace EAMS.Controllers
             var result = await _EAMSService.IsMasterEditable(masterId, type, electionTypeMasterId);
             return Ok(result);
         }
-        ///
+       
 
 
         //[HttpPost("PushDisasterEvent")]
