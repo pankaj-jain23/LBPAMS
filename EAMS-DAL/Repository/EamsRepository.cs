@@ -19315,6 +19315,7 @@ namespace EAMS_DAL.Repository
                         ResultDecUpdatedAt = DateTime.UtcNow, // Set update time
                         ResultDecStatus = true, // Assuming you want to set this as active
                         BoothMasterId = resultCandidate.BoothMasterId,
+                        GPPanchayatWardsMasterId = resultCandidate.GPPanchayatWardsMasterId,
                     };
 
                     // Link the foreign key to the appropriate ResultDeclaration
