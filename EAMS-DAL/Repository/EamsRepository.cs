@@ -19239,7 +19239,9 @@ namespace EAMS_DAL.Repository
                         IsReCounting = resultCandidate.IsReCounting, // Pass IsReCounting value
                         ResultDecCreatedAt = DateTime.UtcNow, // Set creation time
                         ResultDecUpdatedAt = DateTime.UtcNow, // Set update time
-                        ResultDecStatus = true // Assuming you want to set this as active
+                        ResultDecStatus = true, // Assuming you want to set this as active
+                        BoothMasterId = resultCandidate.BoothMasterId
+
                     };
 
                     // Link the foreign key to the appropriate ResultDeclaration
@@ -19311,7 +19313,8 @@ namespace EAMS_DAL.Repository
                         IsReCounting = resultCandidate.IsReCounting, // Pass IsReCounting value
                         ResultDecCreatedAt = DateTime.UtcNow, // Set creation time
                         ResultDecUpdatedAt = DateTime.UtcNow, // Set update time
-                        ResultDecStatus = true // Assuming you want to set this as active
+                        ResultDecStatus = true, // Assuming you want to set this as active
+                        BoothMasterId = resultCandidate.BoothMasterId,
                     };
 
                     // Link the foreign key to the appropriate ResultDeclaration
@@ -19445,7 +19448,56 @@ namespace EAMS_DAL.Repository
 
             return resultList;
         }
+        public async Task<ResultDeclarationBoothWardList> GetResultByFourthLevelHMasterId(int fourthLevelHMasterId)
+        {
+            var resultList = await (from fourthLevel in _context.FourthLevelH
+                                    join district in _context.DistrictMaster on fourthLevel.DistrictMasterId equals district.DistrictMasterId
+                                    join state in _context.StateMaster on fourthLevel.StateMasterId equals state.StateMasterId
+                                    join assembly in _context.AssemblyMaster on fourthLevel.AssemblyMasterId equals assembly.AssemblyMasterId
+                                    join elec in _context.ElectionTypeMaster on fourthLevel.ElectionTypeMasterId equals elec.ElectionTypeMasterId into elcJoin
+                                    from elec in elcJoin.DefaultIfEmpty()
+                                    where fourthLevel.FourthLevelHMasterId == fourthLevelHMasterId
+                                    select new ResultDeclarationBoothWardList
+                                    {
+                                        StateMasterId = state.StateMasterId,
+                                        StateName = state.StateName,
+                                        DistrictMasterId = district.DistrictMasterId,
+                                        DistrictName = district.DistrictName,
+                                        ElectionTypeMasterId = fourthLevel.ElectionTypeMasterId,
+                                        AssemblyMasterId = fourthLevel.AssemblyMasterId,
+                                        AssemblyName = assembly.AssemblyName,
+                                        FourthLevelHMasterId = fourthLevel.FourthLevelHMasterId,
+                                        FourthLevelHName = fourthLevel.HierarchyName,
+                                        BoothMasterId = fourthLevel.FourthLevelHMasterId,
+                                        BoothName = fourthLevel.HierarchyName,
+                                        ElectionTypeName = elec.ElectionType,
 
+                                        // Join Kyc and ResultDeclaration with BoothMasterId condition applied on ResultDeclaration
+                                        ResultCandidates = (from resultDecl in _context.ResultDeclaration
+                                                            join kyc in _context.Kyc
+                                                                on resultDecl.KycMasterId equals kyc.KycMasterId
+                                                            where resultDecl.FourthLevelHMasterId == fourthLevel.FourthLevelHMasterId
+                                                            select new ResultCandidate
+                                                            {
+                                                                ResultDeclarationMasterId = resultDecl.ResultDeclarationMasterId,
+                                                                KycMasterId = kyc.KycMasterId,
+                                                                IsUnOpposed = kyc.IsUnOppossed,
+                                                                CandidateName = kyc.CandidateName,
+                                                                FatherName = kyc.FatherName,
+                                                                VoteMargin = resultDecl.VoteMargin, // From ResultDeclaration
+                                                                IsWinner = resultDecl.IsWinner,     // From ResultDeclaration
+                                                                IsResultDeclared = resultDecl.IsResultDeclared,
+                                                                ResultDeclaredByMobile = resultDecl.ResultDeclaredByMobile,
+                                                                ResultDeclaredByPortal = resultDecl.ResultDeclaredByPortal,
+                                                                IsDraw = resultDecl.IsDraw,
+                                                                IsDrawLottery = resultDecl.IsDrawLottery,
+                                                                IsReCounting = resultDecl.IsReCounting,
+                                                                ResultDecStatus = resultDecl.ResultDecStatus
+                                                            }).ToList()
+                                    }).FirstOrDefaultAsync();
+
+            return resultList;
+        }
         public async Task<List<BoothResultList>> GetBoothResultListByFourthLevelId(int fourthlevelMasterId)
         {
             var resultList = await (from booth in _context.BoothMaster
