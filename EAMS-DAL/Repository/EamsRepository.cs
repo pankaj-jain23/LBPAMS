@@ -19170,7 +19170,7 @@ namespace EAMS_DAL.Repository
         #endregion
 
         #region ResultDeclaration
-        public async Task<ServiceResponse> AddResultDeclarationDetails(List<ResultDeclaration> resultDeclaration)
+        public async Task<ServiceResponseForRD> AddResultDeclarationDetails(List<ResultDeclaration> resultDeclaration)
         {
             // Check if all items in the list have ElectionTypeMasterId == 1 (for Gram Panchayats)
             if (resultDeclaration.All(r => r.ElectionTypeMasterId == 1))
@@ -19182,7 +19182,7 @@ namespace EAMS_DAL.Repository
             {
                 await AddMCorpMCounAndNPResultDeclarationAsync(resultDeclaration);
             }
-            return new ServiceResponse { IsSucceed = true, Message = "Result declarations successfully processed." };
+            return new ServiceResponseForRD { IsSucceed = true, Message = "Result declarations successfully processed." };
         }
         private async Task AddGramPanchayatResultDeclarationAsync(List<ResultDeclaration> resultDeclaration)
         {
@@ -19337,7 +19337,7 @@ namespace EAMS_DAL.Repository
         }
 
 
-        public async Task<ServiceResponse> UpdateResultDeclarationForPortal(List<ResultDeclaration> resultDeclaration)
+        public async Task<ServiceResponseForRD> UpdateResultDeclarationForPortal(List<ResultDeclaration> resultDeclaration)
         {
             // Extract all KycMasterId values from the resultDeclaration list
             var resultDeclarationIds = resultDeclaration.Select(r => r.KycMasterId).ToList();
@@ -19379,7 +19379,7 @@ namespace EAMS_DAL.Repository
             // Step 3: Save the updated records with the newly declared winner
             await _context.SaveChangesAsync();
 
-            return new ServiceResponse { IsSucceed = true, Message = "Result declarations updated successfully." };
+            return new ServiceResponseForRD { IsSucceed = true, Message = "Result declarations updated successfully." };
         }
         public async Task<Dictionary<int, string>> GetCandidateNameByKycMasterId(List<int> kycMasterIds)
         {

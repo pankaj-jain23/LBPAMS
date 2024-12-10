@@ -5,4 +5,11 @@
         public bool IsSucceed { get; set; }
         public string Message { get; set; }
     }
+    public class ServiceResponseForRD
+    {
+        public bool IsWinner { get; set; }
+        public bool IsDraw { get; set; }
+        public bool IsSucceed { get; set; }
+        public string Message { get; set; }
+    }
 }

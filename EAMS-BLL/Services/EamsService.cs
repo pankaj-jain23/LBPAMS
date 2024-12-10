@@ -1898,119 +1898,153 @@ namespace EAMS_BLL.Services
 
         #region ResultDeclaration
 
-        public async Task<ServiceResponse> AddResultDeclarationDetails(List<ResultDeclaration> resultDeclaration)
+        public async Task<ServiceResponseForRD> AddResultDeclarationDetails(List<ResultDeclaration> resultDeclaration)
         {
-            if (resultDeclaration != null && resultDeclaration.Any())
+            if (resultDeclaration == null || !resultDeclaration.Any())
             {
-                // Fetch all candidate names for the given KycMasterIds
-                var kycMasterIds = resultDeclaration.Select(r => r.KycMasterId).Distinct().ToList();
-                var candidateNames = await _eamsRepository.GetCandidateNameByKycMasterId(kycMasterIds);
+                return new ServiceResponseForRD
+                {
+                    IsWinner = false,
+                    IsDraw = false,
+                    IsSucceed = false,
+                    Message = "No data provided."
+                };
+            }
 
-                // Filter the records that have non-null and non-empty VoteMargin
-                var validResults = resultDeclaration
-                    .Where(r => !string.IsNullOrEmpty(r.VoteMargin))
-                    .OrderByDescending(r =>
-                    {
-                        int voteMargin;
-                        return int.TryParse(r.VoteMargin, out voteMargin) ? voteMargin : 0;
-                    })
+            // Fetch all candidate names for the given KycMasterIds
+            var kycMasterIds = resultDeclaration.Select(r => r.KycMasterId).Distinct().ToList();
+            var candidateNames = await _eamsRepository.GetCandidateNameByKycMasterId(kycMasterIds);
+
+            // Filter valid results and sort by VoteMargin
+            var validResults = resultDeclaration
+                .Where(r => !string.IsNullOrEmpty(r.VoteMargin))
+                .OrderByDescending(r =>
+                {
+                    int voteMargin;
+                    return int.TryParse(r.VoteMargin, out voteMargin) ? voteMargin : 0;
+                })
+                .ToList();
+
+            if (!validResults.Any())
+            {
+                return new ServiceResponseForRD
+                {
+                    IsWinner = false,
+                    IsDraw = false,
+                    IsSucceed = false,
+                    Message = "No valid vote margins found."
+                };
+            }
+
+            // Determine highest vote margin
+            var highestVoteMarginStr = validResults[0].VoteMargin;
+            if (int.TryParse(highestVoteMarginStr, out var highestVoteMargin))
+            {
+                var highestMarginCandidates = validResults
+                    .Where(r => int.TryParse(r.VoteMargin, out var margin) && margin == highestVoteMargin)
                     .ToList();
 
-                if (validResults.Count > 0)
+                // Case 4: Lottery Winner
+                var lotteryCandidate = validResults.FirstOrDefault(c => c.IsDrawLottery && c.IsWinner == true);
+                if (lotteryCandidate != null)
                 {
-                    var highestVoteMarginStr = validResults[0].VoteMargin;
-                    if (int.TryParse(highestVoteMarginStr, out var highestVoteMargin))
+                    lotteryCandidate.IsWinner = true;
+                    var candidateName = candidateNames.GetValueOrDefault(lotteryCandidate.KycMasterId, "Unknown Candidate");
+                    await _eamsRepository.AddResultDeclarationDetails(resultDeclaration);
+
+                    return new ServiceResponseForRD
                     {
-                        var highestMarginCandidates = validResults
-                            .Where(r => int.TryParse(r.VoteMargin, out var margin) && margin == highestVoteMargin)
+                        IsWinner = true,
+                        IsDraw = false,
+                        IsSucceed = true,
+                        Message = $"Candidate {candidateName} won by lottery."
+                    };
+                }
+
+                // Case 3: Recounting
+                if (validResults.Any(c => c.IsReCounting))
+                {
+                    if (highestMarginCandidates.Count > 1)
+                    {
+                        foreach (var candidate in highestMarginCandidates)
+                        {
+                            candidate.IsDraw = true;
+                        }
+                        var candidateNamesList = highestMarginCandidates
+                            .Select(c => candidateNames.GetValueOrDefault(c.KycMasterId, "Unknown Candidate"))
                             .ToList();
+                        await _eamsRepository.AddResultDeclarationDetails(resultDeclaration);
 
-                        // Case 4: Lottery Winner
-                        var lotteryCandidate = validResults.FirstOrDefault(c => c.IsDrawLottery && c.IsWinner == true);
-                        if (lotteryCandidate != null)
+                        return new ServiceResponseForRD
                         {
-                            lotteryCandidate.IsWinner = true;
-                            var candidateName = candidateNames.GetValueOrDefault(lotteryCandidate.KycMasterId, "Unknown Candidate");
-                            await _eamsRepository.AddResultDeclarationDetails(resultDeclaration);
-
-                            return new ServiceResponse
-                            {
-                                IsSucceed = true,
-                                Message = $"Candidate {candidateName} won by lottery."
-                            };
-                        }
-
-                        // Case 3: Recounting
-                        if (validResults.Any(c => c.IsReCounting))
-                        {
-                            if (highestMarginCandidates.Count > 1)
-                            {
-                                foreach (var candidate in highestMarginCandidates)
-                                {
-                                    candidate.IsDraw = true;
-                                }
-                                await _eamsRepository.AddResultDeclarationDetails(resultDeclaration);
-                                return new ServiceResponse
-                                {
-                                    IsSucceed = false,
-                                    Message = "Recount detected a draw situation between the highest vote margins."
-                                };
-                            }
-                            else
-                            {
-                                var candidateName = candidateNames.GetValueOrDefault(highestMarginCandidates[0].KycMasterId, "Unknown Candidate");
-                                highestMarginCandidates[0].IsWinner = true;
-                                await _eamsRepository.AddResultDeclarationDetails(resultDeclaration);
-                                return new ServiceResponse
-                                {
-                                    IsSucceed = true,
-                                    Message = $"Candidate {candidateName} is the winner after recounting."
-                                };
-                            }
-                        }
-
-                        // Case 2: Draw Situation
-                        if (highestMarginCandidates.Count > 1)
-                        {
-                            foreach (var candidate in highestMarginCandidates)
-                            {
-                                candidate.IsDraw = true;
-                            }
-                            var candidateNamesList = highestMarginCandidates
-                                .Select(c => candidateNames.GetValueOrDefault(c.KycMasterId, "Unknown Candidate"))
-                                .ToList();
-
-                            await _eamsRepository.AddResultDeclarationDetails(resultDeclaration);
-                            return new ServiceResponse
-                            {
-                                IsSucceed = false,
-                                Message = $"Draw situation detected between candidates: {string.Join(", ", candidateNamesList)}."
-                            };
-                        }
-
-                        // Case 1: Single Winner
-                        if (highestMarginCandidates.Count == 1)
-                        {
-                            var candidateName = candidateNames.GetValueOrDefault(highestMarginCandidates[0].KycMasterId, "Unknown Candidate");
-                            highestMarginCandidates[0].IsWinner = true;
-                            await _eamsRepository.AddResultDeclarationDetails(resultDeclaration);
-                            return new ServiceResponse
-                            {
-                                IsSucceed = true,
-                                Message = $"Candidate {candidateName} is the winner with the highest vote margin."
-                            };
-                        }
+                            IsWinner = false,
+                            IsDraw = true,
+                            IsSucceed = false,
+                            Message = $"Recount detected a draw situation between candidates: {string.Join(", ", candidateNamesList)}."
+                        };
                     }
+                    else
+                    {
+                        var candidateName = candidateNames.GetValueOrDefault(highestMarginCandidates[0].KycMasterId, "Unknown Candidate");
+                        highestMarginCandidates[0].IsWinner = true;
+                        await _eamsRepository.AddResultDeclarationDetails(resultDeclaration);
+
+                        return new ServiceResponseForRD
+                        {
+                            IsWinner = true,
+                            IsDraw = false,
+                            IsSucceed = true,
+                            Message = $"Candidate {candidateName} is the winner after recounting."
+                        };
+                    }
+                }
+
+                // Case 2: Draw Situation
+                if (highestMarginCandidates.Count > 1)
+                {
+                    foreach (var candidate in highestMarginCandidates)
+                    {
+                        candidate.IsDraw = true;
+                    }
+                    var candidateNamesList = highestMarginCandidates
+                        .Select(c => candidateNames.GetValueOrDefault(c.KycMasterId, "Unknown Candidate"))
+                        .ToList();
+                    await _eamsRepository.AddResultDeclarationDetails(resultDeclaration);
+
+                    return new ServiceResponseForRD
+                    {
+                        IsWinner = false,
+                        IsDraw = true,
+                        IsSucceed = false,
+                        Message = $"Draw situation detected between candidates: {string.Join(", ", candidateNamesList)}."
+                    };
+                }
+
+                // Case 1: Single Winner
+                if (highestMarginCandidates.Count == 1)
+                {
+                    var candidateName = candidateNames.GetValueOrDefault(highestMarginCandidates[0].KycMasterId, "Unknown Candidate");
+                    highestMarginCandidates[0].IsWinner = true;
+                    await _eamsRepository.AddResultDeclarationDetails(resultDeclaration);
+
+                    return new ServiceResponseForRD
+                    {
+                        IsWinner = true,
+                        IsDraw = false,
+                        IsSucceed = true,
+                        Message = $"Candidate {candidateName} is the winner with the highest vote margin."
+                    };
                 }
             }
 
             return await _eamsRepository.AddResultDeclarationDetails(resultDeclaration);
         }
-        public async Task<ServiceResponse> UpdateResultDeclarationForPortal(List<ResultDeclaration> resultDeclaration)
+
+        public async Task<ServiceResponseForRD> UpdateResultDeclarationForPortal(List<ResultDeclaration> resultDeclaration)
         {
             if (resultDeclaration == null || !resultDeclaration.Any())
             {
-                return new ServiceResponse { IsSucceed = false, Message = "No data provided." };
+                return new ServiceResponseForRD { IsSucceed = false, Message = "No data provided." };
             }
 
             // Fetch all candidate names for the given KycMasterIds
@@ -2022,7 +2056,6 @@ namespace EAMS_BLL.Services
                 .Where(r => !string.IsNullOrEmpty(r.VoteMargin))
                 .OrderByDescending(r =>
                 {
-                    // Use TryParse to safely convert VoteMargin to int
                     int voteMargin;
                     return int.TryParse(r.VoteMargin, out voteMargin) ? voteMargin : 0;
                 })
@@ -2030,60 +2063,70 @@ namespace EAMS_BLL.Services
 
             if (validResults.Count > 0)
             {
-                // Get the highest VoteMargin
                 var highestVoteMarginStr = validResults[0].VoteMargin;
                 if (int.TryParse(highestVoteMarginStr, out var highestVoteMargin))
                 {
-                    // Get all candidates with the highest vote margin
                     var highestMarginCandidates = validResults
                         .Where(r => int.TryParse(r.VoteMargin, out var margin) && margin == highestVoteMargin)
                         .ToList();
 
-                    // Case 4: If any candidate has IsLottery = true, mark that candidate as the winner
+                    // Case 4: Lottery Winner
                     var lotteryCandidate = validResults.FirstOrDefault(c => c.IsDrawLottery && c.IsWinner == true);
                     if (lotteryCandidate != null)
                     {
                         lotteryCandidate.IsWinner = true;
                         var candidateName = candidateNames.GetValueOrDefault(lotteryCandidate.KycMasterId, "Unknown Candidate");
-                        await _eamsRepository.UpdateResultDeclarationForPortal(resultDeclaration); // Persist after determining winner
-                        return new ServiceResponse
+                        await _eamsRepository.UpdateResultDeclarationForPortal(resultDeclaration);
+
+                        return new ServiceResponseForRD
                         {
+                            IsWinner = true,
+                            IsDraw = false,
                             IsSucceed = true,
                             Message = $"Candidate {candidateName} won by lottery."
                         };
                     }
 
-                    // Case 3: If ReCounting is true, recheck candidates and handle the draw situation again
+                    // Case 3: Recounting
                     if (validResults.Any(c => c.IsReCounting))
                     {
-                        // Handle recounting logic (essentially similar to regular draw check)
                         if (highestMarginCandidates.Count > 1)
                         {
                             foreach (var candidate in highestMarginCandidates)
                             {
                                 candidate.IsDraw = true;
                             }
-                            await _eamsRepository.UpdateResultDeclarationForPortal(resultDeclaration); // Persist draw situation
-                            return new ServiceResponse
+                            var candidateNamesList = highestMarginCandidates
+                                .Select(c => candidateNames.GetValueOrDefault(c.KycMasterId, "Unknown Candidate"))
+                                .ToList();
+
+                            await _eamsRepository.UpdateResultDeclarationForPortal(resultDeclaration);
+
+                            return new ServiceResponseForRD
                             {
+                                IsWinner = false,
+                                IsDraw = true,
                                 IsSucceed = false,
-                                Message = "Recount detected a draw situation between the highest vote margins."
+                                Message = $"Recount detected a draw situation between candidates: {string.Join(", ", candidateNamesList)}."
                             };
                         }
                         else
                         {
                             var candidateName = candidateNames.GetValueOrDefault(highestMarginCandidates[0].KycMasterId, "Unknown Candidate");
                             highestMarginCandidates[0].IsWinner = true;
-                            await _eamsRepository.UpdateResultDeclarationForPortal(resultDeclaration); // Persist after declaring winner
-                            return new ServiceResponse
+                            await _eamsRepository.UpdateResultDeclarationForPortal(resultDeclaration);
+
+                            return new ServiceResponseForRD
                             {
+                                IsWinner = true,
+                                IsDraw = false,
                                 IsSucceed = true,
                                 Message = $"Candidate {candidateName} is the winner after recounting."
                             };
                         }
                     }
 
-                    // Case 2: If multiple candidates have the same highest vote margin, mark as draw
+                    // Case 2: Draw Situation
                     if (highestMarginCandidates.Count > 1)
                     {
                         foreach (var candidate in highestMarginCandidates)
@@ -2094,22 +2137,28 @@ namespace EAMS_BLL.Services
                             .Select(c => candidateNames.GetValueOrDefault(c.KycMasterId, "Unknown Candidate"))
                             .ToList();
 
-                        await _eamsRepository.UpdateResultDeclarationForPortal(resultDeclaration); // Persist draw situation
-                        return new ServiceResponse
+                        await _eamsRepository.UpdateResultDeclarationForPortal(resultDeclaration);
+
+                        return new ServiceResponseForRD
                         {
+                            IsWinner = false,
+                            IsDraw = true,
                             IsSucceed = false,
                             Message = $"Draw situation detected between candidates: {string.Join(", ", candidateNamesList)}."
                         };
                     }
 
-                    // Case 1: If only one candidate has the highest vote margin, mark as winner
+                    // Case 1: Single Winner
                     if (highestMarginCandidates.Count == 1)
                     {
                         var candidateName = candidateNames.GetValueOrDefault(highestMarginCandidates[0].KycMasterId, "Unknown Candidate");
                         highestMarginCandidates[0].IsWinner = true;
-                        await _eamsRepository.UpdateResultDeclarationForPortal(resultDeclaration); // Persist after declaring winner
-                        return new ServiceResponse
+                        await _eamsRepository.UpdateResultDeclarationForPortal(resultDeclaration);
+
+                        return new ServiceResponseForRD
                         {
+                            IsWinner = true,
+                            IsDraw = false,
                             IsSucceed = true,
                             Message = $"Candidate {candidateName} is the winner with the highest vote margin."
                         };
@@ -2117,9 +2166,9 @@ namespace EAMS_BLL.Services
                 }
             }
 
-            // If no specific condition was met, proceed with default update persistence
             return await _eamsRepository.UpdateResultDeclarationForPortal(resultDeclaration);
         }
+
 
         public async Task<ServiceResponse> CheckIfAllBoothsPollEnded(int fieldOfficerMasterId)
         {

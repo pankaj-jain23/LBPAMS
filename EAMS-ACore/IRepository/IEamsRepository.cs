@@ -441,9 +441,9 @@ namespace EAMS_ACore.IRepository
         #endregion
 
         #region ResultDeclaration
-        Task<ServiceResponse> AddResultDeclarationDetails(List<ResultDeclaration> resultDeclaration);
+        Task<ServiceResponseForRD> AddResultDeclarationDetails(List<ResultDeclaration> resultDeclaration);
 
-        Task<ServiceResponse> UpdateResultDeclarationForPortal(List<ResultDeclaration> resultDeclaration);
+        Task<ServiceResponseForRD> UpdateResultDeclarationForPortal(List<ResultDeclaration> resultDeclaration);
         Task<Dictionary<int, string>> GetCandidateNameByKycMasterId(List<int> kycMasterIds);
         Task<ResultDeclarationBoothWardList> GetResultByBoothId(int boothMasterId);
         Task<ResultDeclarationBoothWardList> GetResultByFourthLevelHMasterId(int fourthLevelHMasterId);
