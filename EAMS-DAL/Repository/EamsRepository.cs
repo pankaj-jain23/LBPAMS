@@ -19381,6 +19381,13 @@ namespace EAMS_DAL.Repository
 
             return new ServiceResponse { IsSucceed = true, Message = "Result declarations updated successfully." };
         }
+        public async Task<Dictionary<int, string>> GetCandidateNameByKycMasterId(List<int> kycMasterIds)
+        {
+            return await _context.Kyc
+                .Where(k => kycMasterIds.Contains(k.KycMasterId))
+                .ToDictionaryAsync(k => k.KycMasterId, k => k.CandidateName);
+        }
+
         public async Task<ServiceResponse> CheckIfAllBoothsPollEnded(int fieldOfficerMasterId)
         {
             bool anyPollActive = await _context.BoothMaster
