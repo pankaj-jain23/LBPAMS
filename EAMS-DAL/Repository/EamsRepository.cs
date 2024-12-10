@@ -6949,13 +6949,13 @@ namespace EAMS_DAL.Repository
                 d.BoothMasterId == checkEventActivity.BoothMasterId
             ).Select(d => d.IsVoterTurnOut).FirstOrDefaultAsync();
 
-            var isPollDetailExist = await _context.PollDetails.AnyAsync(d =>
-                d.StateMasterId == checkEventActivity.StateMasterId &&
-                d.DistrictMasterId == checkEventActivity.DistrictMasterId &&
-                d.AssemblyMasterId == checkEventActivity.AssemblyMasterId &&
-                d.ElectionTypeMasterId == checkEventActivity.ElectionTypeMasterId &&
-                d.BoothMasterId == checkEventActivity.BoothMasterId
-            );
+            //var isPollDetailExist = await _context.PollDetails.AnyAsync(d =>
+            //    d.StateMasterId == checkEventActivity.StateMasterId &&
+            //    d.DistrictMasterId == checkEventActivity.DistrictMasterId &&
+            //    d.AssemblyMasterId == checkEventActivity.AssemblyMasterId &&
+            //    d.ElectionTypeMasterId == checkEventActivity.ElectionTypeMasterId &&
+            //    d.BoothMasterId == checkEventActivity.BoothMasterId
+            //);
             //var getLatestSlot = await GetLastExceededSlotWithCurrentTime(checkEventActivity.StateMasterId, checkEventActivity.ElectionTypeMasterId);
             if (isVoterTurnOut is true)
             {
@@ -6964,13 +6964,14 @@ namespace EAMS_DAL.Repository
                     IsSucceed = true,
                 };
             }
-            if (isPollDetailExist is true)
-            {
-                return new ServiceResponse()
-                {
-                    IsSucceed = true,
-                };
-            }
+           
+            //if (isPollDetailExist is true)
+            //{
+            //    return new ServiceResponse()
+            //    {
+            //        IsSucceed = true,
+            //    };
+            //}
 
             else
             {
@@ -19103,7 +19104,7 @@ namespace EAMS_DAL.Repository
                       j => j.GPVoter.AssemblyMasterId,
                       am => am.AssemblyMasterId,
                       (j, am) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, AssemblyMaster = am })
-               .Join(_context.FourthLevelH.Where(flh => flh.HierarchyStatus == true), // Add condition here
+               .Join(_context.FourthLevelH.Where(flh => flh.HierarchyStatus == true&&flh.AssignedToRO==userId), // Add condition here
                                   j => j.GPVoter.FourthLevelHMasterId,
                                   flh => flh.FourthLevelHMasterId,
                                   (j, flh) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, j.AssemblyMaster, FourthLevelH = flh })
@@ -20182,20 +20183,20 @@ namespace EAMS_DAL.Repository
         #region PanchaytaMapping
         public async Task<Response> PanchayatMapping(List<FourthLevelH> fourthLevels)
         {
-            var aroMaster = (dynamic)null;  
+            var aroMaster = (dynamic)null;
 
             if (!string.IsNullOrWhiteSpace(fourthLevels.Select(d => d.AssignedToARO).FirstOrDefault()))
             {
                 //if RO wants to assgin fourthlevel same time to mobile user/Portal user
-                 aroMaster = await _context.AROResultMaster.Where(d => d.AROMasterId == Convert.ToInt32(fourthLevels.Select(d => d.AssignedToARO).FirstOrDefault()))
-                                                               .Select(d => new { d.AROMasterId, d.ROUserId }).FirstOrDefaultAsync();
+                aroMaster = await _context.AROResultMaster.Where(d => d.AROMasterId == Convert.ToInt32(fourthLevels.Select(d => d.AssignedToARO).FirstOrDefault()))
+                                                              .Select(d => new { d.AROMasterId, d.ROUserId }).FirstOrDefaultAsync();
 
 
             }
             else
             {
-                 aroMaster = await _context.AROResultMaster.Where(d => d.ROUserId == fourthLevels.Select(d => d.AssignedToRO).FirstOrDefault())
-                                                              .Select(d => new { d.AROMasterId, d.ROUserId }).FirstOrDefaultAsync();
+                aroMaster = await _context.AROResultMaster.Where(d => d.ROUserId == fourthLevels.Select(d => d.AssignedToRO).FirstOrDefault())
+                                                             .Select(d => new { d.AROMasterId, d.ROUserId }).FirstOrDefaultAsync();
             }
             foreach (var fourthLevel in fourthLevels)
             {
@@ -21406,7 +21407,7 @@ namespace EAMS_DAL.Repository
                 {
                     MasterId = masterId,
                     Type = type,
-                    IsEditable = hasDependency ? "false" : "true",
+                    IsEditable = hasDependency ? false : true,
                     ElectionTypeMasterId = electionTypeMasterId,
                     Message = hasDependency
                         ? "State is linked with one or more Districts."
@@ -21423,7 +21424,7 @@ namespace EAMS_DAL.Repository
                 {
                     MasterId = masterId,
                     Type = type,
-                    IsEditable = hasDependency ? "false" : "true",
+                    IsEditable = hasDependency ? false : true,
                     ElectionTypeMasterId = electionTypeMasterId,
                     Message = hasDependency
                         ? "District is linked with one or more Assemblies."
@@ -21440,7 +21441,7 @@ namespace EAMS_DAL.Repository
                 {
                     MasterId = masterId,
                     Type = type,
-                    IsEditable = hasDependency ? "false" : "true",
+                    IsEditable = hasDependency ? false : true,
                     ElectionTypeMasterId = electionTypeMasterId,
                     Message = hasDependency
                         ? "Assembly is linked with one or more Fourth Level Hierarchies."
@@ -21450,13 +21451,6 @@ namespace EAMS_DAL.Repository
 
             else if (type.Equals("FourthLevel", StringComparison.OrdinalIgnoreCase))
             {
-                // Check if AssignedToARO is empty or null
-                var assignedToARO = await _context.FourthLevelH
-                                    .Where(f => f.FourthLevelHMasterId == masterId
-                                               && f.ElectionTypeMasterId == electionTypeMasterId
-                                               && f.AssignedToARO == null)
-                                    .FirstOrDefaultAsync();
-
                 // Initialize the result object
                 IsMasterEditable result = new IsMasterEditable
                 {
@@ -21464,22 +21458,16 @@ namespace EAMS_DAL.Repository
                     Type = type,
                     ElectionTypeMasterId = electionTypeMasterId
                 };
+                // Check if AssignedToARO is empty or null
+                var assignedToARO = await _context.FourthLevelH
+                                    .Where(f => f.FourthLevelHMasterId == masterId
+                                               && f.ElectionTypeMasterId == electionTypeMasterId
+                                               && f.AssignedToARO == null)
+                                    .FirstOrDefaultAsync();
 
-                // If AssignedToARO is empty or null, allow the operation
-                if (assignedToARO != null)
-                {
-                    // If AssignedToARO is empty or null
-                    result.IsEditable = "true"; // Allow the operation
-                    result.Message = "Operation can be performed because this is not Assigned to ARO.";
-                    return result;
-                }
-                else
-                {
-                    // If AssignedToARO is not empty
-                    result.IsEditable = "false"; // Do not allow the operation
-                    result.Message = "Operation cannot be performed because this is Assigned to ARO.";
-                    return result;
-                }
+
+
+
 
 
 
@@ -21489,7 +21477,7 @@ namespace EAMS_DAL.Repository
 
                 if (hasKycDependency)
                 {
-                    result.IsEditable = "false"; // If KYC is linked, cannot be edited
+                    result.IsEditable = false; // If KYC is linked, cannot be edited
                     result.Message = "Fourth Level is linked with one or more KYC entries.";
                     return result;
                 }
@@ -21500,16 +21488,25 @@ namespace EAMS_DAL.Repository
 
                 if (hasGPWardDependency)
                 {
-                    result.IsEditable = "false"; // If linked with Panchayat Wards, cannot be edited
+                    result.IsEditable = false; // If linked with Panchayat Wards, cannot be edited
                     result.Message = "Fourth Level is linked with one or more Panchayat Wards.";
                     return result;
                 }
+                // If AssignedToARO is empty or null, allow the operation
+                if (assignedToARO != null)
+                {
+                    result.IsEditable = false; // Do not allow the operation
+                    result.Message = "Operation cannot be performed because this is Assigned to ARO.";
+                    return result;
+                }
+                else
+                {
+                    result.IsEditable =true; // Allow the operation
+                    result.Message = "Operation can be performed because this is not Assigned to ARO.";
+                    return result;
 
-                // If no dependencies, set IsEditable to true
-                result.IsEditable = "true";
-                result.Message = "Fourth Level is not linked with any entries.";
+                }
 
-                return result;
             }
 
 
@@ -21522,7 +21519,7 @@ namespace EAMS_DAL.Repository
                 {
                     MasterId = masterId,
                     Type = type,
-                    IsEditable = hasDependency ? "false" : "true",
+                    IsEditable = hasDependency ? false : true,
                     ElectionTypeMasterId = electionTypeMasterId,
                 };
             }
@@ -21537,7 +21534,7 @@ namespace EAMS_DAL.Repository
                 {
                     MasterId = masterId,
                     Type = type,
-                    IsEditable = hasDependency ? "false" : "true",
+                    IsEditable = hasDependency ? false : true,
                     ElectionTypeMasterId = electionTypeMasterId,
                 };
             }
@@ -21552,7 +21549,7 @@ namespace EAMS_DAL.Repository
                 {
                     MasterId = masterId,
                     Type = type,
-                    IsEditable = hasDependency ? "false" : "true",
+                    IsEditable = hasDependency ? false : true,
                     ElectionTypeMasterId = electionTypeMasterId,
                     Message = hasDependency
                         ? "Result Declaration is linked with one or more KYC entries."
@@ -21569,7 +21566,7 @@ namespace EAMS_DAL.Repository
                 {
                     MasterId = masterId,
                     Type = type,
-                    IsEditable = hasDependency ? "false" : "true",
+                    IsEditable = hasDependency ? false : true,
                     ElectionTypeMasterId = electionTypeMasterId,
                     Message = hasDependency
                         ? "Booth is linked with one or more Election Info entries."
@@ -21583,7 +21580,7 @@ namespace EAMS_DAL.Repository
                 {
                     MasterId = masterId,
                     Type = type,
-                    IsEditable = "false",
+                    IsEditable = false,
                     ElectionTypeMasterId = electionTypeMasterId,
                     Message = "Invalid type provided."
                 };

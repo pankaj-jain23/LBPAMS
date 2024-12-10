@@ -10,7 +10,6 @@ using EAMS_ACore.IExternal;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
-using EAMS_ACore.Models.ElectionType;
 using EAMS_ACore.Models.EventActivityModels;
 using EAMS_ACore.Models.PollingStationFormModels;
 using EAMS_ACore.Models.QueueModel;
@@ -19,8 +18,6 @@ using LBPAMS.ViewModels.EventActivityViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.Globalization;
 using System.Security.Claims;
 
 namespace EAMS.Controllers
@@ -5271,8 +5268,7 @@ namespace EAMS.Controllers
             var result = await _EAMSService.IsMasterEditable(masterId, type, electionTypeMasterId);
             return Ok(result);
         }
-       
-
+        
 
         //[HttpPost("PushDisasterEvent")]
         //public async Task<IActionResult> PushDisasterEvent()

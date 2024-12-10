@@ -17,6 +17,7 @@ using EAMS_DAL.DBContext;
 using EAMS_DAL.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -177,19 +178,7 @@ var logger = new LoggerConfiguration()
 builder.Logging.AddSerilog(logger);
 
 var app = builder.Build();
-//app.Use(async (context, next) =>
-//{
-//    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
-//    context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
-//    context.Response.Headers.Append("X-Frame-Options", "DENY");
-//    context.Response.Headers.Remove("X-Powered-By");
-//    context.Response.Headers.Append("Referrer-Policy", "no-referrer");
-//    context.Response.Headers.Append("Access-Control-Allow-Origin", "*"); // Allow CORS for any origin
-//    context.Response.Headers.Append("Access-Control-Allow-Headers", "Content-Type, Authorization"); // Allow specific headers
-//    context.Response.Headers.Append("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE"); // Allow specific methods
-//    context.Response.Headers.Append("Access-Control-Allow-Credentials", "true"); // Allow credentials for WebSocket
-//    await next();
-//});
+ 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -209,6 +198,11 @@ app.MapHub<DashBoardHub>("/DashBoardHub", options =>
 app.UseStaticFiles();
 app.UseAuthorization();
 app.UseHttpsRedirection();
+//app.MapPost("/api/login", async (IAuthService authService, LoginRequest login) =>
+//{
+//    var result = await authService.LoginAsync(login);
+//    return result.Success ? Results.Ok(result) : Results.Unauthorized();
+//});
 app.MapControllers();
 
 app.Run();

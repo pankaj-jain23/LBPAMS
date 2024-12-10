@@ -933,10 +933,10 @@ namespace EAMS.Controllers
             // Handle the result
             if (!result.IsSucceed)
             {
-                return BadRequest(result.Message);
+                return BadRequest(result);
             }
 
-            return Ok(result.Message);
+            return Ok(result);
         }
         [HttpPut("UpdateResultDeclarationForPortal")]
         [Authorize]
@@ -947,30 +947,7 @@ namespace EAMS.Controllers
                 return BadRequest("No data provided.");
             }
 
-            // Retrieve claims efficiently
-            //var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
-            //string userId = Convert.ToInt32(userClaims.GetValueOrDefault("UserId")).ToString();
-
-            //// Map ViewModel to Entity
-            //var mappedData = _mapper.Map<ResultDeclaration>(updateResultDeclarationViewModel);
-
-            //// Assign common values
-            //mappedData.StateMasterId = stateMasterId;
-            //mappedData.DistrictMasterId = districtMasterId;
-            //mappedData.AssemblyMasterId = assemblyMasterId;
-            //mappedData.ElectionTypeMasterId = electionTypeMasterId;
-            //mappedData.ResultDeclaredByPortal = userId;
-
-            //// Call service method to update the record
-            //var result = await _eamsService.UpdateResultDeclarationDetails(mappedData);
-
-            //// Handle the result
-            //if (!result.IsSu)
-            //{
-            //    return BadRequest(result.Message);
-            //}
-
-            //return Ok(result.Message);
+             
             // Retrieve claims efficiently
             var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
 
@@ -1002,10 +979,10 @@ namespace EAMS.Controllers
             // Handle the result
             if (!result.IsSucceed)
             {
-                return BadRequest(result.Message);
+                return BadRequest(result);
             }
 
-            return Ok(result.Message);
+            return Ok(result);
         }
 
         [HttpGet("GetResultByBoothId")]
