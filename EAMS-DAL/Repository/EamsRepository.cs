@@ -19752,52 +19752,6 @@ namespace EAMS_DAL.Repository
                 return new ServiceResponse { IsSucceed = true, Message = "Record Deleted successfully" };
             }
         }
-        //public async Task<List<CandidateListForResultDeclaration>> GetPanchListById(
-        // int stateMasterId,
-        // int districtMasterId,
-        // int electionTypeMasterId,
-        // int assemblyMasterId,
-        // int fourthLevelHMasterId,
-        // int gPPanchayatWardsMasterId)
-        //{
-        //    // Query Kyc Table with join on ResultDeclaration
-        //    var candidatesWithResults = await (from k in _context.Kyc
-        //                                       join gpPanchayatWards in _context.GPPanchayatWards
-        //                               on k.GPPanchayatWardsMasterId equals gpPanchayatWards.GPPanchayatWardsMasterId
-        //                                       join r in _context.ResultDeclaration on k.KycMasterId equals r.KycMasterId into results
-        //                                       from result in results.DefaultIfEmpty() // Left join
-        //                                       where k.StateMasterId == stateMasterId &&
-        //                                             k.DistrictMasterId == districtMasterId &&
-        //                                             k.ElectionTypeMasterId == electionTypeMasterId &&
-        //                                             k.AssemblyMasterId == assemblyMasterId &&
-        //                                             k.FourthLevelHMasterId == fourthLevelHMasterId &&
-        //                                             k.GPPanchayatWardsMasterId == gPPanchayatWardsMasterId
-        //                                       select new
-        //                                       {
-        //                                           kycCandidate = k,
-        //                                           result, // this will be null if there's no match
-        //                                           gpPanchayatWards
-        //                                       }).ToListAsync();
-
-        //    // Project the results into the desired format, handling nulls
-        //    var candidateList = candidatesWithResults.Select(c => new CandidateListForResultDeclaration
-        //    {
-        //        KycMasterId = c.kycCandidate.KycMasterId,
-        //        CandidateName = c.kycCandidate.CandidateName,
-        //        FatherName = c.kycCandidate.FatherName,
-        //        IsUnOppossed = c.kycCandidate.IsUnOppossed,
-        //        IsCC = c.gpPanchayatWards.IsCC,
-        //        IsNN = c.gpPanchayatWards.IsNN,
-        //        IsWinner = c.result?.IsWinner ?? false, // Default to false if result is null
-        //        IsResultDeclared = c.result?.IsResultDeclared ?? false, // Default to false if result is null
-        //        IsDraw = c.result?.IsDraw ?? false, // Default to false if result is null
-        //        IsDrawLottery = c.result?.IsDrawLottery ?? false, // Default to false if result is null
-        //        IsReCounting = c.result?.IsReCounting ?? false // Default to false if result is null
-        //    }).ToList();
-
-        //    return candidateList;
-        //}
-
         public async Task<List<CandidateListForResultDeclaration>> GetPanchListById(
         int stateMasterId,
         int districtMasterId,
@@ -19840,122 +19794,12 @@ namespace EAMS_DAL.Repository
                 IsResultDeclared = c.result?.IsResultDeclared ?? false, // Default to false if result is null
                 IsDraw = c.result?.IsDraw ?? false, // Default to false if result is null
                 IsDrawLottery = c.result?.IsDrawLottery ?? false, // Default to false if result is null
-                IsReCounting = c.result?.IsReCounting ?? false // Default to false if result is null
+                IsReCounting = c.result?.IsReCounting ?? false, // Default to false if result is null
+                VoteMargin = c.result != null && int.TryParse(c.result.VoteMargin, out var margin) ? margin : (int?)null,
             }).ToList();
 
             return candidateList;
         }
-
-        //    public async Task<List<CandidateListForResultDeclaration>> GetPanchListById(
-        //int stateMasterId,
-        //int districtMasterId,
-        //int electionTypeMasterId,
-        //int assemblyMasterId,
-        //int fourthLevelHMasterId,
-        //int gPPanchayatWardsMasterId)
-        //    {
-        //        // Query Kyc Table with join on ResultDeclaration and check poll status in a single query
-        //        var hasActivePolls = await _context.Kyc
-        //                                .Where(g => g.GPPanchayatWardsMasterId == gPPanchayatWardsMasterId &&
-        //                                            g.StateMasterId == stateMasterId &&
-        //                                            g.DistrictMasterId == districtMasterId &&
-        //                                            g.AssemblyMasterId == assemblyMasterId &&
-        //                                            g.GPPanchayatWardsMasterId == gPPanchayatWardsMasterId)
-        //                                .Join(_context.BoothMaster,
-        //                                    gp => gp.FourthLevelHMasterId, // Assuming you join on FourthLevelHMasterId
-        //                                    b => b.FourthLevelHMasterId,
-        //                                    (gp, b) => new { GPPanchayatWard = gp, Booth = b })
-        //                                .GroupJoin(_context.ElectionInfoMaster,
-        //                                    gb => gb.Booth.BoothMasterId,
-        //                                    e => e.BoothMasterId,
-        //                                    (gb, e) => new { gb.Booth, ElectionRecords = e })
-        //                                .SelectMany(be => be.ElectionRecords.DefaultIfEmpty(), (be, e) => new { be.Booth, Election = e })
-        //                                .ToListAsync();
-
-        //        if (hasActivePolls.Any(x => x.Election != null && !x.Election.IsPollEnded) ||
-        //            !hasActivePolls.Any(e => e != null))
-        //        {
-        //            return new List<CandidateListForResultDeclaration> { new() { Message = "You can't declare the result until poll end activity is done for all assigned booths." } };
-        //        }
-
-
-        //        var candidatesWithResults = await (from k in _context.Kyc
-        //                                           join fourthLevelH in _context.FourthLevelH
-        //                                   on k.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
-        //                                           join r in _context.ResultDeclaration on k.KycMasterId equals r.KycMasterId into results
-        //                                           from result in results.DefaultIfEmpty() // Left join
-        //                                           where k.StateMasterId == stateMasterId &&
-        //                                                 k.DistrictMasterId == districtMasterId &&
-        //                                                 k.ElectionTypeMasterId == electionTypeMasterId &&
-        //                                                 k.AssemblyMasterId == assemblyMasterId &&
-        //                                                 k.FourthLevelHMasterId == fourthLevelHMasterId &&
-        //                                                 k.GPPanchayatWardsMasterId == gPPanchayatWardsMasterId
-        //                                           select new
-        //                                           {
-        //                                               kycCandidate = k,
-        //                                               result, // this will be null if there's no match
-        //                                               fourthLevelH // Include the FourthLevelH entity to access IsCC and IsNN
-        //                                           }).ToListAsync();
-
-        //        // Project the results into the desired format, handling nulls
-        //        var candidateList = candidatesWithResults.Select(c => new CandidateListForResultDeclaration
-        //        {
-        //            KycMasterId = c.kycCandidate.KycMasterId,
-        //            CandidateName = c.kycCandidate.CandidateName,
-        //            FatherName = c.kycCandidate.FatherName,
-        //            IsUnOppossed = c.kycCandidate.IsUnOppossed,
-        //            IsCC = c.fourthLevelH.IsCC,
-        //            IsNN = c.fourthLevelH.IsNN,
-        //            IsWinner = c.result?.IsWinner ?? false, // Default to false if result is null
-        //            IsResultDeclared = c.result?.IsResultDeclared ?? false, // Default to false if result is null
-        //            IsDraw = c.result?.IsDraw ?? false, // Default to false if result is null
-        //            IsDrawLottery = c.result?.IsDrawLottery ?? false, // Default to false if result is null
-        //            IsReCounting = c.result?.IsReCounting ?? false // Default to false if result is null
-        //        }).ToList();
-
-        //        return candidateList;
-        //    }
-
-
-        //public async Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
-        //{
-
-        //    var candidatesWithResults = await (from k in _context.Kyc
-        //                                       join fourthLevelH in _context.FourthLevelH
-        //                               on k.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
-        //                                       join r in _context.ResultDeclaration on k.KycMasterId equals r.KycMasterId into results
-        //                                       from result in results.DefaultIfEmpty() // Left join
-        //                                       where k.StateMasterId == stateMasterId &&
-        //                                             k.DistrictMasterId == districtMasterId &&
-        //                                             k.ElectionTypeMasterId == electionTypeMasterId &&
-        //                                             k.AssemblyMasterId == assemblyMasterId &&
-        //                                             k.FourthLevelHMasterId == fourthLevelHMasterId &&
-        //                                             k.GPPanchayatWardsMasterId == 0
-        //                                       select new
-        //                                       {
-        //                                           kycCandidate = k,
-        //                                           result, // this will be null if there's no match
-        //                                           fourthLevelH // Include the FourthLevelH entity to access IsCC and IsNN
-        //                                       }).ToListAsync();
-
-        //    // Project the results into the desired format, handling nulls
-        //    var candidateList = candidatesWithResults.Select(c => new CandidateListForResultDeclaration
-        //    {
-        //        KycMasterId = c.kycCandidate.KycMasterId,
-        //        CandidateName = c.kycCandidate.CandidateName,
-        //        FatherName = c.kycCandidate.FatherName,
-        //        IsUnOppossed = c.kycCandidate.IsUnOppossed,
-        //        IsCC = c.fourthLevelH.IsCC,
-        //        IsNN = c.fourthLevelH.IsNN,
-        //        IsWinner = c.result?.IsWinner ?? false, // Default to false if result is null
-        //        IsResultDeclared = c.result?.IsResultDeclared ?? false, // Default to false if result is null
-        //        IsDraw = c.result?.IsDraw ?? false, // Default to false if result is null
-        //        IsDrawLottery = c.result?.IsDrawLottery ?? false, // Default to false if result is null
-        //        IsReCounting = c.result?.IsReCounting ?? false // Default to false if result is null
-        //    }).ToList();
-
-        //    return candidateList;
-        //}
 
         public async Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
@@ -19992,7 +19836,8 @@ namespace EAMS_DAL.Repository
                 IsResultDeclared = c.result?.IsResultDeclared ?? false, // Default to false if result is null
                 IsDraw = c.result?.IsDraw ?? false, // Default to false if result is null
                 IsDrawLottery = c.result?.IsDrawLottery ?? false, // Default to false if result is null
-                IsReCounting = c.result?.IsReCounting ?? false // Default to false if result is null
+                IsReCounting = c.result?.IsReCounting ?? false, // Default to false if result is null
+                VoteMargin = c.result != null && int.TryParse(c.result.VoteMargin, out var margin) ? margin : (int?)null,
             }).ToList();
 
             return candidateList;
