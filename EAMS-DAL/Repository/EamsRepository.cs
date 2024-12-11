@@ -21276,8 +21276,8 @@ namespace EAMS_DAL.Repository
                     IsEditable = hasDependency ? false : true,
                     ElectionTypeMasterId = electionTypeMasterId,
                     Message = hasDependency
-                        ? "District is linked with one or more Assemblies."
-                        : "District is not linked with any Assembly."
+                        ? "District is linked with one or more Local Bodies."
+                        : "District is not linked with any Local Bodies."
                 };
             }
 
@@ -21293,8 +21293,8 @@ namespace EAMS_DAL.Repository
                     IsEditable = hasDependency ? false : true,
                     ElectionTypeMasterId = electionTypeMasterId,
                     Message = hasDependency
-                        ? "Assembly is linked with one or more Fourth Level Hierarchies."
-                        : "Assembly is not linked with any Fourth Level Hierarchy."
+                        ? "Local Bodies is linked with one or more Sub Local Bodies."
+                        : "Local Bodies is not linked with any Fourth Sub Local Bodies."
                 };
             }
 
@@ -21327,7 +21327,7 @@ namespace EAMS_DAL.Repository
                 if (hasKycDependency)
                 {
                     result.IsEditable = false; // If KYC is linked, cannot be edited
-                    result.Message = "Fourth Level is linked with one or more KYC entries.";
+                    result.Message = "Sub Local Bodies is linked with one or more KYC entries.";
                     return result;
                 }
 
@@ -21338,7 +21338,7 @@ namespace EAMS_DAL.Repository
                 if (hasGPWardDependency)
                 {
                     result.IsEditable = false; // If linked with Panchayat Wards, cannot be edited
-                    result.Message = "Fourth Level is linked with one or more Panchayat Wards.";
+                    result.Message = "Sub Local Bodies is linked with one or more Panchayat Wards.";
                     return result;
                 }
                 // If AssignedToARO is empty or null, allow the operation
@@ -21370,6 +21370,9 @@ namespace EAMS_DAL.Repository
                     Type = type,
                     IsEditable = hasDependency ? false : true,
                     ElectionTypeMasterId = electionTypeMasterId,
+                    Message = hasDependency
+                        ? "Local Bodies is linked with one or more Sub Local Bodies."
+                        : "Local Bodies is not linked with any Fourth Sub Local Bodies."
                 };
             }
 
