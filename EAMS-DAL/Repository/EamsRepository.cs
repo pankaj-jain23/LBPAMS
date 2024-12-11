@@ -4688,6 +4688,10 @@ namespace EAMS_DAL.Repository
                     e.IsVoterTurnOut
                 })
                 .FirstOrDefaultAsync();
+            if(electionInfoMaster  is null)
+            {
+                return new BoothDetailForVoterInQueue() { Message= "Voter Queue is not Available" };
+            }
             var isVoterEvent = await _context.EventMaster.Where(d => d.StateMasterId == electionInfoMaster.StateMasterId
             && d.ElectionTypeMasterId == electionInfoMaster.ElectionInfoMasterId && d.EventABBR == "VT").Select(d => d.Status).FirstOrDefaultAsync();
             // Fetch TotalVoters from BoothMaster
@@ -6978,7 +6982,7 @@ namespace EAMS_DAL.Repository
                 return new ServiceResponse()
                 {
                     IsSucceed = false,
-                    Message = "Voter TurnOut not Started Yet"
+                    Message = "Voter TurnOut not Completed Yet"
                 };
 
             }
