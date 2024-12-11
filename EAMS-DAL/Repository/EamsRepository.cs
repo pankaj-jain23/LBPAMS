@@ -21300,28 +21300,20 @@ namespace EAMS_DAL.Repository
 
             if (type.Equals("FourthLevel", StringComparison.OrdinalIgnoreCase))
             {
-                // Check for dependencies in parallel to improve performance
-                var hasKycDependencyTask = _context.Kyc
+                // Execute dependency checks sequentially
+                var hasKycDependency = await _context.Kyc
                     .AnyAsync(k => k.FourthLevelHMasterId == masterId && k.ElectionTypeMasterId == electionTypeMasterId);
 
-                var hasGPWardDependencyTask = _context.GPPanchayatWards
+                var hasGPWardDependency = await _context.GPPanchayatWards
                     .AnyAsync(w => w.FourthLevelHMasterId == masterId && w.ElectionTypeMasterId == electionTypeMasterId);
 
-                var hasGPVoterDependencyTask = _context.GPVoter
+                var hasGPVoterDependency = await _context.GPVoter
                     .AnyAsync(v => v.FourthLevelHMasterId == masterId && v.ElectionTypeMasterId == electionTypeMasterId);
 
-                var assignedToAROTask = _context.FourthLevelH
+                var assignedToARO = await _context.FourthLevelH
                     .Where(f => f.FourthLevelHMasterId == masterId && f.ElectionTypeMasterId == electionTypeMasterId)
                     .Select(f => f.AssignedToARO)
                     .FirstOrDefaultAsync();
-
-                // Await tasks to ensure all checks are completed
-                await Task.WhenAll(hasKycDependencyTask, hasGPWardDependencyTask, hasGPVoterDependencyTask, assignedToAROTask);
-
-                var hasKycDependency = await hasKycDependencyTask;
-                var hasGPWardDependency = await hasGPWardDependencyTask;
-                var hasGPVoterDependency = await hasGPVoterDependencyTask;
-                var assignedToARO = await assignedToAROTask;
 
                 // Determine editability and construct the message
                 var isEditable = !hasKycDependency && !hasGPWardDependency && !hasGPVoterDependency && assignedToARO == null;
