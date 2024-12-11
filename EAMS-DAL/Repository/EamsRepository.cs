@@ -4688,9 +4688,9 @@ namespace EAMS_DAL.Repository
                     e.IsVoterTurnOut
                 })
                 .FirstOrDefaultAsync();
-            if(electionInfoMaster  is null)
+            if (electionInfoMaster is null)
             {
-                return new BoothDetailForVoterInQueue() { Message= "Voter Queue is not Available" };
+                return new BoothDetailForVoterInQueue() { Message = "Voter Queue is not Available" };
             }
             var isVoterEvent = await _context.EventMaster.Where(d => d.StateMasterId == electionInfoMaster.StateMasterId
             && d.ElectionTypeMasterId == electionInfoMaster.ElectionInfoMasterId && d.EventABBR == "VT").Select(d => d.Status).FirstOrDefaultAsync();
@@ -6968,7 +6968,7 @@ namespace EAMS_DAL.Repository
                     IsSucceed = true,
                 };
             }
-           
+
             //if (isPollDetailExist is true)
             //{
             //    return new ServiceResponse()
@@ -19108,7 +19108,7 @@ namespace EAMS_DAL.Repository
                       j => j.GPVoter.AssemblyMasterId,
                       am => am.AssemblyMasterId,
                       (j, am) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, AssemblyMaster = am })
-               .Join(_context.FourthLevelH.Where(flh => flh.HierarchyStatus == true&&flh.AssignedToRO==userId), // Add condition here
+               .Join(_context.FourthLevelH.Where(flh => flh.HierarchyStatus == true && flh.AssignedToRO == userId), // Add condition here
                                   j => j.GPVoter.FourthLevelHMasterId,
                                   flh => flh.FourthLevelHMasterId,
                                   (j, flh) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, j.AssemblyMaster, FourthLevelH = flh })
@@ -21256,7 +21256,7 @@ namespace EAMS_DAL.Repository
                 {
                     MasterId = masterId,
                     Type = type,
-                    IsEditable = hasDependency ? false : true,
+                    IsEditable = !hasDependency,
                     ElectionTypeMasterId = electionTypeMasterId,
                     Message = hasDependency
                         ? "State is linked with one or more Districts."
@@ -21264,7 +21264,7 @@ namespace EAMS_DAL.Repository
                 };
             }
 
-            else if (type.Equals("District", StringComparison.OrdinalIgnoreCase))
+            if (type.Equals("District", StringComparison.OrdinalIgnoreCase))
             {
                 var hasDependency = await _context.AssemblyMaster
                     .AnyAsync(a => a.DistrictMasterId == masterId && a.ElectionTypeMasterId == electionTypeMasterId);
@@ -21273,7 +21273,7 @@ namespace EAMS_DAL.Repository
                 {
                     MasterId = masterId,
                     Type = type,
-                    IsEditable = hasDependency ? false : true,
+                    IsEditable = !hasDependency,
                     ElectionTypeMasterId = electionTypeMasterId,
                     Message = hasDependency
                         ? "District is linked with one or more Local Bodies."
@@ -21281,7 +21281,7 @@ namespace EAMS_DAL.Repository
                 };
             }
 
-            else if (type.Equals("Assembly", StringComparison.OrdinalIgnoreCase))
+            if (type.Equals("Assembly", StringComparison.OrdinalIgnoreCase))
             {
                 var hasDependency = await _context.FourthLevelH
                     .AnyAsync(f => f.AssemblyMasterId == masterId && f.ElectionTypeMasterId == electionTypeMasterId);
@@ -21290,7 +21290,7 @@ namespace EAMS_DAL.Repository
                 {
                     MasterId = masterId,
                     Type = type,
-                    IsEditable = hasDependency ? false : true,
+                    IsEditable = !hasDependency,
                     ElectionTypeMasterId = electionTypeMasterId,
                     Message = hasDependency
                         ? "Local Bodies is linked with one or more Sub Local Bodies."
@@ -21298,68 +21298,69 @@ namespace EAMS_DAL.Repository
                 };
             }
 
-            else if (type.Equals("FourthLevel", StringComparison.OrdinalIgnoreCase))
+            if (type.Equals("FourthLevel", StringComparison.OrdinalIgnoreCase))
             {
-                // Initialize the result object
-                IsMasterEditable result = new IsMasterEditable
-                {
-                    MasterId = masterId,
-                    Type = type,
-                    ElectionTypeMasterId = electionTypeMasterId
-                };
-                // Check if AssignedToARO is empty or null
-                var assignedToARO = await _context.FourthLevelH
-                                    .Where(f => f.FourthLevelHMasterId == masterId
-                                               && f.ElectionTypeMasterId == electionTypeMasterId
-                                               && f.AssignedToARO == null)
-                                    .FirstOrDefaultAsync();
-
-
-
-
-
-
-
-                // Check if there is a KYC dependency
-                var hasKycDependency = await _context.Kyc
+                // Check for dependencies in parallel to improve performance
+                var hasKycDependencyTask = _context.Kyc
                     .AnyAsync(k => k.FourthLevelHMasterId == masterId && k.ElectionTypeMasterId == electionTypeMasterId);
 
-                if (hasKycDependency)
-                {
-                    result.IsEditable = false; // If KYC is linked, cannot be edited
-                    result.Message = "Sub Local Bodies is linked with one or more KYC entries.";
-                    return result;
-                }
-
-                // Check if there is a Panchayat Ward dependency
-                var hasGPWardDependency = await _context.GPPanchayatWards
+                var hasGPWardDependencyTask = _context.GPPanchayatWards
                     .AnyAsync(w => w.FourthLevelHMasterId == masterId && w.ElectionTypeMasterId == electionTypeMasterId);
 
-                if (hasGPWardDependency)
+                var hasGPVoterDependencyTask = _context.GPVoter
+                    .AnyAsync(v => v.FourthLevelHMasterId == masterId && v.ElectionTypeMasterId == electionTypeMasterId);
+
+                var assignedToAROTask = _context.FourthLevelH
+                    .Where(f => f.FourthLevelHMasterId == masterId && f.ElectionTypeMasterId == electionTypeMasterId)
+                    .Select(f => f.AssignedToARO)
+                    .FirstOrDefaultAsync();
+
+                // Await tasks to ensure all checks are completed
+                await Task.WhenAll(hasKycDependencyTask, hasGPWardDependencyTask, hasGPVoterDependencyTask, assignedToAROTask);
+
+                var hasKycDependency = await hasKycDependencyTask;
+                var hasGPWardDependency = await hasGPWardDependencyTask;
+                var hasGPVoterDependency = await hasGPVoterDependencyTask;
+                var assignedToARO = await assignedToAROTask;
+
+                // Determine editability and construct the message
+                var isEditable = !hasKycDependency && !hasGPWardDependency && !hasGPVoterDependency && assignedToARO == null;
+
+                string message;
+                if (hasKycDependency)
                 {
-                    result.IsEditable = false; // If linked with Panchayat Wards, cannot be edited
-                    result.Message = "Sub Local Bodies is linked with one or more Panchayat Wards.";
-                    return result;
+                    message = "Sub Local Bodies is linked with one or more KYC entries.";
                 }
-                // If AssignedToARO is empty or null, allow the operation
-                if (assignedToARO != null)
+                else if (hasGPWardDependency)
                 {
-                    result.IsEditable = false; // Do not allow the operation
-                    result.Message = "Operation cannot be performed because this is Assigned to ARO.";
-                    return result;
+                    message = "Sub Local Bodies is linked with one or more Panchayat Wards.";
+                }
+                else if (hasGPVoterDependency)
+                {
+                    message = "Sub Local Bodies is linked with one or more GP Voters.";
+                }
+                else if (assignedToARO != null)
+                {
+                    message = "Operation cannot be performed because this is Assigned to ARO.";
                 }
                 else
                 {
-                    result.IsEditable =true; // Allow the operation
-                    result.Message = "Operation can be performed because this is not Assigned to ARO.";
-                    return result;
-
+                    message = "Operation can be performed because this is not Assigned to ARO.";
                 }
 
+                // Return the result
+                return new IsMasterEditable
+                {
+                    MasterId = masterId,
+                    Type = type,
+                    ElectionTypeMasterId = electionTypeMasterId,
+                    IsEditable = isEditable,
+                    Message = message
+                };
             }
 
 
-            else if (type.Equals("ResultDeclaration", StringComparison.OrdinalIgnoreCase))
+            if (type.Equals("ResultDeclaration", StringComparison.OrdinalIgnoreCase))
             {
                 var hasDependency = await _context.ResultDeclaration
                     .AnyAsync(r => r.KycMasterId == masterId && r.ElectionTypeMasterId == electionTypeMasterId);
@@ -21368,40 +21369,7 @@ namespace EAMS_DAL.Repository
                 {
                     MasterId = masterId,
                     Type = type,
-                    IsEditable = hasDependency ? false : true,
-                    ElectionTypeMasterId = electionTypeMasterId,
-                    Message = hasDependency
-                        ? "Local Bodies is linked with one or more Sub Local Bodies."
-                        : "Local Bodies is not linked with any Fourth Sub Local Bodies."
-                };
-            }
-
-            else if (type.Equals("GPWard", StringComparison.OrdinalIgnoreCase))
-            {
-                // Check the dependency in the GPPanchayatWards table for FourthLevelHMasterId
-                var hasDependency = await _context.GPPanchayatWards
-                     .AnyAsync(w => w.FourthLevelHMasterId == masterId && w.ElectionTypeMasterId == electionTypeMasterId);
-
-                return new IsMasterEditable
-                {
-                    MasterId = masterId,
-                    Type = type,
-                    IsEditable = hasDependency ? false : true,
-                    ElectionTypeMasterId = electionTypeMasterId,
-                };
-            }
-
-            else if (type.Equals("Voter", StringComparison.OrdinalIgnoreCase))
-            {
-                // Check the dependency in the GPVoter table for FourthLevelHMasterId
-                var hasDependency = await _context.GPVoter
-                     .AnyAsync(v => v.FourthLevelHMasterId == masterId && v.ElectionTypeMasterId == electionTypeMasterId);
-
-                return new IsMasterEditable
-                {
-                    MasterId = masterId,
-                    Type = type,
-                    IsEditable = hasDependency ? false : true,
+                    IsEditable = !hasDependency,
                     ElectionTypeMasterId = electionTypeMasterId,
                     Message = hasDependency
                         ? "Result Declaration is linked with one or more KYC entries."
@@ -21409,34 +21377,66 @@ namespace EAMS_DAL.Repository
                 };
             }
 
-            else if (type.Equals("Booth", StringComparison.OrdinalIgnoreCase))
+            if (type.Equals("GPWard", StringComparison.OrdinalIgnoreCase))
             {
-                var hasDependency = await _context.ElectionInfoMaster
+                var hasKycDependency = await _context.Kyc
+                    .AnyAsync(k => k.GPPanchayatWardsMasterId == masterId && k.ElectionTypeMasterId == electionTypeMasterId);
+
+                return new IsMasterEditable
+                {
+                    MasterId = masterId,
+                    Type = type,
+                    IsEditable = !hasKycDependency,
+                    ElectionTypeMasterId = electionTypeMasterId,
+                    Message = hasKycDependency
+                        ? "Ward is linked with one or more KYC entries."
+                        : "Ward is not linked with any KYC entries."
+                };
+            }
+
+            if (type.Equals("Booth", StringComparison.OrdinalIgnoreCase))
+            {
+                var hasElectionInfoDependency = await _context.ElectionInfoMaster
                     .AnyAsync(e => e.BoothMasterId == masterId && e.ElectionTypeMasterId == electionTypeMasterId);
 
+                var hasResultDeclarationDependency = await _context.ResultDeclaration
+                    .AnyAsync(e => e.BoothMasterId == masterId && e.ElectionTypeMasterId == electionTypeMasterId);
+
+                var isEditable = !hasElectionInfoDependency && !hasResultDeclarationDependency;
+
+                string message;
+                if (hasElectionInfoDependency)
+                {
+                    message = "Booth is linked with one or more Election Info entries.";
+                }
+                else if (hasResultDeclarationDependency)
+                {
+                    message = "Booth is linked with one or more Result Declaration entries.";
+                }
+                else
+                {
+                    message = "Booth is not linked with any Election Info or Result Declaration entries.";
+                }
+
                 return new IsMasterEditable
                 {
                     MasterId = masterId,
                     Type = type,
-                    IsEditable = hasDependency ? false : true,
+                    IsEditable = isEditable,
                     ElectionTypeMasterId = electionTypeMasterId,
-                    Message = hasDependency
-                        ? "Booth is linked with one or more Election Info entries."
-                        : "Booth is not linked with any Election Info entry."
+                    Message = message
                 };
             }
 
-            else
+
+            return new IsMasterEditable
             {
-                return new IsMasterEditable
-                {
-                    MasterId = masterId,
-                    Type = type,
-                    IsEditable = false,
-                    ElectionTypeMasterId = electionTypeMasterId,
-                    Message = "Invalid type provided."
-                };
-            }
+                MasterId = masterId,
+                Type = type,
+                IsEditable = false,
+                ElectionTypeMasterId = electionTypeMasterId,
+                Message = "Invalid type provided."
+            };
         }
 
         ///
