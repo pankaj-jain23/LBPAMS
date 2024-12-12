@@ -20324,7 +20324,51 @@ namespace EAMS_DAL.Repository
             // Use AsNoTracking for better performance
             return await combinedList.AsNoTracking().ToListAsync();
         }
+        public async Task<List<CombinedPanchayatMaster>> GetFourthLevelListByAROId(int stateMasterId, int districtMasterId, int assemblyMasterId,int electionTypeMasterId, string roId, string assignedType)
+        {
+            // Start the query for the boothList
+            var boothList = _context.FourthLevelH
+                .Where(d => d.StateMasterId == stateMasterId
+                            && d.DistrictMasterId == districtMasterId
+                            && d.AssemblyMasterId == assemblyMasterId
+                            && d.HierarchyStatus == true 
+                            && d.AssignedToARO == roId) // Filter FourthLevelH by status
+                .AsQueryable(); // Convert to IQueryable for further filtering
 
+            // Continue with joins and selection
+            var combinedList = from ft in boothList
+                               join asem in _context.AssemblyMaster
+                                   .Where(a => a.AssemblyStatus == true) // Filter AssemblyMaster by status
+                               on ft.AssemblyMasterId equals asem.AssemblyMasterId
+                               join dist in _context.DistrictMaster
+                                   .Where(d => d.DistrictStatus == true) // Filter DistrictMaster by status
+                               on asem.DistrictMasterId equals dist.DistrictMasterId
+                               join state in _context.StateMaster
+                                   .Where(s => s.StateStatus == true) // Filter StateMaster by status
+                               on dist.StateMasterId equals state.StateMasterId
+                               join elec in _context.ElectionTypeMaster
+                                   .Where(e => e.ElectionStatus == true) // Filter ElectionTypeMaster by status
+                               on ft.ElectionTypeMasterId equals elec.ElectionTypeMasterId
+                               orderby ft.HierarchyCode
+                               select new CombinedPanchayatMaster
+                               {
+                                   StateId = stateMasterId,
+                                   DistrictId = dist.DistrictMasterId,
+                                   AssemblyId = asem.AssemblyMasterId,
+                                   AssemblyName = asem.AssemblyName,
+                                   AssemblyCode = asem.AssemblyCode,
+                                   FourthLevelHMasterId = ft.FourthLevelHMasterId,
+                                   HierarchyName = ft.HierarchyName,
+                                   HierarchyCode = ft.HierarchyCode,
+                                   IsAssigned =  ft.IsAssignedARO, // Change as needed
+                                   IsStatus = ft.HierarchyStatus,
+                                   ElectionTypeMasterId = ft.ElectionTypeMasterId,
+                                   ElectionTypeName = elec.ElectionType,
+                               };
+
+            // Use AsNoTracking for better performance
+            return await combinedList.AsNoTracking().ToListAsync();
+        }
 
         #endregion
 

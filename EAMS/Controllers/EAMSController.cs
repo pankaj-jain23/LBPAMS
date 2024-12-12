@@ -5237,6 +5237,31 @@ namespace EAMS.Controllers
             };
             return Ok(data);
         }
+
+        [HttpGet]
+        [Route("GetFourthLevelListByAROId")]
+        [Authorize]
+        public async Task<IActionResult> GetFourthLevelListByAROId()
+        {
+            var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
+            int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
+            int districtMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("DistrictMasterId"));
+            int assemblyMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AssemblyMasterId"));
+            int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
+            string roId = userClaims.GetValueOrDefault("AROMasterId");
+            string assginedType = "ARO";
+
+            var panchayatList = await _EAMSService.GetFourthLevelListByAROId(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId, roId, assginedType);
+            //var getUnassignedPanchayatList = await _EAMSService.GetUnassignedPanchayatListById(stateMasterId, districtMasterId, assemblyMasterId, assginedType);
+            var data = new
+            {
+                AssignedCount = panchayatList.Count,
+                //UnAssignedCount = getUnassignedPanchayatList.Count,
+                Assigned = panchayatList,
+                //Unassigned = getUnassignedPanchayatList
+            };
+            return Ok(data);
+        }
         #endregion 
 
         #region Handle API Response
