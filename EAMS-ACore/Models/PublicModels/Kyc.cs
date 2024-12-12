@@ -77,6 +77,11 @@ namespace EAMS_ACore.Models.PublicModels
 
             get; set;
         }
+        public string? PartyName
+        {
+            get;
+            set;
+        }
         public string? Option2
         {
 
@@ -214,6 +219,10 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
-        
+        public string? PartyName
+        {
+            get;
+            set;
+        }
     }
 }

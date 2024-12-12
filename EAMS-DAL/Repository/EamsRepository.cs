@@ -17324,6 +17324,7 @@ namespace EAMS_DAL.Repository
               : kyc.AffidavitPdfPath; // Update only if new path is provided
             existingKyc.Age = kyc.Age;
             existingKyc.Option2 = kyc.Option2;
+            existingKyc.PartyName = kyc.PartyName;
 
             // Save changes to the database
             _context.Kyc.Update(existingKyc);
@@ -17379,6 +17380,7 @@ namespace EAMS_DAL.Repository
                                          IsUnOppossed = k.IsUnOppossed,
                                          ElectionTypeMasterId = k.ElectionTypeMasterId,
                                          Age = k.Age,
+                                         PartyName = k.PartyName,
                                          NominationPdfPath = k.NominationPdfPath != null ? $"{baseUrl}{k.NominationPdfPath}" : null,
                                          AffidavitPdfPath = k.AffidavitPdfPath != null ? $"{baseUrl}{k.AffidavitPdfPath}" : null,
                                      },
@@ -17438,6 +17440,7 @@ namespace EAMS_DAL.Repository
                                          ElectionTypeMasterId = k.ElectionTypeMasterId,
                                          IsUnOppossed = k.IsUnOppossed,
                                          Age = k.Age,
+                                         PartyName = k.PartyName,
                                          NominationPdfPath = $"{baseUrl}{k.NominationPdfPath}"
                                          ,
                                          AffidavitPdfPath = $"{baseUrl}{k.AffidavitPdfPath}",
@@ -17497,6 +17500,7 @@ namespace EAMS_DAL.Repository
                                      IsUnOppossed = k.IsUnOppossed,
                                      ElectionTypeMasterId = k.ElectionTypeMasterId,
                                      Age = k.Age,
+                                     PartyName = k.PartyName,
                                      NominationPdfPath = $"{baseUrl}{k.NominationPdfPath}"
                                      ,
                                      AffidavitPdfPath = $"{baseUrl}{k.AffidavitPdfPath}",
@@ -17549,6 +17553,7 @@ namespace EAMS_DAL.Repository
                     FatherName = kyc.FatherName,
                     IsUnOppossed = kyc.IsUnOppossed,
                     Age = kyc.Age,
+                    PartyName = kyc.PartyName,
                     NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}",
                     AffidavitPdfPath = $"{baseUrl}{kyc.AffidavitPdfPath}"
                 };
@@ -17590,6 +17595,7 @@ namespace EAMS_DAL.Repository
                     FatherName = kyc.FatherName,
                     IsUnOppossed = kyc.IsUnOppossed,
                     Age = kyc.Age,
+                    PartyName = kyc.PartyName,
                     NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}"
                     ,
                     AffidavitPdfPath = $"{baseUrl}{kyc.AffidavitPdfPath}"
@@ -17630,6 +17636,7 @@ namespace EAMS_DAL.Repository
                     FatherName = kyc.FatherName,
                     IsUnOppossed = kyc.IsUnOppossed,
                     Age = kyc.Age,
+                    PartyName = kyc.PartyName,
                     NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}",
                     AffidavitPdfPath = $"{baseUrl}{kyc.AffidavitPdfPath}"
                 };
@@ -17666,6 +17673,7 @@ namespace EAMS_DAL.Repository
                     FatherName = kyc.FatherName,
                     IsUnOppossed = kyc.IsUnOppossed,
                     Age = kyc.Age,
+                    PartyName = kyc.PartyName,
                     NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}",
                     AffidavitPdfPath = $"{baseUrl}{kyc.AffidavitPdfPath}"
                 };
@@ -17831,6 +17839,7 @@ namespace EAMS_DAL.Repository
                 : kyc.AffidavitPdfPath; // Update only if a new path is provided
             existingKyc.Age = kyc.Age;
             existingKyc.Option2 = kyc.Option2;
+            existingKyc.PartyName = kyc.PartyName;
 
             // Save changes to the database
             _context.Kyc.Update(existingKyc);

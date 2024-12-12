@@ -76,7 +76,11 @@
             get;
             set;
         }
-
+        public string? PartyName
+        {
+            get;
+            set;
+        }
     }
     public class UpdateKycViewModel
     {
@@ -156,6 +160,11 @@
             set;
         }
         public bool IsUnOppossed
+        {
+            get;
+            set;
+        }
+        public string? PartyName
         {
             get;
             set;
