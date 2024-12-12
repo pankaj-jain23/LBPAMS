@@ -332,7 +332,7 @@ namespace EAMS_DAL.AuthRepository
             if (user == null)
             {
                 return new ServiceResponse { IsSucceed = false, Message = "User not found" };
-            } 
+            }
 
             // Update the ElectionTypeMasterId and update time
             user.ElectionTypeMasterId = electionTypeMasterId;
@@ -340,7 +340,7 @@ namespace EAMS_DAL.AuthRepository
 
             // Save the changes
             var updateResult = await _userManager.UpdateAsync(user);
-
+            await _context.SaveChangesAsync();
             if (!updateResult.Succeeded)
             {
                 return new ServiceResponse { IsSucceed = false, Message = "Failed to update ElectionTypeMasterId" };
@@ -454,7 +454,7 @@ namespace EAMS_DAL.AuthRepository
             return await _context.FieldOfficerMaster
                 .FirstOrDefaultAsync(d => d.FieldOfficerMobile == validateMobile.MobileNumber && d.FieldOfficerStatus == true);
 
-             
+
         }
         public async Task<AROResultMaster> ValidateMobileForARO(ValidateMobile validateMobile)
         {
@@ -563,7 +563,7 @@ namespace EAMS_DAL.AuthRepository
         #region GetFOByID
         public async Task<FieldOfficerMaster> GetFOById(int foId)
         {
-            var foRecord =await _context.FieldOfficerMaster.FirstOrDefaultAsync(d => d.FieldOfficerMasterId == foId);
+            var foRecord = await _context.FieldOfficerMaster.FirstOrDefaultAsync(d => d.FieldOfficerMasterId == foId);
             if (foRecord is not null)
             {
                 return foRecord;
@@ -598,7 +598,7 @@ namespace EAMS_DAL.AuthRepository
             var getElection = await GetElectionTypeById(userRecord.ElectionTypeMasterId);
 
             // Fetch the state only once
-            var state =await _context.StateMaster 
+            var state = await _context.StateMaster
                 .FirstOrDefaultAsync(d => d.StateMasterId == userRecord.StateMasterId);
 
             // Initialize common fields
@@ -622,7 +622,7 @@ namespace EAMS_DAL.AuthRepository
             }
             else if (roles.Contains("DistrictAdmin"))
             {
-                var district =await _context.DistrictMaster
+                var district = await _context.DistrictMaster
                     .FirstOrDefaultAsync(d => d.StateMasterId == userRecord.StateMasterId && d.DistrictMasterId == userRecord.DistrictMasterId);
 
                 if (district != null)
@@ -633,7 +633,7 @@ namespace EAMS_DAL.AuthRepository
             }
             else if (roles.Contains("LocalBodiesAdmin") || roles.Contains("RO"))
             {
-                var assembly =await _context.AssemblyMaster.Include(a => a.DistrictMaster).Where(a => a.StateMasterId == userRecord.StateMasterId &&
+                var assembly = await _context.AssemblyMaster.Include(a => a.DistrictMaster).Where(a => a.StateMasterId == userRecord.StateMasterId &&
                                                                            a.DistrictMasterId == userRecord.DistrictMasterId &&
                                                                            a.AssemblyMasterId == userRecord.AssemblyMasterId).FirstOrDefaultAsync();
 
@@ -647,7 +647,7 @@ namespace EAMS_DAL.AuthRepository
             }
             else if (roles.Contains("SubLocalBodiesAdmin"))
             {
-                var fourthLevelH =await _context.FourthLevelH
+                var fourthLevelH = await _context.FourthLevelH
                     .Include(f => f.DistrictMaster)
                     .Include(f => f.AssemblyMaster)
                     .FirstOrDefaultAsync(f => f.StateMasterId == userRecord.StateMasterId &&

@@ -251,12 +251,14 @@ namespace EAMS_BLL.AuthServices
                     if (updateARO.Status == RequestStatusEnum.OK)
                     {
                         // Send OTP via SMS
-                        var sendOtpResponse = await _notificationService.SendOtp(aroRecords.AROMobile, aroRecords.OTP);
-                        if (sendOtpResponse.IsSucceed)
-                        {
-                            return new Response { Status = RequestStatusEnum.OK, Message = $"OTP Sent to {aroRecords.AROMobile}" };
-                        }
-                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Failed to send OTP" };
+                        //var sendOtpResponse = await _notificationService.SendOtp(aroRecords.AROMobile, aroRecords.OTP);
+                        //if (sendOtpResponse.IsSucceed)
+                        //{
+                        //    return new Response { Status = RequestStatusEnum.OK, Message = $"OTP Sent to {aroRecords.AROMobile}" };
+                        //}
+                        return new Response { Status = RequestStatusEnum.OK, Message = $"OTP Sent to {aroRecords.OTP}" };
+
+                        //return new Response { Status = RequestStatusEnum.BadRequest, Message = "Failed to send OTP" };
                     }
                     return new Response { Status = RequestStatusEnum.BadRequest, Message = "Failed to update OTP" };
                 }

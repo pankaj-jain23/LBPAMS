@@ -85,10 +85,10 @@ namespace EAMS.Controllers
 
                 if (!updateResult.IsSucceed)
                 {
-                    return BadRequest(updateResult.Message);
+                    return BadRequest(updateResult);
                 }
 
-                return Ok(updateResult.Message);
+                return Ok(updateResult);
             }
             catch (Exception ex)
             {
