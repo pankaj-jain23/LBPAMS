@@ -15,6 +15,7 @@ using EAMS_ACore.Models.Polling_Personal_Randomization_Models;
 using EAMS_ACore.Models.PollingStationFormModels;
 using EAMS_ACore.Models.PublicModels;
 using EAMS_ACore.Models.QueueModel;
+using EAMS_ACore.Models.ResultModels;
 using EAMS_ACore.ReportModels;
 using EAMS_ACore.SignalRModels;
 using EAMS_DAL.DBContext;
@@ -9996,12 +9997,16 @@ namespace EAMS_DAL.Repository
             };
         }
 
-        public async Task<List<SlotManagementMaster>> GetEventSlotList(int stateMasterId, int electionTypeMasterId, int eventId)
+        public async Task<List<SlotManagementMaster>> GetEventSlotList(int stateMasterId, int electionTypeMasterId, string eventABBR)
         {
-            var slotList = await _context.SlotManagementMaster.Where(d => d.StateMasterId == stateMasterId
+            var getEvent = await _context.EventMaster.Where(d => d.StateMasterId == stateMasterId
+                                                            && d.ElectionTypeMasterId == electionTypeMasterId
+                                                            && d.EventABBR.Contains(eventABBR)).Select(d => d.EventMasterId)
+                                                            .FirstOrDefaultAsync();
+            return await _context.SlotManagementMaster.Where(d => d.StateMasterId == stateMasterId
                                                                     && d.ElectionTypeMasterId == electionTypeMasterId
-                                                                    && d.EventMasterId == eventId).ToListAsync();
-            return slotList;
+                                                                    && d.EventMasterId == getEvent).ToListAsync();
+
         }
         #endregion
 
@@ -19808,7 +19813,7 @@ namespace EAMS_DAL.Repository
                 IsDraw = c.result?.IsDraw ?? false, // Default to false if result is null
                 IsDrawLottery = c.result?.IsDrawLottery ?? false, // Default to false if result is null
                 IsReCounting = c.result?.IsReCounting ?? false, // Default to false if result is null
-                VoteMargin = c.result != null && int.TryParse(c.result.VoteMargin, out var margin) ? margin : (int?)null,
+                VoteMargin = c.result?.VoteMargin ?? null,
             }).ToList();
 
             return candidateList;
@@ -19850,7 +19855,7 @@ namespace EAMS_DAL.Repository
                 IsDraw = c.result?.IsDraw ?? false, // Default to false if result is null
                 IsDrawLottery = c.result?.IsDrawLottery ?? false, // Default to false if result is null
                 IsReCounting = c.result?.IsReCounting ?? false, // Default to false if result is null
-                VoteMargin = c.result != null && int.TryParse(c.result.VoteMargin, out var margin) ? margin : (int?)null,
+                VoteMargin = c.result?.VoteMargin ?? null,
             }).ToList();
 
             return candidateList;
@@ -20055,6 +20060,12 @@ namespace EAMS_DAL.Repository
             {
                 aroMaster = await _context.AROResultMaster.Where(d => d.ROUserId == fourthLevels.Select(d => d.AssignedToRO).FirstOrDefault())
                                                              .Select(d => new { d.AROMasterId, d.ROUserId }).FirstOrDefaultAsync();
+                if (aroMaster is null)
+                    return new Response
+                    {
+                        Status = RequestStatusEnum.NotFound,
+                        Message = "Please update the RO profile to map the entity. Until this is done, you will not be able to access the mobile app"
+                    };
             }
             foreach (var fourthLevel in fourthLevels)
             {
@@ -20324,14 +20335,14 @@ namespace EAMS_DAL.Repository
             // Use AsNoTracking for better performance
             return await combinedList.AsNoTracking().ToListAsync();
         }
-        public async Task<List<CombinedPanchayatMaster>> GetFourthLevelListByAROId(int stateMasterId, int districtMasterId, int assemblyMasterId,int electionTypeMasterId, string roId, string assignedType)
+        public async Task<List<CombinedPanchayatMaster>> GetFourthLevelListByAROId(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId, string roId, string assignedType)
         {
             // Start the query for the boothList
             var boothList = _context.FourthLevelH
                 .Where(d => d.StateMasterId == stateMasterId
                             && d.DistrictMasterId == districtMasterId
                             && d.AssemblyMasterId == assemblyMasterId
-                            && d.HierarchyStatus == true 
+                            && d.HierarchyStatus == true
                             && d.AssignedToARO == roId) // Filter FourthLevelH by status
                 .AsQueryable(); // Convert to IQueryable for further filtering
 
@@ -20360,7 +20371,7 @@ namespace EAMS_DAL.Repository
                                    FourthLevelHMasterId = ft.FourthLevelHMasterId,
                                    HierarchyName = ft.HierarchyName,
                                    HierarchyCode = ft.HierarchyCode,
-                                   IsAssigned =  ft.IsAssignedARO, // Change as needed
+                                   IsAssigned = ft.IsAssignedARO, // Change as needed
                                    IsStatus = ft.HierarchyStatus,
                                    ElectionTypeMasterId = ft.ElectionTypeMasterId,
                                    ElectionTypeName = elec.ElectionType,
@@ -21545,6 +21556,219 @@ namespace EAMS_DAL.Repository
         //        Message="dopn"
         //    };
         //}
+        #region Result Declartion DashBoard
+        public async Task<List<ResultList>> GetResultByStateId(int stateMasterId, int electionTypeMasterId)
+        {
+            var results = await (
+               from district in _context.DistrictMaster
+                   .Where(d => d.StateMasterId == stateMasterId)
 
+               join resultDeclaration in _context.ResultDeclaration
+                   .Where(rd => rd.StateMasterId == stateMasterId && rd.ElectionTypeMasterId == electionTypeMasterId && rd.IsWinner)
+                   on district.DistrictMasterId equals resultDeclaration.DistrictMasterId into resultDeclarations
+               from rd in resultDeclarations.DefaultIfEmpty()
+
+               join kyc in _context.Kyc
+                   .Where(k => k.StateMasterId == stateMasterId && k.ElectionTypeMasterId == electionTypeMasterId && k.IsUnOppossed)
+                   on district.DistrictMasterId equals kyc.DistrictMasterId into kycs
+               from k in kycs.DefaultIfEmpty()
+
+               group new { rd, k } by new { district.DistrictMasterId, district.DistrictName } into g
+               select new ResultList
+               {
+                   Key = g.Key.DistrictMasterId.ToString() + stateMasterId.ToString() + electionTypeMasterId.ToString(),
+                   MasterId = g.Key.DistrictMasterId,
+                   Name = g.Key.DistrictName,
+                   Type = "District",
+                   TotalWonCandidate = g.Select(x => x.rd.KycMasterId).Distinct().Count(x => x != null),
+                   // Sum the VoteMargin after applying distinct on the result declaration records
+                   TotalVoteMargin = g.Where(x => x.rd != null).Select(x => x.rd.VoteMargin).Distinct().Sum(),
+                   IsUnOpposed = g.Select(x => x.k.KycMasterId).Distinct().Count(x => x != null),
+                   Children = new List<object>() // Populate as needed
+               }
+           ).ToListAsync();
+
+
+            return results;
+        }
+        public async Task<List<ResultList>> GetResultByDistrictId(int stateMasterId, int districtMasterId, int electionTypeMasterId)
+        {
+            var results = await (
+                 from assem in _context.AssemblyMaster.Where(d => d.StateMasterId == stateMasterId
+                                                                 && d.DistrictMasterId == districtMasterId
+                                                                 && d.ElectionTypeMasterId == electionTypeMasterId)
+
+                 join resultDeclaration in _context.ResultDeclaration
+                     .Where(rd => rd.StateMasterId == stateMasterId && rd.ElectionTypeMasterId == electionTypeMasterId && rd.IsWinner)
+                     on assem.AssemblyMasterId equals resultDeclaration.AssemblyMasterId into resultDeclarations
+                 from rd in resultDeclarations.DefaultIfEmpty()
+
+                 join kyc in _context.Kyc
+                     .Where(k => k.StateMasterId == stateMasterId && k.ElectionTypeMasterId == electionTypeMasterId && k.IsUnOppossed)
+                     on assem.AssemblyMasterId equals kyc.AssemblyMasterId into kycs
+                 from k in kycs.DefaultIfEmpty()
+
+                 group new { rd, k } by new { assem.AssemblyMasterId, assem.AssemblyName } into g
+                 select new ResultList
+                 {
+                     Key = g.Key.AssemblyMasterId.ToString() + stateMasterId.ToString() + districtMasterId.ToString() + electionTypeMasterId.ToString(),
+                     MasterId = g.Key.AssemblyMasterId,
+                     Name = g.Key.AssemblyName,
+                     Type = "Assembly",
+                     TotalWonCandidate = g.Select(x => x.rd.KycMasterId).Distinct().Count(x => x != null),
+                     // Sum the VoteMargin after applying distinct on the result declaration records
+                     TotalVoteMargin = g.Where(x => x.rd != null).Select(x => x.rd.VoteMargin).Distinct().Sum(),
+                     IsUnOpposed = g.Select(x => x.k.KycMasterId).Distinct().Count(x => x != null),
+                     Children = new List<object>() // Populate as needed
+                 }
+           ).ToListAsync();
+
+            return results;
+        }
+
+        public async Task<List<ResultList>> GetResultByAssemblyId(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
+        {
+            var results = await (
+
+
+
+                 from frth in _context.FourthLevelH.Where(d => d.StateMasterId == stateMasterId
+                                                         && d.DistrictMasterId == districtMasterId
+                                                         && d.AssemblyMasterId == assemblyMasterId
+                                                         && d.ElectionTypeMasterId == electionTypeMasterId)
+
+                 join resultDeclaration in _context.ResultDeclaration
+                     .Where(rd => rd.StateMasterId == stateMasterId && rd.ElectionTypeMasterId == electionTypeMasterId && rd.IsWinner)
+                     on frth.FourthLevelHMasterId equals resultDeclaration.FourthLevelHMasterId into resultDeclarations
+                 from rd in resultDeclarations.DefaultIfEmpty()
+
+                 join kyc in _context.Kyc
+                     .Where(k => k.StateMasterId == stateMasterId && k.ElectionTypeMasterId == electionTypeMasterId && k.IsUnOppossed)
+                     on frth.FourthLevelHMasterId equals kyc.FourthLevelHMasterId into kycs
+                 from k in kycs.DefaultIfEmpty()
+
+                 group new { rd, k } by new { frth.FourthLevelHMasterId, frth.HierarchyName } into g
+                 select new ResultList
+                 {
+                     Key = g.Key.FourthLevelHMasterId.ToString() + stateMasterId.ToString() + districtMasterId.ToString() + assemblyMasterId.ToString() + electionTypeMasterId.ToString(),
+                     MasterId = g.Key.FourthLevelHMasterId,
+                     Name = g.Key.HierarchyName,
+                     Type = "FourthLevel",
+                     TotalWonCandidate = g.Select(x => x.rd.KycMasterId).Distinct().Count(x => x != null),
+                     // Sum the VoteMargin after applying distinct on the result declaration records
+                     TotalVoteMargin = g.Where(x => x.rd != null).Select(x => x.rd.VoteMargin).Distinct().Sum(),
+                     IsUnOpposed = g.Select(x => x.k.KycMasterId).Distinct().Count(x => x != null),
+                     Children = new List<object>() // Populate as needed
+                 }
+           ).ToListAsync();
+
+            return results;
+        }
+
+        //public async Task<List<ResultList>> GetResultByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelMasterId, int electionTypeMasterId)
+        //{
+        //    var results = await (
+
+
+
+        //         from frth in _context.FourthLevelH.Where(d => d.StateMasterId == stateMasterId
+        //                                                 && d.DistrictMasterId == districtMasterId
+        //                                                 && d.AssemblyMasterId == assemblyMasterId
+        //                                                 && d.FourthLevelHMasterId == fourthLevelMasterId
+        //                                                 && d.ElectionTypeMasterId == electionTypeMasterId)
+
+        //         join resultDeclaration in _context.ResultDeclaration
+        //             .Where(rd => rd.StateMasterId == stateMasterId && rd.ElectionTypeMasterId == electionTypeMasterId && rd.IsWinner)
+        //             on frth.FourthLevelHMasterId equals resultDeclaration.FourthLevelHMasterId into resultDeclarations
+        //         from rd in resultDeclarations.DefaultIfEmpty()
+
+        //         join kyc in _context.Kyc
+        //          .Where(k => k.StateMasterId == stateMasterId && k.ElectionTypeMasterId == electionTypeMasterId)
+        //          on frth.FourthLevelHMasterId equals kyc.FourthLevelHMasterId into kycs
+        //         from k in kycs.DefaultIfEmpty() // Left join to include all records from Kyc
+
+
+        //         group new { rd, k } by new { frth.FourthLevelHMasterId, frth.HierarchyName, k.CandidateName, k.FatherName } into g
+        //         select new ResultList
+        //         {
+        //             Key = g.Key.FourthLevelHMasterId.ToString(),
+        //             MasterId = g.Key.FourthLevelHMasterId,
+        //             Name = $"{g.Key.CandidateName} {g.Key.FatherName}",
+        //             Type = "Result",
+        //             TotalWonCandidate = g.Select(x => x.rd.KycMasterId).Distinct().Count(x => x != null),
+        //             // Sum the VoteMargin after applying distinct on the result declaration records
+        //             TotalVoteMargin = g.Where(x => x.rd != null).Select(x => x.rd.VoteMargin).Distinct().Sum(),
+        //             IsUnOpposed = g.Select(x => x.k.KycMasterId).Distinct().Count(x => x != null),
+        //             Children = new List<object>() // Populate as needed
+        //         }
+        //   ).ToListAsync();
+
+        //    return results;
+        //}
+
+        public async Task<List<ResultList>> GetResultByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelMasterId, int electionTypeMasterId)
+        {
+            // Query 1: Get results based on Kyc
+            var kycResults = await (
+                from frth in _context.FourthLevelH.Where(d => d.StateMasterId == stateMasterId
+                                                             && d.DistrictMasterId == districtMasterId
+                                                             && d.AssemblyMasterId == assemblyMasterId
+                                                             && d.FourthLevelHMasterId == fourthLevelMasterId
+                                                             && d.ElectionTypeMasterId == electionTypeMasterId)
+
+                join kyc in _context.Kyc
+                    .Where(k => k.StateMasterId == stateMasterId && k.ElectionTypeMasterId == electionTypeMasterId&&k.IsUnOppossed==true)
+                    on frth.FourthLevelHMasterId equals kyc.FourthLevelHMasterId into kycs
+                from k in kycs.DefaultIfEmpty() // Left join to include all records from Kyc
+
+                select new ResultList
+                {
+                    Key = frth.FourthLevelHMasterId.ToString(),
+                    MasterId = frth.FourthLevelHMasterId,
+                    Name = $"{k.CandidateName} {k.FatherName}", // Concatenate CandidateName and FatherName
+                    Type = "Kyc",
+                    TotalWonCandidate =0, // No count for won candidates in Kyc
+                    TotalVoteMargin = 0, // No VoteMargin in Kyc
+                    IsUnOpposed = k != null && k.IsUnOppossed == true ? 1 : 0,
+                    Children = new List<object>() // Populate as needed
+                }
+            ).ToListAsync();
+
+            // Query 2: Get results based on ResultDeclaration
+            var resultDeclarationResults = await (
+                from frth in _context.FourthLevelH.Where(d => d.StateMasterId == stateMasterId
+                                                             && d.DistrictMasterId == districtMasterId
+                                                             && d.AssemblyMasterId == assemblyMasterId
+                                                             && d.FourthLevelHMasterId == fourthLevelMasterId
+                                                             && d.ElectionTypeMasterId == electionTypeMasterId)
+
+                join resultDeclaration in _context.ResultDeclaration
+                    .Where(rd => rd.StateMasterId == stateMasterId && rd.ElectionTypeMasterId == electionTypeMasterId && rd.IsWinner)
+                    on frth.FourthLevelHMasterId equals resultDeclaration.FourthLevelHMasterId into resultDeclarations
+                from rd in resultDeclarations.DefaultIfEmpty() // Left join to include all records from ResultDeclaration
+                join kyc in _context.Kyc
+                   .Where(k => k.StateMasterId == stateMasterId && k.ElectionTypeMasterId == electionTypeMasterId)
+                   on rd.KycMasterId equals kyc.KycMasterId into kycs
+                from k in kycs.DefaultIfEmpty()
+                select new ResultList
+                {
+                    Key = frth.FourthLevelHMasterId.ToString(),
+                    MasterId = frth.FourthLevelHMasterId,
+                    Name = $"{k.CandidateName} {k.FatherName}", // Concatenate CandidateName and FatherName
+                    Type = "Result",
+                    TotalWonCandidate = 1, // Count of won candidates in ResultDeclaration
+                    TotalVoteMargin = rd.VoteMargin, // Sum of VoteMargin if rd is not null
+                    IsUnOpposed = 0, // Assume 0 if not present in ResultDeclaration
+                    Children =null // Populate as needed
+                }
+            ).ToListAsync();
+
+            // Concatenate both results
+            var combinedResults = kycResults.Concat(resultDeclarationResults).ToList(); 
+
+            return combinedResults;
+        }
+
+        #endregion
     }
 }

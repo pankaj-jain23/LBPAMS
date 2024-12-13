@@ -3,6 +3,7 @@ using System;
 using EAMS_DAL.DBContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EAMS_DAL.Migrations
 {
     [DbContext(typeof(EamsContext))]
-    partial class EamsContextModelSnapshot : ModelSnapshot
+    [Migration("20241213113850_updatedResultDeclaration")]
+    partial class updatedResultDeclaration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -80,7 +83,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasIndex("StateMasterId");
 
-                    b.ToTable("AssemblyMaster", (string)null);
+                    b.ToTable("AssemblyMaster");
                 });
 
             modelBuilder.Entity("EAMS_ACore.AuthModels.UserRegistration", b =>
@@ -302,7 +305,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasIndex("StateMasterId");
 
-                    b.ToTable("BoothMaster", (string)null);
+                    b.ToTable("BoothMaster");
                 });
 
             modelBuilder.Entity("EAMS_ACore.DistrictMaster", b =>
@@ -343,7 +346,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasIndex("StateMasterId");
 
-                    b.ToTable("DistrictMaster", (string)null);
+                    b.ToTable("DistrictMaster");
                 });
 
             modelBuilder.Entity("EAMS_ACore.EventMaster", b =>
@@ -398,7 +401,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasIndex("StateMasterId");
 
-                    b.ToTable("EventMaster", (string)null);
+                    b.ToTable("EventMaster");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.AROResultMaster", b =>
@@ -478,7 +481,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("AROMasterId");
 
-                    b.ToTable("AROResultMaster", (string)null);
+                    b.ToTable("AROResultMaster");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.BLOModels.BLOMaster", b =>
@@ -544,7 +547,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("BLOMasterId");
 
-                    b.ToTable("BLOMaster", (string)null);
+                    b.ToTable("BLOMaster");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.CountingDayModels.CountingBasicInfoMaster", b =>
@@ -594,7 +597,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasIndex("PcMasterId");
 
-                    b.ToTable("CountingBasicInfoMaster", (string)null);
+                    b.ToTable("CountingBasicInfoMaster");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.CountingDayModels.CountingLocationMaster", b =>
@@ -632,7 +635,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasIndex("StateMasterId");
 
-                    b.ToTable("CountingLocationMaster", (string)null);
+                    b.ToTable("CountingLocationMaster");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.CountingDayModels.CountingTypeMaster", b =>
@@ -655,7 +658,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("CountingTypeMasterId");
 
-                    b.ToTable("CountingTypeMaster", (string)null);
+                    b.ToTable("CountingTypeMaster");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.CountingDayModels.CountingVenueMaster", b =>
@@ -680,7 +683,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasIndex("LocationMasterId");
 
-                    b.ToTable("CountingVenueMaster", (string)null);
+                    b.ToTable("CountingVenueMaster");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.CountingDayModels.ElectionConductedMaster", b =>
@@ -704,7 +707,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasIndex("ElectionTypeMasterId");
 
-                    b.ToTable("ElectionConductedMaster", (string)null);
+                    b.ToTable("ElectionConductedMaster");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.ElectionInfoMaster", b =>
@@ -872,7 +875,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("ElectionInfoMasterId");
 
-                    b.ToTable("ElectionInfoMaster", (string)null);
+                    b.ToTable("ElectionInfoMaster");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.ElectionType.ElectionTypeMaster", b =>
@@ -902,7 +905,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("ElectionTypeMasterId");
 
-                    b.ToTable("ElectionTypeMaster", (string)null);
+                    b.ToTable("ElectionTypeMaster");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.EventAbbr", b =>
@@ -923,7 +926,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("EventAbbrId");
 
-                    b.ToTable("EventAbbr", (string)null);
+                    b.ToTable("EventAbbr");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.FieldOfficerMaster", b =>
@@ -997,7 +1000,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("FieldOfficerMasterId");
 
-                    b.ToTable("FieldOfficerMaster", (string)null);
+                    b.ToTable("FieldOfficerMaster");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.FourthLevelH", b =>
@@ -1093,7 +1096,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasIndex("StateMasterId");
 
-                    b.ToTable("FourthLevelH", (string)null);
+                    b.ToTable("FourthLevelH");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.GPPanchayatWards", b =>
@@ -1174,7 +1177,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasIndex("StateMasterId");
 
-                    b.ToTable("GPPanchayatWards", (string)null);
+                    b.ToTable("GPPanchayatWards");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.HelpDeskDetail", b =>
@@ -1228,7 +1231,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("HelpDeskMasterId");
 
-                    b.ToTable("HelpDeskDetail", (string)null);
+                    b.ToTable("HelpDeskDetail");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.MobileVersion", b =>
@@ -1248,7 +1251,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("MobileVersionId");
 
-                    b.ToTable("MobileVersion", (string)null);
+                    b.ToTable("MobileVersion");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.PSZonePanchayat", b =>
@@ -1314,7 +1317,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasIndex("StateMasterId");
 
-                    b.ToTable("PSZonePanchayat", (string)null);
+                    b.ToTable("PSZonePanchayat");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.PollDetail", b =>
@@ -1371,7 +1374,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("PollDetailMasterId");
 
-                    b.ToTable("PollDetails", (string)null);
+                    b.ToTable("PollDetails");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.PollInterruption", b =>
@@ -1447,7 +1450,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("PollInterruptionId");
 
-                    b.ToTable("PollInterruptions", (string)null);
+                    b.ToTable("PollInterruptions");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.PollInterruptionHistory", b =>
@@ -1525,7 +1528,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("PollInterruptionHisId");
 
-                    b.ToTable("PollInterruptionHistory", (string)null);
+                    b.ToTable("PollInterruptionHistory");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.PollingLocationMaster", b =>
@@ -1576,7 +1579,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("LocationMasterId");
 
-                    b.ToTable("PollingLocationMaster", (string)null);
+                    b.ToTable("PollingLocationMaster");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.PollingStationFormModels.PollingStationGender", b =>
@@ -1609,7 +1612,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasIndex("PollingStationMasterId");
 
-                    b.ToTable("PollingStationGender", (string)null);
+                    b.ToTable("PollingStationGender");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.PollingStationFormModels.PollingStationMaster", b =>
@@ -1781,7 +1784,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("PollingStationMasterId");
 
-                    b.ToTable("PollingStationMaster", (string)null);
+                    b.ToTable("PollingStationMaster");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.Polling_Personal_Randomisation_Models.PPR", b =>
@@ -1815,7 +1818,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("PPRMasterId");
 
-                    b.ToTable("PPR", (string)null);
+                    b.ToTable("PPR");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.Polling_Personal_Randomization_Models.RandomizationTaskDetail", b =>
@@ -1838,7 +1841,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("RandomizationTaskDetailMasterId");
 
-                    b.ToTable("RandomizationTaskDetail", (string)null);
+                    b.ToTable("RandomizationTaskDetail");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.PublicModels.GPVoter", b =>
@@ -1888,7 +1891,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("GPVoterMasterId");
 
-                    b.ToTable("GPVoter", (string)null);
+                    b.ToTable("GPVoter");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.PublicModels.Kyc", b =>
@@ -1949,7 +1952,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("KycMasterId");
 
-                    b.ToTable("Kyc", (string)null);
+                    b.ToTable("Kyc");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.PublicModels.ResultDeclaration", b =>
@@ -2022,7 +2025,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("ResultDeclarationMasterId");
 
-                    b.ToTable("ResultDeclaration", (string)null);
+                    b.ToTable("ResultDeclaration");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.PublicModels.ResultDeclarationHistory", b =>
@@ -2100,7 +2103,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasIndex("ResultDeclarationMasterId");
 
-                    b.ToTable("ResultDeclarationHistory", (string)null);
+                    b.ToTable("ResultDeclarationHistory");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.PublicModels.UnOpposed", b =>
@@ -2152,7 +2155,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("UnOpposedMasterId");
 
-                    b.ToTable("UnOpposed", (string)null);
+                    b.ToTable("UnOpposed");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.PublicModels.VoterType", b =>
@@ -2169,7 +2172,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("VoterTypeMasterId");
 
-                    b.ToTable("VoterType", (string)null);
+                    b.ToTable("VoterType");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.QueueModel.QIS", b =>
@@ -2219,7 +2222,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("QueueMasterId");
 
-                    b.ToTable("QIS", (string)null);
+                    b.ToTable("QIS");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.SlotManagementMaster", b =>
@@ -2265,7 +2268,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("SlotManagementId");
 
-                    b.ToTable("SlotManagementMaster", (string)null);
+                    b.ToTable("SlotManagementMaster");
                 });
 
             modelBuilder.Entity("EAMS_ACore.NotificationModels.Notification", b =>
@@ -2297,7 +2300,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("NotificationId");
 
-                    b.ToTable("Notification", (string)null);
+                    b.ToTable("Notification");
                 });
 
             modelBuilder.Entity("EAMS_ACore.NotificationModels.SMSSent", b =>
@@ -2335,7 +2338,7 @@ namespace EAMS_DAL.Migrations
                     b.HasIndex("SMSTemplateMasterId")
                         .IsUnique();
 
-                    b.ToTable("SMSSent", (string)null);
+                    b.ToTable("SMSSent");
                 });
 
             modelBuilder.Entity("EAMS_ACore.NotificationModels.SMSTemplate", b =>
@@ -2369,7 +2372,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("SMSTemplateMasterId");
 
-                    b.ToTable("SMSTemplate", (string)null);
+                    b.ToTable("SMSTemplate");
                 });
 
             modelBuilder.Entity("EAMS_ACore.ParliamentConstituencyMaster", b =>
@@ -2414,7 +2417,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasIndex("StateMasterId");
 
-                    b.ToTable("ParliamentConstituencyMaster", (string)null);
+                    b.ToTable("ParliamentConstituencyMaster");
                 });
 
             modelBuilder.Entity("EAMS_ACore.SignalRModels.DashboardConnectedUser", b =>
@@ -2453,7 +2456,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("DashboardConnectedUserId");
 
-                    b.ToTable("DashboardConnectedUser", (string)null);
+                    b.ToTable("DashboardConnectedUser");
                 });
 
             modelBuilder.Entity("EAMS_ACore.StateMaster", b =>
@@ -2492,7 +2495,7 @@ namespace EAMS_DAL.Migrations
 
                     b.HasKey("StateMasterId");
 
-                    b.ToTable("StateMaster", (string)null);
+                    b.ToTable("StateMaster");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

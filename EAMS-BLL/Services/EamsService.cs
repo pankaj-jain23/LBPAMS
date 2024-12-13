@@ -16,6 +16,7 @@ using EAMS_ACore.Models.Polling_Personal_Randomization_Models;
 using EAMS_ACore.Models.PollingStationFormModels;
 using EAMS_ACore.Models.PublicModels;
 using EAMS_ACore.Models.QueueModel;
+using EAMS_ACore.Models.ResultModels;
 using EAMS_ACore.ReportModels;
 using EAMS_ACore.SignalRModels;
 using Microsoft.EntityFrameworkCore;
@@ -808,9 +809,9 @@ namespace EAMS_BLL.Services
             return await _eamsRepository.AddEventSlot(addEventSlot);
         }
 
-        public async Task<List<SlotManagementMaster>> GetEventSlotList(int stateMasterId, int electionTypeMasterId, int eventId)
+        public async Task<List<SlotManagementMaster>> GetEventSlotList(int stateMasterId, int electionTypeMasterId, string eventABBR)
         {
-            return await _eamsRepository.GetEventSlotList(stateMasterId, electionTypeMasterId, eventId);
+            return await _eamsRepository.GetEventSlotList(stateMasterId, electionTypeMasterId, eventABBR);
         }
         #endregion
 
@@ -1910,7 +1911,7 @@ namespace EAMS_BLL.Services
                     Message = "No data provided."
                 };
             }
-            if (resultDeclaration.Any(r => string.IsNullOrEmpty(r.VoteMargin) && !r.IsDrawLottery))
+            if (resultDeclaration.Any(r => string.IsNullOrEmpty(r.VoteMargin.ToString()) && !r.IsDrawLottery))
             {
                 return new ServiceResponseForRD
                 {
@@ -1918,17 +1919,17 @@ namespace EAMS_BLL.Services
                     Message = "All fields are required."
                 };
             }
-                // Fetch all candidate names for the given KycMasterIds
-                var kycMasterIds = resultDeclaration.Select(r => r.KycMasterId).Distinct().ToList();
+            // Fetch all candidate names for the given KycMasterIds
+            var kycMasterIds = resultDeclaration.Select(r => r.KycMasterId).Distinct().ToList();
             var candidateNames = await _eamsRepository.GetCandidateNameByKycMasterId(kycMasterIds);
 
             // Filter valid results and sort by VoteMargin
             var validResults = resultDeclaration
-                .Where(r => !string.IsNullOrEmpty(r.VoteMargin))
+                .Where(r => !string.IsNullOrEmpty(r.VoteMargin.ToString()))
                 .OrderByDescending(r =>
                 {
                     int voteMargin;
-                    return int.TryParse(r.VoteMargin, out voteMargin) ? voteMargin : 0;
+                    return int.TryParse(r.VoteMargin.ToString(), out voteMargin) ? voteMargin : 0;
                 })
                 .ToList();
 
@@ -1945,10 +1946,10 @@ namespace EAMS_BLL.Services
 
             // Determine highest vote margin
             var highestVoteMarginStr = validResults[0].VoteMargin;
-            if (int.TryParse(highestVoteMarginStr, out var highestVoteMargin))
+            if (int.TryParse(highestVoteMarginStr.ToString(), out var highestVoteMargin))
             {
                 var highestMarginCandidates = validResults
-                    .Where(r => int.TryParse(r.VoteMargin, out var margin) && margin == highestVoteMargin)
+                    .Where(r => int.TryParse(r.VoteMargin.ToString(), out var margin) && margin == highestVoteMargin)
                     .ToList();
 
                 // Case 4: Lottery Winner
@@ -2053,7 +2054,7 @@ namespace EAMS_BLL.Services
             {
                 return new ServiceResponseForRD { IsSucceed = false, Message = "No data provided." };
             }
-            if (resultDeclaration.Any(r => string.IsNullOrEmpty(r.VoteMargin) && !r.IsDrawLottery))
+            if (resultDeclaration.Any(r => string.IsNullOrEmpty(r.VoteMargin.ToString()) && !r.IsDrawLottery))
             {
                 return new ServiceResponseForRD
                 {
@@ -2067,21 +2068,21 @@ namespace EAMS_BLL.Services
 
             // Filter the records that have non-null and non-empty VoteMargin
             var validResults = resultDeclaration
-                .Where(r => !string.IsNullOrEmpty(r.VoteMargin))
+                .Where(r => !string.IsNullOrEmpty(r.VoteMargin.ToString()))
                 .OrderByDescending(r =>
                 {
                     int voteMargin;
-                    return int.TryParse(r.VoteMargin, out voteMargin) ? voteMargin : 0;
+                    return int.TryParse(r.VoteMargin.ToString(), out voteMargin) ? voteMargin : 0;
                 })
                 .ToList();
 
             if (validResults.Count > 0)
             {
                 var highestVoteMarginStr = validResults[0].VoteMargin;
-                if (int.TryParse(highestVoteMarginStr, out var highestVoteMargin))
+                if (int.TryParse(highestVoteMarginStr.ToString(), out var highestVoteMargin))
                 {
                     var highestMarginCandidates = validResults
-                        .Where(r => int.TryParse(r.VoteMargin, out var margin) && margin == highestVoteMargin)
+                        .Where(r => int.TryParse(r.VoteMargin.ToString(), out var margin) && margin == highestVoteMargin)
                         .ToList();
 
                     // Case 4: Lottery Winner
@@ -2362,7 +2363,7 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetPanchayatListByROId(stateMasterId, districtMasterId, assemblyMasterId, roId);
         }
-        public async Task<List<CombinedPanchayatMaster>> GetFourthLevelListByAROId(int stateMasterId, int districtMasterId, int assemblyMasterId,int electionTypeMasterId, string roId, string assginedType)
+        public async Task<List<CombinedPanchayatMaster>> GetFourthLevelListByAROId(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId, string roId, string assginedType)
         {
             return await _eamsRepository.GetFourthLevelListByAROId(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId, roId, assginedType);
         }
@@ -2408,5 +2409,24 @@ namespace EAMS_BLL.Services
         //{
         //    return await _eamsRepository.PushDisasterEvent(electionInfoMaster);
         //}
+
+        #region Result Declartion DashBoard
+        public async Task<List<ResultList>> GetResultByStateId(int stateMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.GetResultByStateId(stateMasterId, electionTypeMasterId);
+        }
+        public async Task<List<ResultList>> GetResultByDistrictId(int stateMasterId, int districtMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.GetResultByDistrictId(stateMasterId, districtMasterId, electionTypeMasterId);
+        }
+        public async Task<List<ResultList>> GetResultByAssemblyId(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.GetResultByAssemblyId(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId);
+        }
+        public async Task<List<ResultList>> GetResultByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.GetResultByFourthLevelId(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId, electionTypeMasterId);
+        }
+        #endregion
     }
 }

@@ -3509,9 +3509,11 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetEventSlotListById")]
         [Authorize]
-        public async Task<IActionResult> GetEventSlotList(int stateMasterId, int electionTypeMasterId, int EventId)
+        public async Task<IActionResult> GetEventSlotList(int stateMasterId,string eventABBR)
         {
-            var result = await _EAMSService.GetEventSlotList(stateMasterId, electionTypeMasterId, EventId);
+            var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
+            int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
+            var result = await _EAMSService.GetEventSlotList(stateMasterId, electionTypeMasterId, eventABBR);
             if (result is null)
             {
                 return BadRequest(result);

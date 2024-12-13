@@ -54,7 +54,7 @@ namespace EAMS_ACore.Models.PublicModels
         }
         public int KycMasterId { get; set; }
       
-        public string? VoteMargin
+        public int? VoteMargin
         {
             get;
             set;
@@ -188,7 +188,7 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
-        public string? VoteMargin
+        public int? VoteMargin
         {
             get;
             set;
@@ -369,7 +369,7 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
-        public string? VoteMargin
+        public int? VoteMargin
         {
             get;
             set;

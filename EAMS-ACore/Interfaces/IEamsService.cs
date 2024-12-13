@@ -11,6 +11,7 @@ using EAMS_ACore.Models.Polling_Personal_Randomization_Models;
 using EAMS_ACore.Models.PollingStationFormModels;
 using EAMS_ACore.Models.PublicModels;
 using EAMS_ACore.Models.QueueModel;
+using EAMS_ACore.Models.ResultModels;
 using EAMS_ACore.ReportModels;
 using EAMS_ACore.SignalRModels;
 using System.Security.Claims;
@@ -182,7 +183,7 @@ namespace EAMS_ACore.Interfaces
 
         #region SlotManagement
         Task<Response> AddEventSlot(List<SlotManagementMaster> addEventSlot);
-        Task<List<SlotManagementMaster>> GetEventSlotList(int stateMasterId, int electionTypeMasterId, int eventId);
+        Task<List<SlotManagementMaster>> GetEventSlotList(int stateMasterId, int electionTypeMasterId, string eventABBR);
         #endregion
 
         Task<List<UserList>> GetUserList(string soName, string type);
@@ -423,5 +424,13 @@ namespace EAMS_ACore.Interfaces
         //Task<List<Disaster>> GetFieldAllOfficerMaster();
         //Task<List<int>> GetFOAsginedBooth(int foId);
         //Task<ServiceResponse> PushDisasterEvent(List<ElectionInfoMaster> electionInfoMaster);
+
+        #region Result Declartion DashBoard
+        Task<List<ResultList>> GetResultByStateId(int stateMasterId,int electionTypeMasterId);
+        Task<List<ResultList>> GetResultByDistrictId(int stateMasterId,int districtMasterId, int electionTypeMasterId);
+        Task<List<ResultList>> GetResultByAssemblyId(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId);
+        Task<List<ResultList>> GetResultByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelMasterId, int electionTypeMasterId);
+
+        #endregion
     }
 }

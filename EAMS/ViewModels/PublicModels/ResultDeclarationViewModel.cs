@@ -38,7 +38,7 @@
         public int? BoothMasterId { get; set; }
         public int FourthLevelHMasterId { get; set; }
         public int? GPPanchayatWardsMasterId { get; set; }
-        public string? VoteMargin { get; set; } // Optional, since it could be null
+        public int? VoteMargin { get; set; } // Optional, since it could be null
         public bool IsReCounting { get; set; }
         public bool IsWinner { get; set; }
         public bool IsDraw { get; set; }

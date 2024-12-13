@@ -88,6 +88,10 @@ namespace EAMS_ACore.Models.PublicModels
             get; set;
         }
 
+        public IEnumerable<object> DefaultIfEmpty()
+        {
+            throw new NotImplementedException();
+        }
     }
     public class KycList
     {

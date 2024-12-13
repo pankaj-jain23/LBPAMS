@@ -1070,5 +1070,53 @@ namespace EAMS.Controllers
         }
 
         #endregion
+
+
+        #region Result Declartion DashBoard
+        [HttpGet("GetResultByStateId")]
+        [Authorize]
+        public async Task<IActionResult> GetResultByStateId()
+        {
+            var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
+            int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
+            int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
+            var result = await _EAMSService.GetResultByStateId(stateMasterId, electionTypeMasterId);
+            return Ok(result);
+
+        }
+        [HttpGet("GetResultByDistrictId")]
+        [Authorize]
+        public async Task<IActionResult> GetResultByDistrictId(int districtMasterId)
+        {
+            var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
+            int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
+            int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
+            var result = await _EAMSService.GetResultByDistrictId(stateMasterId, districtMasterId, electionTypeMasterId);
+            return Ok(result);
+
+        }
+        [HttpGet("GetResultByAssemblyId")]
+        [Authorize]
+        public async Task<IActionResult> GetResultByAssemblyId(int districtMasterId,int assemblyMasterId)
+        {
+            var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
+            int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
+            int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
+            var result = await _EAMSService.GetResultByAssemblyId(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId);
+            return Ok(result);
+
+        }
+        [HttpGet("GetResultByFourthLevelId")]
+        [Authorize]
+        public async Task<IActionResult> GetResultByFourthLevelId(int districtMasterId, int assemblyMasterId,int fourthLevelMasterId)
+        {
+            var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
+            int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
+            int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
+            var result = await _EAMSService.GetResultByFourthLevelId(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId, electionTypeMasterId);
+            return Ok(result);
+
+        }
+        #endregion
     }
 }
