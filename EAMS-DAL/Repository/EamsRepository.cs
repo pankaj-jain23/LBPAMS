@@ -15496,37 +15496,80 @@ namespace EAMS_DAL.Repository
         {
             var voterTurnOutList = new List<VoterTurnOutSlotWise>();
 
-            // Establish a connection to the PostgreSQL database
-            await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("Postgres"));
-            await connection.OpenAsync();
-
-            var command = new NpgsqlCommand("SELECT * FROM getvoterturnoutreport_percentage(@state_master_id)", connection);
-            command.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateMasterId));
-
-            // Execute the command and read the results
-            await using var reader = await command.ExecuteReaderAsync();
-
-            while (await reader.ReadAsync())
+            try
             {
-                var slotVotes = (string[])reader.GetValue(3); // Assuming slot_votes array is at index 3
+                await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("Postgres"));
+                await connection.OpenAsync();
 
-                var voterTurnOut = new VoterTurnOutSlotWise
+                var command = new NpgsqlCommand("SELECT * FROM getvoterturnoutreport_percentage(@state_master_id)", connection);
+                command.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateMasterId));
+
+                await using var reader = await command.ExecuteReaderAsync();
+
+                while (await reader.ReadAsync())
                 {
-                    Key = GenerateRandomAlphanumericString(6),
-                    MasterId = reader.GetInt32(0),
-                    Name = reader.GetString(1),
-                    Type = "District",
-                    SlotVotes = slotVotes, // Assigning the array to SlotVotes property
-                    Children = new List<object>()
-                };
+                    var slotVotes = (string[])reader.GetValue(3);
 
-                // Add the object to the list
-                voterTurnOutList.Add(voterTurnOut);
+                    var voterTurnOut = new VoterTurnOutSlotWise
+                    {
+                        Key = GenerateRandomAlphanumericString(6),
+                        MasterId = reader.GetInt32(0),
+                        Name = reader.GetString(1),
+                        Type = "District",
+                        SlotVotes = slotVotes,
+                        Children = new List<object>()
+                    };
+
+                    voterTurnOutList.Add(voterTurnOut);
+                }
             }
-
+            catch (PostgresException ex) when (ex.SqlState == "42883")
+            {
+                throw new Exception("The required database function is missing or misconfigured. Please contact the administrator.");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An unexpected error occurred while fetching voter turnout data.", ex);
+            }
 
             return voterTurnOutList;
         }
+
+        //public async Task<List<VoterTurnOutSlotWise>> GetVoterTurnOutSlotBasedReport(string stateMasterId)
+        //{
+        //    var voterTurnOutList = new List<VoterTurnOutSlotWise>();
+
+        //    // Establish a connection to the PostgreSQL database
+        //    await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("Postgres"));
+        //    await connection.OpenAsync();
+
+        //    var command = new NpgsqlCommand("SELECT * FROM getvoterturnoutreport_percentage(@state_master_id)", connection);
+        //    command.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateMasterId));
+
+        //    // Execute the command and read the results
+        //    await using var reader = await command.ExecuteReaderAsync();
+
+        //    while (await reader.ReadAsync())
+        //    {
+        //        var slotVotes = (string[])reader.GetValue(3); // Assuming slot_votes array is at index 3
+
+        //        var voterTurnOut = new VoterTurnOutSlotWise
+        //        {
+        //            Key = GenerateRandomAlphanumericString(6),
+        //            MasterId = reader.GetInt32(0),
+        //            Name = reader.GetString(1),
+        //            Type = "District",
+        //            SlotVotes = slotVotes, // Assigning the array to SlotVotes property
+        //            Children = new List<object>()
+        //        };
+
+        //        // Add the object to the list
+        //        voterTurnOutList.Add(voterTurnOut);
+        //    }
+
+
+        //    return voterTurnOutList;
+        //}
         public async Task<List<AssemblyVoterTurnOutSlotWise>> GetSlotVTReporttAssemblyWise(string stateId, string districtId)
         {
             var eventActivityList = new List<AssemblyVoterTurnOutSlotWise>();

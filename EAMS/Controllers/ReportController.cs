@@ -720,22 +720,25 @@ namespace EAMS.Controllers
         public async Task<IActionResult> GetSlotBasedVTOutReports(string? stateId)
         {
             string stateMasterId;
-            var stateMasterIdC = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId").Value;
-            if (stateId != null)
+
+            // Safely retrieve the claim value
+            var stateMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId");
+            if (stateMasterIdClaim == null)
             {
-                stateMasterId = stateId;
-            }
-            else
-            {
-                stateMasterId = stateMasterIdC.ToString();
+                // Log the issue or return an appropriate error response
+                return BadRequest("StateMasterId claim is missing.");
             }
 
+            stateMasterId = stateId ?? stateMasterIdClaim.Value;
+
+            // Call the service
             var eventDistrictWiseList = await _EAMSService.GetVoterTurnOutSlotBasedReport(stateMasterId);
             if (eventDistrictWiseList is not null)
                 return Ok(eventDistrictWiseList);
-            else
-                return NotFound();
+
+            return NotFound();
         }
+
 
         [HttpGet]
         [Route("GetSlotBasedVTOutReportAssemblyWise")]
