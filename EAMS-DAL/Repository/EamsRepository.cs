@@ -4811,7 +4811,8 @@ namespace EAMS_DAL.Repository
                 .AnyAsync(d => d.StateMasterId == eventMaster.StateMasterId
                               && d.ElectionTypeMasterId == eventMaster.ElectionTypeMasterId
                               && d.EventABBR == eventMaster.EventABBR
-                              && d.EventSequence == eventMaster.EventSequence);
+                              && d.EventSequence == eventMaster.EventSequence && d.IsPrePolled == eventMaster.IsPrePolled);
+
 
             // If a duplicate is found, return a failure response
             if (duplicateEvent)
@@ -4819,7 +4820,7 @@ namespace EAMS_DAL.Repository
                 return new ServiceResponse
                 {
                     IsSucceed = false,
-                    Message = "An event with the same abbreviation and sequence already exists."
+                    Message = "An event with the same abbreviation and sequence already exists or Is Pre Polled Actvity Status is Same"
                 };
             }
 
@@ -9997,15 +9998,12 @@ namespace EAMS_DAL.Repository
             };
         }
 
-        public async Task<List<SlotManagementMaster>> GetEventSlotList(int stateMasterId, int electionTypeMasterId, string eventABBR)
+        public async Task<List<SlotManagementMaster>> GetEventSlotList(int stateMasterId, int electionTypeMasterId, int EventId)
         {
-            var getEvent = await _context.EventMaster.Where(d => d.StateMasterId == stateMasterId
-                                                            && d.ElectionTypeMasterId == electionTypeMasterId
-                                                            && d.EventABBR.Contains(eventABBR)).Select(d => d.EventMasterId)
-                                                            .FirstOrDefaultAsync();
+
             return await _context.SlotManagementMaster.Where(d => d.StateMasterId == stateMasterId
                                                                     && d.ElectionTypeMasterId == electionTypeMasterId
-                                                                    && d.EventMasterId == getEvent).ToListAsync();
+                                                                    && d.EventMasterId == EventId).ToListAsync();
 
         }
         #endregion
@@ -21760,7 +21758,7 @@ namespace EAMS_DAL.Repository
                                                              && d.ElectionTypeMasterId == electionTypeMasterId)
 
                 join kyc in _context.Kyc
-                    .Where(k => k.StateMasterId == stateMasterId && k.ElectionTypeMasterId == electionTypeMasterId&&k.IsUnOppossed==true)
+                    .Where(k => k.StateMasterId == stateMasterId && k.ElectionTypeMasterId == electionTypeMasterId && k.IsUnOppossed == true)
                     on frth.FourthLevelHMasterId equals kyc.FourthLevelHMasterId into kycs
                 from k in kycs.DefaultIfEmpty() // Left join to include all records from Kyc
 
@@ -21770,7 +21768,7 @@ namespace EAMS_DAL.Repository
                     MasterId = frth.FourthLevelHMasterId,
                     Name = $"{k.CandidateName} {k.FatherName}", // Concatenate CandidateName and FatherName
                     Type = "Kyc",
-                    TotalWonCandidate =0, // No count for won candidates in Kyc
+                    TotalWonCandidate = 0, // No count for won candidates in Kyc
                     TotalVoteMargin = 0, // No VoteMargin in Kyc
                     IsUnOpposed = k != null && k.IsUnOppossed == true ? 1 : 0,
                     Children = new List<object>() // Populate as needed
@@ -21802,12 +21800,12 @@ namespace EAMS_DAL.Repository
                     TotalWonCandidate = 1, // Count of won candidates in ResultDeclaration
                     TotalVoteMargin = rd.VoteMargin, // Sum of VoteMargin if rd is not null
                     IsUnOpposed = 0, // Assume 0 if not present in ResultDeclaration
-                    Children =null // Populate as needed
+                    Children = null // Populate as needed
                 }
             ).ToListAsync();
 
             // Concatenate both results
-            var combinedResults = kycResults.Concat(resultDeclarationResults).ToList(); 
+            var combinedResults = kycResults.Concat(resultDeclarationResults).ToList();
 
             return combinedResults;
         }

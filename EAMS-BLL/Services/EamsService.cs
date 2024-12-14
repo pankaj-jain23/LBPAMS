@@ -809,9 +809,9 @@ namespace EAMS_BLL.Services
             return await _eamsRepository.AddEventSlot(addEventSlot);
         }
 
-        public async Task<List<SlotManagementMaster>> GetEventSlotList(int stateMasterId, int electionTypeMasterId, string eventABBR)
+        public async Task<List<SlotManagementMaster>> GetEventSlotList(int stateMasterId, int electionTypeMasterId, int EventId)
         {
-            return await _eamsRepository.GetEventSlotList(stateMasterId, electionTypeMasterId, eventABBR);
+            return await _eamsRepository.GetEventSlotList(stateMasterId, electionTypeMasterId, EventId);
         }
         #endregion
 

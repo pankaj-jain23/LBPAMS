@@ -10,6 +10,7 @@ using EAMS_ACore.IExternal;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
+using EAMS_ACore.Models.ElectionType;
 using EAMS_ACore.Models.EventActivityModels;
 using EAMS_ACore.Models.PollingStationFormModels;
 using EAMS_ACore.Models.QueueModel;
@@ -3509,11 +3510,10 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetEventSlotListById")]
         [Authorize]
-        public async Task<IActionResult> GetEventSlotList(int stateMasterId,string eventABBR)
+        public async Task<IActionResult> GetEventSlotList(int stateMasterId,int electionTypeMasterId, int EventId)
         {
-            var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
-            int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
-            var result = await _EAMSService.GetEventSlotList(stateMasterId, electionTypeMasterId, eventABBR);
+            var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value); 
+            var result = await _EAMSService.GetEventSlotList(stateMasterId, electionTypeMasterId, EventId);
             if (result is null)
             {
                 return BadRequest(result);
