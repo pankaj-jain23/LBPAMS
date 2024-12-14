@@ -2504,12 +2504,9 @@ namespace EAMS_DAL.Repository
                 .ToListAsync();
 
             // Step 3: Fetch first event from cache or database before the loop
-            var getFirstEvent = await _cacheService.GetDataAsync<EventMaster>("GetFirstEvent");
-            if (getFirstEvent is null)
-            {
-                getFirstEvent = await GetFirstSequenceEventById(stateMasterId, boothListResult.FirstOrDefault()?.ElectionTypeMasterId ?? 0);
-                await _cacheService.SetDataAsync("GetFirstEvent", getFirstEvent, BharatTimeDynamic(0, 0, 0, 0, 20));
-            }
+             
+              var  getFirstEvent = await GetFirstSequenceEventById(stateMasterId, boothListResult.FirstOrDefault()?.ElectionTypeMasterId ?? 0);
+             
 
             // Step 4: Update each booth's event data
             // Convert electionInfoRecords to a dictionary for faster lookups by BoothMasterId and ElectionTypeMasterId

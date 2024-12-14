@@ -2666,11 +2666,12 @@ namespace EAMS.Controllers
                 return BadRequest("Missing or invalid claims.");
             }
             var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
+            var electionTypeMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
 
             string userType = userRole != null && (userRole.Contains("FO") || userRole.Contains("ARO"))
                 ? "MobileUser"
                 : "DashBoardUser";
-            var isEventActivityValid = await _EAMSService.IsEventActivityValid(stateMasterId, electionTypeMasterId, updateEventActivityViewModel.EventMasterId);
+            var isEventActivityValid = await _EAMSService.IsEventActivityValid(stateMasterId, Convert.ToInt32(electionTypeMasterIdClaim), updateEventActivityViewModel.EventMasterId);
 
             //If election date is not same it will through msg
             if (!isEventActivityValid.IsToday)
@@ -2683,7 +2684,7 @@ namespace EAMS.Controllers
             mappedData.StateMasterId = stateMasterId;
             mappedData.DistrictMasterId = districtMasterId;
             mappedData.AssemblyMasterId = assemblyMasterId;
-            mappedData.ElectionTypeMasterId = electionTypeMasterId;
+            mappedData.ElectionTypeMasterId = Convert.ToInt32(electionTypeMasterIdClaim);
             mappedData.FieldOfficerMasterId = fieldOfficerMasterId.ToString();
             var result = await _EAMSService.UpdateEventActivity(mappedData, userType);
             if (result.IsSucceed == true)
@@ -2716,11 +2717,12 @@ namespace EAMS.Controllers
                 return BadRequest("Missing or invalid claims.");
             }
             var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
+            var electionTypeMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
 
             string userType = userRole != null && (userRole.Contains("FO") || userRole.Contains("ARO"))
                 ? "MobileUser"
                 : "DashBoardUser";
-            var isEventActivityValid = await _EAMSService.IsEventActivityValid(stateMasterId, electionTypeMasterId, updateEventActivityViewModel.EventMasterId);
+            var isEventActivityValid = await _EAMSService.IsEventActivityValid(stateMasterId, Convert.ToInt32(electionTypeMasterIdClaim), updateEventActivityViewModel.EventMasterId);
 
             //If election date is not same it will through msg
             if (!isEventActivityValid.IsToday)
@@ -2733,7 +2735,7 @@ namespace EAMS.Controllers
             mappedData.StateMasterId = stateMasterId;
             mappedData.DistrictMasterId = districtMasterId;
             mappedData.AssemblyMasterId = assemblyMasterId;
-            mappedData.ElectionTypeMasterId = electionTypeMasterId;
+            mappedData.ElectionTypeMasterId = Convert.ToInt32(electionTypeMasterIdClaim);
 
             var result = await _EAMSService.UpdateEventActivity(mappedData, userType);
             if (result.IsSucceed == true)
@@ -2770,7 +2772,9 @@ namespace EAMS.Controllers
             string userType = userRole != null && (userRole.Contains("FO") || userRole.Contains("ARO"))
                 ? "MobileUser"
                 : "DashBoardUser";
-            var isEventActivityValid = await _EAMSService.IsEventActivityValid(stateMasterId, electionTypeMasterId, updateEventActivityViewModel.EventMasterId);
+            var electionTypeMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
+
+            var isEventActivityValid = await _EAMSService.IsEventActivityValid(stateMasterId, Convert.ToInt32(electionTypeMasterIdClaim), updateEventActivityViewModel.EventMasterId);
 
             //If election date is not same it will through msg
             if (!isEventActivityValid.IsToday)
@@ -2783,7 +2787,7 @@ namespace EAMS.Controllers
             mappedData.StateMasterId = stateMasterId;
             mappedData.DistrictMasterId = districtMasterId;
             mappedData.AssemblyMasterId = assemblyMasterId;
-            mappedData.ElectionTypeMasterId = electionTypeMasterId;
+            mappedData.ElectionTypeMasterId = Convert.ToInt32(electionTypeMasterIdClaim);
 
             var result = await _EAMSService.UpdateEventActivity(mappedData, userType);
             if (result.IsSucceed == true)
@@ -2807,12 +2811,22 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetBoothEventListById")]
         [Authorize]
-        public async Task<IActionResult> GetBoothEventListById(int boothMasterId)
+        public async Task<IActionResult> GetBoothEventListById(int boothMasterId,int electionTypeMasterId)
         {
-            if (!TryGetClaimValue(User, "StateMasterId", out int stateMasterId) ||
-                !TryGetClaimValue(User, "ElectionTypeMasterId", out int electionTypeMasterId))
+            if (!TryGetClaimValue(User, "StateMasterId", out int stateMasterId) )
             {
                 return BadRequest("Missing or invalid claims.");
+            }
+            var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
+
+            string userType = userRole != null && (userRole.Contains("FO") || userRole.Contains("ARO"))
+                ? "MobileUser"
+                : "DashBoardUser";
+            if (userType.Contains("MobileUser"))
+            {
+                var electionTypeMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
+
+                electionTypeMasterId = Convert.ToInt32(electionTypeMasterIdClaim);
             }
             var result = await _EAMSService.GetBoothEventListById(stateMasterId, electionTypeMasterId, boothMasterId);
             return Ok(result);
