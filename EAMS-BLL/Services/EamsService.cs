@@ -817,7 +817,12 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetEventSlotList(stateMasterId, electionTypeMasterId, EventId);
         }
-        #endregion
+        public async Task<List<SlotManagementMaster>> GetEventSlotListByEventAbbr(int stateMasterId, int electionTypeMasterId, string eventAbbr)
+
+        {
+            return await _eamsRepository.GetEventSlotListByEventAbbr(stateMasterId, electionTypeMasterId, eventAbbr);
+        }
+         #endregion
 
         #region UserList
         public async Task<List<UserList>> GetUserList(string userName, string type)

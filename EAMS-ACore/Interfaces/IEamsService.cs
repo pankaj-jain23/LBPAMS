@@ -185,6 +185,8 @@ namespace EAMS_ACore.Interfaces
         #region SlotManagement
         Task<Response> AddEventSlot(List<SlotManagementMaster> addEventSlot);
         Task<List<SlotManagementMaster>> GetEventSlotList(int stateMasterId, int electionTypeMasterId, int EventId);
+        Task<List<SlotManagementMaster>> GetEventSlotListByEventAbbr(int stateMasterId, int electionTypeMasterId, string eventAbbr);
+
         #endregion
 
         Task<List<UserList>> GetUserList(string soName, string type);

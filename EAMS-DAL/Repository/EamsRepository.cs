@@ -10053,6 +10053,17 @@ namespace EAMS_DAL.Repository
                                                                     && d.EventMasterId == EventId).ToListAsync();
 
         }
+        public async Task<List<SlotManagementMaster>> GetEventSlotListByEventAbbr(int stateMasterId, int electionTypeMasterId, string eventAbbr)
+        {
+            var getEventMasterId = await _context.EventMaster.Where(d => d.StateMasterId == stateMasterId 
+                                                        && d.ElectionTypeMasterId == electionTypeMasterId
+                                                        && d.EventABBR.Contains(eventAbbr))
+                                                        .Select(d => d.EventMasterId).FirstOrDefaultAsync();
+            return await _context.SlotManagementMaster.Where(d => d.StateMasterId == stateMasterId
+                                                                    && d.ElectionTypeMasterId == electionTypeMasterId
+                                                                    && d.EventMasterId== getEventMasterId).ToListAsync();
+
+        }
         #endregion
 
         #region UserList
