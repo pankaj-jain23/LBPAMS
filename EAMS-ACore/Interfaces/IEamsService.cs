@@ -80,6 +80,7 @@ namespace EAMS_ACore.Interfaces
         #endregion
 
         #region AROResult
+        Task<ServiceResponse> IsMobileNumberUnique(string mobileNumber);
         Task<Response> AddAROResult(AROResultMaster aROResultMaster);
         Task<Response> UpdateAROResult(AROResultMaster aROResultMaster);
         Task<AROResultMasterList> GetAROResultById(int aroMasterId);

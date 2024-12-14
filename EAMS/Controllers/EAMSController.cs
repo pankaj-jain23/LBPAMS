@@ -769,6 +769,11 @@ namespace EAMS.Controllers
             {
 
                 var mappedData = _mapper.Map<FieldOfficerMaster>(fieldOfficerViewModel);
+                var isUniqueMobile = await _EAMSService.IsMobileNumberUnique(fieldOfficerViewModel.FieldOfficerMobile);
+                if (isUniqueMobile.IsSucceed == false)
+                {
+                    return BadRequest(isUniqueMobile.Message);
+                }
                 var result = await _EAMSService.AddFieldOfficer(mappedData);
 
                 switch (result.Status)
@@ -5020,7 +5025,7 @@ namespace EAMS.Controllers
 
         #endregion
 
-        #region AROResult
+        #region AROResult Master
 
         [HttpPost]
         [Route("AddAROResult")]
@@ -5030,6 +5035,11 @@ namespace EAMS.Controllers
             {
 
                 var mappedData = _mapper.Map<AROResultMaster>(fieldOfficerViewModel);
+                var isUniqueMobile=await _EAMSService.IsMobileNumberUnique(fieldOfficerViewModel.AROMobile);
+                if (isUniqueMobile.IsSucceed == false)
+                {
+                    return BadRequest(isUniqueMobile.Message);
+                }
                 var result = await _EAMSService.AddAROResult(mappedData);
 
                 switch (result.Status)

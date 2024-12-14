@@ -275,6 +275,10 @@ namespace EAMS_BLL.Services
         #endregion
 
         #region AROResult
+      public  async Task<ServiceResponse> IsMobileNumberUnique(string mobileNumber)
+        {
+            return await _eamsRepository.IsMobileNumberUnique( mobileNumber);
+        }
         public async Task<Response> AddAROResult(AROResultMaster aROResultMaster)
         {
             return await _eamsRepository.AddAROResult(aROResultMaster);

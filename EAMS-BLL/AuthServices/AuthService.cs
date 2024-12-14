@@ -163,6 +163,7 @@ namespace EAMS_BLL.AuthServices
         #region Register
         public async Task<ServiceResponse> RegisterAsync(UserRegistration userRegistration, List<string> roleIds)
         {
+
             var userExists = await _authRepository.FindUserByName(userRegistration);
             if (userExists.IsSucceed == false)
             {
@@ -171,7 +172,15 @@ namespace EAMS_BLL.AuthServices
             }
             else
             {
-
+                var passwordValidationResult = ValidatePassword(userRegistration.PasswordHash);
+                if (!passwordValidationResult.IsValid)
+                {
+                    return new ServiceResponse
+                    {
+                        IsSucceed = false,
+                        Message = passwordValidationResult.ErrorMessage
+                    };
+                }
 
                 var createUserResult = await _authRepository.CreateUser(userRegistration, roleIds);
 
@@ -187,6 +196,26 @@ namespace EAMS_BLL.AuthServices
             }
 
         }
+        private (bool IsValid, string ErrorMessage) ValidatePassword(string password)
+        {
+            if (password.Length < 8)
+                return (false, "Password must be at least 8 characters long.");
+
+            if (!password.Any(char.IsDigit))
+                return (false, "Password must contain at least one digit.");
+
+            if (!password.Any(char.IsLower))
+                return (false, "Password must contain at least one lowercase letter.");
+
+            if (!password.Any(char.IsUpper))
+                return (false, "Password must contain at least one uppercase letter.");
+
+            if (!password.Any(c => !char.IsLetterOrDigit(c)))
+                return (false, "Password must contain at least one non-alphanumeric character.");
+
+            return (true, string.Empty); // Password is valid
+        }
+
         public async Task<ServiceResponse> SwitchDashboardUser(string userId, int electionTypeMasterId)
         {
             return await _authRepository.SwitchDashboardUser(userId, electionTypeMasterId);
@@ -256,7 +285,7 @@ namespace EAMS_BLL.AuthServices
                         {
                             return new Response { Status = RequestStatusEnum.OK, Message = $"OTP Sent to {aroRecords.AROMobile}" };
                         }
-                        //return new Response { Status = RequestStatusEnum.OK, Message = $"OTP Sent to {aroRecords.OTP}" };
+                       // return new Response { Status = RequestStatusEnum.OK, Message = $"OTP Sent to {aroRecords.OTP}" };
 
                         return new Response { Status = RequestStatusEnum.BadRequest, Message = "Failed to send OTP" };
                     }
@@ -324,8 +353,7 @@ namespace EAMS_BLL.AuthServices
                                 new Claim("AROMasterId", aroRecords.AROMasterId.ToString()),
                                 new Claim("StateMasterId", aroRecords.StateMasterId.ToString()),
                                 new Claim("DistrictMasterId", aroRecords.DistrictMasterId.ToString()),
-                                new Claim("AssemblyMasterId", aroRecords.AssemblyMasterId?.ToString()),
-                                new Claim("FourthLevelHMasterId", aroRecords.FourthLevelHMasterId?.ToString())
+                                new Claim("AssemblyMasterId", aroRecords.AssemblyMasterId?.ToString())
                             };
 
                 var token = GenerateToken(authClaims);
@@ -861,6 +889,15 @@ namespace EAMS_BLL.AuthServices
             {
                 if (user != null && timeNow <= user.OTPExpireTime)
                 {
+                    var passwordValidationResult = ValidatePassword(forgetPasswordModel.ConfirmPassword);
+                    if (!passwordValidationResult.IsValid)
+                    {
+                        return new ServiceResponse
+                        {
+                            IsSucceed = false,
+                            Message = passwordValidationResult.ErrorMessage
+                        };
+                    }
                     var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
                     var result = await _userManager.ResetPasswordAsync(user, resetToken, forgetPasswordModel.Password);
 
@@ -905,6 +942,15 @@ namespace EAMS_BLL.AuthServices
             }
             else
             {
+                var passwordValidationResult = ValidatePassword(resetPasswordModel.NewPassword);
+                if (!passwordValidationResult.IsValid)
+                {
+                    return new ServiceResponse
+                    {
+                        IsSucceed = false,
+                        Message = passwordValidationResult.ErrorMessage
+                    };
+                }
                 // Generate password reset token synchronously
                 string resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
 

@@ -89,6 +89,7 @@ namespace EAMS_ACore.IRepository
         #endregion
 
         #region AROResult
+        Task<ServiceResponse> IsMobileNumberUnique(string mobileNumber);
         Task<Response> AddAROResult(AROResultMaster aROResultMaster);
         Task<Response> UpdateAROResult(AROResultMaster aROResultMaster);
         Task<Response> UpdateAROValidate(AROResultMaster aROResultMaster);

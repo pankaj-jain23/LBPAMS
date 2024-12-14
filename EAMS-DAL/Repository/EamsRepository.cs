@@ -2251,22 +2251,22 @@ namespace EAMS_DAL.Repository
             // Check if FieldOfficer with the same mobile number, election type, and state already exists
             var existingOfficerMobile = await _context.FieldOfficerMaster
                                                 .FirstOrDefaultAsync(d => d.FieldOfficerMobile == fieldOfficerViewModel.FieldOfficerMobile
-                                                                         && d.ElectionTypeMasterId == fieldOfficerViewModel.ElectionTypeMasterId
                                                                          && d.StateMasterId == fieldOfficerViewModel.StateMasterId);
 
 
             // If more than two officers already exist with the same mobile number for this election type, return an error response
             if (existingOfficerMobile is not null)
             {
-                var getAssembly = await _context.AssemblyMaster.Where(d => d.AssemblyMasterId == existingOfficerMobile.AssemblyMasterId &&
+                var getAssembly = await _context.AssemblyMaster.Include(d => d.ElectionTypeMaster).Where(d => d.AssemblyMasterId == existingOfficerMobile.AssemblyMasterId &&
                 d.DistrictMasterId == existingOfficerMobile.DistrictMasterId &&
                 d.StateMasterId == existingOfficerMobile.StateMasterId)
                     .Include(d => d.DistrictMaster).
                     FirstOrDefaultAsync();
+
                 return new Response
                 {
                     Status = RequestStatusEnum.BadRequest,
-                    Message = $"{fieldOfficerViewModel.FieldOfficerName} with Phone No {fieldOfficerViewModel.FieldOfficerMobile} is already registered in Block: {getAssembly.AssemblyName} and District: {getAssembly.DistrictMaster.DistrictName} "
+                    Message = $"{fieldOfficerViewModel.FieldOfficerName} with Phone No {fieldOfficerViewModel.FieldOfficerMobile} is already registered in Block: {getAssembly.AssemblyName} and District: {getAssembly.DistrictMaster.DistrictName} for {getAssembly.ElectionTypeMaster.ElectionType}"
                 };
             }
             fieldOfficerViewModel.FieldOfficerCreatedAt = BharatDateTime();
@@ -2504,9 +2504,9 @@ namespace EAMS_DAL.Repository
                 .ToListAsync();
 
             // Step 3: Fetch first event from cache or database before the loop
-             
-              var  getFirstEvent = await GetFirstSequenceEventById(stateMasterId, boothListResult.FirstOrDefault()?.ElectionTypeMasterId ?? 0);
-             
+
+            var getFirstEvent = await GetFirstSequenceEventById(stateMasterId, boothListResult.FirstOrDefault()?.ElectionTypeMasterId ?? 0);
+
 
             // Step 4: Update each booth's event data
             // Convert electionInfoRecords to a dictionary for faster lookups by BoothMasterId and ElectionTypeMasterId
@@ -2777,12 +2777,62 @@ namespace EAMS_DAL.Repository
         #endregion
 
         #region AROResult
+        public async Task<ServiceResponse> IsMobileNumberUnique(string mobileNumber)
+        {
+
+            // Check if the mobile number exists in FieldOfficerMaster
+            var existingFieldOfficerRecord = await _context.FieldOfficerMaster
+                .FirstOrDefaultAsync(d => d.FieldOfficerMobile == mobileNumber);
+
+
+            // If the number exists in FieldOfficerMaster
+            if (existingFieldOfficerRecord is not null)
+            {
+                var getAssembly = await _context.AssemblyMaster
+                    .Include(d => d.ElectionTypeMaster)
+                    .Where(d => d.AssemblyMasterId == existingFieldOfficerRecord.AssemblyMasterId &&
+                                d.DistrictMasterId == existingFieldOfficerRecord.DistrictMasterId &&
+                                d.StateMasterId == existingFieldOfficerRecord.StateMasterId)
+                    .Include(d => d.DistrictMaster)
+                    .FirstOrDefaultAsync();
+                return new ServiceResponse
+                {
+                    IsSucceed = false,
+                    Message = $"Field Officer {existingFieldOfficerRecord.FieldOfficerName} with Phone No {existingFieldOfficerRecord.FieldOfficerMobile} is already registered in Block: {getAssembly.AssemblyName} and District: {getAssembly.DistrictMaster.DistrictName} for {getAssembly.ElectionTypeMaster.ElectionType} Election"
+                };
+            }
+            // Check if the mobile number exists in AROResultMaster
+            var existingARORecord = await _context.AROResultMaster
+                .FirstOrDefaultAsync(d => d.AROMobile == mobileNumber);
+
+            if (existingARORecord is not null)
+            {
+                var getAssembly = await _context.AssemblyMaster
+                    .Include(d => d.ElectionTypeMaster)
+                    .Where(d => d.AssemblyMasterId == existingARORecord.AssemblyMasterId &&
+                                d.DistrictMasterId == existingARORecord.DistrictMasterId &&
+                                d.StateMasterId == existingARORecord.StateMasterId)
+                    .Include(d => d.DistrictMaster)
+                    .FirstOrDefaultAsync();
+                return new ServiceResponse
+                {
+                    IsSucceed = false,
+                    Message = $"Result Declarator {existingARORecord.AROName} with Phone No {existingARORecord.AROMobile} is already registered in Block: {getAssembly.AssemblyName} and District: {getAssembly.DistrictMaster.DistrictName} for {getAssembly.ElectionTypeMaster.ElectionType} Election"
+                };
+            }
+
+            return new ServiceResponse
+            {
+                IsSucceed = true,
+            };
+
+        }
+
         public async Task<Response> AddAROResult(AROResultMaster aROResultMaster)
         {
             // Check if FieldOfficer with the same mobile number, election type, and state already exists
             var existingOfficerMobile = await _context.AROResultMaster
                                                 .FirstOrDefaultAsync(d => d.AROMobile == aROResultMaster.AROMobile
-                                                                         && d.ElectionTypeMasterId == aROResultMaster.ElectionTypeMasterId
                                                                          && d.StateMasterId == aROResultMaster.StateMasterId);
 
 
