@@ -6435,7 +6435,6 @@ namespace EAMS_DAL.Repository
                 d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
                 d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
                 d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
-                d.FourthLevelHMasterId == totalVoters.FourthLevelHMasterId &&
                 d.BoothMasterId == updateEventActivity.BoothMasterId &&
                 d.SlotManagementId == getLatestSlot.SlotManagementId
             );
@@ -6476,16 +6475,17 @@ namespace EAMS_DAL.Repository
             else
             {
                 result.EventStatus = false;
+                result.IsVoterTurnOut = false;//if any problem occured remove this line
+
             }
             result.VotingLastUpdate = BharatDateTime();
             result.EventName = updateEventActivity.EventName;
-            // Check if a PollDetail already exists within the current Slot's EndTime and LockTime
-
+            
             PollDetail newPollDetail = new PollDetail()
             {
                 StateMasterId = updateEventActivity.StateMasterId,
                 DistrictMasterId = updateEventActivity.DistrictMasterId,
-                AssemblyMasterId = updateEventActivity.AssemblyMasterId,
+                AssemblyMasterId = updateEventActivity.AssemblyMasterId, 
                 BoothMasterId = updateEventActivity.BoothMasterId,
                 ElectionTypeMasterId = updateEventActivity.ElectionTypeMasterId,
                 EventMasterId = updateEventActivity.EventMasterId,
