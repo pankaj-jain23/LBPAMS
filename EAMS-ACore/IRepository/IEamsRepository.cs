@@ -445,7 +445,7 @@ namespace EAMS_ACore.IRepository
 
         #region ResultDeclaration
         Task<ServiceResponseForRD> AddResultDeclarationDetails(List<ResultDeclaration> resultDeclaration);
-
+        Task<int> GetTotalVotersForUrbanRDAsync(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId);
         Task<ServiceResponseForRD> UpdateResultDeclarationForPortal(List<ResultDeclaration> resultDeclaration);
         Task<Dictionary<int, string>> GetCandidateNameByKycMasterId(List<int> kycMasterIds);
         Task<ResultDeclarationBoothWardList> GetResultByBoothId(int boothMasterId);

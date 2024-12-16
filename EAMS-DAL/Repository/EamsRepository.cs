@@ -19691,7 +19691,19 @@ namespace EAMS_DAL.Repository
             // Save all changes to the database
             await _context.SaveChangesAsync();
         }
+        public async Task<int> GetTotalVotersForUrbanRDAsync(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        {
+            // Fetch TotalVoters based on the conditions provided
+            var result = await _context.FourthLevelH
+                .Where(f => f.StateMasterId == stateMasterId &&
+                            f.DistrictMasterId == districtMasterId &&
+                            f.AssemblyMasterId == assemblyMasterId &&
+                            f.FourthLevelHMasterId == fourthLevelHMasterId)
+                .Select(f => f.TotalVoters)
+                .FirstOrDefaultAsync();
 
+            return (int)result;
+        }
 
         public async Task<ServiceResponseForRD> UpdateResultDeclarationForPortal(List<ResultDeclaration> resultDeclaration)
         {

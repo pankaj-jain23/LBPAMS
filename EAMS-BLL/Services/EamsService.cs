@@ -1952,7 +1952,21 @@ namespace EAMS_BLL.Services
                     Message = "No valid vote margins found."
                 };
             }
+            // Assuming you have a method to fetch the TotalVoters for the ward based on the provided parameters
+            var totalVotersInWard = await _eamsRepository.GetTotalVotersForUrbanRDAsync(validResults.First().StateMasterId, validResults.First().DistrictMasterId, validResults.First().AssemblyMasterId, validResults.First().FourthLevelHMasterId);
 
+            // Calculate the sum of VoteMargin
+            var totalVoteMargin = validResults.Sum(r => r.VoteMargin);
+
+            // Check if sum of VoteMargin is less than or equal to total voters in the ward
+            if (totalVoteMargin > totalVotersInWard)
+            {
+                return new ServiceResponseForRD
+                {
+                    IsSucceed = false,
+                    Message = "Total Vote Margin is greater than total votes of the ward."
+                };
+            }
             // Determine highest vote margin
             var highestVoteMarginStr = validResults[0].VoteMargin;
             if (int.TryParse(highestVoteMarginStr.ToString(), out var highestVoteMargin))
@@ -2084,6 +2098,22 @@ namespace EAMS_BLL.Services
                     return int.TryParse(r.VoteMargin.ToString(), out voteMargin) ? voteMargin : 0;
                 })
                 .ToList();
+
+            // Calculate the total vote margin
+            var totalVoteMargin = validResults.Sum(r => r.VoteMargin);
+
+            // Fetch total votes in the ward (this may require a method to fetch this data)
+            var totalVotersInWard = await _eamsRepository.GetTotalVotersForUrbanRDAsync(validResults.First().StateMasterId, validResults.First().DistrictMasterId, validResults.First().AssemblyMasterId, validResults.First().FourthLevelHMasterId);
+
+            // Check if the total vote margin exceeds the total votes in the ward
+            if (totalVoteMargin > totalVotersInWard)
+            {
+                return new ServiceResponseForRD
+                {
+                    IsSucceed = false,
+                    Message = "Total vote margin is greater than the total votes of the ward."
+                };
+            }
 
             if (validResults.Count > 0)
             {
