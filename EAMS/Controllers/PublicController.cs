@@ -1088,7 +1088,7 @@ namespace EAMS.Controllers
             int districtMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("DistrictMasterId"));
             int assemblyMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AssemblyMasterId"));
             int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
-            int fieldOfficerMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("FieldOfficerMasterId"));
+            int fieldOfficerMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AROMasterId"));
 
             // Check if all assigned booths have polls ended
             //var pollCheckResponse = await _eamsService.CheckIfAllBoothsPollEnded(fieldOfficerMasterId);

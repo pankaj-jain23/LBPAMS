@@ -639,12 +639,17 @@ namespace EAMS_DAL.Repository
 
 
                 case "BoothMaster":
-                    var isBoothExist = await _context.BoothMaster.Where(d => d.BoothMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
+                    var isBoothExist = await _context.BoothMaster.Where(d => d.BoothMasterId == Convert.ToInt32(updateMasterStatus.Id) && d.ElectionTypeMasterId == updateMasterStatus.ElectionTypeMasterId).FirstOrDefaultAsync();
                     if (isBoothExist != null)
                     {
                         var electionInfoRecord = await _context.ElectionInfoMaster
-      .Where(d => d.StateMasterId == isBoothExist.StateMasterId && d.DistrictMasterId == isBoothExist.DistrictMasterId && d.AssemblyMasterId == isBoothExist.AssemblyMasterId && d.BoothMasterId == isBoothExist.BoothMasterId)
-      .FirstOrDefaultAsync();
+                                          .Where(d => d.StateMasterId == isBoothExist.StateMasterId
+                                          && d.DistrictMasterId == isBoothExist.DistrictMasterId
+                                          && d.AssemblyMasterId == isBoothExist.AssemblyMasterId
+                                          && d.BoothMasterId == isBoothExist.BoothMasterId
+                                          && d.ElectionTypeMasterId == updateMasterStatus.ElectionTypeMasterId
+                                          )
+                                          .FirstOrDefaultAsync();
                         if (electionInfoRecord == null)
                         {
                             if (String.IsNullOrEmpty(isBoothExist.AssignedTo))
@@ -686,10 +691,10 @@ namespace EAMS_DAL.Repository
                         };
                     }
                 case "BlockZonePanchayat":
-                    var panchayatRecord = await _context.PSZonePanchayat.Where(d => d.PSZonePanchayatMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
+                    var panchayatRecord = await _context.PSZonePanchayat.Where(d => d.PSZonePanchayatMasterId == Convert.ToInt32(updateMasterStatus.Id) && d.ElectionTypeMasterId == updateMasterStatus.ElectionTypeMasterId).FirstOrDefaultAsync();
 
-                    var isBoothExistofPanchyat = await _context.BoothMaster.Where(d => d.PSZonePanchayatMasterId == Convert.ToInt32(updateMasterStatus.Id)).CountAsync();
-                    var isWardExistofPanchyat = await _context.GPPanchayatWards.Where(d => d.FourthLevelHMasterId == Convert.ToInt32(updateMasterStatus.Id)).CountAsync();
+                    var isBoothExistofPanchyat = await _context.BoothMaster.Where(d => d.PSZonePanchayatMasterId == Convert.ToInt32(updateMasterStatus.Id) && d.ElectionTypeMasterId == updateMasterStatus.ElectionTypeMasterId).CountAsync();
+                    var isWardExistofPanchyat = await _context.GPPanchayatWards.Where(d => d.FourthLevelHMasterId == Convert.ToInt32(updateMasterStatus.Id) && d.ElectionTypeMasterId == updateMasterStatus.ElectionTypeMasterId).CountAsync();
 
 
                     if (panchayatRecord != null)
@@ -748,13 +753,13 @@ namespace EAMS_DAL.Repository
 
                     }
                 case "FourthLevel":
-                    var fourthLevelRecord = await _context.FourthLevelH.Where(d => d.FourthLevelHMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
+                    var fourthLevelRecord = await _context.FourthLevelH.Where(d => d.FourthLevelHMasterId == Convert.ToInt32(updateMasterStatus.Id) && d.ElectionTypeMasterId == updateMasterStatus.ElectionTypeMasterId).FirstOrDefaultAsync();
                     if (fourthLevelRecord != null)
                     {
 
                         if (fourthLevelRecord.ElectionTypeMasterId == 1 || fourthLevelRecord.ElectionTypeMasterId == 2)
                         {
-                            var blockZonePanchyatRecord = await _context.PSZonePanchayat.Where(d => d.FourthLevelHMasterId == Convert.ToInt32(updateMasterStatus.Id)).CountAsync();
+                            var blockZonePanchyatRecord = await _context.PSZonePanchayat.Where(d => d.FourthLevelHMasterId == Convert.ToInt32(updateMasterStatus.Id) && d.ElectionTypeMasterId == updateMasterStatus.ElectionTypeMasterId).CountAsync();
 
                             if (blockZonePanchyatRecord > 0)
                             {
@@ -771,7 +776,7 @@ namespace EAMS_DAL.Repository
                         }
                         else if (fourthLevelRecord.ElectionTypeMasterId == 3 || fourthLevelRecord.ElectionTypeMasterId == 4 || fourthLevelRecord.ElectionTypeMasterId == 5 || fourthLevelRecord.ElectionTypeMasterId == 6)
                         {
-                            var isBoothExistofFourthLevel = await _context.BoothMaster.Where(d => d.FourthLevelHMasterId == Convert.ToInt32(updateMasterStatus.Id)).CountAsync();
+                            var isBoothExistofFourthLevel = await _context.BoothMaster.Where(d => d.FourthLevelHMasterId == Convert.ToInt32(updateMasterStatus.Id) && d.ElectionTypeMasterId == updateMasterStatus.ElectionTypeMasterId).CountAsync();
 
                             if (isBoothExistofFourthLevel > 0)
                             {
@@ -798,14 +803,14 @@ namespace EAMS_DAL.Repository
 
                     }
                 case "AssemblyMaster":
-                    var assemblyMaster = await _context.AssemblyMaster.Where(d => d.AssemblyMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
+                    var assemblyMaster = await _context.AssemblyMaster.Where(d => d.AssemblyMasterId == Convert.ToInt32(updateMasterStatus.Id) && d.ElectionTypeMasterId == updateMasterStatus.ElectionTypeMasterId).FirstOrDefaultAsync();
 
                     if (assemblyMaster != null)
                     {
                         //if (updateMasterStatus.IsStatus == false)
                         //{
                         var fourthLevelExistsInAssembly = await _context.FourthLevelH
-                            .Where(d => d.StateMasterId == assemblyMaster.StateMasterId && d.DistrictMasterId == assemblyMaster.DistrictMasterId && d.AssemblyMasterId == assemblyMaster.AssemblyMasterId)
+                            .Where(d => d.StateMasterId == assemblyMaster.StateMasterId && d.DistrictMasterId == assemblyMaster.DistrictMasterId && d.AssemblyMasterId == assemblyMaster.AssemblyMasterId && d.ElectionTypeMasterId == updateMasterStatus.ElectionTypeMasterId)
                             .ToListAsync();
 
                         if (fourthLevelExistsInAssembly.Count > 0)
@@ -890,10 +895,10 @@ namespace EAMS_DAL.Repository
 
 
                 case "SOMaster":
-                    var isSOExist = await _context.FieldOfficerMaster.Where(d => d.FieldOfficerMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
+                    var isSOExist = await _context.FieldOfficerMaster.Where(d => d.FieldOfficerMasterId == Convert.ToInt32(updateMasterStatus.Id) && d.ElectionTypeMasterId == updateMasterStatus.ElectionTypeMasterId).FirstOrDefaultAsync();
                     if (isSOExist != null)
                     {
-                        var boothsAllocated = await _context.BoothMaster.Where(p => p.AssignedTo == isSOExist.FieldOfficerMasterId.ToString()).ToListAsync();
+                        var boothsAllocated = await _context.BoothMaster.Where(p => p.AssignedTo == isSOExist.FieldOfficerMasterId.ToString() && p.ElectionTypeMasterId == updateMasterStatus.ElectionTypeMasterId).ToListAsync();
                         if (boothsAllocated.Count == 0)
                         {
                             // isSOExist.SoStatus = updateMasterStatus.IsStatus;
@@ -914,10 +919,10 @@ namespace EAMS_DAL.Repository
                     }
 
                 case "AROMaster":
-                    var isAROExist = await _context.AROResultMaster.Where(d => d.AROMasterId == Convert.ToInt32(updateMasterStatus.Id)).FirstOrDefaultAsync();
+                    var isAROExist = await _context.AROResultMaster.Where(d => d.AROMasterId == Convert.ToInt32(updateMasterStatus.Id) && d.ElectionTypeMasterId == updateMasterStatus.ElectionTypeMasterId).FirstOrDefaultAsync();
                     if (isAROExist != null)
                     {
-                        var panchayatAllocated = await _context.FourthLevelH.Where(p => p.AssignedToARO == isAROExist.AROMasterId.ToString()).ToListAsync();
+                        var panchayatAllocated = await _context.FourthLevelH.Where(p => p.AssignedToARO == isAROExist.AROMasterId.ToString() && p.ElectionTypeMasterId == updateMasterStatus.ElectionTypeMasterId).ToListAsync();
                         if (panchayatAllocated.Count == 0)
                         {
                             // isSOExist.SoStatus = updateMasterStatus.IsStatus;
@@ -2216,8 +2221,8 @@ namespace EAMS_DAL.Repository
                                              on dist.StateMasterId equals state.StateMasterId
                                              join electionType in _context.ElectionTypeMaster
                                              on fo.ElectionTypeMasterId equals electionType.ElectionTypeMasterId
-                                             join fourthLevelH in _context.FourthLevelH
-                                             on fo.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
+                                             //join fourthLevelH in _context.FourthLevelH
+                                             //on fo.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
                                              where fo.AROMasterId == Convert.ToInt32(aroId)
                                              && fo.IsStatus == true
                                              select new FieldOfficerProfile
@@ -2228,15 +2233,14 @@ namespace EAMS_DAL.Repository
                                                  DistrictName = dist.DistrictName,
                                                  AssemblyMasterId = asm.AssemblyMasterId,
                                                  AssemblyName = asm.AssemblyName,
-                                                 FourthLevelHMasterId = fo.FourthLevelHMasterId,
-                                                 HierarchyName = fourthLevelH.HierarchyName,
+
                                                  FoName = fo.AROName,
                                                  Role = "ARO",
                                                  ElectionTypeMasterId = fo.ElectionTypeMasterId,
                                                  ElectionTypeName = electionType.ElectionType,
-                                                 BoothNo = _context.BoothMaster
-                                                    .Where(b => b.AssignedTo == aroId && b.IsPrimaryBooth == true)
-                                                    .Select(b => $"{b.BoothName} {b.BoothCode_No}")
+                                                 BoothNo = _context.FourthLevelH
+                                                    .Where(b => b.AssignedToARO == aroId && b.IsAssignedARO == true)
+                                                    .Select(b => $"{b.HierarchyName} {b.HierarchyCode}")
                                                     .ToList()
                                              }).FirstOrDefaultAsync();
 
@@ -15925,13 +15929,13 @@ namespace EAMS_DAL.Repository
             await using var reader2 = await command2.ExecuteReaderAsync();
 
             var votesTillNowDictionary = new Dictionary<int, string>();
-            
-                while (await reader2.ReadAsync())
-                {
-                    int masterId = reader2.GetInt32(0); // Assuming masterId is the first column
-                    string votesTillNow = reader2.GetString(3); // Assuming votesTillNow is the second column as string
-                    votesTillNowDictionary[masterId] = votesTillNow;
-                }
+
+            while (await reader2.ReadAsync())
+            {
+                int masterId = reader2.GetInt32(0); // Assuming masterId is the first column
+                string votesTillNow = reader2.GetString(3); // Assuming votesTillNow is the second column as string
+                votesTillNowDictionary[masterId] = votesTillNow;
+            }
             // Close and dispose command2 and reader2
             await reader2.CloseAsync();
             command2.Dispose();
@@ -19860,7 +19864,7 @@ namespace EAMS_DAL.Repository
                                                                 IsUnOpposed = kyc.IsUnOppossed,
                                                                 CandidateName = kyc.CandidateName,
                                                                 FatherName = kyc.FatherName,
-                                                                PartyName =kyc.PartyName,
+                                                                PartyName = kyc.PartyName,
                                                                 VoteMargin = resultDecl.VoteMargin, // From ResultDeclaration
                                                                 IsWinner = resultDecl.IsWinner,     // From ResultDeclaration
                                                                 IsResultDeclared = resultDecl.IsResultDeclared,
@@ -21834,7 +21838,69 @@ namespace EAMS_DAL.Repository
                     Message = message
                 };
             }
+            if (type.Equals("AROMaster", StringComparison.OrdinalIgnoreCase))
+            {
+                var isFourthlevelMapped = await _context.FourthLevelH.AnyAsync(d => d.AssignedToARO == masterId.ToString()
+                                                        &&d.ElectionTypeMasterId==electionTypeMasterId);
+                var isResultDeclared = await _context.ResultDeclaration.AnyAsync(d => d.ResultDeclaredByMobile == masterId.ToString()
+                                                       && d.ElectionTypeMasterId == electionTypeMasterId);
+                string message;
+                var isEditable = !isFourthlevelMapped && !isResultDeclared;
 
+                if (isFourthlevelMapped)
+                {
+                    message = "FourthLevel is linked with one or more Election Info entries.";
+                }
+                else if (isResultDeclared)
+                {
+                    message = "Result Declaration entries  exist";
+                }
+                else
+                {
+                    message = "FourthLevel is not linked with any Election Info or No Result Declaration entries.";
+                }
+
+                return new IsMasterEditable
+                {
+                    MasterId = masterId,
+                    Type = type,
+                    IsEditable = isEditable,
+                    ElectionTypeMasterId = electionTypeMasterId,
+                    Message = message
+                };
+
+            }
+            if (type.Equals("SOMaster", StringComparison.OrdinalIgnoreCase))
+            {
+                var isBoothMapped = await _context.BoothMaster.AnyAsync(d => d.AssignedTo == masterId.ToString()
+                                                        && d.ElectionTypeMasterId == electionTypeMasterId); 
+                var hasElectionInfoDependency = await _context.ElectionInfoMaster
+                   .AnyAsync(e => e.BoothMasterId == masterId && e.ElectionTypeMasterId == electionTypeMasterId);
+                string message;
+                var isEditable = !hasElectionInfoDependency && !isBoothMapped;
+
+                if (isBoothMapped)
+                {
+                    message = "Booth  is linked ";
+                }
+                else if (hasElectionInfoDependency)
+                {
+                    message = "Event Activity is performed on this booth";
+                }
+                else
+                {
+                    message = "Booth is not linked and No Event Activity entries ";
+                }
+
+                return new IsMasterEditable
+                {
+                    MasterId = masterId,
+                    Type = type,
+                    IsEditable = isEditable,
+                    ElectionTypeMasterId = electionTypeMasterId,
+                    Message = message
+                };
+            }
 
             return new IsMasterEditable
             {

@@ -183,12 +183,13 @@ namespace EAMS.Controllers
         [HttpDelete]
         [Route("DeleteMasterStatus")]
         [Authorize]
-        public async Task<IActionResult> DeleteMaster(string Id, string type)
+        public async Task<IActionResult> DeleteMaster(string Id, int electionTypeMasterId, string type)
         {
             DeleteMasterStatusViewModel deleteMasterStatusViewModel = new DeleteMasterStatusViewModel()
             {
                 Id = Id,
                 Type = type,
+                ElectionTypeMasterId=electionTypeMasterId
             };
             try
             {
