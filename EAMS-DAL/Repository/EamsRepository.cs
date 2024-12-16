@@ -15799,7 +15799,7 @@ namespace EAMS_DAL.Repository
             // Merge data into eventActivityList
             foreach (var voterTurnOut in eventActivityList)
             {
-                if (votesTillNowDictionary.TryGetValue(voterTurnOut.MasterId, out string votesTillNow))
+                if (votesTillNowDictionary.TryGetValue((int)voterTurnOut.MasterId, out string votesTillNow))
                 {
                     voterTurnOut.VotesTillNow = votesTillNow;
                 }
@@ -15939,7 +15939,7 @@ namespace EAMS_DAL.Repository
             // Merge data into eventActivityList
             foreach (var voterTurnOut in eventActivityList)
             {
-                if (newVotesTillNowDictionary.TryGetValue(voterTurnOut.MasterId, out string votesTillNow))
+                if (newVotesTillNowDictionary.TryGetValue((int)voterTurnOut.MasterId, out string votesTillNow))
                 {
                     voterTurnOut.VotesTillNow = votesTillNow;
                 }
