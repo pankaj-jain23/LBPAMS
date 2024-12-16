@@ -41,6 +41,11 @@ namespace EAMS_ACore.Models
             get;
             set;
         }
+        public string? PartyName
+        {
+            get;
+            set;
+        }
         public string Message
         {
             get;

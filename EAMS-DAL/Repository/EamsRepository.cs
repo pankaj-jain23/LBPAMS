@@ -6480,12 +6480,12 @@ namespace EAMS_DAL.Repository
             }
             result.VotingLastUpdate = BharatDateTime();
             result.EventName = updateEventActivity.EventName;
-            
+
             PollDetail newPollDetail = new PollDetail()
             {
                 StateMasterId = updateEventActivity.StateMasterId,
                 DistrictMasterId = updateEventActivity.DistrictMasterId,
-                AssemblyMasterId = updateEventActivity.AssemblyMasterId, 
+                AssemblyMasterId = updateEventActivity.AssemblyMasterId,
                 BoothMasterId = updateEventActivity.BoothMasterId,
                 ElectionTypeMasterId = updateEventActivity.ElectionTypeMasterId,
                 EventMasterId = updateEventActivity.EventMasterId,
@@ -10055,13 +10055,13 @@ namespace EAMS_DAL.Repository
         }
         public async Task<List<SlotManagementMaster>> GetEventSlotListByEventAbbr(int stateMasterId, int electionTypeMasterId, string eventAbbr)
         {
-            var getEventMasterId = await _context.EventMaster.Where(d => d.StateMasterId == stateMasterId 
+            var getEventMasterId = await _context.EventMaster.Where(d => d.StateMasterId == stateMasterId
                                                         && d.ElectionTypeMasterId == electionTypeMasterId
                                                         && d.EventABBR.Contains(eventAbbr))
                                                         .Select(d => d.EventMasterId).FirstOrDefaultAsync();
             return await _context.SlotManagementMaster.Where(d => d.StateMasterId == stateMasterId
                                                                     && d.ElectionTypeMasterId == electionTypeMasterId
-                                                                    && d.EventMasterId== getEventMasterId).ToListAsync();
+                                                                    && d.EventMasterId == getEventMasterId).ToListAsync();
 
         }
         #endregion
@@ -15924,14 +15924,14 @@ namespace EAMS_DAL.Repository
 
             await using var reader2 = await command2.ExecuteReaderAsync();
 
-            var newVotesTillNowDictionary = new Dictionary<int, string>(); // Rename the variable
-
-            while (await reader2.ReadAsync())
-            {
-                int masterId = reader2.GetInt32(0);
-                string votesTillNow = reader2.IsDBNull(3) ? null : reader2.GetString(3);
-                newVotesTillNowDictionary[masterId] = votesTillNow;
-            }
+            var votesTillNowDictionary = new Dictionary<int, string>();
+            
+                while (await reader2.ReadAsync())
+                {
+                    int masterId = reader2.GetInt32(0); // Assuming masterId is the first column
+                    string votesTillNow = reader2.GetString(3); // Assuming votesTillNow is the second column as string
+                    votesTillNowDictionary[masterId] = votesTillNow;
+                }
             // Close and dispose command2 and reader2
             await reader2.CloseAsync();
             command2.Dispose();
@@ -15939,7 +15939,7 @@ namespace EAMS_DAL.Repository
             // Merge data into eventActivityList
             foreach (var voterTurnOut in eventActivityList)
             {
-                if (newVotesTillNowDictionary.TryGetValue((int)voterTurnOut.MasterId, out string votesTillNow))
+                if (votesTillNowDictionary.TryGetValue((int)voterTurnOut.MasterId, out string votesTillNow))
                 {
                     voterTurnOut.VotesTillNow = votesTillNow;
                 }
@@ -19848,6 +19848,7 @@ namespace EAMS_DAL.Repository
                                                                 IsUnOpposed = kyc.IsUnOppossed,
                                                                 CandidateName = kyc.CandidateName,
                                                                 FatherName = kyc.FatherName,
+                                                                PartyName =kyc.PartyName,
                                                                 VoteMargin = resultDecl.VoteMargin, // From ResultDeclaration
                                                                 IsWinner = resultDecl.IsWinner,     // From ResultDeclaration
                                                                 IsResultDeclared = resultDecl.IsResultDeclared,
@@ -20185,6 +20186,7 @@ namespace EAMS_DAL.Repository
                 CandidateName = c.kycCandidate.CandidateName,
                 FatherName = c.kycCandidate.FatherName,
                 IsUnOppossed = c.kycCandidate.IsUnOppossed,
+                PartyName = c.kycCandidate.PartyName,
                 IsCC = c.fourthLevelH.IsCC,
                 IsNN = c.fourthLevelH.IsNN,
                 IsWinner = c.result?.IsWinner ?? false, // Default to false if result is null

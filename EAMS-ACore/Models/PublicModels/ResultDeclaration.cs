@@ -209,7 +209,11 @@ namespace EAMS_ACore.Models.PublicModels
         public bool IsDrawLottery { get; set; }//Choosen  of candidate by blindfolded  box
         public bool IsReCounting { get; set; } // ReCounting in case of draw candidates
 
-
+        public string? PartyName
+        {
+            get;
+            set;
+        }
         public bool ResultDecStatus { get; set; }
     }
 
