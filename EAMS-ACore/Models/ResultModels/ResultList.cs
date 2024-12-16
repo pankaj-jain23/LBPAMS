@@ -9,6 +9,8 @@ namespace EAMS_ACore.Models.ResultModels
     public class ResultList
     {
         public string Key { get; set; }
+        public int? DistrictMasterId { get; set; }
+        public int? AssemblyMasterId { get; set; }
         public int? MasterId { get; set; }
         public string Name { get; set; }
         public string Type { get; set; }

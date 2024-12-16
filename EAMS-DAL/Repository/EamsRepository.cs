@@ -15548,44 +15548,114 @@ namespace EAMS_DAL.Repository
         #endregion
 
         #region Slot Based Voter Turn Out Report
+        //public async Task<List<VoterTurnOutSlotWise>> GetVoterTurnOutSlotBasedReport(string stateMasterId)
+        //{
+        //    var voterTurnOutList = new List<VoterTurnOutSlotWise>();
+
+        //    try
+        //    {
+        //        await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("Postgres"));
+        //        await connection.OpenAsync();
+
+        //        var command = new NpgsqlCommand("SELECT * FROM getvoterturnoutreport_percentage(@state_master_id)", connection);
+        //        command.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateMasterId));
+
+        //        await using var reader = await command.ExecuteReaderAsync();
+
+        //        while (await reader.ReadAsync())
+        //        {
+        //            var slotVotes = (string[])reader.GetValue(3);
+
+        //            var voterTurnOut = new VoterTurnOutSlotWise
+        //            {
+        //                Key = GenerateRandomAlphanumericString(6),
+        //                MasterId = reader.GetInt32(0),
+        //                Name = reader.GetString(1),
+        //                Type = "District",
+        //                SlotVotes = slotVotes,
+        //                Children = new List<object>()
+        //            };
+
+        //            voterTurnOutList.Add(voterTurnOut);
+        //        }
+        //    }
+        //    catch (PostgresException ex) when (ex.SqlState == "42883")
+        //    {
+        //        throw new Exception("The required database function is missing or misconfigured. Please contact the administrator.");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception("An unexpected error occurred while fetching voter turnout data.", ex);
+        //    }
+
+        //    return voterTurnOutList;
+        //}
         public async Task<List<VoterTurnOutSlotWise>> GetVoterTurnOutSlotBasedReport(string stateMasterId)
         {
             var voterTurnOutList = new List<VoterTurnOutSlotWise>();
 
-            try
+            await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("Postgres"));
+            await connection.OpenAsync();
+
+            // First command to get data from getvoterturnoutreport_percentage procedure
+            var commandText1 = "SELECT * FROM getvoterturnoutreport_percentage(@state_master_id)";
+            await using var command1 = new NpgsqlCommand(commandText1, connection);
+            command1.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateMasterId));
+
+            await using var reader1 = await command1.ExecuteReaderAsync();
+
+            while (await reader1.ReadAsync())
             {
-                await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("Postgres"));
-                await connection.OpenAsync();
+                var slotVotes = (string[])reader1.GetValue(3); // Assuming slot_votes array is at index 3
 
-                var command = new NpgsqlCommand("SELECT * FROM getvoterturnoutreport_percentage(@state_master_id)", connection);
-                command.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateMasterId));
-
-                await using var reader = await command.ExecuteReaderAsync();
-
-                while (await reader.ReadAsync())
+                var voterTurnOut = new VoterTurnOutSlotWise
                 {
-                    var slotVotes = (string[])reader.GetValue(3);
+                    Key = GenerateRandomAlphanumericString(6),
+                    MasterId = reader1.GetInt32(0),
+                    Name = reader1.GetString(1),
+                    Type = "District",
+                    SlotVotes = slotVotes,
+                    Children = new List<object>()
+                };
 
-                    var voterTurnOut = new VoterTurnOutSlotWise
-                    {
-                        Key = GenerateRandomAlphanumericString(6),
-                        MasterId = reader.GetInt32(0),
-                        Name = reader.GetString(1),
-                        Type = "District",
-                        SlotVotes = slotVotes,
-                        Children = new List<object>()
-                    };
+                voterTurnOutList.Add(voterTurnOut);
+            }
 
-                    voterTurnOutList.Add(voterTurnOut);
+            // Close and dispose command1 and reader1
+            await reader1.CloseAsync();
+            command1.Dispose();
+
+            // Second command to get data from testturnout procedure
+            var commandText2 = "SELECT * FROM testturnout(@state_master_id)";
+            await using var command2 = new NpgsqlCommand(commandText2, connection);
+            command2.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateMasterId));
+
+            await using var reader2 = await command2.ExecuteReaderAsync();
+
+            var votesTillNowDictionary = new Dictionary<int, string>();
+
+            while (await reader2.ReadAsync())
+            {
+                int masterId = reader2.GetInt32(0); // Assuming masterId is the first column
+                string votesTillNow = reader2.GetString(3); // Assuming votesTillNow is the second column as string
+                votesTillNowDictionary[masterId] = votesTillNow;
+            }
+
+            // Close and dispose command2 and reader2
+            await reader2.CloseAsync();
+            command2.Dispose();
+
+            // Merge data into voterTurnOutList
+            foreach (var voterTurnOut in voterTurnOutList)
+            {
+                if (votesTillNowDictionary.TryGetValue((int)voterTurnOut.MasterId, out string votesTillNow))
+                {
+                    voterTurnOut.VotesTillNow = votesTillNow;
                 }
-            }
-            catch (PostgresException ex) when (ex.SqlState == "42883")
-            {
-                throw new Exception("The required database function is missing or misconfigured. Please contact the administrator.");
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("An unexpected error occurred while fetching voter turnout data.", ex);
+                else
+                {
+                    voterTurnOut.VotesTillNow = "0";
+                }
             }
 
             return voterTurnOutList;
@@ -21710,6 +21780,7 @@ namespace EAMS_DAL.Repository
                  group new { rd, k } by new { assem.AssemblyMasterId, assem.AssemblyName } into g
                  select new ResultList
                  {
+                     DistrictMasterId = districtMasterId,
                      Key = g.Key.AssemblyMasterId.ToString() + stateMasterId.ToString() + districtMasterId.ToString() + electionTypeMasterId.ToString(),
                      MasterId = g.Key.AssemblyMasterId,
                      Name = g.Key.AssemblyName,
@@ -21749,6 +21820,8 @@ namespace EAMS_DAL.Repository
                  group new { rd, k } by new { frth.FourthLevelHMasterId, frth.HierarchyName } into g
                  select new ResultList
                  {
+                     DistrictMasterId = districtMasterId,
+                     AssemblyMasterId = assemblyMasterId,
                      Key = g.Key.FourthLevelHMasterId.ToString() + stateMasterId.ToString() + districtMasterId.ToString() + assemblyMasterId.ToString() + electionTypeMasterId.ToString(),
                      MasterId = g.Key.FourthLevelHMasterId,
                      Name = g.Key.HierarchyName,

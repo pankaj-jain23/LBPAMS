@@ -8,6 +8,7 @@
         public string Type { get; set; }
         //public long[] SlotVotes { get; set; }
         public string[] SlotVotes { get; set; }
+        public string? VotesTillNow { get; set; }
         public List<object> Children { get; set; }
     }
 
@@ -22,6 +23,7 @@
         public int? DistrictMasterId { get; set; }
         public int? AssemblyCode { get; set; }
         public string[] SlotVotes { get; set; }
+        public string? VotesTillNow { get; set; }
         public List<object> Children { get; set; }
     }
     public class BoothWiseVoterTurnOutSlotWise
@@ -30,6 +32,7 @@
         public int? MasterId { get; set; }
         public string Name { get; set; }
         public string Type { get; set; }
+        public string? VotesTillNow { get; set; }
         public string[] SlotVotes { get; set; }
     }
 }
