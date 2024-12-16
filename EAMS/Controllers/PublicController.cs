@@ -938,6 +938,7 @@ namespace EAMS.Controllers
 
             return Ok(result);
         }
+      
         [HttpPut("UpdateResultDeclarationForPortal")]
         [Authorize]
         public async Task<IActionResult> UpdateResultDeclarationForPortal(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId, UpdateResultDeclarationViewModel updateResultDeclarationViewModel)

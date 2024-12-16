@@ -14,6 +14,7 @@ using EAMS_ACore.Models.ElectionType;
 using EAMS_ACore.Models.EventActivityModels;
 using EAMS_ACore.Models.PollingStationFormModels;
 using EAMS_ACore.Models.QueueModel;
+using EAMS_BLL.Services;
 using LBPAMS.ViewModels;
 using LBPAMS.ViewModels.EventActivityViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -124,6 +125,7 @@ namespace EAMS.Controllers
             }
             return BadRequest("Invalid StateMasterId");
         }
+
         [HttpPost("ClearSlotInfo")]
         [Authorize]
         public async Task<IActionResult> ClearSlotInfo(int electionTypeMasterId, int eventMasterId)
@@ -136,6 +138,8 @@ namespace EAMS.Controllers
             }
             return BadRequest("Invalid StateMasterId");
         }
+
+
 
         #endregion
 
@@ -189,7 +193,7 @@ namespace EAMS.Controllers
             {
                 Id = Id,
                 Type = type,
-                ElectionTypeMasterId=electionTypeMasterId
+                ElectionTypeMasterId = electionTypeMasterId
             };
             try
             {
@@ -684,7 +688,7 @@ namespace EAMS.Controllers
         [Authorize]
         public async Task<IActionResult> GetFieldOfficersListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
         {
-            var foList = await _EAMSService.GetFieldOfficersListById(stateMasterId, districtMasterId, assemblyMasterId,  electionTypeMasterId);  // Corrected to await the asynchronous method
+            var foList = await _EAMSService.GetFieldOfficersListById(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId);  // Corrected to await the asynchronous method
             if (foList != null)
             {
                 var data = new
@@ -2817,9 +2821,9 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetBoothEventListById")]
         [Authorize]
-        public async Task<IActionResult> GetBoothEventListById(int boothMasterId,int electionTypeMasterId)
+        public async Task<IActionResult> GetBoothEventListById(int boothMasterId, int electionTypeMasterId)
         {
-            if (!TryGetClaimValue(User, "StateMasterId", out int stateMasterId) )
+            if (!TryGetClaimValue(User, "StateMasterId", out int stateMasterId))
             {
                 return BadRequest("Missing or invalid claims.");
             }
@@ -3530,8 +3534,8 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetEventSlotListById")]
         [Authorize]
-        public async Task<IActionResult> GetEventSlotList(int stateMasterId,int electionTypeMasterId, int EventId)
-        { 
+        public async Task<IActionResult> GetEventSlotList(int stateMasterId, int electionTypeMasterId, int EventId)
+        {
             var result = await _EAMSService.GetEventSlotList(stateMasterId, electionTypeMasterId, EventId);
             if (result is null)
             {
@@ -3546,7 +3550,7 @@ namespace EAMS.Controllers
         [Route("GetEventSlotListByEventAbbr")]
         [Authorize]
         public async Task<IActionResult> GetEventSlotListByEventAbbr(int stateMasterId, int electionTypeMasterId, string eventAbbr)
-        { 
+        {
             var result = await _EAMSService.GetEventSlotListByEventAbbr(stateMasterId, electionTypeMasterId, eventAbbr);
             if (result is null)
             {
@@ -3625,8 +3629,6 @@ namespace EAMS.Controllers
         }
 
 
-
-
         [HttpGet]
         [Route("GetPollInterruptionHistoryById")]
         [Authorize]
@@ -3703,7 +3705,35 @@ namespace EAMS.Controllers
             }
 
         }
+
+        [HttpGet]
+        [Route("GetPollInterruptionDashboardCount")]
+        [Authorize]
+        public async Task<IActionResult> GetPollInterruptionDashboardCount()
+        {
+            ClaimsIdentity claimsIdentity = User.Identity as ClaimsIdentity;
+            var rolesClaim = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role");
+            var roles = rolesClaim?.Value;
+
+            var stateMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            int stateMasterId = int.Parse(stateMasterIdString);
+
+            var electionTypeMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
+            int electionTypeMasterId = int.Parse(electionTypeMasterIdString);
+
+            var districtMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value;
+            int? districtMasterId = !string.IsNullOrEmpty(districtMasterIdString) ? int.Parse(districtMasterIdString) : (int?)null;
+
+            var assemblyMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId")?.Value;
+            int? assemblyMasterId = !string.IsNullOrEmpty(assemblyMasterIdString) ? int.Parse(assemblyMasterIdString) : (int?)null;
+
+            var fourthLevelHMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "FourthLevelHMasterId")?.Value;
+            int? fourthLevelHMasterId = !string.IsNullOrEmpty(fourthLevelHMasterIdString) ? int.Parse(fourthLevelHMasterIdString) : (int?)null;
+            var eventDashboardCount = await _EAMSService.GetPollInterruptionDashboardCount(roles, electionTypeMasterId, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);
+            return Ok(eventDashboardCount);
+        }
         #endregion
+
 
         #region PSO Form
 
@@ -5050,7 +5080,7 @@ namespace EAMS.Controllers
             {
 
                 var mappedData = _mapper.Map<AROResultMaster>(fieldOfficerViewModel);
-                var isUniqueMobile=await _EAMSService.IsMobileNumberUnique(fieldOfficerViewModel.AROMobile);
+                var isUniqueMobile = await _EAMSService.IsMobileNumberUnique(fieldOfficerViewModel.AROMobile);
                 if (isUniqueMobile.IsSucceed == false)
                 {
                     return BadRequest(isUniqueMobile.Message);
@@ -5164,7 +5194,7 @@ namespace EAMS.Controllers
                 return BadRequest("UserId not found in the token.");
             }
 
-            var result = await _EAMSService.IsRDProfileUpdated(aroMasterId,userId);
+            var result = await _EAMSService.IsRDProfileUpdated(aroMasterId, userId);
             return Ok(result);
         }
 
@@ -5322,9 +5352,9 @@ namespace EAMS.Controllers
         /// This API checks for dependencies in descending order before performing the operation.
         /// </summary>
         /// <returns></returns>
-       
+
         [HttpGet("IsMasterEditable")]
-        public async Task<IActionResult> IsMasterEditable(int masterId, string type,int electionTypeMasterId)
+        public async Task<IActionResult> IsMasterEditable(int masterId, string type, int electionTypeMasterId)
         {
             if (masterId < 0)
             {
@@ -5334,7 +5364,7 @@ namespace EAMS.Controllers
             var result = await _EAMSService.IsMasterEditable(masterId, type, electionTypeMasterId);
             return Ok(result);
         }
-        
+
 
         //[HttpPost("PushDisasterEvent")]
         //public async Task<IActionResult> PushDisasterEvent()

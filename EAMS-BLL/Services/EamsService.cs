@@ -1207,6 +1207,7 @@ namespace EAMS_BLL.Services
             return await _eamsRepository.GetPollInterruptionDashboard(claimsIdentity);
         }
 
+
         public async Task<int> GetPollInterruptionDashboardCount(string role, int electionTypeMasterId, int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelMasterId)
         {
             return await _eamsRepository.GetPollInterruptionDashboardCount(role, electionTypeMasterId, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId);

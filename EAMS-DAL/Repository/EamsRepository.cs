@@ -8682,6 +8682,7 @@ namespace EAMS_DAL.Repository
 
         //    return result;
         //}
+
         public async Task<List<EventActivityCount>> GetEventListDistrictWiseById(int stateMasterId, int electionTypeMasterId)
         {
             var result = await (from election in _context.ElectionInfoMaster
@@ -8732,7 +8733,7 @@ namespace EAMS_DAL.Repository
                                 where district.StateMasterId == stateMasterId &&
                                       booth.BoothStatus == true &&
                                       booth.AssignedTo != null &&
-                                      election.ElectionTypeMasterId == electionTypeMasterId &&
+                                      booth.ElectionTypeMasterId == electionTypeMasterId &&
                                       district.DistrictStatus == true
                                 // Exclude booths where event activity is completed
                                 && (election == null || (election != null && (
@@ -8781,6 +8782,9 @@ namespace EAMS_DAL.Repository
             return result;
         }
 
+
+
+
         public async Task<List<AssemblyEventActivityCount>> GetEventListAssemblyWiseById(int stateMasterId, int? districtMasterId, int electionTypeMasterId)
         {
             var result = await (from election in _context.ElectionInfoMaster
@@ -8824,6 +8828,8 @@ namespace EAMS_DAL.Repository
 
             return result;
         }
+
+
         ///This API fetches the Assembly-wise event list for Pending events.
         public async Task<List<AssemblyEventActivityCount>> GetPendingAssemblyWiseEventListById(int stateMasterId, int? districtMasterId, int electionTypeMasterId)
         {
@@ -8838,8 +8844,10 @@ namespace EAMS_DAL.Repository
                                       assembly.DistrictMasterId == districtMasterId &&
                                       booth.BoothStatus == true &&
                                       booth.AssignedTo != null &&
-                                      election.ElectionTypeMasterId == electionTypeMasterId &&
+                                      booth.ElectionTypeMasterId == electionTypeMasterId &&
                                       assembly.AssemblyStatus == true
+                                      &&
+                                      assembly.ElectionTypeMasterId == electionTypeMasterId
                                 // Exclude booths where event activity is completed
                                 && (election == null || (election != null && (
                                        !election.IsPartyDispatched ||
@@ -8951,7 +8959,8 @@ namespace EAMS_DAL.Repository
                                       fourthLevelH.AssemblyMasterId == assemblyMasterId &&
                                       booth.BoothStatus == true &&
                                       booth.AssignedTo != null &&
-                                      election.ElectionTypeMasterId == electionTypeMasterId &&
+                                      booth.ElectionTypeMasterId == electionTypeMasterId &&
+                                      fourthLevelH.ElectionTypeMasterId==electionTypeMasterId&&
                                       fourthLevelH.HierarchyStatus == true
                                 // Exclude booths where event activity is completed
                                 && (election == null || (election != null && (
@@ -9070,7 +9079,7 @@ namespace EAMS_DAL.Repository
                                       && (!districtMasterId.HasValue || booth.DistrictMasterId == districtMasterId)
                                       && (!assemblyMasterId.HasValue || booth.AssemblyMasterId == assemblyMasterId)
                                       && (!fourthLevelHMasterId.HasValue || booth.FourthLevelHMasterId == fourthLevelHMasterId)
-                                      && election.ElectionTypeMasterId == electionTypeMasterId
+                                      && booth.ElectionTypeMasterId == electionTypeMasterId
                                       && booth.BoothStatus == true
                                       && booth.AssignedTo != null  // Ensure AssignedTo is not null
                                 group new { booth, election } by new
@@ -12757,46 +12766,53 @@ namespace EAMS_DAL.Repository
 
             // Build the base query for election info
             IQueryable<ElectionInfoMaster> electionQuery = _context.ElectionInfoMaster
-                .Where(e => e.StateMasterId == stateMasterId);
+                .Where(e => e.StateMasterId == stateMasterId && e.ElectionTypeMasterId == electionTypeMasterId);
             IQueryable<BoothMaster> totalBooths = _context.BoothMaster
-                .Where(e => e.StateMasterId == stateMasterId && e.BoothStatus == true && e.AssignedTo != null);
-            //IQueryable<PollDetail> totalVotesPolled = _context.PollDetails
-            //    .Where(e => e.StateMasterId == stateMasterId);
+                .Where(e => e.StateMasterId == stateMasterId
+                && e.ElectionTypeMasterId == electionTypeMasterId
+                && e.BoothStatus == true && e.AssignedTo != null);
+
 
             if (role.Equals("DistrictAdmin", StringComparison.OrdinalIgnoreCase))
             {
                 electionQuery = electionQuery
-                    .Where(e => e.DistrictMasterId == districtMasterId);
+                    .Where(e => e.DistrictMasterId == districtMasterId && e.ElectionTypeMasterId == electionTypeMasterId);
                 totalBooths = totalBooths
-                    .Where(e => e.DistrictMasterId == districtMasterId);
-                //totalVotesPolled = totalVotesPolled
-                //    .Where(e => e.DistrictMasterId == districtMasterId);
+                    .Where(e => e.DistrictMasterId == districtMasterId && e.ElectionTypeMasterId == electionTypeMasterId);
+
             }
             else if (role.Equals("LocalBodiesAdmin", StringComparison.OrdinalIgnoreCase) || role.Equals("RO", StringComparison.OrdinalIgnoreCase))
             {
                 electionQuery = electionQuery
-                    .Where(e => e.DistrictMasterId == districtMasterId && e.AssemblyMasterId == assemblyMasterId);
+                    .Where(e => e.DistrictMasterId == districtMasterId
+                    && e.AssemblyMasterId == assemblyMasterId
+                    && e.ElectionTypeMasterId == electionTypeMasterId);
                 totalBooths = totalBooths
-                    .Where(e => e.DistrictMasterId == districtMasterId && e.AssemblyMasterId == assemblyMasterId);
-                //totalVotesPolled = totalVotesPolled
-                //    .Where(e => e.DistrictMasterId == districtMasterId && e.AssemblyMasterId == assemblyMasterId);
+                    .Where(e => e.DistrictMasterId == districtMasterId
+                    && e.AssemblyMasterId == assemblyMasterId
+                    && e.ElectionTypeMasterId == electionTypeMasterId);
+
             }
             else if (role.Equals("SubLocalBodiesAdmin", StringComparison.OrdinalIgnoreCase))
             {
                 electionQuery = electionQuery
-                    .Where(e => e.DistrictMasterId == districtMasterId && e.AssemblyMasterId == assemblyMasterId && e.FourthLevelMasterId == fourthLevelMasterId);
+                    .Where(e => e.DistrictMasterId == districtMasterId
+                    && e.AssemblyMasterId == assemblyMasterId
+                    && e.FourthLevelMasterId == fourthLevelMasterId
+                    && e.ElectionTypeMasterId == electionTypeMasterId
+                    );
                 totalBooths = totalBooths
-                    .Where(e => e.DistrictMasterId == districtMasterId && e.AssemblyMasterId == assemblyMasterId && e.FourthLevelHMasterId == fourthLevelMasterId);
-                //totalVotesPolled = totalVotesPolled
-                //    .Where(e => e.DistrictMasterId == districtMasterId && e.AssemblyMasterId == assemblyMasterId && e.FourthLevelHMasterId == fourthLevelMasterId);
+                    .Where(e => e.DistrictMasterId == districtMasterId
+                    && e.AssemblyMasterId == assemblyMasterId
+                    && e.FourthLevelHMasterId == fourthLevelMasterId
+                    && e.ElectionTypeMasterId == electionTypeMasterId
+                    );
+
             }
 
             var totalBoothsCount = await totalBooths.CountAsync();
             var totalVoters = await totalBooths.SumAsync(d => d.TotalVoters);
 
-            //var totalVotesPolledSum = await totalVotesPolled.GroupBy(d => d.BoothMasterId)
-            //    .Select(group => group.OrderByDescending(d => d.VotesPolledRecivedTime).FirstOrDefault().VotesPolled)
-            //    .SumAsync();
 
             var dashboardCount = new DashBoardRealTimeCount
             {
@@ -12832,8 +12848,6 @@ namespace EAMS_DAL.Repository
 
             if (electionInfos != null)
             {
-                // Create a dictionary to hold the counts based on event abbreviations
-
 
                 var eventCounts = new Dictionary<string, int>
                 {
@@ -13678,6 +13692,7 @@ namespace EAMS_DAL.Repository
         }
 
         #endregion 
+
         #endregion
 
         #region VoterTurn Out Consolidated Report
@@ -15736,7 +15751,7 @@ namespace EAMS_DAL.Repository
             while (await reader2.ReadAsync())
             {
                 int masterId = reader2.GetInt32(0); // Assuming masterId is the first column
-                string votesTillNow = reader2.GetString(3); // Assuming votesTillNow is the second column as string
+                string votesTillNow = reader2.IsDBNull(3) ? null : reader2.GetString(3); // Assuming votesTillNow is the second column as string
                 votesTillNowDictionary[masterId] = votesTillNow;
             }
 
@@ -16424,10 +16439,8 @@ namespace EAMS_DAL.Repository
             }
 
             return eventActivityList;
-            //return null;
+            //return null;
         }
-
-
 
         /* public async Task<List<SectorOfficerPendencyBooth>> GetBoothWiseSOEventWiseCount(string stateId, string districtId, string assemblyId)
         {
@@ -21933,7 +21946,7 @@ namespace EAMS_DAL.Repository
             if (type.Equals("AROMaster", StringComparison.OrdinalIgnoreCase))
             {
                 var isFourthlevelMapped = await _context.FourthLevelH.AnyAsync(d => d.AssignedToARO == masterId.ToString()
-                                                        &&d.ElectionTypeMasterId==electionTypeMasterId);
+                                                        && d.ElectionTypeMasterId == electionTypeMasterId);
                 var isResultDeclared = await _context.ResultDeclaration.AnyAsync(d => d.ResultDeclaredByMobile == masterId.ToString()
                                                        && d.ElectionTypeMasterId == electionTypeMasterId);
                 string message;
@@ -21965,7 +21978,7 @@ namespace EAMS_DAL.Repository
             if (type.Equals("SOMaster", StringComparison.OrdinalIgnoreCase))
             {
                 var isBoothMapped = await _context.BoothMaster.AnyAsync(d => d.AssignedTo == masterId.ToString()
-                                                        && d.ElectionTypeMasterId == electionTypeMasterId); 
+                                                        && d.ElectionTypeMasterId == electionTypeMasterId);
                 var hasElectionInfoDependency = await _context.ElectionInfoMaster
                    .AnyAsync(e => e.BoothMasterId == masterId && e.ElectionTypeMasterId == electionTypeMasterId);
                 string message;
