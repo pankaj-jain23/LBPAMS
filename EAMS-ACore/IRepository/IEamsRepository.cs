@@ -315,9 +315,9 @@ namespace EAMS_ACore.IRepository
         #endregion
 
         Task<List<CombinedMaster>> AppNotDownload(string stateMasterId);
-        Task<List<VoterTurnOutSlotWise>> GetVoterTurnOutSlotBasedReport(string stateMasterId);
-        Task<List<AssemblyVoterTurnOutSlotWise>> GetSlotVTReporttAssemblyWise(string stateMasterId, string districtMasterId);
-        Task<List<BoothWiseVoterTurnOutSlotWise>> GetSlotVTReportBoothWise(string stateId, string districtId, string assemblyId);
+        Task<List<VoterTurnOutSlotWise>> GetVoterTurnOutSlotBasedReport(string stateMasterId, string electionTypeMasterId);
+        Task<List<AssemblyVoterTurnOutSlotWise>> GetSlotVTReporttAssemblyWise(string stateMasterId, string districtMasterId, string electionTypeMasterId);
+        Task<List<BoothWiseVoterTurnOutSlotWise>> GetSlotVTReportBoothWise(string stateId, string districtId, string assemblyId, string electionTypeMasterId);
 
         Task<int?> GetPCMasterIdByAssemblyIdCode(string assemblyMasterId);
 

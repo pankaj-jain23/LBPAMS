@@ -1474,20 +1474,20 @@ namespace EAMS_BLL.Services
 
             return await _eamsRepository.GetSlotBasedVoterTurnOutReport(boothReportModel);
         }
-        public async Task<List<VoterTurnOutSlotWise>> GetVoterTurnOutSlotBasedReport(string stateMasterId)
+        public async Task<List<VoterTurnOutSlotWise>> GetVoterTurnOutSlotBasedReport(string stateMasterId, string electionTypeMasterId)
         {
 
-            return await _eamsRepository.GetVoterTurnOutSlotBasedReport(stateMasterId);
+            return await _eamsRepository.GetVoterTurnOutSlotBasedReport(stateMasterId, electionTypeMasterId);
         }
-        public async Task<List<AssemblyVoterTurnOutSlotWise>> GetSlotVTReporttAssemblyWise(string stateMasterId, string districtMasterId)
+        public async Task<List<AssemblyVoterTurnOutSlotWise>> GetSlotVTReporttAssemblyWise(string stateMasterId, string districtMasterId, string electionTypeMasterId)
         {
 
-            return await _eamsRepository.GetSlotVTReporttAssemblyWise(stateMasterId, districtMasterId);
+            return await _eamsRepository.GetSlotVTReporttAssemblyWise(stateMasterId, districtMasterId, electionTypeMasterId);
         }
-        public async Task<List<BoothWiseVoterTurnOutSlotWise>> GetSlotVTReportBoothWise(string stateMasterId, string districtMasterId, string assemblyId)
+        public async Task<List<BoothWiseVoterTurnOutSlotWise>> GetSlotVTReportBoothWise(string stateMasterId, string districtMasterId, string assemblyId, string electionTypeMasterId)
         {
 
-            return await _eamsRepository.GetSlotVTReportBoothWise(stateMasterId, districtMasterId, assemblyId);
+            return await _eamsRepository.GetSlotVTReportBoothWise(stateMasterId, districtMasterId, assemblyId, electionTypeMasterId);
         }
 
 

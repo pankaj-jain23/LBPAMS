@@ -717,22 +717,25 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetSlotBasedVTOutReportDistrictWise")]
         [Authorize(Roles = "ECI,SuperAdmin,StateAdmin")]
-        public async Task<IActionResult> GetSlotBasedVTOutReports(string? stateId)
+        public async Task<IActionResult> GetSlotBasedVTOutReports(string? stateId, string? electionTypeId)
         {
-            string stateMasterId;
+            // Retrieve claims for stateMasterId and electionTypeMasterId
+            var stateMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            var electionTypeMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
 
-            // Safely retrieve the claim value
-            var stateMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId");
-            if (stateMasterIdClaim == null)
-            {
-                // Log the issue or return an appropriate error response
-                return BadRequest("StateMasterId claim is missing.");
-            }
+            // Validate claims or fallback to parameters
+            if (stateMasterIdClaim == null && string.IsNullOrEmpty(stateId))
+                return BadRequest("StateMasterId claim or parameter is missing.");
 
-            stateMasterId = stateId ?? stateMasterIdClaim.Value;
+            if (electionTypeMasterIdClaim == null && string.IsNullOrEmpty(electionTypeId))
+                return BadRequest("ElectionTypeMasterId claim or parameter is missing.");
+
+            // Use the provided stateId and electionTypeId or fallback to claims if not provided
+            string stateMasterId = stateId ?? stateMasterIdClaim;
+            string electionTypeMasterId = electionTypeId ?? electionTypeMasterIdClaim;
 
             // Call the service
-            var eventDistrictWiseList = await _EAMSService.GetVoterTurnOutSlotBasedReport(stateMasterId);
+            var eventDistrictWiseList = await _EAMSService.GetVoterTurnOutSlotBasedReport(stateMasterId, electionTypeMasterId);
             if (eventDistrictWiseList is not null)
                 return Ok(eventDistrictWiseList);
 
@@ -743,9 +746,9 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetSlotBasedVTOutReportAssemblyWise")]
         [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,ARO")]
-        public async Task<IActionResult> GetSlotVTReporttAssemblyWise(string? stateId, string? districtId)
+        public async Task<IActionResult> GetSlotVTReporttAssemblyWise(string? stateId, string? districtId, string? electionTypeId)
         {
-            var eventAssemblyList = await _EAMSService.GetSlotVTReporttAssemblyWise(stateId, districtId);
+            var eventAssemblyList = await _EAMSService.GetSlotVTReporttAssemblyWise(stateId, districtId, electionTypeId);
             if (eventAssemblyList is not null)
                 return Ok(eventAssemblyList);
             else
@@ -755,9 +758,9 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetSlotBasedVTReportBoothWise")]
         [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,ARO")]
-        public async Task<IActionResult> GetSlotVTReportsBoothWise(string? stateId, string? districtId, string? assemblyId)
+        public async Task<IActionResult> GetSlotVTReportsBoothWise(string? stateId, string? districtId, string? assemblyId, string? electionTypeId)
         {
-            var eventBoothList = await _EAMSService.GetSlotVTReportBoothWise(stateId, districtId, assemblyId);
+            var eventBoothList = await _EAMSService.GetSlotVTReportBoothWise(stateId, districtId, assemblyId, electionTypeId);
             if (eventBoothList is not null)
                 return Ok(eventBoothList);
             else

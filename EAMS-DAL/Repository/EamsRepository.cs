@@ -15568,18 +15568,40 @@ namespace EAMS_DAL.Repository
 
         //        while (await reader.ReadAsync())
         //        {
-        //            var slotVotes = (string[])reader.GetValue(3);
+        //            // Ensure the correct number of columns
+        //            if (reader.FieldCount < 6)
+        //            {
+        //                throw new Exception($"Expected 6 columns, but the result set contains {reader.FieldCount} columns.");
+        //            }
 
+        //            // Read data from the PostgreSQL function
+        //            var districtId = reader.IsDBNull(0) ? (int?)null : reader.GetInt32(0);
+        //            var districtName = reader.IsDBNull(1) ? null : reader.GetString(1);
+        //            var districtCode = reader.IsDBNull(2) ? null : reader.GetString(2);
+
+        //            // SlotVotes is an array of strings (e.g., percentages in text format)
+        //            var slotVotes = reader.IsDBNull(3) ? Array.Empty<string>() : (string[])reader.GetValue(3);
+
+        //            // TotalVoters is a string (not nullable here, assuming it's a string type in PostgreSQL)
+        //            var totalVoters = reader.IsDBNull(4) ? null : reader.GetString(4);
+
+        //            // VoterTurnoutValue is a string representing the vote percentage
+        //            var voterTurnoutValue = reader.IsDBNull(5) ? null : reader.GetString(5);
+
+        //            // Creating VoterTurnOutSlotWise object
         //            var voterTurnOut = new VoterTurnOutSlotWise
         //            {
-        //                Key = GenerateRandomAlphanumericString(6),
-        //                MasterId = reader.GetInt32(0),
-        //                Name = reader.GetString(1),
-        //                Type = "District",
+        //                Key = GenerateRandomAlphanumericString(6),  // Assuming GenerateRandomAlphanumericString exists
+        //                MasterId = districtId,
+        //                Name = districtName,
+        //                Type = "District",  // This is a static value in your code
         //                SlotVotes = slotVotes,
+        //                TotalVoters = totalVoters,  // Now assigned as string
+        //                VotesTillNow = voterTurnoutValue,
         //                Children = new List<object>()
         //            };
 
+        //            // Add to the result list
         //            voterTurnOutList.Add(voterTurnOut);
         //        }
         //    }
@@ -15594,7 +15616,78 @@ namespace EAMS_DAL.Repository
 
         //    return voterTurnOutList;
         //}
-        public async Task<List<VoterTurnOutSlotWise>> GetVoterTurnOutSlotBasedReport(string stateMasterId)
+
+        //public async Task<List<VoterTurnOutSlotWise>> GetVoterTurnOutSlotBasedReport(string stateMasterId)
+        //{
+        //    var voterTurnOutList = new List<VoterTurnOutSlotWise>();
+
+        //    await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("Postgres"));
+        //    await connection.OpenAsync();
+
+        //    // First command to get data from getvoterturnoutreport_percentage procedure
+        //    var commandText1 = "SELECT * FROM getvoterturnoutreport_percentage(@state_master_id)";
+        //    await using var command1 = new NpgsqlCommand(commandText1, connection);
+        //    command1.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateMasterId));
+
+        //    await using var reader1 = await command1.ExecuteReaderAsync();
+
+        //    while (await reader1.ReadAsync())
+        //    {
+        //        var slotVotes = (string[])reader1.GetValue(3); // Assuming slot_votes array is at index 3
+
+        //        var voterTurnOut = new VoterTurnOutSlotWise
+        //        {
+        //            Key = GenerateRandomAlphanumericString(6),
+        //            MasterId = reader1.GetInt32(0),
+        //            Name = reader1.GetString(1),
+        //            Type = "District",
+        //            SlotVotes = slotVotes,
+        //            Children = new List<object>()
+        //        };
+
+        //        voterTurnOutList.Add(voterTurnOut);
+        //    }
+
+        //    // Close and dispose command1 and reader1
+        //    await reader1.CloseAsync();
+        //    command1.Dispose();
+
+        //    // Second command to get data from testturnout procedure
+        //    var commandText2 = "SELECT * FROM testturnout(@state_master_id)";
+        //    await using var command2 = new NpgsqlCommand(commandText2, connection);
+        //    command2.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateMasterId));
+
+        //    await using var reader2 = await command2.ExecuteReaderAsync();
+
+        //    var votesTillNowDictionary = new Dictionary<int, string>();
+
+        //    while (await reader2.ReadAsync())
+        //    {
+        //        int masterId = reader2.GetInt32(0); // Assuming masterId is the first column
+        //        string votesTillNow = reader2.GetString(3); // Assuming votesTillNow is the second column as string
+        //        votesTillNowDictionary[masterId] = votesTillNow;
+        //    }
+
+        //    // Close and dispose command2 and reader2
+        //    await reader2.CloseAsync();
+        //    command2.Dispose();
+
+        //    // Merge data into voterTurnOutList
+        //    foreach (var voterTurnOut in voterTurnOutList)
+        //    {
+        //        if (votesTillNowDictionary.TryGetValue((int)voterTurnOut.MasterId, out string votesTillNow))
+        //        {
+        //            voterTurnOut.VotesTillNow = votesTillNow;
+        //        }
+        //        else
+        //        {
+        //            voterTurnOut.VotesTillNow = "0";
+        //        }
+        //    }
+
+        //    return voterTurnOutList;
+        //}
+        public async Task<List<VoterTurnOutSlotWise>> GetVoterTurnOutSlotBasedReport(string stateMasterId, string electionTypeMasterId)
         {
             var voterTurnOutList = new List<VoterTurnOutSlotWise>();
 
@@ -15602,9 +15695,10 @@ namespace EAMS_DAL.Repository
             await connection.OpenAsync();
 
             // First command to get data from getvoterturnoutreport_percentage procedure
-            var commandText1 = "SELECT * FROM getvoterturnoutreport_percentage(@state_master_id)";
+            var commandText1 = "SELECT * FROM getvoterturnoutreport_percentage(@state_master_id, @election_type_master_id)";
             await using var command1 = new NpgsqlCommand(commandText1, connection);
             command1.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateMasterId));
+            command1.Parameters.AddWithValue("@election_type_master_id", Convert.ToInt32(electionTypeMasterId));
 
             await using var reader1 = await command1.ExecuteReaderAsync();
 
@@ -15630,9 +15724,10 @@ namespace EAMS_DAL.Repository
             command1.Dispose();
 
             // Second command to get data from testturnout procedure
-            var commandText2 = "SELECT * FROM testturnout(@state_master_id)";
+            var commandText2 = "SELECT * FROM testturnout(@state_master_id, @election_type_master_id)";
             await using var command2 = new NpgsqlCommand(commandText2, connection);
             command2.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateMasterId));
+            command2.Parameters.AddWithValue("@election_type_master_id", Convert.ToInt32(electionTypeMasterId));
 
             await using var reader2 = await command2.ExecuteReaderAsync();
 
@@ -15649,18 +15744,19 @@ namespace EAMS_DAL.Repository
             await reader2.CloseAsync();
             command2.Dispose();
 
-            // Merge data into voterTurnOutList
-            foreach (var voterTurnOut in voterTurnOutList)
-            {
-                if (votesTillNowDictionary.TryGetValue((int)voterTurnOut.MasterId, out string votesTillNow))
+            // Use LINQ to map VotesTillNow without foreach loop
+            voterTurnOutList = voterTurnOutList
+                .Select(voterTurnOut => new VoterTurnOutSlotWise
                 {
-                    voterTurnOut.VotesTillNow = votesTillNow;
-                }
-                else
-                {
-                    voterTurnOut.VotesTillNow = "0";
-                }
-            }
+                    Key = voterTurnOut.Key,
+                    MasterId = voterTurnOut.MasterId,
+                    Name = voterTurnOut.Name,
+                    Type = voterTurnOut.Type,
+                    SlotVotes = voterTurnOut.SlotVotes,
+                    Children = voterTurnOut.Children,
+                    VotesTillNow = votesTillNowDictionary.GetValueOrDefault((int)voterTurnOut.MasterId, "0")
+                })
+                .ToList();
 
             return voterTurnOutList;
         }
@@ -15738,7 +15834,7 @@ namespace EAMS_DAL.Repository
 
         //    return eventActivityList;
         //}
-        public async Task<List<AssemblyVoterTurnOutSlotWise>> GetSlotVTReporttAssemblyWise(string stateId, string districtId)
+        public async Task<List<AssemblyVoterTurnOutSlotWise>> GetSlotVTReporttAssemblyWise(string stateId, string districtId, string electionTypeMasterId)
         {
             var eventActivityList = new List<AssemblyVoterTurnOutSlotWise>();
 
@@ -15746,21 +15842,24 @@ namespace EAMS_DAL.Repository
             await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("Postgres"));
             await connection.OpenAsync();
 
-            var command = new NpgsqlCommand("SELECT * FROM getvoterturnoutreportassemblywise_percentage(@state_master_id, @district_master_id)", connection);
+            // First command to get data from getvoterturnoutreportassemblywise_percentage procedure
+            var command = new NpgsqlCommand("SELECT * FROM getvoterturnoutreportassemblywise_percentage(@state_master_id, @district_master_id, @election_type_master_id)", connection);
             command.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateId));
             command.Parameters.AddWithValue("@district_master_id", Convert.ToInt32(districtId));
+            command.Parameters.AddWithValue("@election_type_master_id", Convert.ToInt32(electionTypeMasterId));
 
             // Execute the command and read the results
             await using var reader = await command.ExecuteReaderAsync();
-
             while (await reader.ReadAsync())
             {
-                var slotVotes = (string[])reader.GetValue(3);
+                // Handling DBNull for slotVotes column (assuming it can be null)
+                var slotVotes = reader.IsDBNull(3) ? Array.Empty<string>() : (string[])reader.GetValue(3);
+
                 var eventActivityCount = new AssemblyVoterTurnOutSlotWise
                 {
                     Key = GenerateRandomAlphanumericString(6), // You need to define this method to generate a random alphanumeric string
                     MasterId = reader.GetInt32(0),
-                    Name = reader.IsDBNull(2) ? ((int?)null).ToString() : reader.GetInt32(2).ToString() + "-" + (reader.IsDBNull(1) ? null : reader.GetString(1)),
+                    Name = reader.IsDBNull(2) ? null : reader.GetInt32(2).ToString() + "-" + (reader.IsDBNull(1) ? null : reader.GetString(1)),
                     Type = "Assembly", // Assuming this is the type for assembly
                     StateMasterId = Convert.ToInt32(stateId),
                     DistrictMasterId = Convert.ToInt32(districtId),
@@ -15773,45 +15872,49 @@ namespace EAMS_DAL.Repository
                 eventActivityList.Add(eventActivityCount);
             }
 
-
-            // Close and dispose command1 and reader1
+            // Close and dispose of command1 and reader1
             await reader.CloseAsync();
             command.Dispose();
 
             // Second command to get data from testturnout assembly procedure
-
-            var commandText2 = "SELECT * FROM testturnout_assemblywise(@state_master_id,@district_master_id)";
+            var commandText2 = "SELECT * FROM testturnout_assemblywise(@state_master_id,@district_master_id, @election_type_master_id)";
             await using var command2 = new NpgsqlCommand(commandText2, connection);
             command2.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateId));
             command2.Parameters.AddWithValue("@district_master_id", Convert.ToInt32(districtId));
+            command2.Parameters.AddWithValue("@election_type_master_id", Convert.ToInt32(electionTypeMasterId));
 
             await using var reader2 = await command2.ExecuteReaderAsync();
-
             var votesTillNowDictionary = new Dictionary<int, string>();
 
             while (await reader2.ReadAsync())
             {
                 int masterId = reader2.GetInt32(0); // Assuming masterId is the first column
-                string votesTillNow = reader2.GetString(3); // Assuming votesTillNow is the second column as string
+                                                    // Handle DBNull for votesTillNow column
+                string votesTillNow = reader2.IsDBNull(3) ? "0" : reader2.GetString(3); // Use default value "0" for null
                 votesTillNowDictionary[masterId] = votesTillNow;
             }
 
-            // Close and dispose command2 and reader2
+            // Close and dispose of command2 and reader2
             await reader2.CloseAsync();
             command2.Dispose();
 
-            // Merge data into eventActivityList
-            foreach (var voterTurnOut in eventActivityList)
-            {
-                if (votesTillNowDictionary.TryGetValue((int)voterTurnOut.MasterId, out string votesTillNow))
+            // Use LINQ to merge the data without a foreach loop
+            eventActivityList = eventActivityList
+                .Select(voterTurnOut => new AssemblyVoterTurnOutSlotWise
                 {
-                    voterTurnOut.VotesTillNow = votesTillNow;
-                }
-                else
-                {
-                    voterTurnOut.VotesTillNow = "0";
-                }
-            }
+                    Key = voterTurnOut.Key,
+                    MasterId = voterTurnOut.MasterId,
+                    Name = voterTurnOut.Name,
+                    Type = voterTurnOut.Type,
+                    StateMasterId = voterTurnOut.StateMasterId,
+                    DistrictMasterId = voterTurnOut.DistrictMasterId,
+                    AssemblyCode = voterTurnOut.AssemblyCode,
+                    SlotVotes = voterTurnOut.SlotVotes,
+                    Children = voterTurnOut.Children,
+                    // Safely get the VotesTillNow value, default to "0" if it's not found
+                    VotesTillNow = votesTillNowDictionary.GetValueOrDefault((int)voterTurnOut.MasterId, "0")
+                })
+                .ToList();
 
             return eventActivityList;
         }
@@ -15867,7 +15970,7 @@ namespace EAMS_DAL.Repository
 
         //    return eventActivityList;
         //}
-        public async Task<List<BoothWiseVoterTurnOutSlotWise>> GetSlotVTReportBoothWise(string stateId, string districtId, string assemblyId)
+        public async Task<List<BoothWiseVoterTurnOutSlotWise>> GetSlotVTReportBoothWise(string stateId, string districtId, string assemblyId, string electionTypeMasterId)
         {
             var eventActivityList = new List<BoothWiseVoterTurnOutSlotWise>();
 
@@ -15875,56 +15978,46 @@ namespace EAMS_DAL.Repository
             await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("Postgres"));
             await connection.OpenAsync();
 
-            var command = new NpgsqlCommand("SELECT * FROM getvoterturnoutreportboothwise_percentage(@state_master_id, @district_master_id, @assembly_master_id)", connection);
+            var command = new NpgsqlCommand("SELECT * FROM getvoterturnoutreportboothwise_percentage(@state_master_id, @district_master_id, @assembly_master_id, @election_type_master_id)", connection);
             command.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateId));
             command.Parameters.AddWithValue("@district_master_id", Convert.ToInt32(districtId));
             command.Parameters.AddWithValue("@assembly_master_id", Convert.ToInt32(assemblyId));
+            command.Parameters.AddWithValue("@election_type_master_id", Convert.ToInt32(electionTypeMasterId));
 
             // Execute the command and read the results
             await using var reader = await command.ExecuteReaderAsync();
-
             while (await reader.ReadAsync())
             {
-                var slotVotes = (string[])reader.GetValue(4);
-                string boothAuxy = reader.IsDBNull(3) ? (string?)null : reader.GetString(3); string boothName = "";
-                if (boothAuxy == null || boothAuxy == "0")
-                {
-                    boothName = reader.IsDBNull(2) ? null : reader.GetString(2) + "-" + reader.GetString(1);
-                }
-                else
-                {
-                    boothName = reader.IsDBNull(2) ? null : reader.GetString(2) + reader.GetString(3) + "-" + reader.GetString(1);
-                    //boothName = reader.IsDBNull(1) ? null : reader.GetString(1) + "(" + reader.GetString(2) + reader.GetString(3) + ")";
+                var slotVotes = reader.IsDBNull(4) ? new string[0] : (string[])reader.GetValue(4);  // Check for DBNull before casting
+                string boothAuxy = reader.IsDBNull(3) ? null : reader.GetString(3);  // Handle DBNull for boothAuxy
+                string boothName = boothAuxy == null || boothAuxy == "0"
+                    ? reader.IsDBNull(2) ? null : reader.GetString(2) + "-" + reader.GetString(1)
+                    : reader.IsDBNull(2) ? null : reader.GetString(2) + boothAuxy + "-" + reader.GetString(1);
 
-                }
                 var eventActivityCount = new BoothWiseVoterTurnOutSlotWise
                 {
                     Key = GenerateRandomAlphanumericString(6), // You need to define this method to generate a random alphanumeric string
                     MasterId = reader.GetInt32(0),
                     Name = boothName,
                     Type = "Booth",
-                    SlotVotes = slotVotes,
-                    //AssignedSOMobile = reader.IsDBNull(16) ? null : reader.GetString(16),
-                    //AssignedSOName = reader.IsDBNull(17) ? null : reader.GetString(17)
-
+                    SlotVotes = slotVotes
                 };
 
                 // Add the object to the list
                 eventActivityList.Add(eventActivityCount);
             }
 
-
             // Close and dispose command1 and reader1
             await reader.CloseAsync();
             command.Dispose();
 
             // Second command to get data from testturnout assembly procedure
-
-            var commandText2 = "SELECT * FROM testturnout_boothwise(@state_master_id,@district_master_id,@assembly_master_id)";
+            var commandText2 = "SELECT * FROM testturnout_boothwise(@state_master_id,@district_master_id,@assembly_master_id, @election_type_master_id)";
             await using var command2 = new NpgsqlCommand(commandText2, connection);
             command2.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateId));
             command2.Parameters.AddWithValue("@district_master_id", Convert.ToInt32(districtId));
             command2.Parameters.AddWithValue("@assembly_master_id", Convert.ToInt32(assemblyId));
+            command2.Parameters.AddWithValue("@election_type_master_id", Convert.ToInt32(electionTypeMasterId));
 
             await using var reader2 = await command2.ExecuteReaderAsync();
 
@@ -15933,31 +16026,30 @@ namespace EAMS_DAL.Repository
             while (await reader2.ReadAsync())
             {
                 int masterId = reader2.GetInt32(0); // Assuming masterId is the first column
-                string votesTillNow = reader2.GetString(3); // Assuming votesTillNow is the second column as string
+                string votesTillNow = reader2.IsDBNull(3) ? "0" : reader2.GetString(3); // Handle DBNull for votesTillNow
                 votesTillNowDictionary[masterId] = votesTillNow;
             }
+
             // Close and dispose command2 and reader2
             await reader2.CloseAsync();
             command2.Dispose();
 
-            // Merge data into eventActivityList
-            foreach (var voterTurnOut in eventActivityList)
-            {
-                if (votesTillNowDictionary.TryGetValue((int)voterTurnOut.MasterId, out string votesTillNow))
+            // Use LINQ to merge data into eventActivityList without using a foreach loop
+            eventActivityList = eventActivityList
+                .Select(voterTurnOut => new BoothWiseVoterTurnOutSlotWise
                 {
-                    voterTurnOut.VotesTillNow = votesTillNow;
-                }
-                else
-                {
-                    voterTurnOut.VotesTillNow = "0";
-                }
-            }
-
-
-
+                    Key = voterTurnOut.Key,
+                    MasterId = voterTurnOut.MasterId,
+                    Name = voterTurnOut.Name,
+                    Type = voterTurnOut.Type,
+                    SlotVotes = voterTurnOut.SlotVotes,
+                    VotesTillNow = votesTillNowDictionary.GetValueOrDefault((int)voterTurnOut.MasterId, "0")
+                })
+                .ToList();
 
             return eventActivityList;
         }
+
         #endregion 
 
         #region SO Pendency Screen
