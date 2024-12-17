@@ -95,16 +95,13 @@
         public int? Female { get; set; }
         public int? Transgender { get; set; }
         public int? TotalVoters { get; set; }
-        public string CandidateName
-        {
-            get;
-            set;
-        }
-        public string? PartyName
-        {
-            get;
-            set;
-        }
+        public bool IsWinner { get; set; }
+        public bool IsDraw { get; set; }//For Draw Candidates
+        public bool IsDrawLottery { get; set; }//Choosen  of candidate by blindfolded  box
+        public bool IsReCounting { get; set; } // ReCounting in case of draw candidates
+        public bool IsResultDeclared { get; set; }
+        public bool IsCC { get; set; }
+        public bool IsNN { get; set; }
     }
 }
 

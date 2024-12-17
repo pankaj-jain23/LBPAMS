@@ -20888,57 +20888,57 @@ namespace EAMS_DAL.Repository
             // Use AsNoTracking for better performance
             return await combinedList.AsNoTracking().ToListAsync();
         }
-
-        public async Task<List<CombinedPanchayatMaster>> GetFourthLevelHListExistInRDForRO(int stateMasterId, int districtMasterId, int assemblyMasterId, string roId)
+        public async Task<List<CombinedPanchayatMaster>> GetFourthLevelHListExistInRDForRO(
+    int stateMasterId, int districtMasterId, int assemblyMasterId, string roId)
         {
-            // Start the query for the boothList and filter based on conditions in FourthLevelH
+            // Start the query for FourthLevelH with filters
             var boothList = _context.FourthLevelH
                 .Where(d => d.StateMasterId == stateMasterId
                             && d.DistrictMasterId == districtMasterId
                             && d.AssemblyMasterId == assemblyMasterId
                             && d.HierarchyStatus == true
-                            && d.AssignedToRO == roId) // Filter FourthLevelH by status
-                .AsQueryable(); // Convert to IQueryable for further filtering
+                            && d.AssignedToRO == roId)
+                .AsQueryable();
 
-            // Join with ResultDeclaration to filter by IsWinner == true
+            // Perform inner join with ResultDeclaration and group by FourthLevelHMasterId
             var combinedList = from ft in boothList
-                               join result in _context.ResultDeclaration
-                                  on ft.FourthLevelHMasterId equals result.FourthLevelHMasterId
-                               join asem in _context.AssemblyMaster
-                                   .Where(a => a.AssemblyStatus == true) // Filter AssemblyMaster by status
-                               on ft.AssemblyMasterId equals asem.AssemblyMasterId
-                               join dist in _context.DistrictMaster
-                                   .Where(d => d.DistrictStatus == true) // Filter DistrictMaster by status
-                               on asem.DistrictMasterId equals dist.DistrictMasterId
-                               join state in _context.StateMaster
-                                   .Where(s => s.StateStatus == true) // Filter StateMaster by status
-                               on dist.StateMasterId equals state.StateMasterId
-                               join elec in _context.ElectionTypeMaster
-                                   .Where(e => e.ElectionStatus == true) // Filter ElectionTypeMaster by status
-                               on ft.ElectionTypeMasterId equals elec.ElectionTypeMasterId
-                               join kyc in _context.Kyc
-                                   on result.KycMasterId equals kyc.KycMasterId
-                               orderby ft.HierarchyCode
+                               join results in _context.ResultDeclaration
+                                   on ft.FourthLevelHMasterId equals results.FourthLevelHMasterId
+                               join asem in _context.AssemblyMaster.Where(a => a.AssemblyStatus == true)
+                                   on ft.AssemblyMasterId equals asem.AssemblyMasterId
+                               join dist in _context.DistrictMaster.Where(d => d.DistrictStatus == true)
+                                   on asem.DistrictMasterId equals dist.DistrictMasterId
+                               join state in _context.StateMaster.Where(s => s.StateStatus == true)
+                                   on dist.StateMasterId equals state.StateMasterId
+                               join elec in _context.ElectionTypeMaster.Where(e => e.ElectionStatus == true)
+                                   on ft.ElectionTypeMasterId equals elec.ElectionTypeMasterId
+                               group new { ft, results, asem, dist, state, elec } by ft.FourthLevelHMasterId into grouped
+                               orderby grouped.Key
                                select new CombinedPanchayatMaster
                                {
                                    StateId = stateMasterId,
-                                   DistrictId = dist.DistrictMasterId,
-                                   AssemblyId = asem.AssemblyMasterId,
-                                   AssemblyName = asem.AssemblyName,
-                                   AssemblyCode = asem.AssemblyCode,
-                                   FourthLevelHMasterId = ft.FourthLevelHMasterId,
-                                   HierarchyName = ft.HierarchyName,
-                                   HierarchyCode = ft.HierarchyCode,
-                                   IsAssigned = ft.IsAssignedRO, // Change as needed
-                                   IsStatus = ft.HierarchyStatus,
-                                   ElectionTypeMasterId = ft.ElectionTypeMasterId,
-                                   ElectionTypeName = elec.ElectionType,
-                                   Male = ft.Male,
-                                   Female = ft.Female,
-                                   Transgender = ft.Transgender,
-                                   TotalVoters = ft.TotalVoters,
-                                   CandidateName = kyc.CandidateName,
-                                   PartyName = kyc.PartyName
+                                   DistrictId = grouped.FirstOrDefault().dist.DistrictMasterId,
+                                   AssemblyId = grouped.FirstOrDefault().asem.AssemblyMasterId,
+                                   AssemblyName = grouped.FirstOrDefault().asem.AssemblyName,
+                                   AssemblyCode = grouped.FirstOrDefault().asem.AssemblyCode,
+                                   FourthLevelHMasterId = grouped.Key,
+                                   HierarchyName = grouped.FirstOrDefault().ft.HierarchyName,
+                                   HierarchyCode = grouped.FirstOrDefault().ft.HierarchyCode,
+                                   IsAssigned = grouped.FirstOrDefault().ft.IsAssignedRO,
+                                   IsStatus = grouped.FirstOrDefault().ft.HierarchyStatus,
+                                   ElectionTypeMasterId = grouped.FirstOrDefault().ft.ElectionTypeMasterId,
+                                   ElectionTypeName = grouped.FirstOrDefault().elec.ElectionType,
+                                   Male = grouped.FirstOrDefault().ft.Male,
+                                   Female = grouped.FirstOrDefault().ft.Female,
+                                   Transgender = grouped.FirstOrDefault().ft.Transgender,
+                                   TotalVoters = grouped.FirstOrDefault().ft.TotalVoters,
+                                   IsCC = grouped.FirstOrDefault().ft.IsCC,
+                                   IsNN = grouped.FirstOrDefault().ft.IsNN,
+                                   IsWinner = grouped.Any(r => r.results.IsWinner),
+                                   IsReCounting = grouped.Any(r => r.results.IsReCounting),
+                                   IsResultDeclared = grouped.Any(r => r.results.IsResultDeclared),
+                                   IsDraw = grouped.Any(r => r.results.IsDraw),
+                                   IsDrawLottery = grouped.Any(r => r.results.IsDrawLottery)
                                };
 
             // Use AsNoTracking for better performance

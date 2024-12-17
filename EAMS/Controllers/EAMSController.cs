@@ -2047,7 +2047,7 @@ namespace EAMS.Controllers
             }
         }
         [HttpGet("GetFourthLevelHListExistInRDForRO")]
-        [Authorize]
+        //[Authorize]
         public async Task<IActionResult> GetFourthLevelHListExistInRDForRO()
         {
             var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
