@@ -18776,6 +18776,7 @@ namespace EAMS_DAL.Repository
                 return null;
             }
         }
+
         public async Task<Response> UpdateFourthLevelH(FourthLevelH fourthLevelH)
         {
             // Retrieve the existing entity
@@ -20944,7 +20945,61 @@ namespace EAMS_DAL.Repository
             // Use AsNoTracking for better performance
             return await combinedList.AsNoTracking().ToListAsync();
         }
+        public async Task<List<CombinedPanchayatMaster>> GetFourthLevelHExistInRDListById(
+    int stateMasterId, int districtMasterId, int assemblyMasterId)
+        {
+            // Start the query for FourthLevelH with filters
+            var boothList = _context.FourthLevelH
+                .Where(d => d.StateMasterId == stateMasterId
+                            && d.DistrictMasterId == districtMasterId
+                            && d.AssemblyMasterId == assemblyMasterId
+                            && d.HierarchyStatus == true)
+                .AsQueryable();
 
+            // Perform inner join with ResultDeclaration and group by FourthLevelHMasterId
+            var combinedList = from ft in boothList
+                               join results in _context.ResultDeclaration
+                                   on ft.FourthLevelHMasterId equals results.FourthLevelHMasterId
+                               join asem in _context.AssemblyMaster.Where(a => a.AssemblyStatus == true)
+                                   on ft.AssemblyMasterId equals asem.AssemblyMasterId
+                               join dist in _context.DistrictMaster.Where(d => d.DistrictStatus == true)
+                                   on asem.DistrictMasterId equals dist.DistrictMasterId
+                               join state in _context.StateMaster.Where(s => s.StateStatus == true)
+                                   on dist.StateMasterId equals state.StateMasterId
+                               join elec in _context.ElectionTypeMaster.Where(e => e.ElectionStatus == true)
+                                   on ft.ElectionTypeMasterId equals elec.ElectionTypeMasterId
+                               group new { ft, results, asem, dist, state, elec } by ft.FourthLevelHMasterId into grouped
+                               orderby grouped.Key
+                               select new CombinedPanchayatMaster
+                               {
+                                   StateId = stateMasterId,
+                                   DistrictId = grouped.FirstOrDefault().dist.DistrictMasterId,
+                                   AssemblyId = grouped.FirstOrDefault().asem.AssemblyMasterId,
+                                   AssemblyName = grouped.FirstOrDefault().asem.AssemblyName,
+                                   AssemblyCode = grouped.FirstOrDefault().asem.AssemblyCode,
+                                   FourthLevelHMasterId = grouped.Key,
+                                   HierarchyName = grouped.FirstOrDefault().ft.HierarchyName,
+                                   HierarchyCode = grouped.FirstOrDefault().ft.HierarchyCode,
+                                   IsAssigned = grouped.FirstOrDefault().ft.IsAssignedRO,
+                                   IsStatus = grouped.FirstOrDefault().ft.HierarchyStatus,
+                                   ElectionTypeMasterId = grouped.FirstOrDefault().ft.ElectionTypeMasterId,
+                                   ElectionTypeName = grouped.FirstOrDefault().elec.ElectionType,
+                                   Male = grouped.FirstOrDefault().ft.Male,
+                                   Female = grouped.FirstOrDefault().ft.Female,
+                                   Transgender = grouped.FirstOrDefault().ft.Transgender,
+                                   TotalVoters = grouped.FirstOrDefault().ft.TotalVoters,
+                                   IsCC = grouped.FirstOrDefault().ft.IsCC,
+                                   IsNN = grouped.FirstOrDefault().ft.IsNN,
+                                   IsWinner = grouped.Any(r => r.results.IsWinner),
+                                   IsReCounting = grouped.Any(r => r.results.IsReCounting),
+                                   IsResultDeclared = grouped.Any(r => r.results.IsResultDeclared),
+                                   IsDraw = grouped.Any(r => r.results.IsDraw),
+                                   IsDrawLottery = grouped.Any(r => r.results.IsDrawLottery)
+                               };
+
+            // Use AsNoTracking for better performance
+            return await combinedList.AsNoTracking().ToListAsync();
+        }
         public async Task<List<CombinedPanchayatMaster>> GetFourthLevelListByAROId(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId, string roId, string assignedType)
         {
             // Start the query for the boothList

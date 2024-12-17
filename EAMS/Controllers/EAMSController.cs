@@ -2087,6 +2087,34 @@ namespace EAMS.Controllers
                 return BadRequest("Master Id's cannot be null");
             }
         }
+        [HttpGet("GetFourthLevelHExistInRDListById")]
+        public async Task<IActionResult> GetFourthLevelHExistInRDListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        {
+            // Validate input parameters (ensure they are greater than 0)
+            if (stateMasterId > 0 && districtMasterId > 0 && assemblyMasterId > 0)
+            {
+                var fourthLevelHList = await _EAMSService.GetFourthLevelHExistInRDListById(stateMasterId, districtMasterId, assemblyMasterId);
+
+                if (fourthLevelHList != null && fourthLevelHList.Any()) // Check if data is not null and contains elements
+                {
+                    var response = new
+                    {
+                        count = fourthLevelHList.Count,
+                        data = fourthLevelHList
+                    };
+                    return Ok(response);
+                }
+                else
+                {
+                    return NotFound("No records found.");
+                }
+            }
+            else
+            {
+                return BadRequest("StateMasterId, DistrictMasterId, and AssemblyMasterId must be greater than 0.");
+            }
+        }
+
         [HttpPut]
         [Route("UpdateFourthLevelH")]
         [Authorize]

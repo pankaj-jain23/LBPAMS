@@ -408,6 +408,7 @@ namespace EAMS_ACore.Interfaces
         Task<List<CombinedPanchayatMaster>> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId, string roId, string assginedType);
         Task<List<CombinedPanchayatMaster>> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId, string roId);
         Task<List<CombinedPanchayatMaster>> GetFourthLevelHListExistInRDForRO(int stateMasterId, int districtMasterId, int assemblyMasterId, string roId);
+        Task<List<CombinedPanchayatMaster>> GetFourthLevelHExistInRDListById(int stateMasterId, int districtMasterId, int assemblyMasterId);
 
         Task<List<CombinedPanchayatMaster>> GetFourthLevelListByAROId(int stateMasterId, int districtMasterId, int assemblyMasterId,int electionTypeMasterId, string roId, string assginedType);
         Task<List<CombinedPanchayatMaster>> GetUnassignedPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, string assginedType);

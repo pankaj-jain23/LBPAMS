@@ -2414,6 +2414,10 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetFourthLevelHListExistInRDForRO(stateMasterId, districtMasterId, assemblyMasterId, roId);
         }
+        public async Task<List<CombinedPanchayatMaster>> GetFourthLevelHExistInRDListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        {
+            return await _eamsRepository.GetFourthLevelHExistInRDListById(stateMasterId, districtMasterId, assemblyMasterId);
+        }
         public async Task<List<CombinedPanchayatMaster>> GetFourthLevelListByAROId(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId, string roId, string assginedType)
         {
             return await _eamsRepository.GetFourthLevelListByAROId(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId, roId, assginedType);
