@@ -1971,7 +1971,6 @@ namespace EAMS.Controllers
         }
 
         [HttpGet("GetFourthLevelHListById")]
-
         public async Task<IActionResult> GetFourthLevelHListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null)
@@ -2047,7 +2046,7 @@ namespace EAMS.Controllers
             }
         }
         [HttpGet("GetFourthLevelHListExistInRDForRO")]
-        //[Authorize]
+        [Authorize]
         public async Task<IActionResult> GetFourthLevelHListExistInRDForRO()
         {
             var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
