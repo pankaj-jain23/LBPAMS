@@ -6264,8 +6264,8 @@ namespace EAMS_DAL.Repository
                 result.EventName = updateEventActivity.EventName;
                 result.ElectionInfoStatus = updateEventActivity.EventStatus;
                 result.IsPartyReached = updateEventActivity.EventStatus;
-                result.PartyReachedLastUpdate = BharatDateTime();
                 result.EventStatus = updateEventActivity.EventStatus;
+                result.PartyReachedLastUpdate = BharatDateTime();
                 _context.ElectionInfoMaster.Update(result);
             }
 
@@ -6295,11 +6295,11 @@ namespace EAMS_DAL.Repository
             {
                 result.EventMasterId = updateEventActivity.EventMasterId;
                 result.EventSequence = updateEventActivity.EventSequence;
-                result.EventABBR = updateEventActivity.EventABBR;
-                result.ElectionInfoStatus = updateEventActivity.EventStatus;
-                result.IsSetupOfPolling = updateEventActivity.EventStatus;
+                result.EventABBR = updateEventActivity.EventABBR;               
                 result.SetupOfPollingLastUpdate = BharatDateTime();
                 result.EventName = updateEventActivity.EventName;
+                result.ElectionInfoStatus = updateEventActivity.EventStatus;
+                result.IsSetupOfPolling = updateEventActivity.EventStatus;
                 result.EventStatus = updateEventActivity.EventStatus;
                 _context.ElectionInfoMaster.Update(result);
             }
@@ -6331,12 +6331,12 @@ namespace EAMS_DAL.Repository
             {
                 result.EventMasterId = updateEventActivity.EventMasterId;
                 result.EventSequence = updateEventActivity.EventSequence;
-                result.EventABBR = updateEventActivity.EventABBR;
-                result.ElectionInfoStatus = updateEventActivity.EventStatus;
+                result.EventABBR = updateEventActivity.EventABBR;               
                 result.NoOfPollingAgents = updateEventActivity.NoOfPollingAgents;
-                result.IsMockPollDone = updateEventActivity.EventStatus;
                 result.MockPollDoneLastUpdate = BharatDateTime();
                 result.EventName = updateEventActivity.EventName;
+                result.IsMockPollDone = updateEventActivity.EventStatus;
+                result.ElectionInfoStatus = updateEventActivity.EventStatus;
                 result.EventStatus = updateEventActivity.EventStatus;
                 _context.ElectionInfoMaster.Update(result);
             }
@@ -6368,11 +6368,11 @@ namespace EAMS_DAL.Repository
             {
                 result.EventMasterId = updateEventActivity.EventMasterId;
                 result.EventSequence = updateEventActivity.EventSequence;
-                result.EventABBR = updateEventActivity.EventABBR;
-                result.ElectionInfoStatus = updateEventActivity.EventStatus;
-                result.IsPollStarted = updateEventActivity.EventStatus;
+                result.EventABBR = updateEventActivity.EventABBR;              
                 result.PollStartedLastUpdate = BharatDateTime();
                 result.EventName = updateEventActivity.EventName;
+                result.ElectionInfoStatus = updateEventActivity.EventStatus;
+                result.IsPollStarted = updateEventActivity.EventStatus;
                 result.EventStatus = updateEventActivity.EventStatus;
                 _context.ElectionInfoMaster.Update(result);
             }
@@ -7043,18 +7043,13 @@ namespace EAMS_DAL.Repository
         private async Task<ServiceResponse> IsVoterSlotAvailable(int stateMasterId, int electionTypeMasterId)
         {
             // Fetch slot list from cache
-            var getSlotList = await _cacheService.GetDataAsync<List<SlotManagementMaster>>($"GetNextEventList{electionTypeMasterId}");
-
-            // If not in cache, retrieve from the database and update cache
-            if (getSlotList == null)
-            {
-                getSlotList = await _context.SlotManagementMaster
+             
+              var  getSlotList = await _context.SlotManagementMaster
                     .Where(d => d.StateMasterId == stateMasterId &&
                                 d.ElectionTypeMasterId == electionTypeMasterId)
                     .ToListAsync();
 
-                await _cacheService.SetDataAsync($"GetNextEventList{electionTypeMasterId}", getSlotList, BharatTimeDynamic(0, 0, 0, 0, 20));
-            }
+            
 
             // Get the current time
             var currentTime = DateTimeOffset.Now;
@@ -7414,13 +7409,9 @@ namespace EAMS_DAL.Repository
         public async Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(int boothMasterId, string userType)
         {
             // Step 1: Try to fetch BoothMaster details from cache
-            var cacheKeyBooth = $"BoothMaster_{boothMasterId}";
-            var getBooth = await _cacheService.GetDataAsync<BoothMaster>(cacheKeyBooth);
-
-            if (getBooth == null)
-            {
+            
                 // Fetch from database if not available in cache
-                getBooth = await _context.BoothMaster.AsNoTracking()
+             var   getBooth = await _context.BoothMaster.AsNoTracking()
                                 .Where(d => d.BoothMasterId == boothMasterId)
                                 .Select(d => new BoothMaster
                                 {
@@ -7432,12 +7423,7 @@ namespace EAMS_DAL.Repository
                                 })
                                 .FirstOrDefaultAsync();
 
-                // Add to cache if found
-                if (getBooth != null)
-                {
-                    await _cacheService.SetDataAsync(cacheKeyBooth, getBooth, BharatTimeDynamic(0, 0, 0, 0, 20)); // Cache for 30 minutes
-                }
-            }
+                 
 
             if (getBooth == null)
             {
@@ -8092,22 +8078,14 @@ namespace EAMS_DAL.Repository
             }
 
 
-            var currentEvent = await _cacheService.GetDataAsync<EventMaster>("GetFVEvent");
-
-            if (currentEvent == null)
-            {
+             
                 // Fetch from database if not available in cache
-                currentEvent = await _context.EventMaster
+               var currentEvent = await _context.EventMaster
                                    .FirstOrDefaultAsync(d => d.StateMasterId == getBooth.StateMasterId
                                                          && d.ElectionTypeMasterId == getBooth.ElectionTypeMasterId
                                                          && d.EventABBR == "FV");
 
-                // Add to cache if found
-                if (currentEvent != null)
-                {
-                    await _cacheService.SetDataAsync("GetFVEvent", currentEvent, BharatTimeDynamic(0, 0, 0, 0, 20)); // Cache for 30 minutes
-                }
-            }
+                
 
             if (currentEvent == null)
             {
@@ -19808,7 +19786,7 @@ namespace EAMS_DAL.Repository
             // Save all changes to the database
             await _context.SaveChangesAsync();
         }
-        public async Task<int> GetTotalVotersForUrbanRDAsync(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        public async Task<int?> GetTotalVotersForUrbanRDAsync(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
             // Fetch TotalVoters based on the conditions provided
             var result = await _context.FourthLevelH
@@ -19819,7 +19797,7 @@ namespace EAMS_DAL.Repository
                 .Select(f => f.TotalVoters)
                 .FirstOrDefaultAsync();
 
-            return (int)result;
+            return  result;
         }
 
         public async Task<ServiceResponseForRD> UpdateResultDeclarationForPortal(List<ResultDeclaration> resultDeclaration)
@@ -22263,7 +22241,7 @@ namespace EAMS_DAL.Repository
                     TotalWonCandidate = 0, // No count for won candidates in Kyc
                     TotalVoteMargin = 0, // No VoteMargin in Kyc
                     IsUnOpposed = k != null && k.IsUnOppossed == true ? 1 : 0,
-                    Children = new List<object>() // Populate as needed
+                    Children = null // Populate as needed
                 }
             ).ToListAsync();
 
