@@ -716,7 +716,7 @@ namespace EAMS.Controllers
         #region Voter Turn Out Screens Disrict,AAssembly,BoothWise
         [HttpGet]
         [Route("GetSlotBasedVTOutReportDistrictWise")]
-        [Authorize(Roles = "ECI,SuperAdmin,StateAdmin")]
+        //[Authorize(Roles = "ECI,SuperAdmin,StateAdmin")]
         public async Task<IActionResult> GetSlotBasedVTOutReports(string? stateId, string? electionTypeId)
         {
             // Retrieve claims for stateMasterId and electionTypeMasterId

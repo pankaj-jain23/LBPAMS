@@ -2046,8 +2046,48 @@ namespace EAMS.Controllers
                 return BadRequest("Master Id's cannot be null");
             }
         }
+        [HttpGet("GetFourthLevelHListExistInRDForRO")]
+        [Authorize]
+        public async Task<IActionResult> GetFourthLevelHListExistInRDForRO()
+        {
+            var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
+            int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
+            int districtMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("DistrictMasterId"));
+            int assemblyMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AssemblyMasterId"));
+            int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
+            string roId = userClaims.GetValueOrDefault("UserId");
+
+            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && roId != null)
+            {
+
+                var panchayatList = await _EAMSService.GetFourthLevelHListExistInRDForRO(stateMasterId, districtMasterId, assemblyMasterId, roId);  // Corrected to await the asynchronous method
+                                                                                                                                         // var mappedData = _mapper.Map<List<FourthLevelH>, List<ListFourthLevelHViewModel>>(panchayatList);
+                if (panchayatList != null)
+                {
+                    var data = new
+                    {
+                        count = panchayatList.Count,
+                        data = panchayatList.ToList(),
+                        //data = boothList.OrderBy(p => Int32.Parse(p.BoothCode_No)).ToList(),
+
+                    };
+                    return Ok(data);
+
+                }
+                else
+                {
+                    return NotFound("Booth Not Found");
+
+                }
 
 
+            }
+            else
+            {
+
+                return BadRequest("Master Id's cannot be null");
+            }
+        }
         [HttpPut]
         [Route("UpdateFourthLevelH")]
         [Authorize]

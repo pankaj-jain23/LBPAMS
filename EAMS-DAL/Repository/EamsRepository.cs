@@ -31,6 +31,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 
 
 namespace EAMS_DAL.Repository
@@ -15625,7 +15626,7 @@ namespace EAMS_DAL.Repository
         //    await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("Postgres"));
         //    await connection.OpenAsync();
 
-        //    // First command to get data from getvoterturnoutreport_percentage procedure
+        //     First command to get data from getvoterturnoutreport_percentage procedure
         //    var commandText1 = "SELECT * FROM getvoterturnoutreport_percentage(@state_master_id)";
         //    await using var command1 = new NpgsqlCommand(commandText1, connection);
         //    command1.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateMasterId));
@@ -15649,11 +15650,11 @@ namespace EAMS_DAL.Repository
         //        voterTurnOutList.Add(voterTurnOut);
         //    }
 
-        //    // Close and dispose command1 and reader1
+        //     Close and dispose command1 and reader1
         //    await reader1.CloseAsync();
         //    command1.Dispose();
 
-        //    // Second command to get data from testturnout procedure
+        //     Second command to get data from testturnout procedure
         //    var commandText2 = "SELECT * FROM testturnout(@state_master_id)";
         //    await using var command2 = new NpgsqlCommand(commandText2, connection);
         //    command2.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateMasterId));
@@ -15669,11 +15670,11 @@ namespace EAMS_DAL.Repository
         //        votesTillNowDictionary[masterId] = votesTillNow;
         //    }
 
-        //    // Close and dispose command2 and reader2
+        //     Close and dispose command2 and reader2
         //    await reader2.CloseAsync();
         //    command2.Dispose();
 
-        //    // Merge data into voterTurnOutList
+        //     Merge data into voterTurnOutList
         //    foreach (var voterTurnOut in voterTurnOutList)
         //    {
         //        if (votesTillNowDictionary.TryGetValue((int)voterTurnOut.MasterId, out string votesTillNow))
@@ -15688,78 +15689,185 @@ namespace EAMS_DAL.Repository
 
         //    return voterTurnOutList;
         //}
+        //public async Task<List<VoterTurnOutSlotWise>> GetVoterTurnOutSlotBasedReport(string stateMasterId, string electionTypeMasterId)
+        //{
+        //    int stateMasterIdInt = Convert.ToInt32(stateMasterId);
+        //    int electionTypeMasterIdInt = Convert.ToInt32(electionTypeMasterId);
+
+        //     Get the data directly using LINQ
+        //    var voterTurnOutList = await (from am in _context.AssemblyMaster
+        //                                  join bm in _context.BoothMaster
+        //                                  on am.AssemblyMasterId equals bm.AssemblyMasterId
+        //                                  where bm.StateMasterId == stateMasterIdInt
+        //                                        && bm.ElectionTypeMasterId == electionTypeMasterIdInt
+        //                                        && bm.DistrictMasterId != null
+        //                                        && am.StateMasterId == stateMasterIdInt
+        //                                        && am.ElectionTypeMasterId == electionTypeMasterIdInt
+        //                                        && am.AssemblyStatus == true
+        //                                  group bm by new { am.AssemblyMasterId, am.AssemblyName, am.AssemblyCode } into g
+        //                                  select new
+        //                                  {
+        //                                      AssemblyMasterId = g.Key.AssemblyMasterId,
+        //                                      AssemblyName = g.Key.AssemblyName,
+        //                                      AssemblyCode = g.Key.AssemblyCode,
+        //                                      TotalVoters = g.Sum(b => b.TotalVoters)
+        //                                  })
+        //                                   .ToListAsync();
+
+        //    var slotVotesData = await (from pd in _context.PollDetails
+        //                               join bm in _context.BoothMaster
+        //                               on pd.BoothMasterId equals bm.BoothMasterId
+        //                               where pd.StateMasterId == stateMasterIdInt
+        //                                     && pd.ElectionTypeMasterId == electionTypeMasterIdInt
+        //                                     && pd.VotesPolledRecivedTime == (from pd_inner in _context.PollDetails
+        //                                                                      where pd_inner.SlotManagementId == pd.SlotManagementId
+        //                                                                    && pd_inner.StateMasterId == pd.StateMasterId
+        //                                                                    && pd_inner.DistrictMasterId == pd.DistrictMasterId
+        //                                                                    && pd_inner.AssemblyMasterId == pd.AssemblyMasterId
+        //                                                                    && pd_inner.BoothMasterId == pd.BoothMasterId
+        //                                                                      select pd_inner.VotesPolledRecivedTime).Max()
+        //                               group pd by new { pd.AssemblyMasterId, pd.SlotManagementId } into g
+        //                               select new
+        //                               {
+        //                                   AssemblyMasterId = g.Key.AssemblyMasterId,
+        //                                   SlotManagementId = g.Key.SlotManagementId,
+        //                                   TotalVotes = g.Sum(pd => pd.VotesPolled)
+        //                               })
+        //                               .ToListAsync();
+
+        //     Join the data from both queries
+        //    var result = (from assembly in voterTurnOutList
+        //                  join slotVotes in slotVotesData
+        //                  on assembly.AssemblyMasterId equals slotVotes.AssemblyMasterId into slotJoin
+        //                  from slot in slotJoin.DefaultIfEmpty()
+        //                  select new VoterTurnOutSlotWise
+        //                  {
+        //                      Key = GenerateRandomAlphanumericString(6),
+        //                      MasterId = assembly.AssemblyMasterId,
+        //                      Name = assembly.AssemblyName,
+        //                      Type = "District",
+        //                      SlotVotes = slotJoin.Select(s => $"{s.TotalVotes} ({(assembly.TotalVoters > 0 ? (s.TotalVotes * 100.0 / assembly.TotalVoters).ToString() : 0.0)}%)").ToArray(),
+        //                      Children = new List<object>(), // Assuming this is left empty for now
+        //                      VotesTillNow = "0" // Default value
+        //                  })
+        //                  .ToList();
+
+        //     Assuming you want to combine with the second function `testturnout` (District-level data)
+        //    var districtVotesData = await (from dm in _context.DistrictMaster
+        //                                   join bm in _context.BoothMaster
+        //                                   on dm.DistrictMasterId equals bm.DistrictMasterId
+        //                                   where bm.StateMasterId == stateMasterIdInt
+        //                                         && bm.ElectionTypeMasterId == electionTypeMasterIdInt
+        //                                         && bm.AssemblyMasterId != null
+        //                                   group bm by new { dm.DistrictMasterId, dm.DistrictName, dm.DistrictCode } into g
+        //                                   select new
+        //                                   {
+        //                                       DistrictMasterId = g.Key.DistrictMasterId,
+        //                                       DistrictName = g.Key.DistrictName,
+        //                                       DistrictCode = g.Key.DistrictCode,
+        //                                       TotalVotesPolled = g.Sum(b => b.TotalVoters)
+        //                                   })
+        //                                    .ToListAsync();
+
+        //     Adding VotesTillNow from districtVotesData
+        //    foreach (var voterTurnOut in result)
+        //    {
+        //        var districtData = districtVotesData.FirstOrDefault(d => d.DistrictMasterId == (int)voterTurnOut.MasterId);
+        //        if (districtData != null)
+        //        {
+        //            voterTurnOut.VotesTillNow = $"{districtData.TotalVotesPolled} ({(districtData.TotalVotesPolled > 0 ? (districtData.TotalVotesPolled * 100.0 / districtData.TotalVotesPolled).ToString() : 0.0)}%)";
+        //        }
+        //    }
+
+        //     Second command to get data from testturnout procedure
+        //    var commandText2 = "SELECT * FROM testturnout(@state_master_id, @election_type_master_id)";
+        //    await using var command2 = new NpgsqlCommand(commandText2, connection);
+        //    command2.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateMasterId));
+        //    command2.Parameters.AddWithValue("@election_type_master_id", Convert.ToInt32(electionTypeMasterId));
+
+        //    await using var reader2 = await command2.ExecuteReaderAsync();
+
+        //    var votesTillNowDictionary = new Dictionary<int, string>();
+
+        //    while (await reader2.ReadAsync())
+        //    {
+        //        int masterId = reader2.GetInt32(0); // Assuming masterId is the first column
+        //        string votesTillNow = reader2.IsDBNull(3) ? null : reader2.GetString(3); // Assuming votesTillNow is the second column as string
+        //        votesTillNowDictionary[masterId] = votesTillNow;
+        //    }
+
+        //     Close and dispose command2 and reader2
+        //    await reader2.CloseAsync();
+        //    command2.Dispose();
+
+        //     Use LINQ to map VotesTillNow without foreach loop
+        //    voterTurnOutList = voterTurnOutList
+        //        .Select(voterTurnOut => new VoterTurnOutSlotWise
+        //        {
+        //            Key = voterTurnOut.Key,
+        //            MasterId = voterTurnOut.MasterId,
+        //            Name = voterTurnOut.Name,
+        //            Type = voterTurnOut.Type,
+        //            SlotVotes = voterTurnOut.SlotVotes,
+        //            Children = voterTurnOut.Children,
+        //            VotesTillNow = votesTillNowDictionary.GetValueOrDefault((int)voterTurnOut.MasterId, "0")
+        //        })
+        //        .ToList();
+
+        //    return voterTurnOutList;
+        //}
         public async Task<List<VoterTurnOutSlotWise>> GetVoterTurnOutSlotBasedReport(string stateMasterId, string electionTypeMasterId)
         {
-            var voterTurnOutList = new List<VoterTurnOutSlotWise>();
+            int stateMasterIdInt = Convert.ToInt32(stateMasterId);
+            int electionTypeMasterIdInt = Convert.ToInt32(electionTypeMasterId);
 
-            await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("Postgres"));
-            await connection.OpenAsync();
+            // Combine the queries for voter turnout, slot votes, and district data
+            var result = await (from am in _context.AssemblyMaster
+                                join bm in _context.BoothMaster
+                                    on am.AssemblyMasterId equals bm.AssemblyMasterId
+                                where bm.StateMasterId == stateMasterIdInt
+                                      && bm.ElectionTypeMasterId == electionTypeMasterIdInt
+                                      && bm.DistrictMasterId != null
+                                      && !string.IsNullOrEmpty(bm.AssignedTo)
+                                      && am.StateMasterId == stateMasterIdInt
+                                      && am.ElectionTypeMasterId == electionTypeMasterIdInt
+                                      && am.AssemblyStatus == true
+                                join pd in _context.PollDetails
+                                    on bm.BoothMasterId equals pd.BoothMasterId
+                                where pd.StateMasterId == stateMasterIdInt
+                                      && pd.ElectionTypeMasterId == electionTypeMasterIdInt
+                                      && pd.VotesPolledRecivedTime == (from pd_inner in _context.PollDetails
+                                                                       where pd_inner.SlotManagementId == pd.SlotManagementId
+                                                                     && pd_inner.StateMasterId == pd.StateMasterId
+                                                                     && pd_inner.DistrictMasterId == pd.DistrictMasterId
+                                                                     && pd_inner.AssemblyMasterId == pd.AssemblyMasterId
+                                                                     && pd_inner.BoothMasterId == pd.BoothMasterId
+                                                                       select pd_inner.VotesPolledRecivedTime).Max()
+                                join dm in _context.DistrictMaster
+                                    on bm.DistrictMasterId equals dm.DistrictMasterId
+                                where dm.StateMasterId == stateMasterIdInt
+                                group new { bm, pd, am, dm } by new
+                                {
+                                    am.AssemblyMasterId,
+                                    am.AssemblyName,
+                                    am.AssemblyCode,
+                                    dm.DistrictMasterId,
+                                    dm.DistrictName,
+                                    dm.DistrictCode
+                                } into g
+                                select new VoterTurnOutSlotWise
+                                {
+                                    Key = GenerateRandomAlphanumericString(6),
+                                    MasterId = g.Key.AssemblyMasterId,
+                                    Name = g.Key.AssemblyName,
+                                    Type = "District",
+                                    SlotVotes = g.Select(s => $"{s.pd.VotesPolled} ({(s.bm.TotalVoters > 0 ? (s.pd.VotesPolled * 100.0 / s.bm.TotalVoters).ToString() : 0.0)}%)").ToArray(),
+                                    Children = new List<object>(), // Assuming this is left empty for now
+                                    VotesTillNow = $"{g.Sum(x => x.bm.TotalVoters)} ({(g.Sum(x => x.bm.TotalVoters) > 0 ? (g.Sum(x => x.bm.TotalVoters) * 100.0 / g.Sum(x => x.bm.TotalVoters)).ToString() : 0.0)}%)"
+                                })
+                                .ToListAsync();
 
-            // First command to get data from getvoterturnoutreport_percentage procedure
-            var commandText1 = "SELECT * FROM getvoterturnoutreport_percentage(@state_master_id, @election_type_master_id)";
-            await using var command1 = new NpgsqlCommand(commandText1, connection);
-            command1.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateMasterId));
-            command1.Parameters.AddWithValue("@election_type_master_id", Convert.ToInt32(electionTypeMasterId));
-
-            await using var reader1 = await command1.ExecuteReaderAsync();
-
-            while (await reader1.ReadAsync())
-            {
-                var slotVotes = (string[])reader1.GetValue(3); // Assuming slot_votes array is at index 3
-
-                var voterTurnOut = new VoterTurnOutSlotWise
-                {
-                    Key = GenerateRandomAlphanumericString(6),
-                    MasterId = reader1.GetInt32(0),
-                    Name = reader1.GetString(1),
-                    Type = "District",
-                    SlotVotes = slotVotes,
-                    Children = new List<object>()
-                };
-
-                voterTurnOutList.Add(voterTurnOut);
-            }
-
-            // Close and dispose command1 and reader1
-            await reader1.CloseAsync();
-            command1.Dispose();
-
-            // Second command to get data from testturnout procedure
-            var commandText2 = "SELECT * FROM testturnout(@state_master_id, @election_type_master_id)";
-            await using var command2 = new NpgsqlCommand(commandText2, connection);
-            command2.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateMasterId));
-            command2.Parameters.AddWithValue("@election_type_master_id", Convert.ToInt32(electionTypeMasterId));
-
-            await using var reader2 = await command2.ExecuteReaderAsync();
-
-            var votesTillNowDictionary = new Dictionary<int, string>();
-
-            while (await reader2.ReadAsync())
-            {
-                int masterId = reader2.GetInt32(0); // Assuming masterId is the first column
-                string votesTillNow = reader2.IsDBNull(3) ? null : reader2.GetString(3); // Assuming votesTillNow is the second column as string
-                votesTillNowDictionary[masterId] = votesTillNow;
-            }
-
-            // Close and dispose command2 and reader2
-            await reader2.CloseAsync();
-            command2.Dispose();
-
-            // Use LINQ to map VotesTillNow without foreach loop
-            voterTurnOutList = voterTurnOutList
-                .Select(voterTurnOut => new VoterTurnOutSlotWise
-                {
-                    Key = voterTurnOut.Key,
-                    MasterId = voterTurnOut.MasterId,
-                    Name = voterTurnOut.Name,
-                    Type = voterTurnOut.Type,
-                    SlotVotes = voterTurnOut.SlotVotes,
-                    Children = voterTurnOut.Children,
-                    VotesTillNow = votesTillNowDictionary.GetValueOrDefault((int)voterTurnOut.MasterId, "0")
-                })
-                .ToList();
-
-            return voterTurnOutList;
+            return result;
         }
 
         //public async Task<List<VoterTurnOutSlotWise>> GetVoterTurnOutSlotBasedReport(string stateMasterId)
@@ -18668,7 +18776,6 @@ namespace EAMS_DAL.Repository
                 return null;
             }
         }
-
         public async Task<Response> UpdateFourthLevelH(FourthLevelH fourthLevelH)
         {
             // Retrieve the existing entity
@@ -20781,6 +20888,63 @@ namespace EAMS_DAL.Repository
             // Use AsNoTracking for better performance
             return await combinedList.AsNoTracking().ToListAsync();
         }
+
+        public async Task<List<CombinedPanchayatMaster>> GetFourthLevelHListExistInRDForRO(int stateMasterId, int districtMasterId, int assemblyMasterId, string roId)
+        {
+            // Start the query for the boothList and filter based on conditions in FourthLevelH
+            var boothList = _context.FourthLevelH
+                .Where(d => d.StateMasterId == stateMasterId
+                            && d.DistrictMasterId == districtMasterId
+                            && d.AssemblyMasterId == assemblyMasterId
+                            && d.HierarchyStatus == true
+                            && d.AssignedToRO == roId) // Filter FourthLevelH by status
+                .AsQueryable(); // Convert to IQueryable for further filtering
+
+            // Join with ResultDeclaration to filter by IsWinner == true
+            var combinedList = from ft in boothList
+                               join result in _context.ResultDeclaration
+                                  on ft.FourthLevelHMasterId equals result.FourthLevelHMasterId
+                               join asem in _context.AssemblyMaster
+                                   .Where(a => a.AssemblyStatus == true) // Filter AssemblyMaster by status
+                               on ft.AssemblyMasterId equals asem.AssemblyMasterId
+                               join dist in _context.DistrictMaster
+                                   .Where(d => d.DistrictStatus == true) // Filter DistrictMaster by status
+                               on asem.DistrictMasterId equals dist.DistrictMasterId
+                               join state in _context.StateMaster
+                                   .Where(s => s.StateStatus == true) // Filter StateMaster by status
+                               on dist.StateMasterId equals state.StateMasterId
+                               join elec in _context.ElectionTypeMaster
+                                   .Where(e => e.ElectionStatus == true) // Filter ElectionTypeMaster by status
+                               on ft.ElectionTypeMasterId equals elec.ElectionTypeMasterId
+                               join kyc in _context.Kyc
+                                   on result.KycMasterId equals kyc.KycMasterId
+                               orderby ft.HierarchyCode
+                               select new CombinedPanchayatMaster
+                               {
+                                   StateId = stateMasterId,
+                                   DistrictId = dist.DistrictMasterId,
+                                   AssemblyId = asem.AssemblyMasterId,
+                                   AssemblyName = asem.AssemblyName,
+                                   AssemblyCode = asem.AssemblyCode,
+                                   FourthLevelHMasterId = ft.FourthLevelHMasterId,
+                                   HierarchyName = ft.HierarchyName,
+                                   HierarchyCode = ft.HierarchyCode,
+                                   IsAssigned = ft.IsAssignedRO, // Change as needed
+                                   IsStatus = ft.HierarchyStatus,
+                                   ElectionTypeMasterId = ft.ElectionTypeMasterId,
+                                   ElectionTypeName = elec.ElectionType,
+                                   Male = ft.Male,
+                                   Female = ft.Female,
+                                   Transgender = ft.Transgender,
+                                   TotalVoters = ft.TotalVoters,
+                                   CandidateName = kyc.CandidateName,
+                                   PartyName = kyc.PartyName
+                               };
+
+            // Use AsNoTracking for better performance
+            return await combinedList.AsNoTracking().ToListAsync();
+        }
+
         public async Task<List<CombinedPanchayatMaster>> GetFourthLevelListByAROId(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId, string roId, string assignedType)
         {
             // Start the query for the boothList

@@ -95,6 +95,16 @@
         public int? Female { get; set; }
         public int? Transgender { get; set; }
         public int? TotalVoters { get; set; }
+        public string CandidateName
+        {
+            get;
+            set;
+        }
+        public string? PartyName
+        {
+            get;
+            set;
+        }
     }
 }
 
