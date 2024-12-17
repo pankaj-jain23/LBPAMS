@@ -8843,7 +8843,7 @@ namespace EAMS_DAL.Repository
                                 where assembly.StateMasterId == stateMasterId &&
                                       assembly.DistrictMasterId == districtMasterId &&
                                       booth.BoothStatus == true &&
-                                      booth.AssignedTo != null &&
+                                     !String.IsNullOrWhiteSpace(booth.AssignedTo ) &&
                                       booth.ElectionTypeMasterId == electionTypeMasterId &&
                                       assembly.AssemblyStatus == true
                                       &&
@@ -8958,9 +8958,9 @@ namespace EAMS_DAL.Repository
                                       fourthLevelH.DistrictMasterId == districtMasterId &&
                                       fourthLevelH.AssemblyMasterId == assemblyMasterId &&
                                       booth.BoothStatus == true &&
-                                      booth.AssignedTo != null &&
+                                         !String.IsNullOrWhiteSpace(booth.AssignedTo) &&
                                       booth.ElectionTypeMasterId == electionTypeMasterId &&
-                                      fourthLevelH.ElectionTypeMasterId==electionTypeMasterId&&
+                                      fourthLevelH.ElectionTypeMasterId == electionTypeMasterId &&
                                       fourthLevelH.HierarchyStatus == true
                                 // Exclude booths where event activity is completed
                                 && (election == null || (election != null && (
@@ -9081,7 +9081,7 @@ namespace EAMS_DAL.Repository
                                       && (!fourthLevelHMasterId.HasValue || booth.FourthLevelHMasterId == fourthLevelHMasterId)
                                       && booth.ElectionTypeMasterId == electionTypeMasterId
                                       && booth.BoothStatus == true
-                                      && booth.AssignedTo != null  // Ensure AssignedTo is not null
+                                      && !String.IsNullOrWhiteSpace(booth.AssignedTo)  // Ensure AssignedTo is not null
                                 group new { booth, election } by new
                                 {
                                     booth.BoothMasterId,
@@ -12767,10 +12767,13 @@ namespace EAMS_DAL.Repository
             // Build the base query for election info
             IQueryable<ElectionInfoMaster> electionQuery = _context.ElectionInfoMaster
                 .Where(e => e.StateMasterId == stateMasterId && e.ElectionTypeMasterId == electionTypeMasterId);
+
             IQueryable<BoothMaster> totalBooths = _context.BoothMaster
                 .Where(e => e.StateMasterId == stateMasterId
                 && e.ElectionTypeMasterId == electionTypeMasterId
-                && e.BoothStatus == true && e.AssignedTo != null);
+                && e.BoothStatus == true
+                  && !String.IsNullOrWhiteSpace(e.AssignedTo)
+                );
 
 
             if (role.Equals("DistrictAdmin", StringComparison.OrdinalIgnoreCase))
@@ -12778,7 +12781,9 @@ namespace EAMS_DAL.Repository
                 electionQuery = electionQuery
                     .Where(e => e.DistrictMasterId == districtMasterId && e.ElectionTypeMasterId == electionTypeMasterId);
                 totalBooths = totalBooths
-                    .Where(e => e.DistrictMasterId == districtMasterId && e.ElectionTypeMasterId == electionTypeMasterId);
+                    .Where(e => e.DistrictMasterId == districtMasterId && e.ElectionTypeMasterId == electionTypeMasterId
+                    && !String.IsNullOrWhiteSpace(e.AssignedTo)
+                    );
 
             }
             else if (role.Equals("LocalBodiesAdmin", StringComparison.OrdinalIgnoreCase) || role.Equals("RO", StringComparison.OrdinalIgnoreCase))
@@ -12790,7 +12795,9 @@ namespace EAMS_DAL.Repository
                 totalBooths = totalBooths
                     .Where(e => e.DistrictMasterId == districtMasterId
                     && e.AssemblyMasterId == assemblyMasterId
-                    && e.ElectionTypeMasterId == electionTypeMasterId);
+                    && e.ElectionTypeMasterId == electionTypeMasterId
+                    && !String.IsNullOrWhiteSpace(e.AssignedTo)
+                    );
 
             }
             else if (role.Equals("SubLocalBodiesAdmin", StringComparison.OrdinalIgnoreCase))
@@ -12806,6 +12813,7 @@ namespace EAMS_DAL.Repository
                     && e.AssemblyMasterId == assemblyMasterId
                     && e.FourthLevelHMasterId == fourthLevelMasterId
                     && e.ElectionTypeMasterId == electionTypeMasterId
+                     && !String.IsNullOrWhiteSpace(e.AssignedTo)
                     );
 
             }
