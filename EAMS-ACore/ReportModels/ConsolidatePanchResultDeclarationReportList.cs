@@ -152,6 +152,11 @@ namespace EAMS_ACore.ReportModels
             get;
             set;
         }
+        public string? PartyName
+        {
+            get;
+            set;
+        }
     }
 
     public class ConsolidatedUnOpposedPanchSarPanchAndNoKycCandidateReportList
@@ -208,5 +213,10 @@ namespace EAMS_ACore.ReportModels
             set;
         }
         public string GPPanchayatWardsType { get; set; }
+        public string? PartyName
+        {
+            get;
+            set;
+        }
     }
 }

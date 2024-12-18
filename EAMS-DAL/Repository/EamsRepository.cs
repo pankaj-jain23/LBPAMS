@@ -21406,8 +21406,10 @@ namespace EAMS_DAL.Repository
                     CandidateName = g.First().KycRecord.CandidateName,
                     KycMasterId = g.First().KycRecord.KycMasterId,
                     CandidateFatherName = g.First().KycRecord.FatherName,
+                    PartyName = g.First().KycRecord.PartyName,
                     VotesGained = g.First().ResultDeclaration.VoteMargin,
                     BoothTotalVoters = g.First().BoothRecord.TotalVoters,
+                    
                 })
                 .ToListAsync();
 
@@ -21440,6 +21442,7 @@ namespace EAMS_DAL.Repository
                 CandidateFatherName = d.CandidateFatherName,
                 VotesGained = d.VotesGained.ToString(),
                 KycMasterId = d.KycMasterId,
+                PartyName = d.PartyName,
                 VotesGainedPercentage = (d.BoothTotalVoters != null && d.BoothTotalVoters > 0)
                     ? ((Convert.ToDouble(d.VotesGained) / Convert.ToDouble(d.BoothTotalVoters)) * 100).ToString("0.00")
                     : "0.00"
@@ -21518,7 +21521,8 @@ namespace EAMS_DAL.Repository
                 FourthLevelHName = d.FourthLevelRecord.HierarchyName,
                 CandidateName = d.KycRecord.CandidateName,
                 CandidateFatherName = d.KycRecord.FatherName,
-                KycMasterId = d.KycRecord.KycMasterId
+                KycMasterId = d.KycRecord.KycMasterId,
+                PartyName = d.KycRecord.PartyName,
             }).ToListAsync();
         }
 
@@ -21792,6 +21796,7 @@ namespace EAMS_DAL.Repository
                     VotesGained = g.First().ResultDeclaration.VoteMargin,
                     BoothTotalVoters = g.First().BoothRecord.TotalVoters,
                     KycMasterId = g.First().KycRecord.KycMasterId,
+                    PartyName = g.First().KycRecord.PartyName,
                 })
                 .ToListAsync();
 
@@ -21824,6 +21829,7 @@ namespace EAMS_DAL.Repository
                 CandidateFatherName = d.CandidateFatherName,
                 VotesGained = d.VotesGained.ToString(),
                 KycMasterId = d.KycMasterId,
+                PartyName = d.PartyName,
                 VotesGainedPercentage = (d.BoothTotalVoters != null && d.BoothTotalVoters > 0)
                     ? ((Convert.ToDouble(d.VotesGained) / Convert.ToDouble(d.BoothTotalVoters)) * 100).ToString("0.00")
                     : "0.00"

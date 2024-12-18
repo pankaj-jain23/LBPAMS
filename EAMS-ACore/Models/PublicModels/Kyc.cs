@@ -87,7 +87,11 @@ namespace EAMS_ACore.Models.PublicModels
 
             get; set;
         }
-
+        public bool IsNOTTA
+        {
+            get;
+            set;
+        }
         public IEnumerable<object> DefaultIfEmpty()
         {
             throw new NotImplementedException();
