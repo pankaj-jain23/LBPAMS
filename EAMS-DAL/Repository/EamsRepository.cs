@@ -2541,6 +2541,8 @@ namespace EAMS_DAL.Repository
                         booth.EventSequence = eventInfo.EventSequence;
                         booth.EventABBR = eventInfo.EventABBR;
                         booth.EventName = eventInfo.EventName;
+                        booth.EventStatus = eventInfo.EventABBR == "ED"&& electionInfo.IsEVMDeposited==true ? true : false;
+
                     }
                     else
                     {
@@ -7119,7 +7121,7 @@ namespace EAMS_DAL.Repository
         private async Task<SlotManagementMaster> GetVoterSlotAvailable(int stateMasterId, int electionTypeMasterId, string userType)
         {
             // Fetch all slots for the given State and Election Type
-            var slots = await _context.SlotManagementMaster
+            var slots = await _context.SlotManagementMaster.AsNoTracking()
                 .Where(d => d.StateMasterId == stateMasterId &&
                             d.ElectionTypeMasterId == electionTypeMasterId)
                 .OrderBy(slot => slot.StartDate)
@@ -7161,6 +7163,8 @@ namespace EAMS_DAL.Repository
                     var extendedEndTime = lastSlot.LockTime.Value.AddHours(2);
                     if (currentTime < extendedEndTime)
                     {
+                        _context.Entry(lastSlot).State = EntityState.Detached; // Detach the entity
+
 
                         lastSlot.LockTime = extendedEndTime;
 
@@ -7501,6 +7505,16 @@ namespace EAMS_DAL.Repository
                 // Get the current time in TimeOnly format
                 var currentTime = TimeOnly.FromDateTime(DateTime.Now);
 
+                bool checkAvailableAndLastSlot;
+                if (getVoterSlotAvailable == null)
+                {
+                    checkAvailableAndLastSlot = true;
+                }
+                else
+                {
+                    checkAvailableAndLastSlot = getLastSlot.LockTime.Value > getVoterSlotAvailable.LockTime.Value;
+
+                }
                 // Compare LockTime with the current time
                 bool checkTimeExceeded = getLastSlot.LockTime.Value < currentTime;
                 UpdateEventActivity updateEventActivity = new UpdateEventActivity()
@@ -7518,7 +7532,7 @@ namespace EAMS_DAL.Repository
                 };
 
                 var getNextEvent = await GetNextEvent(updateEventActivity);
-                if (checkTimeExceeded)
+                if (checkTimeExceeded && checkAvailableAndLastSlot)
                 {
                     voterTurnOutPolledDetailViewModel.IsSlotAvailable = false;
                     voterTurnOutPolledDetailViewModel.Message = "Kindly Proceed for Voter In Queue ";
@@ -15818,57 +15832,41 @@ namespace EAMS_DAL.Repository
         //}
         public async Task<List<VoterTurnOutSlotWise>> GetVoterTurnOutSlotBasedReport(string stateMasterId, string electionTypeMasterId)
         {
-            int stateMasterIdInt = Convert.ToInt32(stateMasterId);
-            int electionTypeMasterIdInt = Convert.ToInt32(electionTypeMasterId);
+            //int stateMasterIdInt = Convert.ToInt32(stateMasterId);
+            //int electionTypeMasterIdInt = Convert.ToInt32(electionTypeMasterId);
 
-            // Combine the queries for voter turnout, slot votes, and district data
-            var result = await (from am in _context.AssemblyMaster
-                                join bm in _context.BoothMaster
-                                    on am.AssemblyMasterId equals bm.AssemblyMasterId
-                                where bm.StateMasterId == stateMasterIdInt
-                                      && bm.ElectionTypeMasterId == electionTypeMasterIdInt
-                                      && bm.DistrictMasterId != null
-                                      && !string.IsNullOrEmpty(bm.AssignedTo)
-                                      && am.StateMasterId == stateMasterIdInt
-                                      && am.ElectionTypeMasterId == electionTypeMasterIdInt
-                                      && am.AssemblyStatus == true
-                                join pd in _context.PollDetails
-                                    on bm.BoothMasterId equals pd.BoothMasterId
-                                where pd.StateMasterId == stateMasterIdInt
-                                      && pd.ElectionTypeMasterId == electionTypeMasterIdInt
-                                      && pd.VotesPolledRecivedTime == (from pd_inner in _context.PollDetails
-                                                                       where pd_inner.SlotManagementId == pd.SlotManagementId
-                                                                     && pd_inner.StateMasterId == pd.StateMasterId
-                                                                     && pd_inner.DistrictMasterId == pd.DistrictMasterId
-                                                                     && pd_inner.AssemblyMasterId == pd.AssemblyMasterId
-                                                                     && pd_inner.BoothMasterId == pd.BoothMasterId
-                                                                       select pd_inner.VotesPolledRecivedTime).Max()
-                                join dm in _context.DistrictMaster
-                                    on bm.DistrictMasterId equals dm.DistrictMasterId
-                                where dm.StateMasterId == stateMasterIdInt
-                                group new { bm, pd, am, dm } by new
-                                {
-                                    am.AssemblyMasterId,
-                                    am.AssemblyName,
-                                    am.AssemblyCode,
-                                    dm.DistrictMasterId,
-                                    dm.DistrictName,
-                                    dm.DistrictCode
-                                } into g
-                                select new VoterTurnOutSlotWise
-                                {
-                                    Key = GenerateRandomAlphanumericString(6),
-                                    MasterId = g.Key.AssemblyMasterId,
-                                    Name = g.Key.AssemblyName,
-                                    Type = "District",
-                                    SlotVotes = g.Select(s => $"{s.pd.VotesPolled} ({(s.bm.TotalVoters > 0 ? (s.pd.VotesPolled * 100.0 / s.bm.TotalVoters).ToString() : 0.0)}%)").ToArray(),
-                                    Children = new List<object>(), // Assuming this is left empty for now
-                                    VotesTillNow = $"{g.Sum(x => x.bm.TotalVoters)} ({(g.Sum(x => x.bm.TotalVoters) > 0 ? (g.Sum(x => x.bm.TotalVoters) * 100.0 / g.Sum(x => x.bm.TotalVoters)).ToString() : 0.0)}%)"
-                                })
-                                .ToListAsync();
+            //// Get the slot management details
+            //var slots = await _context.SlotManagementMaster
+            //                          .Where(d => d.StateMasterId == stateMasterIdInt && d.ElectionTypeMasterId == electionTypeMasterIdInt)
+            //                          .ToListAsync();
 
-            return result;
+            //// Fetch districts and associated booths, then get the latest poll details
+            //var result = await (from dt in _context.DistrictMaster
+            //                    where dt.StateMasterId == stateMasterIdInt 
+            //                    join pl in _context.PollDetails
+            //                        on dt.DistrictMasterId equals pl.DistrictMasterId
+            //                    orderby pl.VotesPolledRecivedTime descending // Latest record first
+            //                    group new { dt,   pl } by new { dt.DistrictMasterId } into g
+            //                    select new VoterTurnOutSlotWise
+            //                    {
+            //                        Key = GenerateRandomAlphanumericString(6),
+            //                        MasterId = g.Key.DistrictMasterId, // Can be changed if needed
+            //                        Name = g.Key.DistrictMasterId.ToString(), // Modify this to get the district name
+            //                        Type = "District",
+            //                        SlotVotes = slots.Select(slot =>
+            //                            $"{g.Where(x => x.pl.SlotManagementId == slot.SlotManagementId)
+            //                                .Sum(x => x.pl.VotesPolled)} ({(g.Sum(x => x.bt.TotalVoters) > 0 ?
+            //                                (g.Where(x => x.pl.SlotManagementId == slot.SlotManagementId).Sum(x => x.pl.VotesPolled) * 100.0 / g.Sum(x => x.bt.TotalVoters)).ToString() : "0.0")}%)").ToArray(),
+            //                        VotesTillNow = $"{g.Sum(x => x.pl.VotesPolled)} ({(g.Sum(x => x.bt.TotalVoters) > 0 ?
+            //                            (g.Sum(x => x.pl.VotesPolled) * 100.0 / g.Sum(x => x.bt.TotalVoters)).ToString() : "0.0")}%)",
+            //                        Children = new List<object>() // Empty for now, can be populated as needed
+            //                    }).ToListAsync();
+
+            //return result;
+
+            return new List<VoterTurnOutSlotWise>();
         }
+
 
         //public async Task<List<VoterTurnOutSlotWise>> GetVoterTurnOutSlotBasedReport(string stateMasterId)
         //{
@@ -17700,7 +17698,7 @@ namespace EAMS_DAL.Repository
                 k.AssemblyMasterId == kyc.AssemblyMasterId &&
                 k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
                 k.IsUnOppossed == false && // Contestant (non-unopposed) candidate
-                 k.IsNOTTA == false &&
+                 k.IsNOTA == false &&
                 k.GPPanchayatWardsMasterId == 0 // Sarpanch condition
             );
 
@@ -17712,7 +17710,7 @@ namespace EAMS_DAL.Repository
                     k.AssemblyMasterId == kyc.AssemblyMasterId &&
                     k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
                     k.IsUnOppossed == false && // Contestant (non-unopposed) candidate
-                    k.IsNOTTA == false &&
+                    k.IsNOTA == false &&
                     k.GPPanchayatWardsMasterId == kyc.GPPanchayatWardsMasterId // Panch condition
                 );
 
@@ -17736,7 +17734,7 @@ namespace EAMS_DAL.Repository
                 k.AssemblyMasterId == kyc.AssemblyMasterId &&
                 k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
                 k.IsUnOppossed == true &&
-                 k.IsNOTTA == false &&
+                 k.IsNOTA == false &&
                 k.GPPanchayatWardsMasterId == 0
             );
 
@@ -17748,7 +17746,7 @@ namespace EAMS_DAL.Repository
                 k.AssemblyMasterId == kyc.AssemblyMasterId &&
                 k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
                 k.IsUnOppossed == true &&
-                 k.IsNOTTA == false &&
+                 k.IsNOTA == false &&
                 k.GPPanchayatWardsMasterId == kyc.GPPanchayatWardsMasterId
             );
 
@@ -17792,7 +17790,7 @@ namespace EAMS_DAL.Repository
                 k.AssemblyMasterId == kyc.AssemblyMasterId &&
                 k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
                 k.IsUnOppossed == false && // Contestant (non-unopposed) candidate
-                 k.IsNOTTA == false &&
+                 k.IsNOTA == false &&
                 k.GPPanchayatWardsMasterId == 0 // Sarpanch condition
             );
 
@@ -17804,7 +17802,7 @@ namespace EAMS_DAL.Repository
                     k.AssemblyMasterId == kyc.AssemblyMasterId &&
                     k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
                     k.IsUnOppossed == false && // Contestant (non-unopposed) candidate
-                     k.IsNOTTA == false &&
+                     k.IsNOTA == false &&
                     k.GPPanchayatWardsMasterId == kyc.GPPanchayatWardsMasterId // Panch condition
                 );
 
@@ -17830,7 +17828,7 @@ namespace EAMS_DAL.Repository
                 k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
                 k.IsUnOppossed == true &&
                 k.GPPanchayatWardsMasterId == kyc.GPPanchayatWardsMasterId &&
-                 k.IsNOTTA == false &&
+                 k.IsNOTA == false &&
                 k.KycMasterId != kyc.KycMasterId // Ensure we are not checking the current record
             );
 
@@ -17843,7 +17841,7 @@ namespace EAMS_DAL.Repository
                 k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
                 k.IsUnOppossed == true &&
                 k.GPPanchayatWardsMasterId == kyc.GPPanchayatWardsMasterId &&
-                 k.IsNOTTA == false &&
+                 k.IsNOTA == false &&
                 k.KycMasterId != kyc.KycMasterId // Ensure we are not checking the current record
             );
 
@@ -17911,6 +17909,7 @@ namespace EAMS_DAL.Repository
                                        k.DistrictMasterId == districtMasterId &&
                                        k.ElectionTypeMasterId == electionType &&
                                        k.AssemblyMasterId == assemblyMasterId
+                                       &&k.IsNOTA==false
                                  select new
                                  {
                                      KycDetails = new KycList
@@ -17970,6 +17969,7 @@ namespace EAMS_DAL.Repository
                                        k.AssemblyMasterId == assemblyMasterId &&
                                        k.ElectionTypeMasterId == electionType &&
                                        fl.AssignedToRO == userId
+                                           && k.IsNOTA == false
 
                                  // Include HierarchyCode in the select statement for sorting
                                  select new
@@ -18030,7 +18030,7 @@ namespace EAMS_DAL.Repository
                                        k.AssemblyMasterId == assemblyMasterId &&
                                        k.FourthLevelHMasterId == fourthLevelMasterId &&
                                        k.ElectionTypeMasterId == electionType
-                                       && k.IsNOTTA == false
+                                       && k.IsNOTA == false
                                        && (!wardMasterId.HasValue || k.GPPanchayatWardsMasterId == wardMasterId.Value)
 
                                  select new KycList
@@ -20381,48 +20381,59 @@ namespace EAMS_DAL.Repository
             return candidateList;
         }
 
-        public async Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        public async Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(
+      int stateMasterId,
+      int districtMasterId,
+      int electionTypeMasterId,
+      int assemblyMasterId,
+      int fourthLevelHMasterId)
         {
-            var candidatesWithResults = await (from k in _context.Kyc
-                                               join fourthLevelH in _context.FourthLevelH
-                                               on k.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
-                                               join r in _context.ResultDeclaration
-                                               on k.KycMasterId equals r.KycMasterId into results
-                                               from result in results.DefaultIfEmpty() // Left join
-                                               where k.StateMasterId == stateMasterId &&
-                                                     k.DistrictMasterId == districtMasterId &&
-                                                     k.ElectionTypeMasterId == electionTypeMasterId &&
-                                                     k.AssemblyMasterId == assemblyMasterId &&
-                                                     k.FourthLevelHMasterId == fourthLevelHMasterId &&
-                                                     k.GPPanchayatWardsMasterId == 0
-                                               group new { k, result, fourthLevelH } by k.KycMasterId into groupedResults
-                                               select new
-                                               {
-                                                   kycCandidate = groupedResults.FirstOrDefault().k, // Get the first KYC entry
-                                                   result = groupedResults.FirstOrDefault(g => g.result != null).result, // Get the first non-null result, if any
-                                                   fourthLevelH = groupedResults.FirstOrDefault().fourthLevelH // Get the FourthLevelH entity
-                                               }).ToListAsync();
-
-            // Project the results into the desired format, handling nulls
-            var candidateList = candidatesWithResults.Select(c => new CandidateListForResultDeclaration
-            {
-                KycMasterId = c.kycCandidate.KycMasterId,
-                CandidateName = c.kycCandidate.CandidateName,
-                FatherName = c.kycCandidate.FatherName,
-                IsUnOppossed = c.kycCandidate.IsUnOppossed,
-                PartyName = c.kycCandidate.PartyName,
-                IsCC = c.fourthLevelH.IsCC,
-                IsNN = c.fourthLevelH.IsNN,
-                IsWinner = c.result?.IsWinner ?? false, // Default to false if result is null
-                IsResultDeclared = c.result?.IsResultDeclared ?? false, // Default to false if result is null
-                IsDraw = c.result?.IsDraw ?? false, // Default to false if result is null
-                IsDrawLottery = c.result?.IsDrawLottery ?? false, // Default to false if result is null
-                IsReCounting = c.result?.IsReCounting ?? false, // Default to false if result is null
-                VoteMargin = c.result?.VoteMargin ?? null,
-            }).ToList();
+            var candidateList = await (from k in _context.Kyc
+                                       join fourthLevelH in _context.FourthLevelH
+                                       on k.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
+                                       join r in _context.ResultDeclaration
+                                       on k.KycMasterId equals r.KycMasterId into results
+                                       from result in results.DefaultIfEmpty() // Left Join
+                                       where k.StateMasterId == stateMasterId &&
+                                             k.DistrictMasterId == districtMasterId &&
+                                             k.ElectionTypeMasterId == electionTypeMasterId &&
+                                             k.AssemblyMasterId == assemblyMasterId &&
+                                             k.FourthLevelHMasterId == fourthLevelHMasterId &&
+                                             k.GPPanchayatWardsMasterId == 0
+                                       group new { k, result, fourthLevelH }
+                                       by k.KycMasterId into groupedResults
+                                       select new CandidateListForResultDeclaration
+                                       {
+                                           KycMasterId = groupedResults.Key,
+                                           CandidateName = groupedResults.FirstOrDefault().k.CandidateName,
+                                           FatherName = groupedResults.FirstOrDefault().k.FatherName,
+                                           IsUnOppossed = groupedResults.FirstOrDefault().k.IsUnOppossed,
+                                           PartyName = groupedResults.FirstOrDefault().k.PartyName,
+                                           IsCC = groupedResults.FirstOrDefault().fourthLevelH.IsCC,
+                                           IsNN = groupedResults.FirstOrDefault().fourthLevelH.IsNN,
+                                           IsWinner = groupedResults.FirstOrDefault().result != null
+                                                      ? groupedResults.FirstOrDefault().result.IsWinner
+                                                      : false,
+                                           IsResultDeclared = groupedResults.FirstOrDefault().result != null
+                                                              ? groupedResults.FirstOrDefault().result.IsResultDeclared
+                                                              : false,
+                                           IsDraw = groupedResults.FirstOrDefault().result != null
+                                                    ? groupedResults.FirstOrDefault().result.IsDraw
+                                                    : false,
+                                           IsDrawLottery = groupedResults.FirstOrDefault().result != null
+                                                           ? groupedResults.FirstOrDefault().result.IsDrawLottery
+                                                           : false,
+                                           IsReCounting = groupedResults.FirstOrDefault().result != null
+                                                          ? groupedResults.FirstOrDefault().result.IsReCounting
+                                                          : false,
+                                           VoteMargin = groupedResults.FirstOrDefault().result != null
+                                                        ? groupedResults.FirstOrDefault().result.VoteMargin
+                                                        : null
+                                       }).ToListAsync();
 
             return candidateList;
         }
+
 
         //public async Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         //{
@@ -22465,7 +22476,7 @@ namespace EAMS_DAL.Repository
                     .Where(k => k.StateMasterId == stateMasterId && k.ElectionTypeMasterId == electionTypeMasterId && k.IsUnOppossed == true)
                     on frth.FourthLevelHMasterId equals kyc.FourthLevelHMasterId into kycs
                 from k in kycs.DefaultIfEmpty() // Left join to include all records from Kyc
-
+                where k != null
                 select new ResultList
                 {
                     Key = frth.FourthLevelHMasterId.ToString(),
@@ -22482,19 +22493,21 @@ namespace EAMS_DAL.Repository
             // Query 2: Get results based on ResultDeclaration
             var resultDeclarationResults = await (
                 from frth in _context.FourthLevelH.Where(d => d.StateMasterId == stateMasterId
-                                                             && d.DistrictMasterId == districtMasterId
-                                                             && d.AssemblyMasterId == assemblyMasterId
-                                                             && d.FourthLevelHMasterId == fourthLevelMasterId
-                                                             && d.ElectionTypeMasterId == electionTypeMasterId)
+                                                              && d.DistrictMasterId == districtMasterId
+                                                              && d.AssemblyMasterId == assemblyMasterId
+                                                              && d.FourthLevelHMasterId == fourthLevelMasterId
+                                                              && d.ElectionTypeMasterId == electionTypeMasterId)
 
                 join resultDeclaration in _context.ResultDeclaration
                     .Where(rd => rd.StateMasterId == stateMasterId && rd.ElectionTypeMasterId == electionTypeMasterId && rd.IsWinner)
                     on frth.FourthLevelHMasterId equals resultDeclaration.FourthLevelHMasterId into resultDeclarations
                 from rd in resultDeclarations.DefaultIfEmpty() // Left join to include all records from ResultDeclaration
                 join kyc in _context.Kyc
-                   .Where(k => k.StateMasterId == stateMasterId && k.ElectionTypeMasterId == electionTypeMasterId)
-                   on rd.KycMasterId equals kyc.KycMasterId into kycs
+                    .Where(k => k.StateMasterId == stateMasterId && k.ElectionTypeMasterId == electionTypeMasterId)
+                    on rd.KycMasterId equals kyc.KycMasterId into kycs
                 from k in kycs.DefaultIfEmpty()
+                    // Filter out empty records where rd or k is null
+                where rd != null && k != null
                 select new ResultList
                 {
                     Key = frth.FourthLevelHMasterId.ToString(),
@@ -22507,6 +22520,7 @@ namespace EAMS_DAL.Repository
                     Children = null // Populate as needed
                 }
             ).ToListAsync();
+
 
             // Concatenate both results
             var combinedResults = kycResults.Concat(resultDeclarationResults).ToList();

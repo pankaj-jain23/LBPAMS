@@ -87,7 +87,7 @@ namespace EAMS_ACore.Models.PublicModels
 
             get; set;
         }
-        public bool IsNOTTA
+        public bool IsNOTA
         {
             get;
             set;

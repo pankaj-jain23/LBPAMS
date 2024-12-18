@@ -1955,14 +1955,14 @@ namespace EAMS_BLL.Services
             }
             // Assuming you have a method to fetch the TotalVoters for the ward based on the provided parameters
             var totalVotersInWard = await _eamsRepository.GetTotalVotersForUrbanRDAsync(validResults.First().StateMasterId, validResults.First().DistrictMasterId, validResults.First().AssemblyMasterId, validResults.First().FourthLevelHMasterId);
-            if (  totalVotersInWard is null || totalVotersInWard is 0)
-            {
-                return new ServiceResponseForRD
-                {
-                    IsSucceed = false,
-                    Message = "There is no Voters Available"
-                };
-            }
+            //if (  totalVotersInWard is null || totalVotersInWard is 0)
+            //{
+            //    return new ServiceResponseForRD
+            //    {
+            //        IsSucceed = false,
+            //        Message = "There is no Voters Available"
+            //    };
+            //}
             // Calculate the sum of VoteMargin
             var totalVoteMargin = validResults.Sum(r => r.VoteMargin);
 

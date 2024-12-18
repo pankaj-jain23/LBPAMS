@@ -2899,12 +2899,7 @@ namespace EAMS.Controllers
             string userType = userRole != null && (userRole.Contains("FO") || userRole.Contains("ARO"))
                 ? "MobileUser"
                 : "DashBoardUser";
-            if (userType.Contains("MobileUser"))
-            {
-                var electionTypeMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
-
-                electionTypeMasterId = Convert.ToInt32(electionTypeMasterIdClaim);
-            }
+            
             var result = await _EAMSService.GetBoothEventListById(stateMasterId, electionTypeMasterId, boothMasterId);
             return Ok(result);
         }
@@ -3269,7 +3264,7 @@ namespace EAMS.Controllers
 
         [HttpGet]
         [Route("GetEventListFourthLevelHWiseById")]
-        [Authorize(Roles = "SuperAdmin,StateAdmin,DistrictAdmin,LocalBodiesAdmin")]
+        [Authorize(Roles = "SuperAdmin,StateAdmin,DistrictAdmin,LocalBodiesAdmin,RO")]
         public async Task<IActionResult> EventListFourthLevelHWiseById(int? districtMasterId, int? assemblyMasterId, int? electionTypeMasterId)
         {
             var stateMasterId = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
@@ -3326,7 +3321,7 @@ namespace EAMS.Controllers
         /// 
         [HttpGet]
         [Route("GetPendingEventListFourthLevelHWiseById")]
-        [Authorize(Roles = "SuperAdmin,StateAdmin,DistrictAdmin,LocalBodiesAdmin")]
+        [Authorize(Roles = "SuperAdmin,StateAdmin,DistrictAdmin,LocalBodiesAdmin,RO")]
         public async Task<IActionResult> EventPendingListFourthLevelHWiseById(int? districtMasterId, int? assemblyMasterId, int? electionTypeMasterId)
         {
             var stateMasterId = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
