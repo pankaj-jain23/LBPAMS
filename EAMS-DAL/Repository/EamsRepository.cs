@@ -6296,7 +6296,7 @@ namespace EAMS_DAL.Repository
             {
                 result.EventMasterId = updateEventActivity.EventMasterId;
                 result.EventSequence = updateEventActivity.EventSequence;
-                result.EventABBR = updateEventActivity.EventABBR;               
+                result.EventABBR = updateEventActivity.EventABBR;
                 result.SetupOfPollingLastUpdate = BharatDateTime();
                 result.EventName = updateEventActivity.EventName;
                 result.ElectionInfoStatus = updateEventActivity.EventStatus;
@@ -6332,7 +6332,7 @@ namespace EAMS_DAL.Repository
             {
                 result.EventMasterId = updateEventActivity.EventMasterId;
                 result.EventSequence = updateEventActivity.EventSequence;
-                result.EventABBR = updateEventActivity.EventABBR;               
+                result.EventABBR = updateEventActivity.EventABBR;
                 result.NoOfPollingAgents = updateEventActivity.NoOfPollingAgents;
                 result.MockPollDoneLastUpdate = BharatDateTime();
                 result.EventName = updateEventActivity.EventName;
@@ -6369,7 +6369,7 @@ namespace EAMS_DAL.Repository
             {
                 result.EventMasterId = updateEventActivity.EventMasterId;
                 result.EventSequence = updateEventActivity.EventSequence;
-                result.EventABBR = updateEventActivity.EventABBR;              
+                result.EventABBR = updateEventActivity.EventABBR;
                 result.PollStartedLastUpdate = BharatDateTime();
                 result.EventName = updateEventActivity.EventName;
                 result.ElectionInfoStatus = updateEventActivity.EventStatus;
@@ -7044,13 +7044,13 @@ namespace EAMS_DAL.Repository
         private async Task<ServiceResponse> IsVoterSlotAvailable(int stateMasterId, int electionTypeMasterId)
         {
             // Fetch slot list from cache
-             
-              var  getSlotList = await _context.SlotManagementMaster
-                    .Where(d => d.StateMasterId == stateMasterId &&
-                                d.ElectionTypeMasterId == electionTypeMasterId)
-                    .ToListAsync();
 
-            
+            var getSlotList = await _context.SlotManagementMaster
+                  .Where(d => d.StateMasterId == stateMasterId &&
+                              d.ElectionTypeMasterId == electionTypeMasterId)
+                  .ToListAsync();
+
+
 
             // Get the current time
             var currentTime = DateTimeOffset.Now;
@@ -7410,21 +7410,21 @@ namespace EAMS_DAL.Repository
         public async Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(int boothMasterId, string userType)
         {
             // Step 1: Try to fetch BoothMaster details from cache
-            
-                // Fetch from database if not available in cache
-             var   getBooth = await _context.BoothMaster.AsNoTracking()
-                                .Where(d => d.BoothMasterId == boothMasterId)
-                                .Select(d => new BoothMaster
-                                {
-                                    BoothMasterId = d.BoothMasterId,
-                                    StateMasterId = d.StateMasterId,
-                                    ElectionTypeMasterId = d.ElectionTypeMasterId,
-                                    TotalVoters = d.TotalVoters,
 
-                                })
-                                .FirstOrDefaultAsync();
+            // Fetch from database if not available in cache
+            var getBooth = await _context.BoothMaster.AsNoTracking()
+                               .Where(d => d.BoothMasterId == boothMasterId)
+                               .Select(d => new BoothMaster
+                               {
+                                   BoothMasterId = d.BoothMasterId,
+                                   StateMasterId = d.StateMasterId,
+                                   ElectionTypeMasterId = d.ElectionTypeMasterId,
+                                   TotalVoters = d.TotalVoters,
 
-                 
+                               })
+                               .FirstOrDefaultAsync();
+
+
 
             if (getBooth == null)
             {
@@ -8079,14 +8079,14 @@ namespace EAMS_DAL.Repository
             }
 
 
-             
-                // Fetch from database if not available in cache
-               var currentEvent = await _context.EventMaster
-                                   .FirstOrDefaultAsync(d => d.StateMasterId == getBooth.StateMasterId
-                                                         && d.ElectionTypeMasterId == getBooth.ElectionTypeMasterId
-                                                         && d.EventABBR == "FV");
 
-                
+            // Fetch from database if not available in cache
+            var currentEvent = await _context.EventMaster
+                                .FirstOrDefaultAsync(d => d.StateMasterId == getBooth.StateMasterId
+                                                      && d.ElectionTypeMasterId == getBooth.ElectionTypeMasterId
+                                                      && d.EventABBR == "FV");
+
+
 
             if (currentEvent == null)
             {
@@ -8822,7 +8822,7 @@ namespace EAMS_DAL.Repository
                                 where assembly.StateMasterId == stateMasterId &&
                                       assembly.DistrictMasterId == districtMasterId &&
                                       booth.BoothStatus == true &&
-                                     !String.IsNullOrWhiteSpace(booth.AssignedTo ) &&
+                                     !String.IsNullOrWhiteSpace(booth.AssignedTo) &&
                                       booth.ElectionTypeMasterId == electionTypeMasterId &&
                                       assembly.AssemblyStatus == true
                                       &&
@@ -17700,6 +17700,7 @@ namespace EAMS_DAL.Repository
                 k.AssemblyMasterId == kyc.AssemblyMasterId &&
                 k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
                 k.IsUnOppossed == false && // Contestant (non-unopposed) candidate
+                 k.IsNOTTA == false &&
                 k.GPPanchayatWardsMasterId == 0 // Sarpanch condition
             );
 
@@ -17711,6 +17712,7 @@ namespace EAMS_DAL.Repository
                     k.AssemblyMasterId == kyc.AssemblyMasterId &&
                     k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
                     k.IsUnOppossed == false && // Contestant (non-unopposed) candidate
+                    k.IsNOTTA == false &&
                     k.GPPanchayatWardsMasterId == kyc.GPPanchayatWardsMasterId // Panch condition
                 );
 
@@ -17734,6 +17736,7 @@ namespace EAMS_DAL.Repository
                 k.AssemblyMasterId == kyc.AssemblyMasterId &&
                 k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
                 k.IsUnOppossed == true &&
+                 k.IsNOTTA == false &&
                 k.GPPanchayatWardsMasterId == 0
             );
 
@@ -17745,6 +17748,7 @@ namespace EAMS_DAL.Repository
                 k.AssemblyMasterId == kyc.AssemblyMasterId &&
                 k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
                 k.IsUnOppossed == true &&
+                 k.IsNOTTA == false &&
                 k.GPPanchayatWardsMasterId == kyc.GPPanchayatWardsMasterId
             );
 
@@ -17788,6 +17792,7 @@ namespace EAMS_DAL.Repository
                 k.AssemblyMasterId == kyc.AssemblyMasterId &&
                 k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
                 k.IsUnOppossed == false && // Contestant (non-unopposed) candidate
+                 k.IsNOTTA == false &&
                 k.GPPanchayatWardsMasterId == 0 // Sarpanch condition
             );
 
@@ -17799,6 +17804,7 @@ namespace EAMS_DAL.Repository
                     k.AssemblyMasterId == kyc.AssemblyMasterId &&
                     k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
                     k.IsUnOppossed == false && // Contestant (non-unopposed) candidate
+                     k.IsNOTTA == false &&
                     k.GPPanchayatWardsMasterId == kyc.GPPanchayatWardsMasterId // Panch condition
                 );
 
@@ -17824,6 +17830,7 @@ namespace EAMS_DAL.Repository
                 k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
                 k.IsUnOppossed == true &&
                 k.GPPanchayatWardsMasterId == kyc.GPPanchayatWardsMasterId &&
+                 k.IsNOTTA == false &&
                 k.KycMasterId != kyc.KycMasterId // Ensure we are not checking the current record
             );
 
@@ -17836,6 +17843,7 @@ namespace EAMS_DAL.Repository
                 k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
                 k.IsUnOppossed == true &&
                 k.GPPanchayatWardsMasterId == kyc.GPPanchayatWardsMasterId &&
+                 k.IsNOTTA == false &&
                 k.KycMasterId != kyc.KycMasterId // Ensure we are not checking the current record
             );
 
@@ -18022,6 +18030,7 @@ namespace EAMS_DAL.Repository
                                        k.AssemblyMasterId == assemblyMasterId &&
                                        k.FourthLevelHMasterId == fourthLevelMasterId &&
                                        k.ElectionTypeMasterId == electionType
+                                       && k.IsNOTTA == false
                                        && (!wardMasterId.HasValue || k.GPPanchayatWardsMasterId == wardMasterId.Value)
 
                                  select new KycList
@@ -19905,7 +19914,7 @@ namespace EAMS_DAL.Repository
                 .Select(f => f.TotalVoters)
                 .FirstOrDefaultAsync();
 
-            return  result;
+            return result;
         }
 
         public async Task<ServiceResponseForRD> UpdateResultDeclarationForPortal(List<ResultDeclaration> resultDeclaration)
@@ -21409,7 +21418,7 @@ namespace EAMS_DAL.Repository
                     PartyName = g.First().KycRecord.PartyName,
                     VotesGained = g.First().ResultDeclaration.VoteMargin,
                     BoothTotalVoters = g.First().BoothRecord.TotalVoters,
-                    
+
                 })
                 .ToListAsync();
 
