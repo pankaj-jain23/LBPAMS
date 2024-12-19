@@ -801,9 +801,9 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetAssemblyWiseSOEvenCountReport")]
         [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin")]
-        public async Task<IActionResult> GetAssemblyWiseSOCountPendency(string stateId, string districtId)
+        public async Task<IActionResult> GetAssemblyWiseSOCountPendency(string stateId, string districtId, string electionTypeMasterId)
         {
-            var eventAssemblyList = await _EAMSService.GetAssemblyWiseSOCountEventWiseCount(stateId, districtId);
+            var eventAssemblyList = await _EAMSService.GetAssemblyWiseSOCountEventWiseCount(stateId, districtId, electionTypeMasterId);
             if (eventAssemblyList is not null)
                 return Ok(eventAssemblyList);
             else
