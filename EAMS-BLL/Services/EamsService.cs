@@ -460,6 +460,10 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.IsEventActivityValid(stateMasterId, electionTypeMasterId, eventMasterId);
         }
+        public async Task<bool> IsVTEventValidSlotDate(int stateMasterId, int electionTypeMasterId )
+        {
+            return await _eamsRepository.IsVTEventValidSlotDate(stateMasterId,electionTypeMasterId );
+        }
         public async Task<ServiceResponse> UpdateEventActivity(UpdateEventActivity updateEventActivity, string userType)
         {
             // Get the previous event status

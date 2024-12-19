@@ -137,6 +137,7 @@ namespace EAMS_ACore.Interfaces
         #region Event Activity
         Task<ServiceResponse> IsVTEventTimeExtended(int stateMasterId, int electionTypeMasterId, bool isVTEventTimeExtended);
         Task<(bool IsToday, string StartDateString,bool IsPrePolled)> IsEventActivityValid(int stateMasterId, int electionTypeMasterId,int eventMasterId);
+        Task< bool> IsVTEventValidSlotDate(int stateMasterId, int electionTypeMasterId );
         Task<ServiceResponse> EventActivity(ElectionInfoMaster electionInfoMaster);
        
         Task<ServiceResponse> UpdateEventActivity(UpdateEventActivity updateEventActivity, string userType);

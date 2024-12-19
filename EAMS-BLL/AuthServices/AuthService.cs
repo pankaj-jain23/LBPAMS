@@ -705,11 +705,22 @@ namespace EAMS_BLL.AuthServices
                 var rorMasterId = principal.Claims.FirstOrDefault(d => d.Type == "AROMasterId").Value;
 
                 var roRecords = await _authRepository.GetAROById(Convert.ToInt32(rorMasterId));
-                if (roRecords == null || roRecords.RefreshToken != model.RefreshToken || DateTime.Compare(roRecords.RefreshTokenExpiryTime, (DateTime)BharatDateTime()) <= 0)
+                var todayDate = BharatDateTime();
+                // Check if the RefreshToken matches first
+                if (roRecords == null || roRecords.RefreshToken != model.RefreshToken)
                 {
                     return new Token
                     {
-                        Message = "Token Expired or Invalid Token"
+                        Message = "Invalid Token"
+                    };
+                }
+
+                // Check if the RefreshTokenExpiryTime is less than today's date
+                if (roRecords.RefreshTokenExpiryTime < todayDate)
+                {
+                    return new Token
+                    {
+                        Message = "Token Expired"
                     };
                 }
                 if (roRecords != null)

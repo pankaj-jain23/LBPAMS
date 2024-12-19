@@ -2541,7 +2541,7 @@ namespace EAMS_DAL.Repository
                         booth.EventSequence = eventInfo.EventSequence;
                         booth.EventABBR = eventInfo.EventABBR;
                         booth.EventName = eventInfo.EventName;
-                        booth.EventStatus = eventInfo.EventABBR == "ED"&& electionInfo.IsEVMDeposited==true ? true : false;
+                        booth.EventStatus = eventInfo.EventABBR == "ED" && electionInfo.IsEVMDeposited == true ? true : false;
 
                     }
                     else
@@ -5976,6 +5976,20 @@ namespace EAMS_DAL.Repository
                 return (true, "", true);
             }
 
+        }
+        public async Task<bool> IsVTEventValidSlotDate(int stateMasterId, int electionTypeMasterId)
+        {
+            var lastSlot = await _context.SlotManagementMaster.Where(d => d.StateMasterId == stateMasterId
+                                                                  && d.ElectionTypeMasterId == electionTypeMasterId
+                                                                  && d.IsLastSlot == true)
+                                                                 .Select(d => d.StartDate)
+                                                                 .FirstOrDefaultAsync();
+            // Compare the last slot date with today's date
+            if (lastSlot != DateOnly.FromDateTime(DateTime.Today))
+            {
+                return false;
+            }
+            return true;
         }
         public async Task<List<BoothEvents>> GetBoothEventListById(int stateMasterId, int electionTypeMasterId, int boothMasterId)
         {
@@ -10180,13 +10194,9 @@ namespace EAMS_DAL.Repository
                 Claim stateMasterId = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "StateMasterId");
                 Claim districtMasterId = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId");
                 Claim assemblyMasterId = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId");
-                Claim pcMasterid = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "PCMasterId");
+                Claim electionTypeMasterId = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId");
 
-                string sid = stateMasterId.Value; string aid = assemblyMasterId.Value; string did = districtMasterId.Value; string pcid = "";
-                if (pcMasterid != null)
-                {
-                    pcid = pcMasterid.Value;
-                }
+                string sid = stateMasterId.Value; string aid = assemblyMasterId.Value; string did = districtMasterId.Value;
                 //Claim role = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "roles");
                 var roles = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role").Value;
                 //var roles = claimsIdentity.Claims(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role").Value;
@@ -10197,6 +10207,7 @@ namespace EAMS_DAL.Repository
                              join am in _context.AssemblyMaster on pi.AssemblyMasterId equals am.AssemblyMasterId
                              join bm in _context.BoothMaster on new { pi.BoothMasterId, am.AssemblyMasterId } equals new { bm.BoothMasterId, bm.AssemblyMasterId }
                              where pi.StateMasterId == Convert.ToInt16(sid) && pi.AssemblyMasterId == Convert.ToInt16(aid)
+                             &&pi.ElectionTypeMasterId==Convert.ToInt32(electionTypeMasterId.Value)
                              orderby pi.AssemblyMasterId, pi.BoothMasterId, pi.CreatedAt descending
                              select new PollInterruptionDashboard
                              {
@@ -10227,6 +10238,7 @@ namespace EAMS_DAL.Repository
                              join am in _context.AssemblyMaster on pi.AssemblyMasterId equals am.AssemblyMasterId
                              join bm in _context.BoothMaster on new { pi.BoothMasterId, am.AssemblyMasterId } equals new { bm.BoothMasterId, bm.AssemblyMasterId }
                              where pi.StateMasterId == Convert.ToInt16(sid)
+                             && pi.ElectionTypeMasterId == Convert.ToInt32(electionTypeMasterId.Value)
                              orderby pi.AssemblyMasterId, pi.BoothMasterId, pi.CreatedAt descending
                              select new PollInterruptionDashboard
                              {
@@ -10256,7 +10268,8 @@ namespace EAMS_DAL.Repository
                              join di in _context.DistrictMaster on pi.DistrictMasterId equals di.DistrictMasterId
                              join am in _context.AssemblyMaster on pi.AssemblyMasterId equals am.AssemblyMasterId
                              join bm in _context.BoothMaster on new { pi.BoothMasterId, am.AssemblyMasterId } equals new { bm.BoothMasterId, bm.AssemblyMasterId }
-                             //  where pi.StateMasterId == Convert.ToInt16(stateMasterId.Value)
+                               where pi.StateMasterId == Convert.ToInt32(stateMasterId.Value)
+                             && pi.ElectionTypeMasterId == Convert.ToInt32(electionTypeMasterId.Value)
                              orderby pi.AssemblyMasterId, pi.BoothMasterId, pi.CreatedAt descending
                              select new PollInterruptionDashboard
                              {
@@ -10286,6 +10299,7 @@ namespace EAMS_DAL.Repository
                              join am in _context.AssemblyMaster on pi.AssemblyMasterId equals am.AssemblyMasterId
                              join bm in _context.BoothMaster on new { pi.BoothMasterId, am.AssemblyMasterId } equals new { bm.BoothMasterId, bm.AssemblyMasterId }
                              where pi.StateMasterId == Convert.ToInt16(sid) && pi.DistrictMasterId == Convert.ToInt16(did)
+                                  && pi.ElectionTypeMasterId == Convert.ToInt32(electionTypeMasterId.Value)
                              orderby pi.AssemblyMasterId, pi.BoothMasterId, pi.CreatedAt descending
                              select new PollInterruptionDashboard
                              {
@@ -10308,37 +10322,6 @@ namespace EAMS_DAL.Repository
                              select groupedResult.OrderByDescending(r => r.CreatedAt).First();
 
                 }
-
-                else if (roles == "PC")
-                {
-                    result = from pi in _context.PollInterruptions
-                             join di in _context.DistrictMaster on pi.DistrictMasterId equals di.DistrictMasterId
-                             join am in _context.AssemblyMaster on pi.AssemblyMasterId equals am.AssemblyMasterId
-                             join bm in _context.BoothMaster on new { pi.BoothMasterId, am.AssemblyMasterId } equals new { bm.BoothMasterId, bm.AssemblyMasterId }
-                             where pi.StateMasterId == Convert.ToInt16(sid)
-                             orderby pi.AssemblyMasterId, pi.BoothMasterId, pi.CreatedAt descending
-                             select new PollInterruptionDashboard
-                             {
-                                 PollInterruptionMasterId = pi.PollInterruptionId,
-                                 StateMasterId = pi.StateMasterId,
-                                 DistrictMasterId = pi.DistrictMasterId,
-                                 AssemblyMasterId = pi.AssemblyMasterId,
-                                 AssemblyName = am.AssemblyName,
-                                 BoothMasterId = bm.BoothMasterId,
-                                 //PCMasterId = pi.PCMasterId,
-                                 BoothName = bm.BoothName + "(" + bm.BoothCode_No + ")",
-                                 CreatedAt = pi.CreatedAt,
-                                 InterruptionType = pi.InterruptionType,
-                                 StopTime = pi.StopTime,
-                                 ResumeTime = pi.ResumeTime,
-                                 isPollInterrupted = pi.IsPollInterrupted
-
-                             } into distinctResult
-                             group distinctResult by new { distinctResult.AssemblyMasterId, distinctResult.BoothMasterId } into groupedResult
-                             select groupedResult.OrderByDescending(r => r.CreatedAt).First();
-
-                }
-
                 else if (roles == "SO")
                 {
                     Claim soId = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "SoId");
@@ -10350,6 +10333,7 @@ namespace EAMS_DAL.Repository
                                  join am in _context.AssemblyMaster on pi.AssemblyMasterId equals am.AssemblyMasterId
                                  join bm in _context.BoothMaster on new { pi.BoothMasterId, am.AssemblyMasterId } equals new { bm.BoothMasterId, bm.AssemblyMasterId }
                                  where pi.StateMasterId == Convert.ToInt16(sid) && bm.AssignedTo == soMasterId && bm.DistrictMasterId == Convert.ToInt16(did) && bm.AssemblyMasterId == Convert.ToInt16(aid)
+                                     && pi.ElectionTypeMasterId == Convert.ToInt32(electionTypeMasterId.Value)
                                  orderby pi.AssemblyMasterId, pi.BoothMasterId, pi.CreatedAt descending
                                  select new PollInterruptionDashboard
                                  {
@@ -10397,7 +10381,7 @@ namespace EAMS_DAL.Repository
         {
             // Start building the base query
             IQueryable<PollInterruption> pollInterruptions = _context.PollInterruptions
-                .Where(e => e.StateMasterId == stateMasterId && e.IsPollInterrupted == true);
+                .Where(e => e.StateMasterId == stateMasterId&&e.ElectionTypeMasterId== electionTypeMasterId && e.IsPollInterrupted == true);
 
             // Apply role-specific filters in a single conditional block
             switch (role)
@@ -17909,7 +17893,7 @@ namespace EAMS_DAL.Repository
                                        k.DistrictMasterId == districtMasterId &&
                                        k.ElectionTypeMasterId == electionType &&
                                        k.AssemblyMasterId == assemblyMasterId
-                                       &&k.IsNOTA==false
+                                       && k.IsNOTA == false
                                  select new
                                  {
                                      KycDetails = new KycList

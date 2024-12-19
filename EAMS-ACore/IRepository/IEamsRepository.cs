@@ -175,6 +175,7 @@ namespace EAMS_ACore.IRepository
         Task<ServiceResponse> EVMDeposited(UpdateEventActivity updateEventActivity);
         #endregion
         Task<(bool IsToday, string StartDateString, bool IsPrePolled)> IsEventActivityValid(int stateMasterId, int electionTypeMasterId, int eventMasterId);
+        Task<bool> IsVTEventValidSlotDate(int stateMasterId, int electionTypeMasterId );
         Task<CheckEventActivity> GetNextEvent(UpdateEventActivity updateEventActivity);
         Task<CheckEventActivity> GetPreviousEvent(UpdateEventActivity updateEventActivity);
         Task<List<BoothEvents>> GetBoothEventListById(int stateMasterId, int electionTypeMasterId, int boothMasterId);

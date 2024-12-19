@@ -2060,7 +2060,7 @@ namespace EAMS.Controllers
             {
 
                 var panchayatList = await _EAMSService.GetFourthLevelHListExistInRDForRO(stateMasterId, districtMasterId, assemblyMasterId, roId);  // Corrected to await the asynchronous method
-                                                                                                                                         // var mappedData = _mapper.Map<List<FourthLevelH>, List<ListFourthLevelHViewModel>>(panchayatList);
+                                                                                                                                                    // var mappedData = _mapper.Map<List<FourthLevelH>, List<ListFourthLevelHViewModel>>(panchayatList);
                 if (panchayatList != null)
                 {
                     var data = new
@@ -2899,8 +2899,13 @@ namespace EAMS.Controllers
             string userType = userRole != null && (userRole.Contains("FO") || userRole.Contains("ARO"))
                 ? "MobileUser"
                 : "DashBoardUser";
-            
+
             var result = await _EAMSService.GetBoothEventListById(stateMasterId, electionTypeMasterId, boothMasterId);
+            if (result == null || result.Count == 0)
+            {
+                return BadRequest("No events found for the given parameters.");
+            }
+
             return Ok(result);
         }
 
@@ -2911,6 +2916,14 @@ namespace EAMS.Controllers
         public async Task<IActionResult> GetLastUpdatedPollDetail(int boothMasterId)
         {
             var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
+            var StateMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            var electionTypeMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
+
+            var isSlotDateValid = await _EAMSService.IsVTEventValidSlotDate(Convert.ToInt32(StateMasterIdClaim), Convert.ToInt32(electionTypeMasterIdClaim));
+            if (!isSlotDateValid)
+            {
+                return BadRequest("The slot is not valid. Please note that it will only be available starting on the election day.");
+            }
 
             string userType = userRole != null && (userRole.Contains("FO") || userRole.Contains("ARO"))
                 ? "MobileUser"
