@@ -194,7 +194,7 @@ namespace EAMS_ACore.Interfaces
 
         #region PollInterruption Interruption
         Task<Response> AddPollInterruption(PollInterruption Pollinterruptionl);
-
+      
         Task<PollInterruption> GetPollInterruptionbyId(string boothMasterId);
         Task<List<PollInterruptionHistoryModel>> GetPollInterruptionHistoryById(string boothMasterId);
 

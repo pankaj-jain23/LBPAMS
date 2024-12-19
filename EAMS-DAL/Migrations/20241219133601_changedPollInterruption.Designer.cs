@@ -3,6 +3,7 @@ using System;
 using EAMS_DAL.DBContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EAMS_DAL.Migrations
 {
     [DbContext(typeof(EamsContext))]
-    partial class EamsContextModelSnapshot : ModelSnapshot
+    [Migration("20241219133601_changedPollInterruption")]
+    partial class changedPollInterruption
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1474,6 +1477,7 @@ namespace EAMS_DAL.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("Flag")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("InterruptionType")
@@ -1486,15 +1490,19 @@ namespace EAMS_DAL.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("NewBU")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("NewCU")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("OldBU")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("OldCU")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Remarks")
@@ -1513,12 +1521,15 @@ namespace EAMS_DAL.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("UserRole")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("UserType")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("PollInterruptionHisId");

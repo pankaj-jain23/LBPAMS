@@ -1091,7 +1091,7 @@ namespace EAMS_BLL.Services
 
         }
 
-
+       
         public async Task<PollInterruption> GetPollInterruption(string boothMasterId)
         {
             var res = await _eamsRepository.GetPollInterruptionData(boothMasterId);

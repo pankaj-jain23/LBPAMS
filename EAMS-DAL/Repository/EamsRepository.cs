@@ -2486,7 +2486,8 @@ namespace EAMS_DAL.Repository
                                 FourthLevelHMasterId = fourthLevelH.FourthLevelHMasterId,
                                 FourthLevelHName = fourthLevelH.HierarchyName,
                                 BoothMasterId = bt.BoothMasterId,
-                                BoothName = $"{bt.BoothName}({bt.BoothCode_No})",
+                                BoothName = bt.BoothNoAuxy == null || bt.BoothNoAuxy == "0" ? $"{bt.BoothName}" : $"{bt.BoothName}-({bt.BoothNoAuxy})",
+
                                 BoothAuxy = bt.BoothNoAuxy == "0" ? string.Empty : bt.BoothNoAuxy,
                                 IsStatus = bt.BoothStatus,
                                 BoothCode_No = bt.BoothCode_No,
@@ -10107,11 +10108,136 @@ namespace EAMS_DAL.Repository
         #region PollInterruption Interruption
         public async Task<Response> AddPollInterruption(PollInterruption PollInterruptionData)
         {
-            await _context.PollInterruptions.AddAsync(PollInterruptionData);
-            await _context.SaveChangesAsync();
-            return new Response { Status = RequestStatusEnum.OK, Message = "Poll Interruption Added Successfully." };
+            var isUpdated = await UpdatePollInterruption(PollInterruptionData);
+            if (isUpdated.IsSucceed)
+            {
+                return new Response
+                {
+                    Status = RequestStatusEnum.OK,
+                    Message = "Poll Interruption and History Updated Successfully."
+                };
+              
+            }
+            // Create a new PollInterruptionHistory instance and map the values from PollInterruptionData
+            var pollInterruptionHistory = new PollInterruptionHistory
+            {
+                StateMasterId = PollInterruptionData.StateMasterId,
+                DistrictMasterId = PollInterruptionData.DistrictMasterId,
+                AssemblyMasterId = PollInterruptionData.AssemblyMasterId,
+                ElectionTypeMasterId = PollInterruptionData.ElectionTypeMasterId,
+                BoothMasterId = PollInterruptionData.BoothMasterId,
+                InterruptionType = PollInterruptionData.InterruptionType,
+                OldCU = PollInterruptionData.OldCU,
+                OldBU = PollInterruptionData.OldBU,
+                NewCU = PollInterruptionData.NewCU,
+                NewBU = PollInterruptionData.NewBU,
+                StopTime = PollInterruptionData.StopTime,
+                ResumeTime = PollInterruptionData.ResumeTime,
+                UserId = PollInterruptionData.UserId,
+                UserType = PollInterruptionData.UserType,
+                UserRole = PollInterruptionData.UserRole,
+                IsPollInterrupted = PollInterruptionData.IsPollInterrupted,
+                CreatedAt = PollInterruptionData.CreatedAt,
+                UpdatedAt = PollInterruptionData.UpdatedAt,
+                Flag = PollInterruptionData.Flag,
+                Remarks = PollInterruptionData.Remarks,
+                IsStatus = PollInterruptionData.IsStatus
+            };
 
+            // Add PollInterruptionHistory first
+            await _context.PollInterruptionHistory.AddAsync(pollInterruptionHistory);
+            // Now add the PollInterruption data
+            await _context.PollInterruptions.AddAsync(PollInterruptionData);
+
+            // Save changes for PollInterruption
+            await _context.SaveChangesAsync();
+
+            return new Response
+            {
+                Status = RequestStatusEnum.OK,
+                Message = "Poll Interruption and History Added Successfully."
+            };
         }
+
+        public async Task<ServiceResponse> UpdatePollInterruption(PollInterruption PollInterruptionData)
+        {
+            // Fetch the existing PollInterruption from the database
+            var existingPollInterruption = await _context.PollInterruptions
+                .FirstOrDefaultAsync(d => d.BoothMasterId == PollInterruptionData.BoothMasterId);
+
+            if (existingPollInterruption == null)
+            {
+                return new ServiceResponse
+                {
+                   IsSucceed=false,
+                    Message = "Poll Interruption not found."
+                };
+            }
+
+            // Create a new PollInterruptionHistory instance and map the values from the existing PollInterruption
+            var pollInterruptionHistory = new PollInterruptionHistory
+            {
+                StateMasterId = PollInterruptionData.StateMasterId,
+                DistrictMasterId = PollInterruptionData.DistrictMasterId,
+                AssemblyMasterId = PollInterruptionData.AssemblyMasterId,
+                ElectionTypeMasterId = PollInterruptionData.ElectionTypeMasterId,
+                BoothMasterId = PollInterruptionData.BoothMasterId,
+                InterruptionType = PollInterruptionData.InterruptionType,
+                OldCU = PollInterruptionData.OldCU,
+                OldBU = PollInterruptionData.OldBU,
+                NewCU = PollInterruptionData.NewCU,
+                NewBU = PollInterruptionData.NewBU,
+                StopTime = PollInterruptionData.StopTime,
+                ResumeTime = PollInterruptionData.ResumeTime,
+                UserId = PollInterruptionData.UserId,
+                UserType = PollInterruptionData.UserType,
+                UserRole = PollInterruptionData.UserRole,
+                IsPollInterrupted = PollInterruptionData.IsPollInterrupted,
+                CreatedAt = PollInterruptionData.CreatedAt,
+                UpdatedAt = PollInterruptionData.UpdatedAt,
+                Flag = PollInterruptionData.Flag,
+                Remarks = PollInterruptionData.Remarks,
+                IsStatus = PollInterruptionData.IsStatus
+            };
+
+            // Add PollInterruptionHistory first (before updating the PollInterruption)
+            await _context.PollInterruptionHistory.AddAsync(pollInterruptionHistory);
+
+            // Now update the existing PollInterruption with the new data
+            existingPollInterruption.StateMasterId = PollInterruptionData.StateMasterId;
+            existingPollInterruption.DistrictMasterId = PollInterruptionData.DistrictMasterId;
+            existingPollInterruption.AssemblyMasterId = PollInterruptionData.AssemblyMasterId;
+            existingPollInterruption.ElectionTypeMasterId = PollInterruptionData.ElectionTypeMasterId;
+            existingPollInterruption.BoothMasterId = PollInterruptionData.BoothMasterId;
+            existingPollInterruption.InterruptionType = PollInterruptionData.InterruptionType;
+            existingPollInterruption.OldCU = PollInterruptionData.OldCU;
+            existingPollInterruption.OldBU = PollInterruptionData.OldBU;
+            existingPollInterruption.NewCU = PollInterruptionData.NewCU;
+            existingPollInterruption.NewBU = PollInterruptionData.NewBU;
+            existingPollInterruption.StopTime = PollInterruptionData.StopTime;
+            existingPollInterruption.ResumeTime = PollInterruptionData.ResumeTime;
+            existingPollInterruption.UserId = PollInterruptionData.UserId;
+            existingPollInterruption.UserType = PollInterruptionData.UserType;
+            existingPollInterruption.UserRole = PollInterruptionData.UserRole;
+            existingPollInterruption.IsPollInterrupted = PollInterruptionData.IsPollInterrupted;  // Keep existing created time if null
+            existingPollInterruption.UpdatedAt = DateTime.UtcNow;  // Set current date for updated time
+            existingPollInterruption.Flag = PollInterruptionData.Flag;
+            existingPollInterruption.Remarks = PollInterruptionData.Remarks;
+            existingPollInterruption.IsStatus = PollInterruptionData.IsStatus;
+
+            // Update the PollInterruption
+            _context.PollInterruptions.Update(existingPollInterruption);
+
+            // Save changes for both PollInterruption and PollInterruptionHistory
+            await _context.SaveChangesAsync();
+            return new ServiceResponse
+            {
+                IsSucceed = true,
+                Message = "Poll Interruption and History Updated Successfully."
+            };
+             
+        }
+
 
 
         public async Task<PollInterruption> GetPollInterruptionData(string boothMasterId)
@@ -10135,14 +10261,14 @@ namespace EAMS_DAL.Repository
 
         public async Task<List<PollInterruptionHistoryModel>> GetPollInterruptionHistoryById(string boothMasterId)
         {
-            var result = await (from pollInterruption in _context.PollInterruptions
+            var result = await (from pollInterruption in _context.PollInterruptionHistory
                                 join assemblyMaster in _context.AssemblyMaster on pollInterruption.AssemblyMasterId equals assemblyMaster.AssemblyMasterId
                                 join boothMaster in _context.BoothMaster on new { BoothMasterId = pollInterruption.BoothMasterId, AssemblyMasterId = assemblyMaster.AssemblyMasterId } equals new { BoothMasterId = boothMaster.BoothMasterId, AssemblyMasterId = boothMaster.AssemblyMasterId }
                                 where boothMaster.BoothMasterId == Convert.ToInt32(boothMasterId)
                                 orderby pollInterruption.CreatedAt descending
                                 select new
                                 {
-                                    pollInterruption.PollInterruptionId,
+                                    pollInterruption.PollInterruptionHisId,
                                     pollInterruption.BoothMasterId,
                                     boothMaster.BoothName,
                                     boothMaster.StateMasterId,
@@ -10166,7 +10292,7 @@ namespace EAMS_DAL.Repository
 
             return result.Select(p => new PollInterruptionHistoryModel
             {
-                PollInterruptionId = p.PollInterruptionId,
+                PollInterruptionId = p.PollInterruptionHisId,
                 BoothMasterId = p.BoothMasterId,
                 BoothName = p.BoothName,
                 StateMasterId = p.StateMasterId,
@@ -10202,16 +10328,16 @@ namespace EAMS_DAL.Repository
                 //var roles = claimsIdentity.Claims(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role").Value;
                 if (roles == "ARO" || roles == "SubARO")
                 {
-                    result = from pi in _context.PollInterruptions
+                    result = from pi in _context.PollInterruptionHistory
                              join di in _context.DistrictMaster on pi.DistrictMasterId equals di.DistrictMasterId
                              join am in _context.AssemblyMaster on pi.AssemblyMasterId equals am.AssemblyMasterId
                              join bm in _context.BoothMaster on new { pi.BoothMasterId, am.AssemblyMasterId } equals new { bm.BoothMasterId, bm.AssemblyMasterId }
                              where pi.StateMasterId == Convert.ToInt16(sid) && pi.AssemblyMasterId == Convert.ToInt16(aid)
-                             &&pi.ElectionTypeMasterId==Convert.ToInt32(electionTypeMasterId.Value)
+                             && pi.ElectionTypeMasterId == Convert.ToInt32(electionTypeMasterId.Value)
                              orderby pi.AssemblyMasterId, pi.BoothMasterId, pi.CreatedAt descending
                              select new PollInterruptionDashboard
                              {
-                                 PollInterruptionMasterId = pi.PollInterruptionId,
+                                 PollInterruptionMasterId = pi.PollInterruptionHisId,
                                  StateMasterId = pi.StateMasterId,
                                  DistrictMasterId = pi.DistrictMasterId,
                                  AssemblyMasterId = pi.AssemblyMasterId,
@@ -10233,7 +10359,7 @@ namespace EAMS_DAL.Repository
 
                 else if (roles == "StateAdmin")
                 {
-                    result = from pi in _context.PollInterruptions
+                    result = from pi in _context.PollInterruptionHistory
                              join di in _context.DistrictMaster on pi.DistrictMasterId equals di.DistrictMasterId
                              join am in _context.AssemblyMaster on pi.AssemblyMasterId equals am.AssemblyMasterId
                              join bm in _context.BoothMaster on new { pi.BoothMasterId, am.AssemblyMasterId } equals new { bm.BoothMasterId, bm.AssemblyMasterId }
@@ -10242,7 +10368,7 @@ namespace EAMS_DAL.Repository
                              orderby pi.AssemblyMasterId, pi.BoothMasterId, pi.CreatedAt descending
                              select new PollInterruptionDashboard
                              {
-                                 PollInterruptionMasterId = pi.PollInterruptionId,
+                                 PollInterruptionMasterId = pi.PollInterruptionHisId,
                                  StateMasterId = pi.StateMasterId,
                                  DistrictMasterId = pi.DistrictMasterId,
                                  AssemblyMasterId = pi.AssemblyMasterId,
@@ -10264,16 +10390,16 @@ namespace EAMS_DAL.Repository
 
                 else if (roles == "ECI" || roles == "SuperAdmin")
                 {
-                    result = from pi in _context.PollInterruptions
+                    result = from pi in _context.PollInterruptionHistory
                              join di in _context.DistrictMaster on pi.DistrictMasterId equals di.DistrictMasterId
                              join am in _context.AssemblyMaster on pi.AssemblyMasterId equals am.AssemblyMasterId
                              join bm in _context.BoothMaster on new { pi.BoothMasterId, am.AssemblyMasterId } equals new { bm.BoothMasterId, bm.AssemblyMasterId }
-                               where pi.StateMasterId == Convert.ToInt32(stateMasterId.Value)
-                             && pi.ElectionTypeMasterId == Convert.ToInt32(electionTypeMasterId.Value)
+                             where pi.StateMasterId == Convert.ToInt32(stateMasterId.Value)
+                           && pi.ElectionTypeMasterId == Convert.ToInt32(electionTypeMasterId.Value)
                              orderby pi.AssemblyMasterId, pi.BoothMasterId, pi.CreatedAt descending
                              select new PollInterruptionDashboard
                              {
-                                 PollInterruptionMasterId = pi.PollInterruptionId,
+                                 PollInterruptionMasterId = pi.PollInterruptionHisId,
                                  StateMasterId = pi.StateMasterId,
                                  DistrictMasterId = pi.DistrictMasterId,
                                  AssemblyMasterId = pi.AssemblyMasterId,
@@ -10294,7 +10420,7 @@ namespace EAMS_DAL.Repository
                 }
                 else if (roles == "DistrictAdmin")
                 {
-                    result = from pi in _context.PollInterruptions
+                    result = from pi in _context.PollInterruptionHistory
                              join di in _context.DistrictMaster on pi.DistrictMasterId equals di.DistrictMasterId
                              join am in _context.AssemblyMaster on pi.AssemblyMasterId equals am.AssemblyMasterId
                              join bm in _context.BoothMaster on new { pi.BoothMasterId, am.AssemblyMasterId } equals new { bm.BoothMasterId, bm.AssemblyMasterId }
@@ -10303,7 +10429,7 @@ namespace EAMS_DAL.Repository
                              orderby pi.AssemblyMasterId, pi.BoothMasterId, pi.CreatedAt descending
                              select new PollInterruptionDashboard
                              {
-                                 PollInterruptionMasterId = pi.PollInterruptionId,
+                                 PollInterruptionMasterId = pi.PollInterruptionHisId,
                                  StateMasterId = pi.StateMasterId,
                                  DistrictMasterId = pi.DistrictMasterId,
                                  AssemblyMasterId = pi.AssemblyMasterId,
@@ -10328,7 +10454,7 @@ namespace EAMS_DAL.Repository
                     if (soId != null)
                     {
                         string soMasterId = soId.Value;
-                        result = from pi in _context.PollInterruptions
+                        result = from pi in _context.PollInterruptionHistory
                                  join di in _context.DistrictMaster on pi.DistrictMasterId equals di.DistrictMasterId
                                  join am in _context.AssemblyMaster on pi.AssemblyMasterId equals am.AssemblyMasterId
                                  join bm in _context.BoothMaster on new { pi.BoothMasterId, am.AssemblyMasterId } equals new { bm.BoothMasterId, bm.AssemblyMasterId }
@@ -10337,7 +10463,7 @@ namespace EAMS_DAL.Repository
                                  orderby pi.AssemblyMasterId, pi.BoothMasterId, pi.CreatedAt descending
                                  select new PollInterruptionDashboard
                                  {
-                                     PollInterruptionMasterId = pi.PollInterruptionId,
+                                     PollInterruptionMasterId = pi.PollInterruptionHisId,
                                      StateMasterId = pi.StateMasterId,
                                      DistrictMasterId = pi.DistrictMasterId,
                                      AssemblyMasterId = pi.AssemblyMasterId,
@@ -10381,7 +10507,7 @@ namespace EAMS_DAL.Repository
         {
             // Start building the base query
             IQueryable<PollInterruption> pollInterruptions = _context.PollInterruptions
-                .Where(e => e.StateMasterId == stateMasterId&&e.ElectionTypeMasterId== electionTypeMasterId && e.IsPollInterrupted == true);
+                .Where(e => e.StateMasterId == stateMasterId && e.ElectionTypeMasterId == electionTypeMasterId && e.IsPollInterrupted == true);
 
             // Apply role-specific filters in a single conditional block
             switch (role)
@@ -10403,10 +10529,7 @@ namespace EAMS_DAL.Repository
             }
 
             // Group by BoothMasterId to get distinct records and select the latest record for each group
-            var distinctLatestBoothInterruptionCount = await pollInterruptions
-                .GroupBy(e => e.BoothMasterId)
-                .Select(g => g.OrderByDescending(e => e.CreatedAt).FirstOrDefault()) // Select the latest record per BoothMasterId
-                .CountAsync();
+            var distinctLatestBoothInterruptionCount = await pollInterruptions.CountAsync();
 
             return distinctLatestBoothInterruptionCount;
         }
@@ -16467,7 +16590,6 @@ namespace EAMS_DAL.Repository
 
             return soListmain;
         }
-
         public async Task<List<SectorOfficerPendencyBooth>> GetBoothWiseSOEventWiseCount(string soMasterId)
         {
 
@@ -20464,7 +20586,7 @@ namespace EAMS_DAL.Repository
                                            PartyName = groupedResults.FirstOrDefault().k.PartyName,
                                            IsCC = groupedResults.FirstOrDefault().fourthLevelH.IsCC,
                                            IsNN = groupedResults.FirstOrDefault().fourthLevelH.IsNN,
-                                           IsNOTA = groupedResults.FirstOrDefault().k.IsNOTA,
+                                           IsNOTA= groupedResults.FirstOrDefault().k.IsNOTA,
                                            IsWinner = groupedResults.FirstOrDefault().result != null
                                                       ? groupedResults.FirstOrDefault().result.IsWinner
                                                       : false,

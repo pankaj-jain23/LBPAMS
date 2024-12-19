@@ -3663,12 +3663,9 @@ namespace EAMS.Controllers
         public async Task<IActionResult> AddPollInterruption(InterruptionViewModel interruptionViewModel)
         {
             if (ModelState.IsValid)
-            {
-                ClaimsIdentity claimsIdentity = User.Identity as ClaimsIdentity;
-                var electionTypeMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
-
-                var mappedData = _mapper.Map<PollInterruption>(interruptionViewModel);
-                mappedData.ElectionTypeMasterId = Convert.ToInt32(electionTypeMasterIdString);
+            { 
+              
+                var mappedData = _mapper.Map<PollInterruption>(interruptionViewModel); 
                 var result = await _EAMSService.AddPollInterruption(mappedData);
 
                 switch (result.Status)
@@ -3692,7 +3689,7 @@ namespace EAMS.Controllers
             }
         }
 
-
+        
         [HttpGet]
         [Route("GetPollInterruptionbyId")]
         [Authorize]
@@ -3702,8 +3699,6 @@ namespace EAMS.Controllers
 
             return Ok(pollInterruptionData);
         }
-
-
         [HttpGet]
         [Route("GetPollInterruptionHistoryById")]
         [Authorize]
