@@ -220,6 +220,11 @@ namespace EAMS_ACore.Models.PublicModels
             set;
         }
         public bool ResultDecStatus { get; set; }
+        public bool IsNOTA
+        {
+            get;
+            set;
+        }
     }
 
     public class BoothResultList
