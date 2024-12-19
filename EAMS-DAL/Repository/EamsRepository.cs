@@ -20381,13 +20381,77 @@ namespace EAMS_DAL.Repository
             return candidateList;
         }
 
+        //  public async Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(
+        //int stateMasterId,
+        //int districtMasterId,
+        //int electionTypeMasterId,
+        //int assemblyMasterId,
+        //int fourthLevelHMasterId)
+        //  {
+        //      var candidateList = await (from k in _context.Kyc
+        //                                 join fourthLevelH in _context.FourthLevelH
+        //                                 on k.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
+        //                                 join r in _context.ResultDeclaration
+        //                                 on k.KycMasterId equals r.KycMasterId into results
+        //                                 from result in results.DefaultIfEmpty() // Left Join
+        //                                 where k.StateMasterId == stateMasterId &&
+        //                                       k.DistrictMasterId == districtMasterId &&
+        //                                       k.ElectionTypeMasterId == electionTypeMasterId &&
+        //                                       k.AssemblyMasterId == assemblyMasterId &&
+        //                                       k.FourthLevelHMasterId == fourthLevelHMasterId &&
+        //                                       k.GPPanchayatWardsMasterId == 0 &&
+        //                               !(k.IsUnOppossed == true && k.IsNOTA == true || k.IsNOTA == false)
+        //                                 group new { k, result, fourthLevelH }
+        //                                 by k.KycMasterId into groupedResults
+        //                                 select new CandidateListForResultDeclaration
+        //                                 {
+        //                                     KycMasterId = groupedResults.Key,
+        //                                     CandidateName = groupedResults.FirstOrDefault().k.CandidateName,
+        //                                     FatherName = groupedResults.FirstOrDefault().k.FatherName,
+        //                                     IsUnOppossed = groupedResults.FirstOrDefault().k.IsUnOppossed,
+        //                                     PartyName = groupedResults.FirstOrDefault().k.PartyName,
+        //                                     IsCC = groupedResults.FirstOrDefault().fourthLevelH.IsCC,
+        //                                     IsNN = groupedResults.FirstOrDefault().fourthLevelH.IsNN,
+        //                                     IsWinner = groupedResults.FirstOrDefault().result != null
+        //                                                ? groupedResults.FirstOrDefault().result.IsWinner
+        //                                                : false,
+        //                                     IsResultDeclared = groupedResults.FirstOrDefault().result != null
+        //                                                        ? groupedResults.FirstOrDefault().result.IsResultDeclared
+        //                                                        : false,
+        //                                     IsDraw = groupedResults.FirstOrDefault().result != null
+        //                                              ? groupedResults.FirstOrDefault().result.IsDraw
+        //                                              : false,
+        //                                     IsDrawLottery = groupedResults.FirstOrDefault().result != null
+        //                                                     ? groupedResults.FirstOrDefault().result.IsDrawLottery
+        //                                                     : false,
+        //                                     IsReCounting = groupedResults.FirstOrDefault().result != null
+        //                                                    ? groupedResults.FirstOrDefault().result.IsReCounting
+        //                                                    : false,
+        //                                     VoteMargin = groupedResults.FirstOrDefault().result != null
+        //                                                  ? groupedResults.FirstOrDefault().result.VoteMargin
+        //                                                  : null
+        //                                 }).ToListAsync();
+
+        //      return candidateList;
+        //  }
+
         public async Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(
-      int stateMasterId,
-      int districtMasterId,
-      int electionTypeMasterId,
-      int assemblyMasterId,
-      int fourthLevelHMasterId)
+    int stateMasterId,
+    int districtMasterId,
+    int electionTypeMasterId,
+    int assemblyMasterId,
+    int fourthLevelHMasterId)
         {
+            // Check if there are any UnOpposed candidates
+            bool hasUnOpposedCandidates = await _context.Kyc
+                .AnyAsync(k => k.StateMasterId == stateMasterId &&
+                               k.DistrictMasterId == districtMasterId &&
+                               k.ElectionTypeMasterId == electionTypeMasterId &&
+                               k.AssemblyMasterId == assemblyMasterId &&
+                               k.FourthLevelHMasterId == fourthLevelHMasterId &&
+                               k.GPPanchayatWardsMasterId == 0 &&
+                               k.IsUnOppossed == true);
+
             var candidateList = await (from k in _context.Kyc
                                        join fourthLevelH in _context.FourthLevelH
                                        on k.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
@@ -20399,7 +20463,8 @@ namespace EAMS_DAL.Repository
                                              k.ElectionTypeMasterId == electionTypeMasterId &&
                                              k.AssemblyMasterId == assemblyMasterId &&
                                              k.FourthLevelHMasterId == fourthLevelHMasterId &&
-                                             k.GPPanchayatWardsMasterId == 0
+                                             k.GPPanchayatWardsMasterId == 0 &&
+                                             (!hasUnOpposedCandidates || (k.IsNOTA == null || k.IsNOTA == false))
                                        group new { k, result, fourthLevelH }
                                        by k.KycMasterId into groupedResults
                                        select new CandidateListForResultDeclaration
@@ -20433,7 +20498,6 @@ namespace EAMS_DAL.Repository
 
             return candidateList;
         }
-
 
         //public async Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         //{

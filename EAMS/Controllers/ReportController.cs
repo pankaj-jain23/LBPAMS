@@ -778,6 +778,7 @@ namespace EAMS.Controllers
         {
             string stateMasterId;
             var stateMasterIdC = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId").Value;
+
             if (stateId != null)
             {
                 stateMasterId = stateId;
@@ -793,6 +794,7 @@ namespace EAMS.Controllers
             else
                 return NotFound();
         }
+
 
 
 
