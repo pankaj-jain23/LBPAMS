@@ -265,7 +265,7 @@ namespace EAMS_ACore.Interfaces
         //Task<List<SectorOfficerPendencyBooth>> GetBoothWiseSOEventWiseCount(string stateMasterId, string districtMasterId,string assemblyMasterid);
         Task<List<SectorOfficerPendencyBooth>> GetBoothWiseSOEventWiseCount(string soMasterId);
 
-        Task<List<SectorOfficerPendencybySoNames>> GetSONamesEventWiseCount(string stateMasterId, string districtMasterId, string assemblyMasterid);
+        Task<List<SectorOfficerPendencybySoNames>> GetSONamesEventWiseCount(string stateMasterId, string districtMasterId, string assemblyMasterid, string electionTypeMasterId);
         #endregion
 
         Task<List<CombinedMaster>> AppNotDownload(string stateMasterId);

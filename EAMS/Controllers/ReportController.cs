@@ -2,6 +2,7 @@
 using EAMS.ViewModels.ReportViewModel;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.Models.CommonModels;
+using EAMS_ACore.Models.ElectionType;
 using EAMS_ACore.Models.PublicModels;
 using EAMS_ACore.ReportModels;
 using LBPAMS.ViewModels.CommonModels;
@@ -839,9 +840,9 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetSONamesEventWiseCount")]
         [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,ARO")]
-        public async Task<IActionResult> GetSONamesEventWiseCounts(string stateMasterId, string districtMasterId, string assemblymasterId)
+        public async Task<IActionResult> GetSONamesEventWiseCounts(string stateMasterId, string districtMasterId, string assemblymasterId,string electionTypeMasterId)
         {
-            var eventAssemblyList = await _EAMSService.GetSONamesEventWiseCount(stateMasterId, districtMasterId, assemblymasterId);
+            var eventAssemblyList = await _EAMSService.GetSONamesEventWiseCount(stateMasterId, districtMasterId, assemblymasterId,electionTypeMasterId);
             if (eventAssemblyList is not null)
                 return Ok(eventAssemblyList);
             else

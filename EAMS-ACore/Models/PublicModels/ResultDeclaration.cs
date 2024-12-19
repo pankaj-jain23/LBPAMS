@@ -79,12 +79,17 @@ namespace EAMS_ACore.Models.PublicModels
         public DateTime? ResultDecDeletedAt { get; set; }
 
         public bool ResultDecStatus { get; set; }
-
+        public bool IsNOTA
+        {
+            get;
+            set;
+        }
         public virtual List<ResultDeclarationHistory> ResultDeclarationHistory
         {
             get;
             set;
         }
+
     }
 
     public class ResultDeclarationBoothWardList

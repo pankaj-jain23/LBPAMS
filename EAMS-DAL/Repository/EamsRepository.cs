@@ -16416,7 +16416,7 @@ namespace EAMS_DAL.Repository
         }
 
 
-        public async Task<List<SectorOfficerPendencybySoNames>> GetSONamesEventWiseCount(string stateId, string districtId, string assemblyId)
+        public async Task<List<SectorOfficerPendencybySoNames>> GetSONamesEventWiseCount(string stateId, string districtId, string assemblyId, string electionTypeMasterId)
         {
             //var getAssemblyRecord = _context.AssemblyMaster.FirstOrDefault(d => d.AssemblyMasterId == Convert.ToInt32(assemblyId));
 
@@ -16426,10 +16426,11 @@ namespace EAMS_DAL.Repository
             await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("Postgres"));
             await connection.OpenAsync();
 
-            var command = new NpgsqlCommand("SELECT * FROM sogetlistbyassembly(@state_master_id, @district_master_id, @assembly_master_id)", connection);
+            var command = new NpgsqlCommand("SELECT * FROM sogetlistbyassembly(@state_master_id, @district_master_id, @assembly_master_id,@electionType_Master_Id)", connection);
             command.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateId));
             command.Parameters.AddWithValue("@district_master_id", Convert.ToInt32(districtId));
             command.Parameters.AddWithValue("@assembly_master_id", Convert.ToInt32(assemblyId));
+            command.Parameters.AddWithValue("@electionType_Master_Id", Convert.ToInt32(electionTypeMasterId));
 
             // Execute the command and read the results
             await using var reader = await command.ExecuteReaderAsync();
@@ -20462,6 +20463,7 @@ namespace EAMS_DAL.Repository
                                            PartyName = groupedResults.FirstOrDefault().k.PartyName,
                                            IsCC = groupedResults.FirstOrDefault().fourthLevelH.IsCC,
                                            IsNN = groupedResults.FirstOrDefault().fourthLevelH.IsNN,
+                                           IsNOTA = groupedResults.FirstOrDefault().k.IsNOTA,
                                            IsWinner = groupedResults.FirstOrDefault().result != null
                                                       ? groupedResults.FirstOrDefault().result.IsWinner
                                                       : false,

@@ -51,5 +51,10 @@ namespace EAMS_ACore.Models
             get;
             set;
         }
+        public bool IsNOTA
+        {
+            get;
+            set;
+        }
     }
 }

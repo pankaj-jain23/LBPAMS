@@ -1025,6 +1025,7 @@ namespace EAMS.Helper
      .ForMember(dest => dest.IsReCounting, opt => opt.MapFrom(src => src.IsReCounting))
      .ForMember(dest => dest.IsDraw, opt => opt.MapFrom(src => src.IsDraw))
      .ForMember(dest => dest.IsDrawLottery, opt => opt.MapFrom(src => src.IsDrawLottery))
+     .ForMember(dest => dest.IsNOTA, opt => opt.MapFrom(src => src.IsNOTA))
      .ReverseMap();
 
             CreateMap<UpdateResultDeclarationListViewModel, ResultDeclaration>()
@@ -1037,6 +1038,7 @@ namespace EAMS.Helper
      .ForMember(dest => dest.IsReCounting, opt => opt.MapFrom(src => src.IsReCounting))
      .ForMember(dest => dest.IsDraw, opt => opt.MapFrom(src => src.IsDraw))
      .ForMember(dest => dest.IsDrawLottery, opt => opt.MapFrom(src => src.IsDrawLottery))
+     .ForMember(dest => dest.IsNOTA, opt => opt.MapFrom(src => src.IsNOTA))
      .ReverseMap();
 
             CreateMap<ResultDeclarationReportListViewModel, ResultDeclaration>()

@@ -1547,10 +1547,10 @@ namespace EAMS_BLL.Services
 
             return await _eamsRepository.GetBoothWiseSOEventWiseCount(soMasterId);
         }
-        public async Task<List<SectorOfficerPendencybySoNames>> GetSONamesEventWiseCount(string stateMasterId, string districtmasterid, string assemblyMasterid)
+        public async Task<List<SectorOfficerPendencybySoNames>> GetSONamesEventWiseCount(string stateMasterId, string districtmasterid, string assemblyMasterid, string electionTypeMasterId)
         {
 
-            return await _eamsRepository.GetSONamesEventWiseCount(stateMasterId, districtmasterid, assemblyMasterid);
+            return await _eamsRepository.GetSONamesEventWiseCount(stateMasterId, districtmasterid, assemblyMasterid, electionTypeMasterId);
         }
 
 
@@ -1939,7 +1939,7 @@ namespace EAMS_BLL.Services
 
             // Filter valid results and sort by VoteMargin
             var validResults = resultDeclaration
-                .Where(r => !string.IsNullOrEmpty(r.VoteMargin.ToString()))
+                .Where(r => !string.IsNullOrEmpty(r.VoteMargin.ToString()) && r.IsNOTA == false)
                 .OrderByDescending(r =>
                 {
                     int voteMargin;
@@ -2103,7 +2103,7 @@ namespace EAMS_BLL.Services
 
             // Filter the records that have non-null and non-empty VoteMargin
             var validResults = resultDeclaration
-                .Where(r => !string.IsNullOrEmpty(r.VoteMargin.ToString()))
+                .Where(r => !string.IsNullOrEmpty(r.VoteMargin.ToString()) && r.IsNOTA == false)
                 .OrderByDescending(r =>
                 {
                     int voteMargin;

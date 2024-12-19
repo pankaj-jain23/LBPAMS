@@ -26,6 +26,11 @@
         public bool IsWinner { get; set; }
         public bool IsDraw { get; set; }
         public bool IsDrawLottery { get; set; }
+        public bool IsNOTA
+        {
+            get;
+            set;
+        }
     }
     public class UpdateResultDeclarationViewModel
     {
@@ -43,6 +48,12 @@
         public bool IsWinner { get; set; }
         public bool IsDraw { get; set; }
         public bool IsDrawLottery { get; set; }
+        public bool IsNOTA
+        {
+            get;
+            set;
+        }
+
     }
     public class ResultDeclarationReportListViewModel
     {
