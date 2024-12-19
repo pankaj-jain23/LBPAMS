@@ -1128,6 +1128,7 @@ namespace EAMS.Controllers
 
         [HttpGet("GetSarpanchListById")]
         [Authorize]
+
         public async Task<IActionResult> GetSarpanchListById(int fourthLevelHMasterId)
         {
             var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
