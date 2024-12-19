@@ -16368,9 +16368,10 @@ namespace EAMS_DAL.Repository
             //Now call those assemblies which do not have any booths as they are not cominmg in above function, calling seperatly
             await using var connection2 = new NpgsqlConnection(_configuration.GetConnectionString("Postgres"));
             await connection2.OpenAsync();
-            var command2 = new NpgsqlCommand("SELECT * FROM findsopendency_boothnotexists(@state_master_id, @district_master_id) ", connection2);
+            var command2 = new NpgsqlCommand("SELECT * FROM findsopendency_boothnotexists(@state_master_id, @district_master_id, @electionType_Master_Id) ", connection2);
             command2.Parameters.AddWithValue("@state_master_id", Convert.ToInt32(stateId));
             command2.Parameters.AddWithValue("@district_master_id", Convert.ToInt32(districtId));
+            command2.Parameters.AddWithValue("@electionType_Master_Id", Convert.ToInt32(electionTypeMasterId));
 
             using var reader2 = await command2.ExecuteReaderAsync();
 
