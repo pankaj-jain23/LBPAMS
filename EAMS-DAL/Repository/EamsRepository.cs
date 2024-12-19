@@ -16311,7 +16311,7 @@ namespace EAMS_DAL.Repository
         }
 
 
-        public async Task<List<SectorOfficerPendencyAssembly>> GetAssemblyWiseSOCountEventWiseCount(string stateId, string districtId)
+        public async Task<List<SectorOfficerPendencyAssembly>> GetAssemblyWiseSOCountEventWiseCount(string stateId, string districtId, string electionTypeMasterId)
         {
             var eventActivityList = new List<SectorOfficerPendencyAssembly>();
 
@@ -16319,9 +16319,10 @@ namespace EAMS_DAL.Repository
             await using var connection = new NpgsqlConnection(_configuration.GetConnectionString("Postgres"));
             await connection.OpenAsync();
 
-            var command = new NpgsqlCommand("SELECT * FROM getsopendency_assemblywise(@state_masterid, @district_masterid) ORDER BY assembly_code ASC", connection);
+            var command = new NpgsqlCommand("SELECT * FROM getsopendency_assemblywise(@state_masterid, @district_masterid, @electionType_Master_Id) ORDER BY assembly_code ASC", connection);
             command.Parameters.AddWithValue("@state_masterid", Convert.ToInt32(stateId));
             command.Parameters.AddWithValue("@district_masterid", Convert.ToInt32(districtId));
+            command.Parameters.AddWithValue("@electionType_Master_Id", Convert.ToInt32(electionTypeMasterId));
 
             // Execute the command and read the results
             await using var reader = await command.ExecuteReaderAsync();

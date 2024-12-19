@@ -1531,10 +1531,10 @@ namespace EAMS_BLL.Services
 
             return await _eamsRepository.GetDistrictWiseSOCountEventWiseCount(stateMasterId);
         }
-        public async Task<List<SectorOfficerPendencyAssembly>> GetAssemblyWiseSOCountEventWiseCount(string stateMasterId, string districtmasterid)
+        public async Task<List<SectorOfficerPendencyAssembly>> GetAssemblyWiseSOCountEventWiseCount(string stateMasterId, string districtmasterid, string electionTypeMasterId)
         {
 
-            return await _eamsRepository.GetAssemblyWiseSOCountEventWiseCount(stateMasterId, districtmasterid);
+            return await _eamsRepository.GetAssemblyWiseSOCountEventWiseCount(stateMasterId, districtmasterid, electionTypeMasterId);
         }
         //public async Task<List<SectorOfficerPendencyBooth>> GetBoothWiseSOEventWiseCount(string stateMasterId, string districtmasterid, string assemblyMasterid)
         //{
