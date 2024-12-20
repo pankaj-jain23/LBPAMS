@@ -22139,7 +22139,7 @@ namespace EAMS_DAL.Repository
                                        on fh.DistrictMasterId equals asm.DistrictMasterId
                     join et in _context.ElectionTypeMaster
                         on fh.ElectionTypeMasterId equals et.ElectionTypeMasterId
-                    where asm.ElectionTypeMasterId == commonReportModel.ElectionTypeMasterId  // Also filter on ElectionTypeMasterId in AssemblyMaster
+                    where asm.ElectionTypeMasterId == commonReportModel.ElectionTypeMasterId && asm.AssemblyMasterId == commonReportModel.AssemblyMasterId // Also filter on ElectionTypeMasterId in AssemblyMaster
                     group new { fh, voter } by new
                     {
                         fh.HierarchyName,
