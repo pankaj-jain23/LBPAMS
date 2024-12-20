@@ -8808,7 +8808,7 @@ namespace EAMS_DAL.Repository
                                 from election in electionGroup.DefaultIfEmpty()
                                 where district.StateMasterId == stateMasterId &&
                                       booth.BoothStatus == true &&
-                                      booth.AssignedTo != null &&
+                                    !string.IsNullOrWhiteSpace(booth.AssignedTo)&&
                                       district.DistrictStatus == true
                                 // Exclude booths where event activity is completed
                                 && (election == null || (election != null && (
@@ -8834,7 +8834,7 @@ namespace EAMS_DAL.Repository
                                 } into g
                                 select new EventActivityCount
                                 {
-                                    Key = stateMasterId + g.Key.DistrictMasterId + g.Key.DistrictName,
+                                    Key =$" {stateMasterId }{ g.Key.DistrictName} {g.Key.DistrictMasterId}",
                                     MasterId = g.Key.DistrictMasterId,
                                     Name = g.Key.DistrictName,
                                     Type = "District",
@@ -8946,7 +8946,7 @@ namespace EAMS_DAL.Repository
                                 } into g
                                 select new AssemblyEventActivityCount
                                 {
-                                    Key = stateMasterId + districtMasterId + g.Key.AssemblyMasterId + g.Key.AssemblyName, // Generate different key for each record
+                                    Key = $"{stateMasterId}{ districtMasterId } {g.Key.AssemblyMasterId }{ g.Key.AssemblyName}", // Generate different key for each record
                                     MasterId = g.Key.AssemblyMasterId,
                                     StateMasterId = stateMasterId,
                                     DistrictMasterId = districtMasterId,
@@ -9098,8 +9098,8 @@ namespace EAMS_DAL.Repository
                                       && (election.DistrictMasterId == districtMasterId)
                                       && (election.AssemblyMasterId == assemblyMasterId)
                                       && (election.FourthLevelMasterId == fourthLevelHMasterId)
-                                      && (boothMaster.BoothStatus == true)
-                                      && (boothMaster.AssignedTo != null) &&
+                                      && (boothMaster.BoothStatus == true) &&
+                                      !string.IsNullOrWhiteSpace(boothMaster.AssignedTo) &&
                                       election.ElectionTypeMasterId == electionTypeMasterId
                                 group election by new
                                 {
