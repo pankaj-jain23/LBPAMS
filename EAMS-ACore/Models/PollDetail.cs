@@ -13,6 +13,11 @@ namespace EAMS_ACore.Models
         public int? FourthLevelHMasterId{get;set;}
         public int BoothMasterId { get; set; }
         public int? VotesPolled { get; set; }
+        public DateOnly StartDate { get; set; }
+        public TimeOnly StartTime { get; set; }
+        public TimeOnly? EndTime { get; set; }
+        public TimeOnly? LockTime { get; set; }
+        public bool IsLastSlot { get; set; }
         public DateTime? VotesPolledRecivedTime { get; set; }
         public int ElectionTypeMasterId { get; set; } 
         public int EventMasterId { get; set; }
@@ -20,5 +25,6 @@ namespace EAMS_ACore.Models
         public string EventName { get; set; }
         public int EventSequence { get; set; }
         public bool EventStatus { get; set; }
+
     }
 }

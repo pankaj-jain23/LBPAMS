@@ -6517,6 +6517,11 @@ namespace EAMS_DAL.Repository
                 VotesPolled = updateEventActivity.VotesPolled,
                 EventName = updateEventActivity.EventName,
                 SlotManagementId = getLatestSlot.SlotManagementId,
+                StartDate = getLatestSlot.StartDate,
+                StartTime = getLatestSlot.StartTime,
+                EndTime = getLatestSlot.EndTime,
+                LockTime = getLatestSlot.LockTime,
+                IsLastSlot = getLatestSlot.IsLastSlot
             };
 
             await _context.PollDetails.AddAsync(newPollDetail);
@@ -10177,7 +10182,7 @@ namespace EAMS_DAL.Repository
                     Status = RequestStatusEnum.OK,
                     Message = "Poll Interruption and History Updated Successfully."
                 };
-              
+
             }
             // Create a new PollInterruptionHistory instance and map the values from PollInterruptionData
             var pollInterruptionHistory = new PollInterruptionHistory
@@ -10230,7 +10235,7 @@ namespace EAMS_DAL.Repository
             {
                 return new ServiceResponse
                 {
-                   IsSucceed=false,
+                    IsSucceed = false,
                     Message = "Poll Interruption not found."
                 };
             }
@@ -10296,7 +10301,7 @@ namespace EAMS_DAL.Repository
                 IsSucceed = true,
                 Message = "Poll Interruption and History Updated Successfully."
             };
-             
+
         }
 
 
@@ -15998,43 +16003,34 @@ namespace EAMS_DAL.Repository
 
         //    return voterTurnOutList;
         //}
-        public async Task<List<VoterTurnOutSlotWise>> GetVoterTurnOutSlotBasedReport(string stateMasterId, string electionTypeMasterId)
-        {
-            //int stateMasterIdInt = Convert.ToInt32(stateMasterId);
-            //int electionTypeMasterIdInt = Convert.ToInt32(electionTypeMasterId);
+        //public async Task<List<VoterTurnOutSlotWise>> GetVoterTurnOutSlotBasedReport(string stateMasterId, string electionTypeMasterId)
+        //{
+        //    int stateMasterIdInt = Convert.ToInt32(stateMasterId);
+        //    int electionTypeMasterIdInt = Convert.ToInt32(electionTypeMasterId); 
 
-            //// Get the slot management details
-            //var slots = await _context.SlotManagementMaster
-            //                          .Where(d => d.StateMasterId == stateMasterIdInt && d.ElectionTypeMasterId == electionTypeMasterIdInt)
-            //                          .ToListAsync();
+        //    // Fetch districts and associated booths, then get the latest poll details
+        //    var result = await (from dt in _context.DistrictMaster
+        //                        where dt.StateMasterId == stateMasterIdInt
+        //                        join bt in _context.BoothMaster
+        //                            on dt.DistrictMasterId equals bt.DistrictMasterId
+        //                        join pl in _context.PollDetails
+        //                            on bt.BoothMasterId equals pl.BoothMasterId
+        //                        orderby pl.VotesPolledRecivedTime descending // Latest record first
+        //                        group new { dt, bt, pl } by new { dt.DistrictMasterId, bt.BoothMasterId } into g
+        //                        select new VoterTurnOutSlotWise
+        //                        {
+        //                            Key = GenerateRandomAlphanumericString(6),
+        //                            MasterId = g.Key.DistrictMasterId, // Can be changed if needed
+        //                            Name = g.Key.DistrictMasterId.ToString(), // Modify this to get the district name
+        //                            Type = "District",
+        //                            SlotVotes =null ,
+        //                            VotesTillNow = $"{g.Sum(x => x.pl.VotesPolled)} ({(g.Sum(x => x.bt.TotalVoters) > 0 ?
+        //                                (g.Sum(x => x.pl.VotesPolled) * 100.0 / g.Sum(x => x.bt.TotalVoters)).ToString() : "0.0")}%)",
+        //                            Children = new List<object>() // Empty for now, can be populated as needed
+        //                        }).ToListAsync();
 
-            //// Fetch districts and associated booths, then get the latest poll details
-            //var result = await (from dt in _context.DistrictMaster
-            //                    where dt.StateMasterId == stateMasterIdInt 
-            //                    join pl in _context.PollDetails
-            //                        on dt.DistrictMasterId equals pl.DistrictMasterId
-            //                    orderby pl.VotesPolledRecivedTime descending // Latest record first
-            //                    group new { dt,   pl } by new { dt.DistrictMasterId } into g
-            //                    select new VoterTurnOutSlotWise
-            //                    {
-            //                        Key = GenerateRandomAlphanumericString(6),
-            //                        MasterId = g.Key.DistrictMasterId, // Can be changed if needed
-            //                        Name = g.Key.DistrictMasterId.ToString(), // Modify this to get the district name
-            //                        Type = "District",
-            //                        SlotVotes = slots.Select(slot =>
-            //                            $"{g.Where(x => x.pl.SlotManagementId == slot.SlotManagementId)
-            //                                .Sum(x => x.pl.VotesPolled)} ({(g.Sum(x => x.bt.TotalVoters) > 0 ?
-            //                                (g.Where(x => x.pl.SlotManagementId == slot.SlotManagementId).Sum(x => x.pl.VotesPolled) * 100.0 / g.Sum(x => x.bt.TotalVoters)).ToString() : "0.0")}%)").ToArray(),
-            //                        VotesTillNow = $"{g.Sum(x => x.pl.VotesPolled)} ({(g.Sum(x => x.bt.TotalVoters) > 0 ?
-            //                            (g.Sum(x => x.pl.VotesPolled) * 100.0 / g.Sum(x => x.bt.TotalVoters)).ToString() : "0.0")}%)",
-            //                        Children = new List<object>() // Empty for now, can be populated as needed
-            //                    }).ToListAsync();
-
-            //return result;
-
-            return new List<VoterTurnOutSlotWise>();
-        }
-
+        //    return result;
+        //}
 
         //public async Task<List<VoterTurnOutSlotWise>> GetVoterTurnOutSlotBasedReport(string stateMasterId)
         //{
@@ -16109,6 +16105,67 @@ namespace EAMS_DAL.Repository
 
         //    return eventActivityList;
         //}
+        public async Task<List<VoterTurnOutSlotWise>> GetVoterTurnOutSlotBasedReport(string stateMasterId, string electionTypeMasterId)
+        {
+            int stateMasterIdInt = Convert.ToInt32(stateMasterId);
+            int electionTypeMasterIdInt = Convert.ToInt32(electionTypeMasterId);
+
+            // Fetch all slots from SlotManagementMaster
+            var allSlots = await _context.SlotManagementMaster
+                .Where(s => s.StateMasterId == stateMasterIdInt && s.ElectionTypeMasterId == electionTypeMasterIdInt)
+                .OrderBy(s => s.SlotSequenceNumber)
+                .Select(s => new
+                {
+                    SlotLabel = $"{s.StartTime:hh\\:mm tt} to {s.EndTime:hh\\:mm tt}",
+                    s.SlotSequenceNumber
+                }).ToListAsync();
+
+            var result = await (from dt in _context.DistrictMaster
+                                where dt.StateMasterId == stateMasterIdInt
+                                join bt in _context.BoothMaster
+                                    on dt.DistrictMasterId equals bt.DistrictMasterId
+                                join pl in _context.PollDetails
+                                    on bt.BoothMasterId equals pl.BoothMasterId
+                                where pl.ElectionTypeMasterId == electionTypeMasterIdInt
+                                orderby pl.VotesPolledRecivedTime descending // Latest record first
+                                group new { dt, bt, pl } by new { dt.DistrictMasterId, dt.DistrictName, pl.StartTime, pl.EndTime } into slotGroup
+                                select new
+                                {
+                                    DistrictName = slotGroup.Key.DistrictName,
+                                    DistrictMasterId = slotGroup.Key.DistrictMasterId,
+                                    SlotLabel = $"{slotGroup.Key.StartTime:hh\\:mm tt} to {slotGroup.Key.EndTime:hh\\:mm tt}",
+                                    TotalVotes = slotGroup.Sum(x => x.pl.VotesPolled ?? 0),
+                                    TotalVoters = slotGroup.Sum(x => x.bt.TotalVoters ?? 0),
+                                    Percentage = slotGroup.Sum(x => x.pl.VotesPolled ?? 0) * 100.0 /
+                                                 (slotGroup.Sum(x => x.bt.TotalVoters ?? 0) > 0 ? slotGroup.Sum(x => x.bt.TotalVoters ?? 0) : 1)
+                                }).ToListAsync();
+
+            // Map results to include all slots
+            var voterTurnOutReport = result
+                .GroupBy(r => new { r.DistrictName, r.DistrictMasterId }) // Group by DistrictName and DistrictMasterId
+                .Select(g => new VoterTurnOutSlotWise
+                {
+                    Key = GenerateRandomAlphanumericString(6),
+                    MasterId = g.Key.DistrictMasterId,
+                    Name = g.Key.DistrictName,
+                    Type = "District",
+                    SlotVotes = allSlots.Select(slot =>
+                    {
+                        var slotData = g.FirstOrDefault(r => r.SlotLabel == slot.SlotLabel);
+                        return slotData != null
+                            ? $"{slotData.TotalVotes} ({slotData.Percentage:F2}%)"
+                            : $": 0 (0.00%)";
+                    }).ToArray(),
+                    TotalVoters = g.Sum(r => r.TotalVoters).ToString(),
+                    VotesTillNow = $"Total Votes: {g.Sum(r => r.TotalVotes)} " +
+                                   $"({(g.Sum(r => r.TotalVotes) * 100.0 / g.Sum(r => r.TotalVoters)):F2}%)",
+                    Children = new List<object>() // Add nested data if needed
+                }).ToList();
+
+            return voterTurnOutReport;
+
+        }
+
         public async Task<List<AssemblyVoterTurnOutSlotWise>> GetSlotVTReporttAssemblyWise(string stateId, string districtId, string electionTypeMasterId)
         {
             var eventActivityList = new List<AssemblyVoterTurnOutSlotWise>();
@@ -20701,7 +20758,7 @@ namespace EAMS_DAL.Repository
                                            PartyName = groupedResults.FirstOrDefault().k.PartyName,
                                            IsCC = groupedResults.FirstOrDefault().fourthLevelH.IsCC,
                                            IsNN = groupedResults.FirstOrDefault().fourthLevelH.IsNN,
-                                           IsNOTA= groupedResults.FirstOrDefault().k.IsNOTA,
+                                           IsNOTA = groupedResults.FirstOrDefault().k.IsNOTA,
                                            IsWinner = groupedResults.FirstOrDefault().result != null
                                                       ? groupedResults.FirstOrDefault().result.IsWinner
                                                       : false,
