@@ -8808,7 +8808,7 @@ namespace EAMS_DAL.Repository
                                 from election in electionGroup.DefaultIfEmpty()
                                 where district.StateMasterId == stateMasterId &&
                                       booth.BoothStatus == true &&
-                                    !string.IsNullOrWhiteSpace(booth.AssignedTo)&&
+                                    !string.IsNullOrWhiteSpace(booth.AssignedTo) &&
                                       district.DistrictStatus == true
                                 // Exclude booths where event activity is completed
                                 && (election == null || (election != null && (
@@ -8834,7 +8834,7 @@ namespace EAMS_DAL.Repository
                                 } into g
                                 select new EventActivityCount
                                 {
-                                    Key =$" {stateMasterId }{ g.Key.DistrictName} {g.Key.DistrictMasterId}",
+                                    Key = $" {stateMasterId}{g.Key.DistrictName} {g.Key.DistrictMasterId}",
                                     MasterId = g.Key.DistrictMasterId,
                                     Name = g.Key.DistrictName,
                                     Type = "District",
@@ -8946,7 +8946,7 @@ namespace EAMS_DAL.Repository
                                 } into g
                                 select new AssemblyEventActivityCount
                                 {
-                                    Key = $"{stateMasterId}{ districtMasterId } {g.Key.AssemblyMasterId }{ g.Key.AssemblyName}", // Generate different key for each record
+                                    Key = $"{stateMasterId}{districtMasterId} {g.Key.AssemblyMasterId}{g.Key.AssemblyName}", // Generate different key for each record
                                     MasterId = g.Key.AssemblyMasterId,
                                     StateMasterId = stateMasterId,
                                     DistrictMasterId = districtMasterId,
@@ -16120,24 +16120,28 @@ namespace EAMS_DAL.Repository
                     s.SlotSequenceNumber
                 }).ToListAsync();
 
+            // Direct query from DB to include all districts and poll data
             var result = await (from dt in _context.DistrictMaster
                                 where dt.StateMasterId == stateMasterIdInt
                                 join bt in _context.BoothMaster
-                                    on dt.DistrictMasterId equals bt.DistrictMasterId
+                                    on dt.DistrictMasterId equals bt.DistrictMasterId into boothGroup
+                                from bt in boothGroup.DefaultIfEmpty()
                                 join pl in _context.PollDetails
-                                    on bt.BoothMasterId equals pl.BoothMasterId
-                                where pl.ElectionTypeMasterId == electionTypeMasterIdInt
-                                orderby pl.VotesPolledRecivedTime descending // Latest record first
+                                    on bt.BoothMasterId equals pl.BoothMasterId into pollGroup
+                                from pl in pollGroup.DefaultIfEmpty()
+                                where (pl == null || pl.ElectionTypeMasterId == electionTypeMasterIdInt) && bt.ElectionTypeMasterId == electionTypeMasterIdInt
                                 group new { dt, bt, pl } by new { dt.DistrictMasterId, dt.DistrictName, pl.StartTime, pl.EndTime } into slotGroup
                                 select new
                                 {
                                     DistrictName = slotGroup.Key.DistrictName,
                                     DistrictMasterId = slotGroup.Key.DistrictMasterId,
-                                    SlotLabel = $"{slotGroup.Key.StartTime:hh\\:mm tt} to {slotGroup.Key.EndTime:hh\\:mm tt}",
-                                    TotalVotes = slotGroup.Sum(x => x.pl.VotesPolled ?? 0),
-                                    TotalVoters = slotGroup.Sum(x => x.bt.TotalVoters ?? 0),
-                                    Percentage = slotGroup.Sum(x => x.pl.VotesPolled ?? 0) * 100.0 /
-                                                 (slotGroup.Sum(x => x.bt.TotalVoters ?? 0) > 0 ? slotGroup.Sum(x => x.bt.TotalVoters ?? 0) : 1)
+                                    SlotLabel = slotGroup.Key.StartTime != null && slotGroup.Key.EndTime != null
+                                        ? $"{slotGroup.Key.StartTime:hh\\:mm tt} to {slotGroup.Key.EndTime:hh\\:mm tt}"
+                                        : null,
+                                    TotalVotes = slotGroup.Sum(x => x.pl != null ? x.pl.VotesPolled ?? 0 : 0),
+                                    TotalVoters = slotGroup.Sum(x => x.bt != null ? x.bt.TotalVoters ?? 0 : 0),
+                                    Percentage = slotGroup.Sum(x => x.pl != null ? x.pl.VotesPolled ?? 0 : 0) * 100.0 /
+                                                 (slotGroup.Sum(x => x.bt != null ? x.bt.TotalVoters ?? 0 : 1))
                                 }).ToListAsync();
 
             // Map results to include all slots
@@ -16145,7 +16149,7 @@ namespace EAMS_DAL.Repository
                 .GroupBy(r => new { r.DistrictName, r.DistrictMasterId }) // Group by DistrictName and DistrictMasterId
                 .Select(g => new VoterTurnOutSlotWise
                 {
-                    Key = GenerateRandomAlphanumericString(6),
+                    Key = $"{stateMasterIdInt}{g.Key.DistrictName}{electionTypeMasterId}{g.Key.DistrictMasterId}",
                     MasterId = g.Key.DistrictMasterId,
                     Name = g.Key.DistrictName,
                     Type = "District",
@@ -16157,21 +16161,22 @@ namespace EAMS_DAL.Repository
                             : $"0 (0.00%)";
                     }).ToArray(),
                     TotalVoters = g.Sum(r => r.TotalVoters).ToString(),
-                    VotesTillNow = $"{g.Sum(r => r.TotalVotes)} " +
-                                   $"({(g.Sum(r => r.TotalVotes) * 100.0 / g.Sum(r => r.TotalVoters)):F2}%)",
+                    VotesTillNow = g.Any()
+                        ? $"{g.Sum(r => r.TotalVotes)} " +
+                          $"({(g.Sum(r => r.TotalVotes) * 100.0 / g.Sum(r => r.TotalVoters)):F2}%)"
+                        : "0 (0.00%)",
                     Children = new List<object>() // Add nested data if needed
-                }).ToList();
+                }).OrderBy(d => d.Name).ToList();
 
             return voterTurnOutReport;
-
         }
 
         public async Task<List<AssemblyVoterTurnOutSlotWise>> GetSlotVTReporttAssemblyWise(string stateId, string districtId, string electionTypeMasterId)
         {
-          
+
             int stateMasterIdInt = Convert.ToInt32(stateId);
-            int districtMasterIdInt = Convert.ToInt32(districtId);
             int electionTypeMasterIdInt = Convert.ToInt32(electionTypeMasterId);
+            int districtMasterIdInt = Convert.ToInt32(districtId);
 
             // Fetch all slots from SlotManagementMaster
             var allSlots = await _context.SlotManagementMaster
@@ -16183,24 +16188,28 @@ namespace EAMS_DAL.Repository
                     s.SlotSequenceNumber
                 }).ToListAsync();
 
-            var result = await (from asm in _context.AssemblyMaster
-                                where asm.DistrictMasterId == districtMasterIdInt
+            // Direct query from DB to include all districts and poll data
+            var result = await (from assm in _context.AssemblyMaster
+                                where assm.DistrictMasterId == districtMasterIdInt && assm.ElectionTypeMasterId==electionTypeMasterIdInt
                                 join bt in _context.BoothMaster
-                                    on asm.DistrictMasterId equals bt.DistrictMasterId
+                                    on assm.AssemblyMasterId equals bt.AssemblyMasterId into boothGroup
+                                from bt in boothGroup.DefaultIfEmpty()
                                 join pl in _context.PollDetails
-                                    on bt.BoothMasterId equals pl.BoothMasterId
-                                where pl.ElectionTypeMasterId == electionTypeMasterIdInt 
-                                orderby pl.VotesPolledRecivedTime descending // Latest record first
-                                group new { asm, bt, pl } by new { asm.AssemblyMasterId, asm.AssemblyName, pl.StartTime, pl.EndTime } into slotGroup
+                                    on bt.BoothMasterId equals pl.BoothMasterId into pollGroup
+                                from pl in pollGroup.DefaultIfEmpty()
+                                where pl == null || pl.ElectionTypeMasterId == electionTypeMasterIdInt  
+                                group new { assm, bt, pl } by new { assm.AssemblyMasterId, assm.AssemblyName, pl.StartTime, pl.EndTime } into slotGroup
                                 select new
                                 {
-                                   AssemblyName = slotGroup.Key.AssemblyName,
+                                    AssemblyName = slotGroup.Key.AssemblyName,
                                     AssemblyMasterId = slotGroup.Key.AssemblyMasterId,
-                                    SlotLabel = $"{slotGroup.Key.StartTime:hh\\:mm tt} to {slotGroup.Key.EndTime:hh\\:mm tt}",
-                                    TotalVotes = slotGroup.Sum(x => x.pl.VotesPolled ?? 0),
-                                    TotalVoters = slotGroup.Sum(x => x.bt.TotalVoters ?? 0),
-                                    Percentage = slotGroup.Sum(x => x.pl.VotesPolled ?? 0) * 100.0 /
-                                                 (slotGroup.Sum(x => x.bt.TotalVoters ?? 0) > 0 ? slotGroup.Sum(x => x.bt.TotalVoters ?? 0) : 1)
+                                    SlotLabel = slotGroup.Key.StartTime != null && slotGroup.Key.EndTime != null
+                                        ? $"{slotGroup.Key.StartTime:hh\\:mm tt} to {slotGroup.Key.EndTime:hh\\:mm tt}"
+                                        : null,
+                                    TotalVotes = slotGroup.Sum(x => x.pl != null ? x.pl.VotesPolled ?? 0 : 0),
+                                    TotalVoters = slotGroup.Sum(x => x.bt != null ? x.bt.TotalVoters ?? 0 : 0),
+                                    Percentage = slotGroup.Sum(x => x.pl != null ? x.pl.VotesPolled ?? 0 : 0) * 100.0 /
+                                                 (slotGroup.Sum(x => x.bt != null ? x.bt.TotalVoters ?? 0 : 1))
                                 }).ToListAsync();
 
             // Map results to include all slots
@@ -16208,8 +16217,9 @@ namespace EAMS_DAL.Repository
                 .GroupBy(r => new { r.AssemblyName, r.AssemblyMasterId }) // Group by DistrictName and DistrictMasterId
                 .Select(g => new AssemblyVoterTurnOutSlotWise
                 {
-                    Key = $"{g.Key.AssemblyName}{g.Key.AssemblyMasterId}{stateMasterIdInt}{electionTypeMasterId}",
+                    Key = $"{g.Key.AssemblyMasterId}{stateMasterIdInt}{g.Key.AssemblyName}{electionTypeMasterId}{districtMasterIdInt}",
                     MasterId = g.Key.AssemblyMasterId,
+                    DistrictMasterId = districtMasterIdInt,
                     Name = g.Key.AssemblyName,
                     Type = "Assembly",
                     SlotVotes = allSlots.Select(slot =>
@@ -16220,10 +16230,12 @@ namespace EAMS_DAL.Repository
                             : $"0 (0.00%)";
                     }).ToArray(),
                     TotalVoters = g.Sum(r => r.TotalVoters).ToString(),
-                    VotesTillNow = $"{g.Sum(r => r.TotalVotes)} " +
-                                   $"({(g.Sum(r => r.TotalVotes) * 100.0 / g.Sum(r => r.TotalVoters)):F2}%)",
+                    VotesTillNow = g.Any()
+                        ? $"{g.Sum(r => r.TotalVotes)} " +
+                          $"({(g.Sum(r => r.TotalVotes) * 100.0 / g.Sum(r => r.TotalVoters)):F2}%)"
+                        : "0 (0.00%)",
                     Children = new List<object>() // Add nested data if needed
-                }).ToList();
+                }).OrderBy(d => d.Name).ToList();
 
             return voterTurnOutReport;
 
@@ -16280,6 +16292,7 @@ namespace EAMS_DAL.Repository
 
         //    return eventActivityList;
         //}
+
         public async Task<List<BoothWiseVoterTurnOutSlotWise>> GetSlotVTReportBoothWise(string stateId, string districtId, string assemblyId, string electionTypeMasterId)
         {
             int stateMasterIdInt = Convert.ToInt32(stateId);
@@ -16297,28 +16310,29 @@ namespace EAMS_DAL.Repository
                     s.SlotSequenceNumber
                 }).ToListAsync();
 
-            var result = await ( 
-                                from bt in _context.BoothMaster.Where(d=>d.DistrictMasterId==districtMasterIdInt
-                                &&d.AssemblyMasterId== assemblyMasterIdInt&&d.ElectionTypeMasterId== electionTypeMasterIdInt)                                   
+            var result = await (from bt in _context.BoothMaster
+                                where bt.AssemblyMasterId == assemblyMasterIdInt && bt.DistrictMasterId == districtMasterIdInt && bt.ElectionTypeMasterId == electionTypeMasterIdInt
                                 join pl in _context.PollDetails
-                                    on bt.BoothMasterId equals pl.BoothMasterId
-                                where pl.ElectionTypeMasterId == electionTypeMasterIdInt
-                                orderby pl.VotesPolledRecivedTime descending // Latest record first
-                                group new {bt, pl } by new { bt.BoothMasterId, bt.BoothName,bt.BoothNoAuxy, pl.StartTime, pl.EndTime } into slotGroup
+                                    on bt.BoothMasterId equals pl.BoothMasterId into pollGroup
+                                from pl in pollGroup.DefaultIfEmpty()
+                                where pl == null || pl.ElectionTypeMasterId == electionTypeMasterIdInt
+                                group new { bt, pl } by new { bt.BoothMasterId, bt.BoothName, pl.StartTime, pl.EndTime } into slotGroup
                                 select new
                                 {
-                                    BoothName = $"{slotGroup.Key.BoothName} {slotGroup.Key.BoothNoAuxy}",
+                                    BoothName = slotGroup.Key.BoothName,
                                     BoothMasterId = slotGroup.Key.BoothMasterId,
-                                    SlotLabel = $"{slotGroup.Key.StartTime:hh\\:mm tt} to {slotGroup.Key.EndTime:hh\\:mm tt}",
-                                    TotalVotes = slotGroup.Sum(x => x.pl.VotesPolled ?? 0),
-                                    TotalVoters = slotGroup.Sum(x => x.bt.TotalVoters ?? 0),
-                                    Percentage = slotGroup.Sum(x => x.pl.VotesPolled ?? 0) * 100.0 /
-                                                 (slotGroup.Sum(x => x.bt.TotalVoters ?? 0) > 0 ? slotGroup.Sum(x => x.bt.TotalVoters ?? 0) : 1)
-                                }).ToListAsync();
+                                    SlotLabel = slotGroup.Key.StartTime != null && slotGroup.Key.EndTime != null
+                                        ? $"{slotGroup.Key.StartTime:hh\\:mm tt} to {slotGroup.Key.EndTime:hh\\:mm tt}"
+                                        : null,
+                                    TotalVotes = slotGroup.Sum(x => x.pl != null ? x.pl.VotesPolled ?? 0 : 0),
+                                    TotalVoters = slotGroup.Sum(x => x.bt != null ? x.bt.TotalVoters ?? 0 : 0),
+                                    Percentage = slotGroup.Sum(x => x.pl != null ? x.pl.VotesPolled ?? 0 : 0) * 100.0 /
+                                                 (slotGroup.Sum(x => x.bt != null ? x.bt.TotalVoters ?? 0 : 1))
+                                }).OrderBy(r => r.BoothName).ToListAsync();
 
             // Map results to include all slots
             var voterTurnOutReport = result
-                .GroupBy(r => new { r.BoothName, r.BoothMasterId }) // Group by DistrictName and DistrictMasterId
+                .GroupBy(r => new { r.BoothName, r.BoothMasterId })
                 .Select(g => new BoothWiseVoterTurnOutSlotWise
                 {
                     Key = $"{g.Key.BoothMasterId}{stateMasterIdInt}{g.Key.BoothName}{electionTypeMasterId}",
@@ -16333,12 +16347,15 @@ namespace EAMS_DAL.Repository
                             : $"0 (0.00%)";
                     }).ToArray(),
                     TotalVoters = g.Sum(r => r.TotalVoters).ToString(),
-                    VotesTillNow = $"{g.Sum(r => r.TotalVotes)} " +
-                                   $"({(g.Sum(r => r.TotalVotes) * 100.0 / g.Sum(r => r.TotalVoters)):F2}%)", 
-                }).ToList();
+                    VotesTillNow = g.Any()
+                        ? $"{g.Sum(r => r.TotalVotes)} " +
+                          $"({(g.Sum(r => r.TotalVotes) * 100.0 / g.Sum(r => r.TotalVoters)):F2}%)"
+                        : "0 (0.00%)"
+                }).OrderBy(d => d.Name).ToList();
 
             return voterTurnOutReport;
         }
+
 
         #endregion 
 
