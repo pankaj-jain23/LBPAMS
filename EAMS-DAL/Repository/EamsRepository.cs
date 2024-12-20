@@ -21797,6 +21797,7 @@ namespace EAMS_DAL.Repository
                                   CandidateFatherName = d.KycRecord.FatherName,
                                   KycMasterId = d.KycRecord.KycMasterId
                               }).ToListAsync();
+
         }
 
         //Panch Elected
