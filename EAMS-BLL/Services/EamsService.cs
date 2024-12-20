@@ -2380,6 +2380,10 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetResultByFourthLevelHMasterId(fourthLevelHMasterId);
         }
+        public async Task<ResultDeclarationBoothWardList> GetResultHistoryByFourthLevelHMasterId(int fourthLevelHMasterId)
+        {
+            return await _eamsRepository.GetResultByFourthLevelHMasterId(fourthLevelHMasterId);
+        }
         public async Task<List<BoothResultList>> GetBoothResultListByFourthLevelId(int fourthlevelMasterId)
         {
             return await _eamsRepository.GetBoothResultListByFourthLevelId(fourthlevelMasterId);

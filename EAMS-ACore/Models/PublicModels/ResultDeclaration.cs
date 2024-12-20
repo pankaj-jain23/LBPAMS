@@ -225,6 +225,11 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
+        public int ResultDeclarationHistoryMasterId
+        {
+            get;
+            set;
+        }
     }
 
     public class BoothResultList

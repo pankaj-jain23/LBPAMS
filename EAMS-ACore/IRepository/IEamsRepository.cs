@@ -452,6 +452,7 @@ namespace EAMS_ACore.IRepository
         Task<Dictionary<int, string>> GetCandidateNameByKycMasterId(List<int> kycMasterIds);
         Task<ResultDeclarationBoothWardList> GetResultByBoothId(int boothMasterId);
         Task<ResultDeclarationBoothWardList> GetResultByFourthLevelHMasterId(int fourthLevelHMasterId);
+        Task<ResultDeclarationBoothWardList> GetResultHistoryByFourthLevelHMasterId(int fourthLevelHMasterId);
         Task<List<BoothResultList>> GetBoothResultListByFourthLevelId(int fourthlevelMasterId);
         Task<ResultDeclarationBoothWardList> GetResultByWardId(int wardMasterId);
         Task<List<BoothResultList>> GetWardResultListByFourthLevelId(int fourthlevelMasterId);

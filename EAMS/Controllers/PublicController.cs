@@ -1021,6 +1021,23 @@ namespace EAMS.Controllers
 
         }
 
+        [HttpGet("GetResultHistoryByFourthLevelHMasterId")]
+        //[Authorize]
+        public async Task<IActionResult> GetResultHistoryByFourthLevelHMasterId(int fourthLevelHMasterId)
+        {
+            if (fourthLevelHMasterId is 0)
+            {
+                return BadRequest("Fourth Level H MasterId is Required");
+            }
+            var result = await _eamsService.GetResultHistoryByFourthLevelHMasterId(fourthLevelHMasterId);
+            if (result is null)
+            {
+                return BadRequest();
+            }
+            return Ok(result);
+
+        }
+
         [HttpGet("GetBoothResultListByFourthLevelId")]
         //[Authorize]
         public async Task<IActionResult> GetBoothResultListByFourthLevelId(int fourthLevelHMasterId)

@@ -393,6 +393,7 @@ namespace EAMS_ACore.Interfaces
         Task<ResultDeclaration> GetResultDeclarationById(int resultDeclarationMasterId);
         Task<ResultDeclarationBoothWardList> GetResultByBoothId(int boothId);
         Task<ResultDeclarationBoothWardList> GetResultByFourthLevelHMasterId(int fourthLevelHMasterId);
+        Task<ResultDeclarationBoothWardList> GetResultHistoryByFourthLevelHMasterId(int fourthLevelHMasterId);
         Task<ResultDeclarationBoothWardList> GetResultByWardId(int wardMasterId);
         Task<List<BoothResultList>> GetBoothResultListByFourthLevelId(int fourthlevelMasterId);
         Task<List<BoothResultList>> GetWardResultListByFourthLevelId(int fourthlevelMasterId);
