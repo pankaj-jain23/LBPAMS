@@ -8729,19 +8729,81 @@ namespace EAMS_DAL.Repository
             return result;
         }
 
+        //public async Task<List<EventActivityCount>> GetPendingEventListDistrictWiseById(int stateMasterId, int electionTypeMasterId)
+        //{
+        //    // Get grouped event counts by district
+        //    var result = await (from district in _context.DistrictMaster
+        //                        join booth in _context.BoothMaster
+        //                             on district.DistrictMasterId equals booth.DistrictMasterId
+        //                        join election in _context.ElectionInfoMaster
+        //                             on booth.BoothMasterId equals election.BoothMasterId into electionGroup
+        //                        from election in electionGroup.DefaultIfEmpty()
+        //                        where district.StateMasterId == stateMasterId &&
+        //                              booth.BoothStatus == true &&
+        //                              booth.AssignedTo != null &&
+        //                              booth.ElectionTypeMasterId == electionTypeMasterId &&
+        //                              district.DistrictStatus == true
+        //                        // Exclude booths where event activity is completed
+        //                        && (election == null || (election != null && (
+        //                               !election.IsPartyDispatched ||
+        //                               !election.IsPartyReached ||
+        //                               !election.IsSetupOfPolling ||
+        //                               !election.IsMockPollDone ||
+        //                               !election.IsPollStarted ||
+        //                               !election.IsPollEnded ||
+        //                               !election.IsMCESwitchOff ||
+        //                               !election.IsPartyDeparted ||
+        //                               !election.IsEVMDeposited ||
+        //                               !election.IsPartyReachedCollectionCenter ||
+        //                               !election.IsVoterInQueue ||
+        //                               !election.IsFinalVote ||
+        //                               !election.IsVoterTurnOut
+        //                        )))
+        //                        group new { booth, election } by new
+        //                        {
+        //                            district.DistrictMasterId,
+        //                            district.DistrictCode,
+        //                            district.DistrictName
+        //                        } into g
+        //                        select new EventActivityCount
+        //                        {
+        //                            Key = stateMasterId + g.Key.DistrictMasterId + g.Key.DistrictName,
+        //                            MasterId = g.Key.DistrictMasterId,
+        //                            Name = g.Key.DistrictName,
+        //                            Type = "District",
+        //                            PartyDispatch = g.Sum(x => x.election != null && x.election.IsPartyDispatched ? 0 : 1).ToString(),
+        //                            PartyArrived = g.Sum(x => x.election != null && x.election.IsPartyReached ? 0 : 1).ToString(),
+        //                            SetupPollingStation = g.Sum(x => x.election != null && x.election.IsSetupOfPolling ? 0 : 1).ToString(),
+        //                            MockPollDone = g.Sum(x => x.election != null && x.election.IsMockPollDone ? 0 : 1).ToString(),
+        //                            PollStarted = g.Sum(x => x.election != null && x.election.IsPollStarted ? 0 : 1).ToString(),
+        //                            PollEnded = g.Sum(x => x.election != null && x.election.IsPollEnded ? 0 : 1).ToString(),
+        //                            MCEVMOff = g.Sum(x => x.election != null && x.election.IsMCESwitchOff ? 0 : 1).ToString(),
+        //                            PartyDeparted = g.Sum(x => x.election != null && x.election.IsPartyDeparted ? 0 : 1).ToString(),
+        //                            EVMDeposited = g.Sum(x => x.election != null && x.election.IsEVMDeposited ? 0 : 1).ToString(),
+        //                            PartyReachedAtCollection = g.Sum(x => x.election != null && x.election.IsPartyReachedCollectionCenter ? 0 : 1).ToString(),
+        //                            QueueValue = g.Sum(x => x.election != null && x.election.IsVoterInQueue ? 0 : 1).ToString(),
+        //                            FinalVotesValue = g.Sum(x => x.election != null && x.election.IsFinalVote ? 0 : 1).ToString(),
+        //                            VoterTurnOutValue = g.Sum(x => x.election != null && x.election.IsVoterTurnOut ? 0 : 1).ToString(),
+        //                            TotalSo = g.Sum(x => x.election != null ? x.election.NoOfPollingAgents ?? 0 : 0),// Sum of NoOfPollingAgents from BoothMaster
+        //                            Children = new List<object>() // Placeholder for children if needed
+        //                        }).OrderBy(d => d.Name).ToListAsync();
+        //    return result;
+        //}
+
         public async Task<List<EventActivityCount>> GetPendingEventListDistrictWiseById(int stateMasterId, int electionTypeMasterId)
         {
             // Get grouped event counts by district
             var result = await (from district in _context.DistrictMaster
                                 join booth in _context.BoothMaster
-                                     on district.DistrictMasterId equals booth.DistrictMasterId
+                                     on new { district.DistrictMasterId, ElectionTypeMasterId = electionTypeMasterId }
+                                     equals new { booth.DistrictMasterId, booth.ElectionTypeMasterId }
                                 join election in _context.ElectionInfoMaster
-                                     on booth.BoothMasterId equals election.BoothMasterId into electionGroup
+                                     on new { booth.BoothMasterId, ElectionTypeMasterId = electionTypeMasterId }
+                                     equals new { election.BoothMasterId, election.ElectionTypeMasterId } into electionGroup
                                 from election in electionGroup.DefaultIfEmpty()
                                 where district.StateMasterId == stateMasterId &&
                                       booth.BoothStatus == true &&
                                       booth.AssignedTo != null &&
-                                      booth.ElectionTypeMasterId == electionTypeMasterId &&
                                       district.DistrictStatus == true
                                 // Exclude booths where event activity is completed
                                 && (election == null || (election != null && (
@@ -8789,7 +8851,6 @@ namespace EAMS_DAL.Repository
                                 }).OrderBy(d => d.Name).ToListAsync();
             return result;
         }
-
 
 
 
