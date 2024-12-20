@@ -25,6 +25,7 @@
         public int? AssemblyCode { get; set; }
         public string[] SlotVotes { get; set; }
         public string? VotesTillNow { get; set; }
+        public string? TotalVoters { get; set; }
         public List<object> Children { get; set; }
     }
     public class BoothWiseVoterTurnOutSlotWise
@@ -35,5 +36,6 @@
         public string Type { get; set; }
         public string? VotesTillNow { get; set; }
         public string[] SlotVotes { get; set; }
+        public string? TotalVoters { get; set; }
     }
 }
