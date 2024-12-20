@@ -21732,7 +21732,7 @@ namespace EAMS_DAL.Repository
                         from assembly in assemblyJoin.DefaultIfEmpty()
                         join fourthLevel in _context.FourthLevelH on kyc.FourthLevelHMasterId equals fourthLevel.FourthLevelHMasterId into fourthLevelJoin
                         from fourthLevel in fourthLevelJoin.DefaultIfEmpty()
-                        where kyc.IsUnOppossed == false
+                        where kyc.IsUnOppossed == false && kyc.IsNOTA == false
                               && kyc.GPPanchayatWardsMasterId == 0
                               && !_context.ResultDeclaration.Select(rd => rd.KycMasterId).Distinct().Contains(kyc.KycMasterId) // Exclude records present in ResultDeclaration
                         select new
@@ -21766,36 +21766,37 @@ namespace EAMS_DAL.Repository
                 reportType = "Sub Local Bodies";
             }
 
-            // Directly project results without grouping
-            return await query.Select(d => new ConsolidatedUnOpposedPanchSarPanchAndNoKycCandidateReportList
-            {
-                Header = resultDeclaration.FourthLevelHMasterId != 0
-                    ? $"{d.StateRecord.StateName} ({d.StateRecord.StateCode}) {d.DistrictRecord.DistrictName} ({d.DistrictRecord.DistrictCode}) {d.AssemblyRecord.AssemblyName} ({d.AssemblyRecord.AssemblyCode}) {d.FourthLevelRecord.HierarchyName} ({d.FourthLevelRecord.HierarchyCode})"
-                    : resultDeclaration.AssemblyMasterId != 0
-                        ? $"{d.StateRecord.StateName} ({d.StateRecord.StateCode}) {d.DistrictRecord.DistrictName} ({d.DistrictRecord.DistrictCode}) {d.AssemblyRecord.AssemblyName} ({d.AssemblyRecord.AssemblyCode})"
-                        : resultDeclaration.DistrictMasterId != 0
-                            ? $"{d.StateRecord.StateName} ({d.StateRecord.StateCode}) {d.DistrictRecord.DistrictName} ({d.DistrictRecord.DistrictCode})"
-                            : $"{d.StateRecord.StateName} ({d.StateRecord.StateCode})",
+            // Sort the query by HierarchyCode in ascending order and project the results
+            return await query.OrderBy(d => d.FourthLevelRecord.HierarchyCode)
+                              .Select(d => new ConsolidatedUnOpposedPanchSarPanchAndNoKycCandidateReportList
+                              {
+                                  Header = resultDeclaration.FourthLevelHMasterId != 0
+                                      ? $"{d.StateRecord.StateName} ({d.StateRecord.StateCode}) {d.DistrictRecord.DistrictName} ({d.DistrictRecord.DistrictCode}) {d.AssemblyRecord.AssemblyName} ({d.AssemblyRecord.AssemblyCode}) {d.FourthLevelRecord.HierarchyName} ({d.FourthLevelRecord.HierarchyCode})"
+                                      : resultDeclaration.AssemblyMasterId != 0
+                                          ? $"{d.StateRecord.StateName} ({d.StateRecord.StateCode}) {d.DistrictRecord.DistrictName} ({d.DistrictRecord.DistrictCode}) {d.AssemblyRecord.AssemblyName} ({d.AssemblyRecord.AssemblyCode})"
+                                          : resultDeclaration.DistrictMasterId != 0
+                                              ? $"{d.StateRecord.StateName} ({d.StateRecord.StateCode}) {d.DistrictRecord.DistrictName} ({d.DistrictRecord.DistrictCode})"
+                                              : $"{d.StateRecord.StateName} ({d.StateRecord.StateCode})",
 
-                Title = resultDeclaration.StateMasterId != 0 && resultDeclaration.DistrictMasterId == 0 && resultDeclaration.AssemblyMasterId == 0 && resultDeclaration.FourthLevelHMasterId == 0
-                    ? d.DistrictRecord.DistrictName
-                    : resultDeclaration.StateMasterId != 0 && resultDeclaration.DistrictMasterId != 0 && resultDeclaration.AssemblyMasterId == 0 && resultDeclaration.FourthLevelHMasterId == 0
-                        ? d.DistrictRecord.DistrictName
-                        : resultDeclaration.StateMasterId != 0 && resultDeclaration.DistrictMasterId != 0 && resultDeclaration.AssemblyMasterId != 0 && resultDeclaration.FourthLevelHMasterId == 0
-                            ? d.AssemblyRecord.AssemblyName
-                            : d.FourthLevelRecord.HierarchyName,
+                                  Title = resultDeclaration.StateMasterId != 0 && resultDeclaration.DistrictMasterId == 0 && resultDeclaration.AssemblyMasterId == 0 && resultDeclaration.FourthLevelHMasterId == 0
+                                      ? d.DistrictRecord.DistrictName
+                                      : resultDeclaration.StateMasterId != 0 && resultDeclaration.DistrictMasterId != 0 && resultDeclaration.AssemblyMasterId == 0 && resultDeclaration.FourthLevelHMasterId == 0
+                                          ? d.DistrictRecord.DistrictName
+                                          : resultDeclaration.StateMasterId != 0 && resultDeclaration.DistrictMasterId != 0 && resultDeclaration.AssemblyMasterId != 0 && resultDeclaration.FourthLevelHMasterId == 0
+                                              ? d.AssemblyRecord.AssemblyName
+                                              : d.FourthLevelRecord.HierarchyName,
 
-                Type = reportType,
-                Code = d.FourthLevelRecord.HierarchyCode.ToString(),
-                Name = d.FourthLevelRecord.HierarchyName,
-                StateName = d.StateRecord.StateName,
-                DistrictName = d.DistrictRecord.DistrictName,
-                AssemblyName = d.AssemblyRecord.AssemblyName,
-                FourthLevelHName = d.FourthLevelRecord.HierarchyName,
-                CandidateName = d.KycRecord.CandidateName,
-                CandidateFatherName = d.KycRecord.FatherName,
-                KycMasterId = d.KycRecord.KycMasterId
-            }).ToListAsync();
+                                  Type = reportType,
+                                  Code = d.FourthLevelRecord.HierarchyCode.ToString(),
+                                  Name = d.FourthLevelRecord.HierarchyName,
+                                  StateName = d.StateRecord.StateName,
+                                  DistrictName = d.DistrictRecord.DistrictName,
+                                  AssemblyName = d.AssemblyRecord.AssemblyName,
+                                  FourthLevelHName = d.FourthLevelRecord.HierarchyName,
+                                  CandidateName = d.KycRecord.CandidateName,
+                                  CandidateFatherName = d.KycRecord.FatherName,
+                                  KycMasterId = d.KycRecord.KycMasterId
+                              }).ToListAsync();
         }
 
         //Panch Elected
