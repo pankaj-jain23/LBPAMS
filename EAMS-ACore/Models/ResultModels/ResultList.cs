@@ -14,6 +14,11 @@ namespace EAMS_ACore.Models.ResultModels
         public int? MasterId { get; set; }
         public string Name { get; set; }
         public string Type { get; set; }
+        public string? PartyName
+        {
+            get;
+            set;
+        }
         public int? TotalWonCandidate { get; set; }
         public int? TotalVoteMargin { get; set; }
         public int? IsUnOpposed { get; set; }

@@ -22838,6 +22838,7 @@ namespace EAMS_DAL.Repository
                     MasterId = frth.FourthLevelHMasterId,
                     Name = $"{k.CandidateName} {k.FatherName}", // Concatenate CandidateName and FatherName
                     Type = "Result",
+                    PartyName = k.PartyName,
                     TotalWonCandidate = 1, // Count of won candidates in ResultDeclaration
                     TotalVoteMargin = rd.VoteMargin, // Sum of VoteMargin if rd is not null
                     IsUnOpposed = 0, // Assume 0 if not present in ResultDeclaration
