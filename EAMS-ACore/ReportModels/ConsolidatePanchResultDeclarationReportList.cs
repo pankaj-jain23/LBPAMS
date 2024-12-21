@@ -157,6 +157,11 @@ namespace EAMS_ACore.ReportModels
             get;
             set;
         }
+        public int? TotalVoters
+        {
+            get;
+            set;
+        }
     }
 
     public class ConsolidatedUnOpposedPanchSarPanchAndNoKycCandidateReportList
