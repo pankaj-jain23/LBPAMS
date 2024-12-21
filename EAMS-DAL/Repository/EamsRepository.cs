@@ -22417,6 +22417,7 @@ namespace EAMS_DAL.Repository
                     .Where(f => f.StateMasterId == stateMasterId
                             && f.DistrictMasterId == districtMasterId
                             && f.ElectionTypeMasterId == electionTypeMasterId
+                            && f.IsCC == false
                             && (!string.IsNullOrEmpty(f.AssignedToRO) || !string.IsNullOrEmpty(f.AssignedToARO)))
                     on assem.AssemblyMasterId equals fourthLevelH.AssemblyMasterId into fourthLevels
                 from f in fourthLevels.DefaultIfEmpty()
@@ -22449,6 +22450,7 @@ namespace EAMS_DAL.Repository
                                    .Where(f => f.StateMasterId == stateMasterId
                                                && f.DistrictMasterId == districtMasterId
                                                && f.AssemblyMasterId == assemblyMasterId
+                                               && f.IsCC == false
                                                && f.ElectionTypeMasterId == electionTypeMasterId
                                                && (!string.IsNullOrEmpty(f.AssignedToRO) || !string.IsNullOrEmpty(f.AssignedToARO)))
                                    .CountAsync();
@@ -22460,6 +22462,7 @@ namespace EAMS_DAL.Repository
                  from frth in _context.FourthLevelH.Where(d => d.StateMasterId == stateMasterId
                                                          && d.DistrictMasterId == districtMasterId
                                                          && d.AssemblyMasterId == assemblyMasterId
+                                                         && d.IsCC == false
                                                          && d.ElectionTypeMasterId == electionTypeMasterId)
 
                  join resultDeclaration in _context.ResultDeclaration
@@ -22502,6 +22505,7 @@ namespace EAMS_DAL.Repository
                                                              && d.DistrictMasterId == districtMasterId
                                                              && d.AssemblyMasterId == assemblyMasterId
                                                              && d.FourthLevelHMasterId == fourthLevelMasterId
+                                                             && d.IsCC == false
                                                              && d.ElectionTypeMasterId == electionTypeMasterId)
 
                 join kyc in _context.Kyc
@@ -22531,6 +22535,7 @@ namespace EAMS_DAL.Repository
                                                               && d.DistrictMasterId == districtMasterId
                                                               && d.AssemblyMasterId == assemblyMasterId
                                                               && d.FourthLevelHMasterId == fourthLevelMasterId
+                                                              && d.IsCC == false
                                                               && d.ElectionTypeMasterId == electionTypeMasterId)
 
                 join resultDeclaration in _context.ResultDeclaration
