@@ -12945,7 +12945,7 @@ namespace EAMS_DAL.Repository
             IQueryable<FourthLevelH> totalFourthlevel = _context.FourthLevelH
                 .Where(e => e.StateMasterId == stateMasterId
                 && e.ElectionTypeMasterId == electionTypeMasterId
-                &&  (e.AssignedToRO!=null ||e.AssignedToRO!=null)              
+                && (e.AssignedToRO != null || e.AssignedToRO != null)
                 );
             IQueryable<Kyc> totalUnOpposedCandidates = _context.Kyc
                .Where(e => e.StateMasterId == stateMasterId
@@ -12967,13 +12967,13 @@ namespace EAMS_DAL.Repository
                     );
                 totalFourthlevel = totalFourthlevel
                    .Where(e => e.DistrictMasterId == districtMasterId && e.ElectionTypeMasterId == electionTypeMasterId
-                  
+
                    );
                 totalUnOpposedCandidates = totalUnOpposedCandidates
-                   .Where(e => e.DistrictMasterId == districtMasterId && e.ElectionTypeMasterId == electionTypeMasterId 
+                   .Where(e => e.DistrictMasterId == districtMasterId && e.ElectionTypeMasterId == electionTypeMasterId
                    );
                 totalWinnerCandidates = totalWinnerCandidates
-                   .Where(e => e.DistrictMasterId == districtMasterId && e.ElectionTypeMasterId == electionTypeMasterId 
+                   .Where(e => e.DistrictMasterId == districtMasterId && e.ElectionTypeMasterId == electionTypeMasterId
                    );
 
             }
@@ -12992,17 +12992,17 @@ namespace EAMS_DAL.Repository
                 totalFourthlevel = totalFourthlevel
                     .Where(e => e.DistrictMasterId == districtMasterId
                     && e.AssemblyMasterId == assemblyMasterId
-                    && e.ElectionTypeMasterId == electionTypeMasterId  
+                    && e.ElectionTypeMasterId == electionTypeMasterId
                     );
                 totalUnOpposedCandidates = totalUnOpposedCandidates
                     .Where(e => e.DistrictMasterId == districtMasterId
                     && e.AssemblyMasterId == assemblyMasterId
-                    && e.ElectionTypeMasterId == electionTypeMasterId 
+                    && e.ElectionTypeMasterId == electionTypeMasterId
                     );
                 totalWinnerCandidates = totalWinnerCandidates
                     .Where(e => e.DistrictMasterId == districtMasterId
                     && e.AssemblyMasterId == assemblyMasterId
-                    && e.ElectionTypeMasterId == electionTypeMasterId 
+                    && e.ElectionTypeMasterId == electionTypeMasterId
                     );
 
             }
@@ -13025,19 +13025,19 @@ namespace EAMS_DAL.Repository
                     .Where(e => e.DistrictMasterId == districtMasterId
                     && e.AssemblyMasterId == assemblyMasterId
                     && e.FourthLevelHMasterId == fourthLevelMasterId
-                    && e.ElectionTypeMasterId == electionTypeMasterId 
+                    && e.ElectionTypeMasterId == electionTypeMasterId
                     );
                 totalUnOpposedCandidates = totalUnOpposedCandidates
                     .Where(e => e.DistrictMasterId == districtMasterId
                     && e.AssemblyMasterId == assemblyMasterId
                     && e.FourthLevelHMasterId == fourthLevelMasterId
-                    && e.ElectionTypeMasterId == electionTypeMasterId 
+                    && e.ElectionTypeMasterId == electionTypeMasterId
                     );
                 totalWinnerCandidates = totalWinnerCandidates
                     .Where(e => e.DistrictMasterId == districtMasterId
                     && e.AssemblyMasterId == assemblyMasterId
                     && e.FourthLevelHMasterId == fourthLevelMasterId
-                    && e.ElectionTypeMasterId == electionTypeMasterId 
+                    && e.ElectionTypeMasterId == electionTypeMasterId
                     );
 
             }
@@ -13125,9 +13125,9 @@ namespace EAMS_DAL.Repository
                 {
                     EventName = "Result Declaration",
                     EventAbbrName = "RD",
-                    TotalFourthLevel= totalFourthlevelCount,
-                    TotalUnOpposedCandidate= totalCandidateUnOpposedKyc,
-                    TotalWinnerCandidate= totalWinnerKyc
+                    TotalFourthLevel = totalFourthlevelCount,
+                    TotalUnOpposedCandidate = totalCandidateUnOpposedKyc,
+                    TotalWinnerCandidate = totalWinnerKyc
 
                 });
             }
@@ -15916,8 +15916,8 @@ namespace EAMS_DAL.Repository
                     SlotLabel = $"{s.StartTime:hh\\:mm tt} to {s.EndTime:hh\\:mm tt}",
                     s.SlotSequenceNumber
                 }).ToListAsync();
-              
- 
+
+
             // Fetch data and group by assembly and time slots
             var groupedData = await (from assm in _context.AssemblyMaster
                                      where assm.DistrictMasterId == districtMasterIdInt && assm.ElectionTypeMasterId == electionTypeMasterIdInt
@@ -15967,7 +15967,8 @@ namespace EAMS_DAL.Repository
                                         ? x.LatestPoll.pl.VotesPolled ?? 0 : 0)
                     }).ToList()
                 })
-                .ToList(); 
+                .ToList();
+
             // Map results to include all slots
             var voterTurnOutReport = processedData
                 .Select(g => new AssemblyVoterTurnOutSlotWise
@@ -22492,7 +22493,7 @@ namespace EAMS_DAL.Repository
             return results;
         }
 
-       
+
         public async Task<List<ResultList>> GetResultByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelMasterId, int electionTypeMasterId)
         {
             // Query 1: Get results based on Kyc
