@@ -21485,7 +21485,7 @@ namespace EAMS_DAL.Repository
                     ? ((Convert.ToDouble(d.VotesGained) / Convert.ToDouble(d.BoothTotalVoters)) * 100).ToString("0.00")
                     : "0.00",
                 TotalVoters = d.BoothTotalVoters
-            }).ToList();
+            }).OrderBy(d => Convert.ToInt32(d.Code)).ToList();
         }
 
         /// <summary>
@@ -21608,7 +21608,7 @@ namespace EAMS_DAL.Repository
                     ? ((Convert.ToDouble(d.VotesGained) / Convert.ToDouble(d.FourthLevelRecord.TotalVoters)) * 100).ToString("0.00")
                     : "0.00",
                 TotalVoters = d.FourthLevelRecord.TotalVoters
-            }).ToList();
+            }).OrderBy(d => Convert.ToInt32(d.Code)).ToList();
         }
         public async Task<List<ConsolidatedUnOpposedPanchSarPanchAndNoKycCandidateReportList>> GetConsolidatedUnOppossedSarPanchResultDeclarationReport(ResultDeclarationReportListModel resultDeclaration)
         {
@@ -21683,7 +21683,7 @@ namespace EAMS_DAL.Repository
                 CandidateFatherName = d.KycRecord.FatherName,
                 KycMasterId = d.KycRecord.KycMasterId,
                 PartyName = d.KycRecord.PartyName,
-            }).ToListAsync();
+            }).OrderBy(d => Convert.ToInt32(d.Code)).ToListAsync();
         }
 
         public async Task<List<ConsolidatedUnOpposedPanchSarPanchAndNoKycCandidateReportList>> GetConsolidatedNoKycSarPanchResultDeclarationReport(ResultDeclarationReportListModel resultDeclaration)
@@ -21761,7 +21761,7 @@ namespace EAMS_DAL.Repository
                                   CandidateName = d.KycRecord.CandidateName,
                                   CandidateFatherName = d.KycRecord.FatherName,
                                   KycMasterId = d.KycRecord.KycMasterId
-                              }).ToListAsync();
+                              }).OrderBy(d => Convert.ToInt32(d.Code)).ToListAsync();
 
         }
 
@@ -21871,7 +21871,7 @@ namespace EAMS_DAL.Repository
               VotesGainedPercentage = g.TotalVotesForWard > 0
                   ? ((Convert.ToInt32(d.VoteMargin) / (double)g.TotalVotesForWard) * 100).ToString("0.00")
                   : "0.00",
-          }))
+          })).OrderBy(d => Convert.ToInt32(d.Code))
           .ToList();
 
             return result;
@@ -22000,7 +22000,7 @@ namespace EAMS_DAL.Repository
                     ? ((Convert.ToDouble(d.VotesGained) / Convert.ToDouble(d.BoothTotalVoters)) * 100).ToString("0.00")
                     : "0.00",
                 TotalVoters = d.BoothTotalVoters
-            }).ToList();
+            }).OrderBy(d => Convert.ToInt32(d.Code)).ToList();
         }
 
         public async Task<List<ConsolidateSarPanchResultDeclarationReportList>> GetConsolidatedElectedSarPanchResultReport(ResultDeclarationReportListModel resultDeclaration)
@@ -22117,7 +22117,7 @@ namespace EAMS_DAL.Repository
                     ? ((Convert.ToDouble(d.VotesGained) / Convert.ToDouble(d.FourthLevelRecord.TotalVoters)) * 100).ToString("0.00")
                     : "0.00",
                 TotalVoters = d.FourthLevelRecord.TotalVoters
-            }).ToList();
+            }).OrderBy(d => Convert.ToInt32(d.Code)).ToList();
         }
 
         #endregion
