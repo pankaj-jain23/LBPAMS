@@ -20,6 +20,7 @@ namespace EAMS_ACore.Models.ResultModels
             set;
         }
         public int? TotalWonCandidate { get; set; }
+        public int? TotalWard { get; set; }
         public int? TotalVoteMargin { get; set; }
         public int? IsUnOpposed { get; set; }
         public List<object> Children { get; set; }
