@@ -2490,6 +2490,11 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetResultByFourthLevelId(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId, electionTypeMasterId);
         }
+
+        public async Task<List<PartyWiseResult>> GetPartyWiseResultByStateId(int stateMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.GetPartyWiseResultByStateId(stateMasterId,electionTypeMasterId);
+        }
         #endregion
     }
 }

@@ -839,10 +839,10 @@ namespace EAMS.Controllers
         }
         [HttpGet]
         [Route("GetSONamesEventWiseCount")]
-        [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,RO")]
-        public async Task<IActionResult> GetSONamesEventWiseCounts(string stateMasterId, string districtMasterId, string assemblymasterId,string electionTypeMasterId)
+        [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,LocalBodiesAdmin,RO")]
+        public async Task<IActionResult> GetSONamesEventWiseCounts(string stateMasterId, string districtMasterId, string assemblymasterId, string electionTypeMasterId)
         {
-            var eventAssemblyList = await _EAMSService.GetSONamesEventWiseCount(stateMasterId, districtMasterId, assemblymasterId,electionTypeMasterId);
+            var eventAssemblyList = await _EAMSService.GetSONamesEventWiseCount(stateMasterId, districtMasterId, assemblymasterId, electionTypeMasterId);
             if (eventAssemblyList is not null)
                 return Ok(eventAssemblyList);
             else
@@ -1106,7 +1106,7 @@ namespace EAMS.Controllers
         }
         [HttpGet("GetResultByAssemblyId")]
         [Authorize]
-        public async Task<IActionResult> GetResultByAssemblyId(int districtMasterId,int assemblyMasterId)
+        public async Task<IActionResult> GetResultByAssemblyId(int districtMasterId, int assemblyMasterId)
         {
             var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
             int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
@@ -1117,7 +1117,7 @@ namespace EAMS.Controllers
         }
         [HttpGet("GetResultByFourthLevelId")]
         [Authorize]
-        public async Task<IActionResult> GetResultByFourthLevelId(int districtMasterId, int assemblyMasterId,int fourthLevelMasterId)
+        public async Task<IActionResult> GetResultByFourthLevelId(int districtMasterId, int assemblyMasterId, int fourthLevelMasterId)
         {
             var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
             int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
@@ -1125,6 +1125,24 @@ namespace EAMS.Controllers
             var result = await _EAMSService.GetResultByFourthLevelId(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId, electionTypeMasterId);
             return Ok(result);
 
+        }
+        [HttpGet]
+        [Route("GetPartyWiseResultByStateId")]
+        public async Task<IActionResult> GetPartyWiseResultByStateId()
+        {
+            try
+            {
+                var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
+                int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
+                int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
+
+                var results = await _EAMSService.GetPartyWiseResultByStateId(stateMasterId, electionTypeMasterId);
+                return Ok(results);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
         #endregion
     }

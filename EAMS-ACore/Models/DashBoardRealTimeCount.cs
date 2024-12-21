@@ -19,6 +19,9 @@
         public decimal? FinalVotesPercentage { get; set; }
 
         public int? Count { get; set; }
+        public int? TotalWinnerCandidate {  get; set; }
+        public int? TotalUnOpposedCandidate { get;set; }
+        public int? TotalFourthLevel { get;set; }
     }
 
     public class DahboardMastersId

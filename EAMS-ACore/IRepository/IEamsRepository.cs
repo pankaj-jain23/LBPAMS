@@ -501,6 +501,7 @@ namespace EAMS_ACore.IRepository
         Task<List<ResultList>> GetResultByDistrictId(int stateMasterId, int districtMasterId, int electionTypeMasterId);
         Task<List<ResultList>> GetResultByAssemblyId(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId);
         Task<List<ResultList>> GetResultByFourthLevelId(int stateMasterId, int districtMasterId,  int assemblyMasterId, int fourthLevelMasterId, int electionTypeMasterId);
+        Task<List<PartyWiseResult>> GetPartyWiseResultByStateId(int stateMasterId, int electionTypeMasterId);
         #endregion
     }
 }
