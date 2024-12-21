@@ -6452,25 +6452,25 @@ namespace EAMS_DAL.Repository
             // Fetch the record from the ElectionInfoMaster table that matches the UpdateEventActivity fields
 
 
-            bool pollDetail = await _context.PollDetails.AnyAsync(d =>
-                d.StateMasterId == updateEventActivity.StateMasterId &&
-                d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
-                d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
-                d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
-                d.BoothMasterId == updateEventActivity.BoothMasterId &&
-                d.SlotManagementId == getLatestSlot.SlotManagementId
-            );
+            //bool pollDetail = await _context.PollDetails.AnyAsync(d =>
+            //    d.StateMasterId == updateEventActivity.StateMasterId &&
+            //    d.DistrictMasterId == updateEventActivity.DistrictMasterId &&
+            //    d.AssemblyMasterId == updateEventActivity.AssemblyMasterId &&
+            //    d.ElectionTypeMasterId == updateEventActivity.ElectionTypeMasterId &&
+            //    d.BoothMasterId == updateEventActivity.BoothMasterId &&
+            //    d.SlotManagementId == getLatestSlot.SlotManagementId
+            //);
 
 
-            if (pollDetail)
-            {
+            //if (pollDetail)
+            //{
 
-                return new ServiceResponse
-                {
-                    IsSucceed = false,
-                    Message = "Already Entered for this Slot"
-                };
-            }
+            //    return new ServiceResponse
+            //    {
+            //        IsSucceed = false,
+            //        Message = "Already Entered for this Slot"
+            //    };
+            //}
 
             var result = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d =>
              d.StateMasterId == updateEventActivity.StateMasterId &&
@@ -16161,10 +16161,11 @@ namespace EAMS_DAL.Repository
                             : $"0 (0.00%)";
                     }).ToArray(),
                     TotalVoters = g.Sum(r => r.TotalVoters).ToString(),
-                    VotesTillNow = g.Any()
-                        ? $"{g.Sum(r => r.TotalVotes)} " +
-                          $"({(g.Sum(r => r.TotalVotes) * 100.0 / g.Sum(r => r.TotalVoters)):F2}%)"
-                        : "0 (0.00%)",
+                    VotesTillNow =$"{g.Sum(r => r.TotalVotes)} / {g.Sum(r => r.TotalVoters)}"   ,
+                    VotesTillPercentage = g.Sum(r => r.TotalVoters) > 0
+                                ? $"{(g.Sum(r => r.TotalVotes) * 100.0 / g.Sum(r => r.TotalVoters)):F2}%"
+                                : "0.00%",
+
                     Children = new List<object>() // Add nested data if needed
                 }).OrderBy(d => d.Name).ToList();
 
@@ -16230,10 +16231,10 @@ namespace EAMS_DAL.Repository
                             : $"0 (0.00%)";
                     }).ToArray(),
                     TotalVoters = g.Sum(r => r.TotalVoters).ToString(),
-                    VotesTillNow = g.Any()
-                        ? $"{g.Sum(r => r.TotalVotes)} " +
-                          $"({(g.Sum(r => r.TotalVotes) * 100.0 / g.Sum(r => r.TotalVoters)):F2}%)"
-                        : "0 (0.00%)",
+                    VotesTillNow = $"{g.Sum(r => r.TotalVotes)} / {g.Sum(r => r.TotalVoters)}",
+                    VotesTillPercentage = g.Sum(r => r.TotalVoters) > 0
+                                ? $"{(g.Sum(r => r.TotalVotes) * 100.0 / g.Sum(r => r.TotalVoters)):F2}%"
+                                : "0.00%",
                     Children = new List<object>() // Add nested data if needed
                 }).OrderBy(d => d.Name).ToList();
 
@@ -16347,10 +16348,10 @@ namespace EAMS_DAL.Repository
                             : $"0 (0.00%)";
                     }).ToArray(),
                     TotalVoters = g.Sum(r => r.TotalVoters).ToString(),
-                    VotesTillNow = g.Any()
-                        ? $"{g.Sum(r => r.TotalVotes)} " +
-                          $"({(g.Sum(r => r.TotalVotes) * 100.0 / g.Sum(r => r.TotalVoters)):F2}%)"
-                        : "0 (0.00%)"
+                    VotesTillNow = $"{g.Sum(r => r.TotalVotes)} / {g.Sum(r => r.TotalVoters)}",
+                    VotesTillPercentage = g.Sum(r => r.TotalVoters) > 0
+                                ? $"{(g.Sum(r => r.TotalVotes) * 100.0 / g.Sum(r => r.TotalVoters)):F2}%"
+                                : "0.00%",
                 }).OrderBy(d => d.Name).ToList();
 
             return voterTurnOutReport;

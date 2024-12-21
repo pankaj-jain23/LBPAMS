@@ -717,7 +717,7 @@ namespace EAMS.Controllers
         #region Voter Turn Out Screens Disrict,AAssembly,BoothWise
         [HttpGet]
         [Route("GetSlotBasedVTOutReportDistrictWise")]
-        //[Authorize(Roles = "ECI,SuperAdmin,StateAdmin")]
+        [Authorize(Roles = "ECI,SuperAdmin,StateAdmin")]
         public async Task<IActionResult> GetSlotBasedVTOutReports(string? stateId, string? electionTypeId)
         {
             // Retrieve claims for stateMasterId and electionTypeMasterId
@@ -746,7 +746,7 @@ namespace EAMS.Controllers
 
         [HttpGet]
         [Route("GetSlotBasedVTOutReportAssemblyWise")]
-        [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,ARO")]
+        [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,LocalBodiesAdmin,RO")]
         public async Task<IActionResult> GetSlotVTReporttAssemblyWise(string? stateId, string? districtId, string? electionTypeId)
         {
             var eventAssemblyList = await _EAMSService.GetSlotVTReporttAssemblyWise(stateId, districtId, electionTypeId);
@@ -758,7 +758,7 @@ namespace EAMS.Controllers
 
         [HttpGet]
         [Route("GetSlotBasedVTReportBoothWise")]
-        [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,ARO")]
+        [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,LocalBodiesAdmin,RO")]
         public async Task<IActionResult> GetSlotVTReportsBoothWise(string? stateId, string? districtId, string? assemblyId, string? electionTypeId)
         {
             var eventBoothList = await _EAMSService.GetSlotVTReportBoothWise(stateId, districtId, assemblyId, electionTypeId);
@@ -774,7 +774,7 @@ namespace EAMS.Controllers
 
         [HttpGet]
         [Route("GetDistrictWiseSOEvenCountReport")]
-        [Authorize(Roles = "ECI,SuperAdmin,StateAdmin")]
+        [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,")]
         public async Task<IActionResult> EventListDistrictWiseById(string? stateId)
         {
             string stateMasterId;
@@ -828,7 +828,7 @@ namespace EAMS.Controllers
 
         [HttpGet]
         [Route("GetSOBoothWiseEvenCountReport")]
-        [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,ARO")]
+        [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,LocalBodiesAdmin,RO")]
         public async Task<IActionResult> GetSOWiseSOEvenCountPendency(string soMasterId)
         {
             var eventAssemblyList = await _EAMSService.GetBoothWiseSOEventWiseCount(soMasterId);
@@ -839,7 +839,7 @@ namespace EAMS.Controllers
         }
         [HttpGet]
         [Route("GetSONamesEventWiseCount")]
-        [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,ARO")]
+        [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,RO")]
         public async Task<IActionResult> GetSONamesEventWiseCounts(string stateMasterId, string districtMasterId, string assemblymasterId,string electionTypeMasterId)
         {
             var eventAssemblyList = await _EAMSService.GetSONamesEventWiseCount(stateMasterId, districtMasterId, assemblymasterId,electionTypeMasterId);

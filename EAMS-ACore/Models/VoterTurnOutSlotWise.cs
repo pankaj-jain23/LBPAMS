@@ -10,6 +10,7 @@
         public string[] SlotVotes { get; set; }
         public string? TotalVoters { get; set; }
         public string? VotesTillNow { get; set; }
+        public string? VotesTillPercentage { get; set; }
         public List<object> Children { get; set; }
     }
 
@@ -25,6 +26,7 @@
         public int? AssemblyCode { get; set; }
         public string[] SlotVotes { get; set; }
         public string? VotesTillNow { get; set; }
+        public string? VotesTillPercentage { get; set; }
         public string? TotalVoters { get; set; }
         public List<object> Children { get; set; }
     }
@@ -35,6 +37,7 @@
         public string Name { get; set; }
         public string Type { get; set; }
         public string? VotesTillNow { get; set; }
+        public string? VotesTillPercentage { get; set; }
         public string[] SlotVotes { get; set; }
         public string? TotalVoters { get; set; }
     }
