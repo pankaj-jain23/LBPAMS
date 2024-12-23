@@ -438,6 +438,7 @@ namespace EAMS_ACore.Interfaces
         Task<List<ResultList>> GetResultByAssemblyId(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId);
         Task<List<ResultList>> GetResultByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelMasterId, int electionTypeMasterId);
         Task<List<PartyWiseResult>> GetPartyWiseResultByStateId(int stateMasterId, int electionTypeMasterId);
+        Task <List<DistrictConsolidateResultReport>> GetConsolidateResultReportByDistrictId(int stateMasterId, int districtMasterId, int electionTyepMasterId);
         #endregion
     }
 }

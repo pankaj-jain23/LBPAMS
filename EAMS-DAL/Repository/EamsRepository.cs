@@ -22854,6 +22854,49 @@ namespace EAMS_DAL.Repository
 
             return results;
         }
+        public async Task<List<DistrictConsolidateResultReport>> GetConsolidateResultReportByDistrictId(
+      int stateMasterId,
+      int districtMasterId,
+      int electionTypeMasterId)
+        {
+            // Pre-fetch ElectionTypeMaster data to avoid repeated queries
+            var electionTypes = await _context.ElectionTypeMaster
+                .Where(e => e.ElectionTypeMasterId == electionTypeMasterId)
+                .ToDictionaryAsync(e => e.ElectionTypeMasterId, e => e.ElectionType);
+            var getDistrictName = await _context.DistrictMaster.Where(d => d.DistrictMasterId == districtMasterId).Select(d => d.DistrictName).FirstOrDefaultAsync();
+            var districtResult = await (
+                from asm in _context.AssemblyMaster
+                    .Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId&&d.ElectionTypeMasterId==electionTypeMasterId)
+                join fh in _context.FourthLevelH on asm.AssemblyMasterId equals fh.AssemblyMasterId
+                join rs in _context.ResultDeclaration on fh.FourthLevelHMasterId equals rs.FourthLevelHMasterId
+                join kyc in _context.Kyc on rs.KycMasterId equals kyc.KycMasterId
+                where rs.ElectionTypeMasterId == electionTypeMasterId && fh.ElectionTypeMasterId == electionTypeMasterId
+                group new { rs, kyc, fh } by new { asm.AssemblyName, rs.ElectionTypeMasterId, fh.HierarchyName, fh.HierarchyType } into g
+                select new DistrictConsolidateResultReport
+                {
+                    DistrictName = getDistrictName,
+                  
+                    AssemblyName = g.Key.AssemblyName,
+                    FourthLevelName=g.Key.HierarchyName,
+                    Category = g.Key.HierarchyType,
+                    ElectionType = electionTypes.ContainsKey(g.Key.ElectionTypeMasterId)
+                        ? electionTypes[g.Key.ElectionTypeMasterId]
+                        : "Unknown",
+                    TotalVotes = g.Sum(x => x.fh.TotalVoters ?? 0),
+                    TotalNOTA = g.Where(d => d.rs.IsNOTA == true).Sum(d => d.rs.VoteMargin),
+                    TotalPolledVotes = g.Sum(x => x.rs.VoteMargin),
+                    TotalWinningCandidate = g.Count(d => d.rs.IsWinner == true),
+                    CandidateResults = g.Select(x => new CandidateResult
+                    {
+                        CandidateName = x.kyc.CandidateName,
+                        Votes = x.rs.VoteMargin ?? 0,
+                    }).ToList()
+                }).ToListAsync();
+
+            return districtResult;
+        }
+
+
         #endregion
 
 

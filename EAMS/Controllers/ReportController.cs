@@ -1144,6 +1144,14 @@ namespace EAMS.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+        [HttpGet("GetConsolidateResultReportByDistrictId")]
+        public async Task<IActionResult> GetConsolidateResultReportByDistrictId(int stateMasterId,int districtMasterId ,int electionTyepMasterId)
+        {
+             
+            var results = await _EAMSService.GetConsolidateResultReportByDistrictId(stateMasterId, districtMasterId, electionTyepMasterId);
+            return Ok(results);
+        }
         #endregion
     }
 }
