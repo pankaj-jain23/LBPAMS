@@ -15979,7 +15979,7 @@ namespace EAMS_DAL.Repository
                                 ? (slotVotes * 100.0 / latestSlotVotersData[group.Key])
                                 : 0;
 
-                            return $"{slot.SlotLabel}: {slotVotes} ({percentage:F2}%)";
+                            return $" {slotVotes} ({percentage:F2}%)";
                         }
                         catch (FormatException ex)
                         {
