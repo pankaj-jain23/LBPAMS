@@ -23018,6 +23018,7 @@ namespace EAMS_DAL.Repository
             return results;
         }
 
+
         public async Task<List<DistrictConsolidateResultReport>> GetConsolidateResultReportByDistrictId(
       int stateMasterId,
       int districtMasterId,
@@ -23059,7 +23060,6 @@ namespace EAMS_DAL.Repository
 
             return districtResult;
         }
-
 
         #endregion
 
