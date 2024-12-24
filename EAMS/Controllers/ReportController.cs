@@ -744,32 +744,49 @@ namespace EAMS.Controllers
         }
         [HttpGet]
         [Route("GetConsolidateSlotBasedVTOutReports")]
-        //[Authorize(Roles = "ECI,SuperAdmin,StateAdmin")]
-        public async Task<IActionResult> GetConsolidateSlotBasedVTOutReports(int? stateId, int? electionTypeId)
+        [Authorize]
+        public async Task<IActionResult> GetConsolidateSlotBasedVTOutReports()
         {
             // Retrieve claims for stateMasterId and electionTypeMasterId
             var stateMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
             var electionTypeMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
 
             // Validate claims or fallback to parameters
-            if (stateMasterIdClaim == null && !stateId.HasValue)
-                return BadRequest("StateMasterId claim or parameter is missing.");
+            if (string.IsNullOrEmpty(stateMasterIdClaim))
+                return BadRequest("StateMasterId claim is missing.");
 
-            if (electionTypeMasterIdClaim == null && !electionTypeId.HasValue)
-                return BadRequest("ElectionTypeMasterId claim or parameter is missing.");
+            if (string.IsNullOrEmpty(electionTypeMasterIdClaim))
+                return BadRequest("ElectionTypeMasterId claim is missing.");
 
-            // Use the provided stateId and electionTypeId or fallback to claims if not provided
-            int stateMasterId = stateId ?? Convert.ToInt32(stateMasterIdClaim);
-            int electionTypeMasterId = electionTypeId ?? Convert.ToInt32(electionTypeMasterIdClaim);
 
             // Call the service
-            var eventDistrictWiseList = await _EAMSService.GetConsolidateSlotBasedVTOutReports(stateMasterId, electionTypeMasterId);
+            var eventDistrictWiseList = await _EAMSService.GetConsolidateSlotBasedVTOutReports(Convert.ToInt32(stateMasterIdClaim), Convert.ToInt32(electionTypeMasterIdClaim));
             if (eventDistrictWiseList != null)
                 return Ok(eventDistrictWiseList);
 
             return NotFound();
         }
+        [HttpPost]
+        [Route("GetConsolidateSlotBasedVTOutReportsByElectionType")]
+        [Authorize]
+        public async Task<IActionResult> GetConsolidateSlotBasedVTOutReportsByElectionType(int? stateId, int? electionTypeId)
+        {
+            // Retrieve claims for stateMasterId and electionTypeMasterId
 
+            // Validate claims or fallback to parameters
+            if (!stateId.HasValue)
+                return BadRequest("StateMasterId parameter is missing.");
+
+            if (!electionTypeId.HasValue)
+                return BadRequest("ElectionTypeMasterId parameter is missing.");
+
+            // Call the service
+            var eventDistrictWiseList = await _EAMSService.GetConsolidateSlotBasedVTOutReportsByElectionType(Convert.ToInt32(stateId), Convert.ToInt32(electionTypeId));
+            if (eventDistrictWiseList != null)
+                return Ok(eventDistrictWiseList);
+
+            return NotFound();
+        }
 
         [HttpGet]
         [Route("GetSlotBasedVTOutReportAssemblyWise")]

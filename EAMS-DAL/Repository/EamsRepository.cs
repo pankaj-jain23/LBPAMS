@@ -15902,8 +15902,102 @@ namespace EAMS_DAL.Repository
         }
 
 
-     
+
         public async Task<List<VoterTurnOutSlotWise>> GetConsolidateSlotBasedVTOutReports(int stateMasterId, int electionTypeMasterId)
+        {
+            if (electionTypeMasterId == 4 || electionTypeMasterId == 5 || electionTypeMasterId == 6)
+            {
+                // Fetch all slots from SlotManagementMaster
+                var allSlots = await _context.SlotManagementMaster
+                    .Where(s => s.StateMasterId == stateMasterId && s.ElectionTypeMasterId == electionTypeMasterId)
+                    .OrderBy(s => s.SlotSequenceNumber)
+                    .Select(s => new
+                    {
+                        SlotLabel = $"{s.StartTime:hh\\:mm tt} to {s.EndTime:hh\\:mm tt}",
+                        s.SlotSequenceNumber
+                    }).ToListAsync();
+
+                // Fetch data grouped by ElectionTypeMasterId
+                var groupedData = await (
+                    from el in _context.ElectionTypeMaster
+                    join pd in _context.PollDetails on el.ElectionTypeMasterId equals pd.ElectionTypeMasterId
+                    join bm in _context.BoothMaster on pd.BoothMasterId equals bm.BoothMasterId
+                    join district in _context.DistrictMaster on bm.DistrictMasterId equals district.DistrictMasterId
+                    where pd.StateMasterId == stateMasterId && (pd.ElectionTypeMasterId == 4 || pd.ElectionTypeMasterId == 5 || pd.ElectionTypeMasterId == 6)
+                          && bm.ElectionTypeMasterId == pd.ElectionTypeMasterId
+                    select new
+                    {
+                        pd.ElectionTypeMasterId,
+                        el.ElectionType,
+                        pd.StartTime,
+                        pd.EndTime,
+                        VotesPolled = pd.VotesPolled ?? 0,
+                        BoothId = bm.BoothMasterId,
+                        TotalVoters = bm.TotalVoters
+                    }).ToListAsync();
+
+                // Calculate distinct TotalVoters for each ElectionTypeMasterId for the latest slot
+                var latestSlot = groupedData.Max(x => x.EndTime);
+                var latestSlotVotersData = groupedData
+                    .GroupBy(g => g.ElectionTypeMasterId)
+                    .ToDictionary(
+                        group => group.Key,
+                        group => group.Where(x => x.EndTime == latestSlot).Select(x => x.BoothId).Distinct().Sum(boothId => groupedData
+                            .Where(x => x.BoothId == boothId && x.EndTime == latestSlot)
+                            .Select(x => (int?)x.TotalVoters).FirstOrDefault() ?? 0)
+                    );
+
+                // Group data by ElectionTypeMasterId and calculate sums
+                var consolidatedData = groupedData
+                    .GroupBy(g => g.ElectionTypeMasterId)
+                    .Select(group => new VoterTurnOutSlotWise
+                    {
+                        Key = $"{stateMasterId}{group.Key}",
+                        MasterId = group.Key,
+                        Name = group.First().ElectionType, // Setting the Election Name in the output
+                        Type = "Election",
+                        TotalVoters = latestSlotVotersData[group.Key].ToString(), // Using distinct Booth TotalVoters sum for the latest slot
+                        VotesTillNow = group.Where(x => x.EndTime == latestSlot).Sum(x => x.VotesPolled).ToString(),
+                        VotesTillPercentage = latestSlotVotersData[group.Key] > 0
+                            ? $"{(group.Where(x => x.EndTime == latestSlot).Sum(x => x.VotesPolled) * 100.0 / latestSlotVotersData[group.Key]):F2}%"
+                            : "0.00%",
+                        SlotVotes = allSlots.Select(slot =>
+                        {
+                            try
+                            {
+                                // Parse the start and end time from the SlotLabel
+                                var slotParts = slot.SlotLabel.Split(' ');
+                                var slotStartTime = TimeOnly.ParseExact(slotParts[0] + " " + slotParts[1], "hh:mm tt");
+                                var slotEndTime = TimeOnly.ParseExact(slotParts[3] + " " + slotParts[4], "hh:mm tt");
+
+                                // Calculate votes for the current slot
+                                var slotVotes = groupedData
+                                    .Where(x => x.ElectionTypeMasterId == group.Key &&
+                                                x.StartTime == slotStartTime &&
+                                                x.EndTime == slotEndTime)
+                                    .Sum(x => x.VotesPolled);
+
+                                double percentage = latestSlotVotersData[group.Key] > 0
+                                    ? (slotVotes * 100.0 / latestSlotVotersData[group.Key])
+                                    : 0;
+
+                                return $" {slotVotes} ({percentage:F2}%)";
+                            }
+                            catch (FormatException ex)
+                            {
+                                // Log or handle the format exception
+                                return $"Error parsing slot time for {slot.SlotLabel}";
+                            }
+                        }).ToArray(),
+                        Children = new List<object>()
+                    }).ToList();
+
+                return consolidatedData;
+            }
+            return null;
+        }
+
+        public async Task<List<VoterTurnOutSlotWise>> GetConsolidateSlotBasedVTOutReportsByElectionType(int stateMasterId, int electionTypeMasterId)
         {
             // Fetch all slots from SlotManagementMaster
             var allSlots = await _context.SlotManagementMaster
@@ -15921,7 +16015,7 @@ namespace EAMS_DAL.Repository
                 join pd in _context.PollDetails on el.ElectionTypeMasterId equals pd.ElectionTypeMasterId
                 join bm in _context.BoothMaster on pd.BoothMasterId equals bm.BoothMasterId
                 join district in _context.DistrictMaster on bm.DistrictMasterId equals district.DistrictMasterId
-                where pd.StateMasterId == stateMasterId && (pd.ElectionTypeMasterId == 4 || pd.ElectionTypeMasterId == 5 || pd.ElectionTypeMasterId == 6)
+                where pd.StateMasterId == stateMasterId && pd.ElectionTypeMasterId == electionTypeMasterId
                       && bm.ElectionTypeMasterId == pd.ElectionTypeMasterId
                 select new
                 {
@@ -15992,7 +16086,6 @@ namespace EAMS_DAL.Repository
 
             return consolidatedData;
         }
-
 
         public async Task<List<AssemblyVoterTurnOutSlotWise>> GetSlotVTReporttAssemblyWise(string stateId, string districtId, string electionTypeMasterId)
         {
