@@ -1484,6 +1484,11 @@ namespace EAMS_BLL.Services
 
             return await _eamsRepository.GetVoterTurnOutSlotBasedReport(stateMasterId, electionTypeMasterId);
         }
+        public async Task<List<VoterTurnOutSlotWise>> GetConsolidateSlotBasedVTOutReports(int stateMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.GetConsolidateSlotBasedVTOutReports(stateMasterId, electionTypeMasterId);
+        }
+
         public async Task<List<AssemblyVoterTurnOutSlotWise>> GetSlotVTReporttAssemblyWise(string stateMasterId, string districtMasterId, string electionTypeMasterId)
         {
 
