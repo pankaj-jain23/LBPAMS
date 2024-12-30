@@ -22,6 +22,7 @@ namespace EAMS_ACore.IAuthRepository
         Task<BLOMaster> GetBLOById(int bloId);
         Task<ServiceResponse> SectorOfficerMasterRecord(FieldOfficerMaster sectorOfficerMaster);
         Task<ServiceResponse> FindUserByName(UserRegistration userRegistration);
+        Task<UserRegistration> FindUserByName(string userName);
         Task<List<UserRegistration>> FindUserListByName(string userName);
         Task<UserRegistration> CheckUserLogin(Login login);
         Task<UserRegistration> GetUserById(string userId);

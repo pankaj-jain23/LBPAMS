@@ -30,6 +30,8 @@ namespace EAMS_ACore.AuthModels
         public DateTime? OTPGeneratedTime { get; set; }
         public string? OTP { get; set; }
         public DateTime? OTPExpireTime { get; set; }
+        public DateTime? PasswordExpireTime { get; set; }
+        public bool IsPasswordExpire { get; set; }
         public int OTPAttempts { get; set; }
         public string? RefreshToken { get; set; }
         public string? CurrentToken { get; set; }

@@ -37,9 +37,8 @@ namespace EAMS.Controllers
             {
                 if (!ModelState.IsValid)
                     return BadRequest("Invalid payload");
-                var mappedData = _mapper.Map<UserRegistration>(registerViewModel);
-                var roleId = registerViewModel.RoleId;
-                var registerResult = await _authService.RegisterAsync(mappedData, roleId);
+                var mappedData = _mapper.Map<UserRegistration>(registerViewModel); 
+                var registerResult = await _authService.RegisterAsync(mappedData, registerViewModel.RoleId);
                 if (registerResult.IsSucceed == false)
                 {
                     return BadRequest(registerResult.Message);

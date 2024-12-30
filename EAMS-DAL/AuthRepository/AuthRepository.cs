@@ -182,6 +182,11 @@ namespace EAMS_DAL.AuthRepository
 
             }
         }
+        public async Task<UserRegistration> FindUserByName(string userName)
+        {
+            return await _userManager.FindByNameAsync(userName );
+             
+        }
         #endregion
 
 
@@ -456,6 +461,7 @@ namespace EAMS_DAL.AuthRepository
 
 
         }
+
         public async Task<AROResultMaster> ValidateMobileForARO(ValidateMobile validateMobile)
         {
             return await _context.AROResultMaster
@@ -829,6 +835,7 @@ namespace EAMS_DAL.AuthRepository
             return await _context.ElectionTypeMaster.FirstOrDefaultAsync(d => d.ElectionTypeMasterId == electionTypeMasterId);
         }
         #endregion
+
         #region LoginWithTwoFactorCheckAsync
         public async Task<ServiceResponse> LoginWithTwoFactorCheckAsync(Login login)
         {

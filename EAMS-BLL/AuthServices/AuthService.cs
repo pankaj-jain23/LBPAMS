@@ -72,55 +72,79 @@ namespace EAMS_BLL.AuthServices
             var user = await _authRepository.CheckUserLogin(login);
             var is2FA = await _authRepository.LoginWithTwoFactorCheckAsync(login);
             if (user is null)
+            {
                 // Return an appropriate response when the user is not found
                 return new Token()
                 {
                     IsSucceed = false,
                     Message = "User Name or Password is Invalid"
                 };
-            var isDashBoardUserValidate = await IsDashBoardUserValidate(login);
-            if (isDashBoardUserValidate.IsSucceed)
-            {
-                if (user is not null)
-                {
-
-                    var authClaims = await GenerateClaims(user);
-                    var token = GenerateToken(authClaims);
-
-                    _Token.RefreshToken = GenerateRefreshToken();
-
-                    // Update user details with tokens
-                    if (user != null)
-                    {
-                        var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
-                        var refreshTokenValidityInDays = Convert.ToInt64(_configuration["JWTKey:RefreshTokenValidityInDays"]);
-                        user.RefreshToken = _Token.RefreshToken;
-                        user.RefreshTokenExpiryTime = expireRefreshToken;
-                        user.CurrentToken = token;
-
-                        // Update user and handle any exceptions
-                        try
-                        {
-                            var updateUserResult = await _authRepository.UpdateUser(user);
-                        }
-                        catch (Exception ex)
-                        {
-                            // Log the exception or handle it appropriately
-                            // You may also want to return an error response
-                            return null;
-                        }
-                    }
-                    _Token.IsSucceed = true;
-                    _Token.AccessToken = token;
-                    _Token.Message = "Success";
-
-
-                }
             }
+            var isPasswordExpire = await IsPasswordExpire(login.UserName);
+            if (!isPasswordExpire.IsSucceed)
+            {
+                return new Token()
+                {
+                    IsSucceed = false,
+                    Message = isPasswordExpire.Message
+
+                };
+
+            }
+            var isDashBoardUserValidate = await IsDashBoardUserValidate(login);
+            if (!isDashBoardUserValidate.IsSucceed)
+            {
+                return new Token()
+                {
+                    IsSucceed = false,
+                    Message = isDashBoardUserValidate.Message
+
+                };
+
+            }
+
+
+            if (user is not null)
+            {
+
+                var authClaims = await GenerateClaims(user);
+                var token = GenerateToken(authClaims);
+
+                _Token.RefreshToken = GenerateRefreshToken();
+
+                // Update user details with tokens
+                if (user != null)
+                {
+                    var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
+                    var refreshTokenValidityInDays = Convert.ToInt64(_configuration["JWTKey:RefreshTokenValidityInDays"]);
+                    user.RefreshToken = _Token.RefreshToken;
+                    user.RefreshTokenExpiryTime = expireRefreshToken;
+                    user.CurrentToken = token;
+
+                    // Update user and handle any exceptions
+                    try
+                    {
+                        var updateUserResult = await _authRepository.UpdateUser(user);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log the exception or handle it appropriately
+                        // You may also want to return an error response
+                        return null;
+                    }
+                }
+                _Token.IsSucceed = true;
+                _Token.AccessToken = token;
+                _Token.Message = $"✨ Welcome, {user.UserName}! Enjoy your experience with LBPAMS! ✨";
+
+
+            }
+            var isNotifyPassword = await NotifyPasswordExpiry(login.UserName);
+
             return new Token()
             {
                 IsSucceed = _Token.IsSucceed,
-                Message = _Token.Message,
+                Message = isNotifyPassword.IsSucceed ? isNotifyPassword.Message : _Token.Message,
                 AccessToken = _Token.AccessToken,
                 RefreshToken = _Token.RefreshToken,
                 Is2FA = is2FA.IsSucceed,
@@ -146,8 +170,8 @@ namespace EAMS_BLL.AuthServices
                     {
                         return new ServiceResponse()
                         {
-                            IsSucceed = false,
-                            Message = "false is here Soft True to send otp to user "
+                            IsSucceed = false,//"false is here Soft True to send otp to user "
+                            Message = $"OTP Sent to Registered Mobile Number: {MaskPhoneNumber(user.PhoneNumber)}"
                         };
                     }
 
@@ -174,6 +198,79 @@ namespace EAMS_BLL.AuthServices
                 IsSucceed = false,
                 Message = "Invalid or expired OTP."
             };
+        }
+        private string MaskPhoneNumber(string phoneNumber)
+        {
+            if (string.IsNullOrWhiteSpace(phoneNumber) || phoneNumber.Length < 4)
+            {
+                return "InvalidNumber";
+            }
+
+            var lastFourDigits = phoneNumber[^4..];
+            return $"xxxxxx{lastFourDigits}";
+        }
+        public async Task<ServiceResponse> IsPasswordExpire(string userName)
+        {
+            var user = await _authRepository.FindUserByName(userName);
+            if (user == null)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "UserNotFound"
+                };
+            }
+            else
+            {
+                if (user.PasswordExpireTime.HasValue && DateTime.Now > user.PasswordExpireTime.Value)
+                {
+                    return new ServiceResponse()
+                    {
+                        IsSucceed = false,
+                        Message = "Password Expired Kindly Reset it or Try to Forget Password"
+                    };
+                }
+
+                return new ServiceResponse()
+                {
+                    IsSucceed = true,
+                    Message = "PasswordValid"
+                };
+            }
+        }
+        public async Task<ServiceResponse> NotifyPasswordExpiry(string userName)
+        {
+            var user = await _authRepository.FindUserByName(userName);
+            if (user == null)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "UserNotFound"
+                };
+            }
+            else
+            {
+                if (user.PasswordExpireTime.HasValue)
+                {
+                    var daysUntilExpiry = (user.PasswordExpireTime.Value - DateTime.Now).TotalDays;
+
+                    if (daysUntilExpiry <= 3 && daysUntilExpiry > 0)
+                    {
+                        return new ServiceResponse()
+                        {
+                            IsSucceed = true,
+                            Message = "⚠️ Reminder: Password will expire soon; please change it promptly! ⚠️"
+                        };
+                    }
+                }
+
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "PasswordExpiryNotificationNotNeeded"
+                };
+            }
         }
 
         public async Task<ServiceResponse> DeleteUser(string userId)
