@@ -8,6 +8,7 @@ using EAMS_ACore.IRepository;
 using EAMS_ACore.Models;
 using EAMS_ACore.ReportModels;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -77,40 +78,44 @@ namespace EAMS_BLL.AuthServices
                     IsSucceed = false,
                     Message = "User Name or Password is Invalid"
                 };
-            if (user is not null)
+            var isDashBoardUserValidate = await IsDashBoardUserValidate(login);
+            if (isDashBoardUserValidate.IsSucceed)
             {
-
-                var authClaims = await GenerateClaims(user);
-                var token = GenerateToken(authClaims);
-
-                _Token.RefreshToken = GenerateRefreshToken();
-
-                // Update user details with tokens
-                if (user != null)
+                if (user is not null)
                 {
-                    var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
-                    var refreshTokenValidityInDays = Convert.ToInt64(_configuration["JWTKey:RefreshTokenValidityInDays"]);
-                    user.RefreshToken = _Token.RefreshToken;
-                    user.RefreshTokenExpiryTime = expireRefreshToken;
-                    user.CurrentToken = token;
 
-                    // Update user and handle any exceptions
-                    try
+                    var authClaims = await GenerateClaims(user);
+                    var token = GenerateToken(authClaims);
+
+                    _Token.RefreshToken = GenerateRefreshToken();
+
+                    // Update user details with tokens
+                    if (user != null)
                     {
-                        var updateUserResult = await _authRepository.UpdateUser(user);
+                        var expireRefreshToken = BharatTimeDynamic(0, 7, 0, 0, 0);
+                        var refreshTokenValidityInDays = Convert.ToInt64(_configuration["JWTKey:RefreshTokenValidityInDays"]);
+                        user.RefreshToken = _Token.RefreshToken;
+                        user.RefreshTokenExpiryTime = expireRefreshToken;
+                        user.CurrentToken = token;
+
+                        // Update user and handle any exceptions
+                        try
+                        {
+                            var updateUserResult = await _authRepository.UpdateUser(user);
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log the exception or handle it appropriately
+                            // You may also want to return an error response
+                            return null;
+                        }
                     }
-                    catch (Exception ex)
-                    {
-                        // Log the exception or handle it appropriately
-                        // You may also want to return an error response
-                        return null;
-                    }
+                    _Token.IsSucceed = true;
+                    _Token.AccessToken = token;
+                    _Token.Message = "Success";
+
+
                 }
-                _Token.IsSucceed = true;
-                _Token.AccessToken = token;
-                _Token.Message = "Success";
-
-
             }
             return new Token()
             {
@@ -127,33 +132,48 @@ namespace EAMS_BLL.AuthServices
             // Check user in the repository
             var user = await _authRepository.CheckUserLogin(login);
 
-            if (login == null && !login.Otp.HasValue && login.Otp.ToString().Length < 6)
+            if (login.Otp?.Length < 6)
             {
                 // Generate new OTP and update user details
                 user.OTP = GenerateOTP();
                 user.OTPGeneratedTime = DateTime.UtcNow;
                 user.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 1, 0);
-                var sendOtpResponse = await _notificationService.SendOtp(user.PhoneNumber, user.OTP);
-                var updateUserResult = await _authRepository.UpdateUser(user);
-
-                return new ServiceResponse
+                var isOtpSend = await _notificationService.SendOtp(user.PhoneNumber, user.OTP);
+                if (isOtpSend.IsSucceed == true)
                 {
-                    IsSucceed = false,
-                    Message = $"OTP sent successfully to {user.PhoneNumber} for two-factor verification."
-                };
+                    var updateUserResult = await _authRepository.UpdateUser(user);
+                    if (updateUserResult.IsSucceed == true)
+                    {
+                        return new ServiceResponse()
+                        {
+                            IsSucceed = false,
+                            Message = "false is here Soft True to send otp to user "
+                        };
+                    }
 
+
+                }
+                else
+                {
+                    return isOtpSend;
+                }
             }
             else
             {
-
+                if (user.OTP == login.Otp && BharatDateTime() <= user.OTPExpireTime)
+                {
+                    return new ServiceResponse
+                    {
+                        IsSucceed = true,
+                        Message = "Login successful."
+                    };
+                }
             }
-
-
             return new ServiceResponse
             {
                 IsSucceed = false,
-                Message = "User not found or OTP is invalid."
-            }; 
+                Message = "Invalid or expired OTP."
+            };
         }
 
         public async Task<ServiceResponse> DeleteUser(string userId)
