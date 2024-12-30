@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -91,7 +92,7 @@ namespace EAMS_BLL.AuthServices
                     var refreshTokenValidityInDays = Convert.ToInt64(_configuration["JWTKey:RefreshTokenValidityInDays"]);
                     user.RefreshToken = _Token.RefreshToken;
                     user.RefreshTokenExpiryTime = expireRefreshToken;
-                    user.CurrentToken=token;
+                    user.CurrentToken = token;
 
                     // Update user and handle any exceptions
                     try
@@ -119,6 +120,40 @@ namespace EAMS_BLL.AuthServices
                 RefreshToken = _Token.RefreshToken,
                 Is2FA = is2FA.IsSucceed,
             };
+        }
+        public async Task<ServiceResponse> IsDashBoardUserValidate(Login login)
+        {
+
+            // Check user in the repository
+            var user = await _authRepository.CheckUserLogin(login);
+
+            if (login == null && !login.Otp.HasValue && login.Otp.ToString().Length < 6)
+            {
+                // Generate new OTP and update user details
+                user.OTP = GenerateOTP();
+                user.OTPGeneratedTime = DateTime.UtcNow;
+                user.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 1, 0);
+                var sendOtpResponse = await _notificationService.SendOtp(user.PhoneNumber, user.OTP);
+                var updateUserResult = await _authRepository.UpdateUser(user);
+
+                return new ServiceResponse
+                {
+                    IsSucceed = false,
+                    Message = $"OTP sent successfully to {user.PhoneNumber} for two-factor verification."
+                };
+
+            }
+            else
+            {
+
+            }
+
+
+            return new ServiceResponse
+            {
+                IsSucceed = false,
+                Message = "User not found or OTP is invalid."
+            }; 
         }
 
         public async Task<ServiceResponse> DeleteUser(string userId)
@@ -285,7 +320,7 @@ namespace EAMS_BLL.AuthServices
                         {
                             return new Response { Status = RequestStatusEnum.OK, Message = $"OTP Sent to {aroRecords.AROMobile}" };
                         }
-                       // return new Response { Status = RequestStatusEnum.OK, Message = $"OTP Sent to {aroRecords.OTP}" };
+                        // return new Response { Status = RequestStatusEnum.OK, Message = $"OTP Sent to {aroRecords.OTP}" };
 
                         return new Response { Status = RequestStatusEnum.BadRequest, Message = "Failed to send OTP" };
                     }
