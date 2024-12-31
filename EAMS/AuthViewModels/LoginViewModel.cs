@@ -9,5 +9,6 @@ namespace EAMS.AuthViewModels
 
         [Required(ErrorMessage = "Password is required")]
         public string Password { get; set; }
+        public string? Otp { get; set; }
     }
 }

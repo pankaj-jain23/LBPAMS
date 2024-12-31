@@ -38,6 +38,7 @@ namespace EAMS.Helper
             CreateMap<LoginViewModel, Login>()
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName))
                 .ForMember(dest => dest.Password, opt => opt.MapFrom(src => src.Password))
+                .ForMember(dest => dest.Otp, opt => opt.MapFrom(src => src.Otp))
                 .ReverseMap();
             #endregion
 

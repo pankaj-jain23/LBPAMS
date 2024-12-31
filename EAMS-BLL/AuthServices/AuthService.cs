@@ -70,6 +70,15 @@ namespace EAMS_BLL.AuthServices
 
             // Check if the user exists
             var user = await _authRepository.CheckUserLogin(login);
+            if (user.LockoutEnabled)
+            {
+                return new Token()
+                {
+                    IsSucceed = false,
+                    Message = "User is Disabled Kindly contact your admin"
+                };
+
+            }
             var is2FA = await _authRepository.LoginWithTwoFactorCheckAsync(login);
             if (user is null)
             {
@@ -79,6 +88,18 @@ namespace EAMS_BLL.AuthServices
                     IsSucceed = false,
                     Message = "User Name or Password is Invalid"
                 };
+            }
+
+            var isDashBoardUserValidate = await IsDashBoardUserValidate(login);
+            if (!isDashBoardUserValidate.IsSucceed)
+            {
+                return new Token()
+                {
+                    IsSucceed = false,
+                    Message = isDashBoardUserValidate.Message
+
+                };
+
             }
             var isPasswordExpire = await IsPasswordExpire(login.UserName);
             if (!isPasswordExpire.IsSucceed)
@@ -91,18 +112,6 @@ namespace EAMS_BLL.AuthServices
                 };
 
             }
-            var isDashBoardUserValidate = await IsDashBoardUserValidate(login);
-            if (!isDashBoardUserValidate.IsSucceed)
-            {
-                return new Token()
-                {
-                    IsSucceed = false,
-                    Message = isDashBoardUserValidate.Message
-
-                };
-
-            }
-
 
             if (user is not null)
             {
@@ -156,7 +165,7 @@ namespace EAMS_BLL.AuthServices
             // Check user in the repository
             var user = await _authRepository.CheckUserLogin(login);
 
-            if (login.Otp?.Length < 6)
+            if (login.Otp is null||login.Otp?.Length < 6)
             {
                 // Generate new OTP and update user details
                 user.OTP = GenerateOTP();
@@ -1084,6 +1093,8 @@ namespace EAMS_BLL.AuthServices
                 user.OTP = otp;
                 user.OTPExpireTime = otpExpireTime;
                 user.OTPGeneratedTime = timeNow;
+                user.PasswordExpireTime = DateTime.UtcNow.AddDays(15);
+                user.IsPasswordExpire = false;
                 await _userManager.UpdateAsync(user);
 
                 return new ServiceResponse { IsSucceed = true, Message = "OTP for Forgot Password sent on your registered number" };
@@ -1128,7 +1139,8 @@ namespace EAMS_BLL.AuthServices
                         Message = "Previous password is incorrect."
                     };
                 }
-
+                user.PasswordExpireTime = DateTime.UtcNow.AddDays(15);
+                user.IsPasswordExpire = false;
                 // Proceed with resetting the password
                 var result = await _userManager.ResetPasswordAsync(user, resetToken, resetPasswordModel.ConfirmNewPassword);
 

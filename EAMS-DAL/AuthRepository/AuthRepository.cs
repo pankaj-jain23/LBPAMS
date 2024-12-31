@@ -184,8 +184,8 @@ namespace EAMS_DAL.AuthRepository
         }
         public async Task<UserRegistration> FindUserByName(string userName)
         {
-            return await _userManager.FindByNameAsync(userName );
-             
+            return await _userManager.FindByNameAsync(userName);
+
         }
         #endregion
 
@@ -265,7 +265,8 @@ namespace EAMS_DAL.AuthRepository
                 if (isExist.Count > 0)
                 {
 
-
+                    userRegistration.PasswordExpireTime = DateTime.UtcNow.AddDays(15);
+                    userRegistration.IsPasswordExpire = false;
                     var createUserResult = await _userManager.CreateAsync(userRegistration, userRegistration.PasswordHash);
                     if (!createUserResult.Succeeded)
                     {
@@ -797,32 +798,50 @@ namespace EAMS_DAL.AuthRepository
         {
             IQueryable<UserRegistration> query = _userManager.Users;
 
+            // Filtering based on StateMasterId, DistrictMasterId, ElectionTypeMasterId, AssemblyMasterId, and FourthLevelMasterId
+            if (getUser.StateMasterId != 0)
+            {
+                query = query.Where(u => u.StateMasterId == getUser.StateMasterId && u.ElectionTypeMasterId == getUser.ElectionTypeMasterId);
+            }
+            if (getUser.DistrictMasterId != 0)
+            {
+                query = query.Where(u => u.DistrictMasterId == getUser.DistrictMasterId && u.ElectionTypeMasterId == getUser.ElectionTypeMasterId);
+            }
+
+            if (getUser.AssemblyMasterId != 0)
+            {
+                query = query.Where(u => u.AssemblyMasterId == getUser.AssemblyMasterId && u.ElectionTypeMasterId == getUser.ElectionTypeMasterId);
+            }
+            if (getUser.FourthLevelMasterId != 0)
+            {
+                query = query.Where(u => u.FourthLevelHMasterId == getUser.FourthLevelMasterId && u.ElectionTypeMasterId == getUser.ElectionTypeMasterId);
+            }
+
             // Pagination
             int page = getUser.Page == 0 ? 1 : getUser.Page;
             int pageSize = getUser.PageSize == 0 ? 10 : getUser.PageSize;
             int skip = (page - 1) * pageSize;
-            var filteredQuery = query.Skip(skip).Take(pageSize);
 
+            var filteredQuery = query.Skip(skip).Take(pageSize); 
             var userList = await filteredQuery.Select(d => new GetUserList
             {
                 UserName = d.UserName,
                 Email = d.Email,
                 PhoneNumber = d.PhoneNumber,
                 LockoutEnabled = d.LockoutEnabled,
-                UserId = d.Id
-
+                UserId = d.Id, 
             }).ToListAsync();
 
             var totalCount = await query.CountAsync();
             int pageCount = (int)Math.Ceiling((double)totalCount / pageSize);
 
             var result = new Dictionary<string, object>
-    {
-        { "pageCount", pageCount },
-        { "pageSize", pageSize },
-        { "page", page },
-        { "data", userList }
-    };
+                            {
+                                { "pageCount", pageCount },
+                                { "pageSize", pageSize },
+                                { "page", page },
+                                { "data", userList }
+                            };
 
             return result;
         }
@@ -830,13 +849,13 @@ namespace EAMS_DAL.AuthRepository
         {
             var user = await _userManager.FindByIdAsync(updateLockoutUser.UserId);
             if (user != null)
-            {
-                user.LockoutEnabled = updateLockoutUser.LockoutEnabled;
-                var result = await _userManager.UpdateAsync(user);
+            { 
+                var result = await _userManager.SetLockoutEnabledAsync(user,updateLockoutUser.LockoutEnabled);
                 return result.Succeeded;
             }
             return false;
         }
+
         #endregion
 
 
