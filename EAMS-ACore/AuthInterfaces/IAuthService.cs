@@ -26,6 +26,8 @@ namespace EAMS_ACore.AuthInterfaces
         Task<ServiceResponse> ResetPassword(ResetPasswordModel resetPasswordModel);
         Task<Dictionary<string, object>> GetUserList(GetUser getUser);
         Task<bool> UpdateLockoutUser(UpdateLockoutUser updateLockoutUser);
+        Task<int> UpdateLockoutUserInBulk(UpdateLockoutUserInBulk updateLockoutUserInBulk);
+
         Task<ServiceResponse> UpdateUserDetail(string userId, string mobileNumber, string? otp);
         Task<ServiceResponse> UpdateFieldOfficerDetail(string mobileNumber, int? otp);
 

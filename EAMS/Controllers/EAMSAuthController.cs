@@ -435,7 +435,7 @@ namespace EAMS.Controllers
 
         }
 
-        [HttpPost]
+        [HttpPut]
         [Route("UpdateLockoutUser")]
         [Authorize]
         public async Task<IActionResult> UpdateLockoutUser(UpdateLockoutUserViewModel updateLockoutUserViewModel)
@@ -458,6 +458,32 @@ namespace EAMS.Controllers
                 return BadRequest(new { message = "Invalid input." });
             }
         }
+
+        [HttpPut]
+        [Route("UpdateLockoutUserInBulk")]
+        //[Authorize]
+        public async Task<IActionResult> UpdateLockoutUserInBulk(UpdateLockoutUserInBulkViewModel updateLockoutUserInBulkViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                var mappedData = _mapper.Map<UpdateLockoutUserInBulk>(updateLockoutUserInBulkViewModel);
+                var result = await _authService.UpdateLockoutUserInBulk(mappedData);
+
+                if (result > 0)
+                {
+                    return Ok(new { message = $"Lockout User updated successfully for {result} users." });
+                }
+                else
+                {
+                    return NotFound(new { message = "No users found with the specified conditions." });
+                }
+            }
+            else
+            {
+                return BadRequest(new { message = "Invalid input." });
+            }
+        }
+
         #endregion
 
         #region Delete User

@@ -822,14 +822,14 @@ namespace EAMS_DAL.AuthRepository
             int pageSize = getUser.PageSize == 0 ? 10 : getUser.PageSize;
             int skip = (page - 1) * pageSize;
 
-            var filteredQuery = query.Skip(skip).Take(pageSize); 
+            var filteredQuery = query.Skip(skip).Take(pageSize);
             var userList = await filteredQuery.Select(d => new GetUserList
             {
                 UserName = d.UserName,
                 Email = d.Email,
                 PhoneNumber = d.PhoneNumber,
                 LockoutEnabled = d.LockoutEnabled,
-                UserId = d.Id, 
+                UserId = d.Id,
             }).ToListAsync();
 
             var totalCount = await query.CountAsync();
@@ -849,12 +849,40 @@ namespace EAMS_DAL.AuthRepository
         {
             var user = await _userManager.FindByIdAsync(updateLockoutUser.UserId);
             if (user != null)
-            { 
-                var result = await _userManager.SetLockoutEnabledAsync(user,updateLockoutUser.LockoutEnabled);
+            {
+                var result = await _userManager.SetLockoutEnabledAsync(user, updateLockoutUser.LockoutEnabled);
                 return result.Succeeded;
             }
             return false;
         }
+        public async Task<int> UpdateLockoutUserInBulk(UpdateLockoutUserInBulk updateLockoutUser)
+        {
+            // Construct the base query
+            var usersQuery = _context.Users.AsQueryable();
+
+            if (updateLockoutUser.StateMasterId != 0 && updateLockoutUser.DistrictMasterId == 0 && updateLockoutUser.AssemblyMasterId == 0 && updateLockoutUser.FourthLevelHMasterId == 0 && updateLockoutUser.ElectionTypeMasterId != 0)
+            {
+                usersQuery = usersQuery.Where(u => u.StateMasterId == updateLockoutUser.StateMasterId && u.ElectionTypeMasterId == updateLockoutUser.ElectionTypeMasterId);
+            }
+            if (updateLockoutUser.StateMasterId != 0 && updateLockoutUser.DistrictMasterId != 0 && updateLockoutUser.AssemblyMasterId == 0 && updateLockoutUser.FourthLevelHMasterId == 0 && updateLockoutUser.ElectionTypeMasterId != 0)
+            {
+                usersQuery = usersQuery.Where(u => u.StateMasterId == updateLockoutUser.StateMasterId && u.DistrictMasterId == updateLockoutUser.DistrictMasterId && u.ElectionTypeMasterId == updateLockoutUser.ElectionTypeMasterId);
+            }
+            if (updateLockoutUser.StateMasterId != 0 && updateLockoutUser.DistrictMasterId != 0 && updateLockoutUser.AssemblyMasterId != 0 && updateLockoutUser.FourthLevelHMasterId == 0 && updateLockoutUser.ElectionTypeMasterId != 0)
+            {
+                usersQuery = usersQuery.Where(u => u.StateMasterId == updateLockoutUser.StateMasterId && u.DistrictMasterId == updateLockoutUser.DistrictMasterId && u.AssemblyMasterId == updateLockoutUser.AssemblyMasterId && u.ElectionTypeMasterId == updateLockoutUser.ElectionTypeMasterId);
+            }
+            if (updateLockoutUser.StateMasterId != 0 && updateLockoutUser.DistrictMasterId != 0 && updateLockoutUser.AssemblyMasterId != 0 && updateLockoutUser.FourthLevelHMasterId != 0 && updateLockoutUser.ElectionTypeMasterId != 0)
+            {
+                usersQuery = usersQuery.Where(u => u.StateMasterId == updateLockoutUser.StateMasterId && u.DistrictMasterId == updateLockoutUser.DistrictMasterId && u.AssemblyMasterId == updateLockoutUser.AssemblyMasterId && u.FourthLevelHMasterId == updateLockoutUser.FourthLevelHMasterId && u.ElectionTypeMasterId == updateLockoutUser.ElectionTypeMasterId);
+            }
+
+            // Perform the bulk update and get the total affected rows
+            var affectedRows = await usersQuery.ExecuteUpdateAsync(u => u.SetProperty(u => u.LockoutEnabled, updateLockoutUser.LockoutEnabled));
+
+            return affectedRows;
+        }
+
 
         #endregion
 

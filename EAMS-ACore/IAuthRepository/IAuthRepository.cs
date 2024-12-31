@@ -47,6 +47,7 @@ namespace EAMS_ACore.IAuthRepository
         Task<ServiceResponse> ResetPassword(ResetPasswordModel resetPasswordModel);
         Task<Dictionary<string, object>> GetUserList(GetUser getUser);
         Task<bool> UpdateLockoutUser(UpdateLockoutUser updateLockoutUser);
+        Task<int> UpdateLockoutUserInBulk(UpdateLockoutUserInBulk updateLockoutUserInBulk);
         Task<ElectionTypeMaster> GetElectionTypeById(int? electionTypeMasterId);
         Task<ServiceResponse> LoginWithTwoFactorCheckAsync(Login login);
 
