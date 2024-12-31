@@ -62,17 +62,40 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
-        public string? Option1
+        public string? AffidavitPdfPath
+        {
+            get;
+            set;
+        }
+        public bool IsUnOppossed
+        {
+            get;
+            set;
+        }
+        public string? Age
         {
 
             get; set;
+        }
+        public string? PartyName
+        {
+            get;
+            set;
         }
         public string? Option2
         {
 
             get; set;
         }
-
+        public bool IsNOTA
+        {
+            get;
+            set;
+        }
+        public IEnumerable<object> DefaultIfEmpty()
+        {
+            throw new NotImplementedException();
+        }
     }
     public class KycList
     {
@@ -137,6 +160,7 @@ namespace EAMS_ACore.Models.PublicModels
             set;
 
         }
+        public string? HierarchyType { get; set; }
         public int? PSZonePanchayatMasterId
         {
             get;
@@ -160,6 +184,9 @@ namespace EAMS_ACore.Models.PublicModels
             set;
 
         }
+        public string? GPPanchayatWardsCategory { get; set; }
+        public int? GPPanchayatWardsCode { get; set; }
+
         public string CandidateType
         {
             get;
@@ -180,7 +207,12 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
-        public string? Option1
+        public string? AffidavitPdfPath
+        {
+            get;
+            set;
+        }
+        public string? Age
         {
 
             get; set;
@@ -190,6 +222,15 @@ namespace EAMS_ACore.Models.PublicModels
 
             get; set;
         }
-
+        public bool IsUnOppossed
+        {
+            get;
+            set;
+        }
+        public string? PartyName
+        {
+            get;
+            set;
+        }
     }
 }

@@ -14,19 +14,19 @@
         //[StringValue("PBGOVT")]
         //SenderId,
 
-        [StringValue("1101445180000039470")]
+        [StringValue("1301157492438182299")]
         EntityId,
 
-        [StringValue("ceopunjab.otp")]
+        [StringValue("pbgovt.otp")]
         UserName,
 
-        [StringValue("hvrc4pVA")]
+        [StringValue("Rvp%2B74x=J6tw")]
         Password,
 
-        [StringValue("CEOPUN")]
+        [StringValue("SECPJB")]
         SenderId,
 
-        [StringValue("7")]
+        [StringValue("2")]
         OTP,
 
         [StringValue("Message Accepted")]

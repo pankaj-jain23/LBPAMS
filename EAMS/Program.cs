@@ -17,14 +17,16 @@ using EAMS_DAL.DBContext;
 using EAMS_DAL.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using StackExchange.Redis;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
- 
+
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -41,9 +43,16 @@ builder.Services.AddDbContextPool<EamsContext>(options =>
         npgsqlOptionsAction: sqlOptions =>
         {
             sqlOptions.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(30), errorCodesToAdd: null);
-           
+
         });
 });
+var redisConnectionString = builder.Configuration.GetConnectionString("RedisCacheUrl");
+builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
+{
+    var configuration = ConfigurationOptions.Parse(redisConnectionString, true);
+    return ConnectionMultiplexer.Connect(configuration);
+});
+
 builder.Services
     .AddIdentity<UserRegistration, IdentityRole>()
     .AddEntityFrameworkStores<EamsContext>()
@@ -70,7 +79,7 @@ builder.Services
     })
     .AddJwtBearer(options =>
     {
-        options.SaveToken = true;
+        //options.SaveToken = true;
         options.RequireHttpsMetadata = false;
         options.TokenValidationParameters = new TokenValidationParameters()
         {
@@ -80,23 +89,27 @@ builder.Services
             ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
             ValidAudience = builder.Configuration["JWT:ValidAudience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"])),
-            ClockSkew = TimeSpan.FromMinutes(5), // Set to zero or adjust according to your requirements
-            RequireSignedTokens = true,
+            ClockSkew = TimeSpan.Zero,
 
         };
+        // Enable JWT Bearer token authentication for SignalR connections
         options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
             {
-                var accessToken = context.Request.Query["access_token"]; 
-                if (!string.IsNullOrEmpty(accessToken))
+                var accessToken = context.Request.Query["access_token"];
+
+                // If the request is for our SignalR hub, extract the token from the query string
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    (path.StartsWithSegments("/DashBoardHub")))
                 {
                     context.Token = accessToken;
                 }
-
                 return Task.CompletedTask;
             }
         };
+
     });
 
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -109,6 +122,7 @@ builder.Services.AddScoped<IUserConnectionService, UserConnectionService>();
 builder.Services.AddScoped<IUserConnectionServiceRepository, UserConnectionServiceRepository>();
 builder.Services.AddScoped<IRealTime, RealTimeService>();
 builder.Services.AddScoped<IExternal, ExternalService>();
+builder.Services.AddScoped<ICacheService, CacheService>();
 //builder.Services.AddHostedService<DatabaseListenerService>();
 
 builder.Services.AddSwaggerGen(opt =>
@@ -146,24 +160,13 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(builder =>
     {
         builder.AllowAnyOrigin()
-               .AllowAnyHeader()
+             .AllowAnyHeader()
                .AllowAnyMethod();
     });
 });
 
-builder.Services.AddSignalR(options =>
-{
-    // Enable detailed logging for diagnostic purposes
-    options.EnableDetailedErrors = true;
-})
-    .AddHubOptions<DashBoardHub>(options =>
-    {
-        options.MaximumReceiveMessageSize = 102400000;
-        options.ClientTimeoutInterval = TimeSpan.FromSeconds(60);
-        options.KeepAliveInterval = TimeSpan.FromMinutes(2);
-        options.MaximumParallelInvocationsPerClient = 10;
+builder.Services.AddSignalR();
 
-    });
 builder.Services.AddSignalRCore();
 var logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
@@ -173,27 +176,16 @@ var logger = new LoggerConfiguration()
 
 
 builder.Logging.AddSerilog(logger);
- 
-   // BenchmarkRunner.Run<EAMSController>();
-  
-var app = builder.Build();
-app.Use(async (context, next) =>
-{
-    context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
-    context.Response.Headers.Add("X-XSS-Protection", "1; mode=block");
-    context.Response.Headers.Add("X-Frame-Options", "DENY");
-    context.Response.Headers.Remove("X-Powered-By");
-    context.Response.Headers.Add("Referrer-Policy", "no-referrer");
-    context.Response.Headers.Add("Access-Control-Allow-Origin", "*"); // Allow CORS for any origin
-    context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization"); // Allow specific headers
-    context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE"); // Allow specific methods
-    context.Response.Headers.Add("Access-Control-Allow-Credentials", "true"); // Allow credentials for WebSocket
-    await next();
-});
 
-app.UseSwagger();
-app.UseSwaggerUI();
-app.UseStaticFiles();
+var app = builder.Build();
+ 
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+
 app.UseCors();
 app.UseWebSockets();
 
@@ -203,9 +195,14 @@ app.UseMiddleware<TokenExpirationMiddleware>();
 app.MapHub<DashBoardHub>("/DashBoardHub", options =>
 {
 }).RequireAuthorization();
-
+app.UseStaticFiles();
 app.UseAuthorization();
 app.UseHttpsRedirection();
+//app.MapPost("/api/login", async (IAuthService authService, LoginRequest login) =>
+//{
+//    var result = await authService.LoginAsync(login);
+//    return result.Success ? Results.Ok(result) : Results.Unauthorized();
+//});
 app.MapControllers();
 
 app.Run();

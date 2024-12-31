@@ -5,6 +5,7 @@ namespace EAMS.ViewModels
     public class SlotManagementViewModel
     {
         public int StateMasterId { get; set; }
+        public int ElectionTypeMasterId { get; set; }
         public int EventMasterId { get; set; }
         public List<SlotTimeViewModel> slotTimes { get; set; }
 

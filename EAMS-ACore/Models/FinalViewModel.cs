@@ -7,18 +7,15 @@
         public int? LastVotesPolled { get; set; }
         public int? LastFinalVotesPolled { get; set; }
         public DateTime? VotesFinalPolledTime { get; set; }
-
         public bool? VoteEnabled { get; set; }
         public string? Message { get; set; }
-
-        public string? TotalAvailableMale { get; set; }
-        public string? TotalAvailableFemale { get; set; }
-        public string? TotalAvailableTransgender { get; set; }
-
-        public string? Male { get; set; }
-        public string? Female { get; set; }
-        public string? Transgender { get; set; }
-        public string? edc { get; set; }
+        public int? TotalAvailableMale { get; set; }
+        public int? TotalAvailableFemale { get; set; }
+        public int? TotalAvailableTransgender { get; set; } 
+        public int? Male { get; set; }
+        public int? Female { get; set; }
+        public int? Transgender { get; set; }
+        public int? edc { get; set; }
         public int ElectionTypeMasterId { get; set; }
 
 

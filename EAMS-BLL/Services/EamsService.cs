@@ -3,18 +3,23 @@ using EAMS.ViewModels.PSFormViewModel;
 using EAMS_ACore;
 using EAMS_ACore.HelperModels;
 using EAMS_ACore.IAuthRepository;
+using EAMS_ACore.IExternal;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.IRepository;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
+using EAMS_ACore.Models.CommonModels;
 using EAMS_ACore.Models.ElectionType;
+using EAMS_ACore.Models.EventActivityModels;
 using EAMS_ACore.Models.Polling_Personal_Randomisation_Models;
 using EAMS_ACore.Models.Polling_Personal_Randomization_Models;
 using EAMS_ACore.Models.PollingStationFormModels;
 using EAMS_ACore.Models.PublicModels;
 using EAMS_ACore.Models.QueueModel;
+using EAMS_ACore.Models.ResultModels;
 using EAMS_ACore.ReportModels;
 using EAMS_ACore.SignalRModels;
+using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Security.Claims;
 
@@ -24,10 +29,12 @@ namespace EAMS_BLL.Services
     {
         private readonly IEamsRepository _eamsRepository;
         private readonly IAuthRepository _authRepository;
-        public EamsService(IEamsRepository eamsRepository, IAuthRepository authRepository)
+        private readonly ICacheService _cacheService;
+        public EamsService(IEamsRepository eamsRepository, IAuthRepository authRepository, ICacheService cacheService)
         {
             _eamsRepository = eamsRepository;
             _authRepository = authRepository;
+            _cacheService = cacheService;
         }
         private DateTime? BharatDateTime()
         {
@@ -63,6 +70,28 @@ namespace EAMS_BLL.Services
         }
         #endregion
 
+        #region Clear Mappings
+        public async Task<ServiceResponse> IsClearBLOMappings(int stateMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.IsClearBLOMappings(stateMasterId, electionTypeMasterId);
+        }
+        public async Task<ServiceResponse> IsClearSOMappings(int stateMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.IsClearSOMappings(stateMasterId, electionTypeMasterId);
+        }
+        public async Task<ServiceResponse> IsClearPollDetails(int stateMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.IsClearPollDetails(stateMasterId, electionTypeMasterId);
+        }
+        public async Task<ServiceResponse> IsClearElectionInfo(int stateMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.IsClearElectionInfo(stateMasterId, electionTypeMasterId);
+        }
+        public async Task<ServiceResponse> IsClearSlotInfo(int stateMasterId, int electionTypeMasterId, int eventMasterId)
+        {
+            return await _eamsRepository.IsClearSlotInfo(stateMasterId, electionTypeMasterId, eventMasterId);
+        }
+        #endregion
 
         #region DeleteMaster
         public async Task<ServiceResponse> DeleteMasterStatus(DeleteMasterStatus updateMasterStatus)
@@ -178,9 +207,9 @@ namespace EAMS_BLL.Services
         #endregion
 
         #region  FO Master
-        public async Task<List<FieldOfficerMaster>> GetFieldOfficersListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        public async Task<List<FieldOfficerMaster>> GetFieldOfficersListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
         {
-            return await _eamsRepository.GetFieldOfficersListById(stateMasterId, districtMasterId, assemblyMasterId);
+            return await _eamsRepository.GetFieldOfficersListById(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId);
         }
 
         public async Task<List<CombinedMaster>> AppNotDownload(string stateMasterId)
@@ -188,17 +217,22 @@ namespace EAMS_BLL.Services
             return await _eamsRepository.AppNotDownload(stateMasterId);
         }
 
-        public async Task<SectorOfficerProfile> GetSectorOfficerProfile(string Id, string role)
+        public async Task<FieldOfficerProfile> GetFieldOfficerProfile(string Id, string role)
         {
-            if (role == "SO")
+            if (role == "FO")
             {
-                return await _eamsRepository.GetSectorOfficerProfile(Id);
+                return await _eamsRepository.GetFieldOfficerProfile(Id);
             }
-            else
+            else if (role == "BLO")
             {
                 return await _eamsRepository.GetBLOOfficerProfile(Id);
             }
+            else
+            {
+                return await _eamsRepository.GetAROProfile(Id);
+            }
         }
+
         public async Task<Response> AddFieldOfficer(FieldOfficerMaster fieldOfficerViewModel)
         {
             return await _eamsRepository.AddFieldOfficer(fieldOfficerViewModel);
@@ -211,6 +245,7 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.UpdateFieldOfficer(fieldOfficerViewModel);
         }
+
         public async Task<Response> UpdateBLOOfficer(BLOMaster bLOMaster)
         {
             return await _eamsRepository.UpdateBLOOfficer(bLOMaster);
@@ -226,10 +261,43 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetBoothListForFo(stateMasterId, districtMasterId, assemblyMasterId, foId);
         }
+
+        public async Task<List<CombinedMaster>> GetBoothListForResultDeclaration(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
+        {
+            return await _eamsRepository.GetBoothListForResultDeclaration(stateMasterId, districtMasterId, assemblyMasterId, foId);
+        }
         /// </summary>
         public async Task<FieldOfficerMasterList> GetFieldOfficerById(int FieldOfficerMasterId)
         {
             return await _eamsRepository.GetFieldOfficerById(FieldOfficerMasterId);
+        }
+
+        #endregion
+
+        #region AROResult
+      public  async Task<ServiceResponse> IsMobileNumberUnique(string mobileNumber)
+        {
+            return await _eamsRepository.IsMobileNumberUnique( mobileNumber);
+        }
+        public async Task<Response> AddAROResult(AROResultMaster aROResultMaster)
+        {
+            return await _eamsRepository.AddAROResult(aROResultMaster);
+        }
+        public async Task<Response> UpdateAROResult(AROResultMaster aROResultMaster)
+        {
+            return await _eamsRepository.UpdateAROResult(aROResultMaster);
+        }
+        public async Task<AROResultMasterList> GetAROResultById(int aroMasterId)
+        {
+            return await _eamsRepository.GetAROResultById(aroMasterId);
+        }
+        public async Task<List<AROResultMaster>> GetAROListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        {
+            return await _eamsRepository.GetAROListById(stateMasterId, districtMasterId, assemblyMasterId);
+        }
+        public async Task<IsRDProfileUpdated> IsRDProfileUpdated(int aroMasterId, string userId)
+        {
+            return await _eamsRepository.IsRDProfileUpdated(aroMasterId, userId);
         }
         #endregion
 
@@ -282,13 +350,26 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetBoothById(boothMasterId);
         }
+        public async Task<BoothDetailForVoterInQueue> GetBoothDetailForVoterInQueue(int boothMasterId)
+        {
+            return await _eamsRepository.GetBoothDetailForVoterInQueue(boothMasterId);
+        }
 
         #endregion
 
         #region Event Master
+        public async Task<ServiceResponse> IsVTEventTimeExtended(int stateMasterId, int electionTypeMasterId, bool isVTEventTimeExtended)
+        {
+
+            return await _eamsRepository.IsVTEventTimeExtended(stateMasterId, electionTypeMasterId, isVTEventTimeExtended);
+        }
         public async Task<List<EventMaster>> GetEventListById(int stateMasterId, int electionTypeMasterId)
         {
             return await _eamsRepository.GetEventListById(stateMasterId, electionTypeMasterId);
+        }
+        public async Task<List<EventMaster>> GetEventListForBooth(int stateMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.GetEventListForBooth(stateMasterId, electionTypeMasterId);
         }
         public async Task<List<EventAbbr>> GetEventAbbrList()
         {
@@ -302,9 +383,9 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.UpdateEvent(eventMaster);
         }
-        public async Task<ServiceResponse> UpdateEventStaus(EventMaster eventMaster)
+        public async Task<ServiceResponse> UpdateEventStatus(EventMaster eventMaster)
         {
-            var isSucced = await _eamsRepository.UpdateEventStaus(eventMaster);
+            var isSucced = await _eamsRepository.UpdateEventStatus(eventMaster);
             if (isSucced.IsSucceed)
             {
                 return new ServiceResponse
@@ -362,1207 +443,230 @@ namespace EAMS_BLL.Services
 
 
 
-        public Task<List<AssemblyMaster>> GetAssemblyByPCId(string stateMasterid, string PcMasterId)
+        public async Task<List<AssemblyMaster>> GetAssemblyByPCId(string stateMasterid, string PcMasterId)
         {
-            return _eamsRepository.GetAssemblyByPCId(stateMasterid, PcMasterId);
+            return await _eamsRepository.GetAssemblyByPCId(stateMasterid, PcMasterId);
         }
 
-        public Task<List<AssemblyMaster>> GetAssemblyByDistrictId(string stateMasterid, string districtMasterId)
+        public async Task<List<AssemblyMaster>> GetAssemblyByDistrictId(string stateMasterid, string districtMasterId)
         {
-            return _eamsRepository.GetAssemblyByDistrictId(stateMasterid, districtMasterId);
+            return await _eamsRepository.GetAssemblyByDistrictId(stateMasterid, districtMasterId);
         }
 
         #endregion
 
         #region EventActivity
-        public async Task<Response> EventActivity(ElectionInfoMaster electionInfoMaster)
+        public async Task<(bool IsToday, string StartDateString, bool IsPrePolled)> IsEventActivityValid(int stateMasterId, int electionTypeMasterId, int eventMasterId)
         {
-            var electionInfoRecord = await _eamsRepository.EventUpdationStatus(electionInfoMaster);
-
-            if (electionInfoRecord != null)
+            return await _eamsRepository.IsEventActivityValid(stateMasterId, electionTypeMasterId, eventMasterId);
+        }
+        public async Task<bool> IsVTEventValidSlotDate(int stateMasterId, int electionTypeMasterId )
+        {
+            return await _eamsRepository.IsVTEventValidSlotDate(stateMasterId,electionTypeMasterId );
+        }
+        public async Task<ServiceResponse> UpdateEventActivity(UpdateEventActivity updateEventActivity, string userType)
+        {
+            // Get the previous event status
+            var previousEventStatus = await _eamsRepository.GetPreviousEvent(updateEventActivity);
+            var nextEvent = await _eamsRepository.GetNextEvent(updateEventActivity);
+            // If no previous event exists, update the activity directly only for Party Dispatch Case
+            if (previousEventStatus == null)
             {
-                string pollInterruptedMsg = "You have not entered 'Resume Time' in Poll interruption against this booth.";
-                bool isPollInterruptedOfBooth = await _eamsRepository.IsPollInterrupted(electionInfoMaster.BoothMasterId);
-                var boothRecord = await _eamsRepository.GetBoothById(electionInfoMaster.BoothMasterId.ToString());
-                var assemblyMasterRecord = await _eamsRepository.GetAssemblyById(boothRecord.AssemblyMasterId.ToString());
-
-                switch (electionInfoMaster.EventMasterId)
+                //For Undo case we have to check next event is false or not in Party Dispatch Case
+                CheckEventActivity checkEventActivity = new CheckEventActivity()
                 {
-                    case 1: // Party Dispatch
-                        return await HandlePartyDispatchEvent(electionInfoMaster, electionInfoRecord, isPollInterruptedOfBooth, pollInterruptedMsg, assemblyMasterRecord);
+                    StateMasterId = updateEventActivity.StateMasterId,
+                    DistrictMasterId = updateEventActivity.DistrictMasterId,
+                    AssemblyMasterId = updateEventActivity.AssemblyMasterId,
+                    BoothMasterId = updateEventActivity.BoothMasterId,
+                    ElectionTypeMasterId = updateEventActivity.ElectionTypeMasterId,
+                    EventMasterId = nextEvent.EventMasterId,
+                    EventABBR = nextEvent.EventABBR,
+                    EventSequence = nextEvent.EventSequence,
+                    EventStatus = nextEvent.EventStatus,
+                };
 
-                    case 2: // Party Reach
-                        return await HandlePartyReachEvent(electionInfoMaster, electionInfoRecord, isPollInterruptedOfBooth, pollInterruptedMsg, assemblyMasterRecord);
-
-                    case 3: // setup of polling
-                        return await HandleSetupPollingEvent(electionInfoMaster, electionInfoRecord, isPollInterruptedOfBooth, pollInterruptedMsg, assemblyMasterRecord);
-
-                    case 4: // mockpoll
-                        return await HandleMockPollEvent(electionInfoMaster, electionInfoRecord, isPollInterruptedOfBooth, pollInterruptedMsg, assemblyMasterRecord);
-
-                    case 5: // mockpoll
-                        return await HandlePollStartedEvent(electionInfoMaster, electionInfoRecord, isPollInterruptedOfBooth, pollInterruptedMsg, assemblyMasterRecord);
-
-                    case 7: // queue
-                        return await HandleQueueEvent(electionInfoMaster, electionInfoRecord, isPollInterruptedOfBooth);
-                    case 8: // final
-                        return await HandleFinalVoteEvent(electionInfoMaster, electionInfoRecord, isPollInterruptedOfBooth);
-                    case 9: // poll ended
-                        return await HandlePollEndedEvent(electionInfoMaster, electionInfoRecord);
-                    case 10: // mcewitchoff
-                        return await HandleMCESwitchOffEvent(electionInfoMaster, electionInfoRecord);
-                    case 11: // partydeparted
-                        return await HandlePartyDepartedEvent(electionInfoMaster, electionInfoRecord);
-                    case 12: // partreachcollection
-                        return await HandlePartyReachCollectionEvent(electionInfoMaster, electionInfoRecord);
-                    case 13: // evmdepoist
-                        return await HandleEVMDepositedEvent(electionInfoMaster, electionInfoRecord);
-
-                    // Add cases for other events...
-                    default:
-                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Invalid EventMasterId." };
-                }
-            }
-            else
-            {
-                if (electionInfoMaster.EventMasterId == 1)
+                var isPDTrue = await IsEventActivityDone(checkEventActivity);
+                if (isPDTrue.IsSucceed == true)
                 {
-                    string pollInterruptedMsg = "You have not entered 'Resume Time' in Poll interruption against this booth.";
-                    bool isPollInterruptedOfBooth = await _eamsRepository.IsPollInterrupted(electionInfoMaster.BoothMasterId);
-                    var boothRecord = await _eamsRepository.GetBoothById(electionInfoMaster.BoothMasterId.ToString());
-                    var assemblyMasterRecord = await _eamsRepository.GetAssemblyById(boothRecord.AssemblyMasterId.ToString());
-                    if (isPollInterruptedOfBooth == false)
+                    return new ServiceResponse
                     {
-                        electionInfoMaster.PCMasterId = assemblyMasterRecord.PCMasterId;
-                        return await _eamsRepository.EventActivity(electionInfoMaster);
-                    }
-                    else
-                    {
-                        return new Response { Status = RequestStatusEnum.BadRequest, Message = pollInterruptedMsg };
-                    }
+                        IsSucceed = false,
+                        Message = "You have to undo Last updated Event"
+                    };
                 }
-                else
-                {
-                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please Check Party Dispatch Event" };
-                }
+                return await UpdateEventsActivity(updateEventActivity, userType);
             }
+
+            // Check if the event activity is done
+            var previousEventResponse = await IsEventActivityDone(previousEventStatus);
+            var NextEventResponse = await IsEventActivityDone(nextEvent);
+
+            // If the event is not done, return a failure response
+            if (!previousEventResponse.IsSucceed)
+            {
+                return new ServiceResponse
+                {
+                    IsSucceed = false,
+                    Message = previousEventResponse.Message
+                };
+            }
+            if (previousEventResponse.IsSucceed == true && NextEventResponse.IsSucceed == true)
+            {
+                return new ServiceResponse
+                {
+                    IsSucceed = false,
+                    Message = "You have to undo Last updated Event"
+                };
+            }
+            // If the event UpdateEventsActivity done, proceed with updating the activity
+            return await UpdateEventsActivity(updateEventActivity, userType);
         }
 
-        // Extracted Methods
 
-        private async Task<Response> HandlePartyDispatchEvent(ElectionInfoMaster electionInfoMaster, ElectionInfoMaster electionInfoRecord, bool isPollInterruptedOfBooth, string pollInterruptedMsg, AssemblyMaster assemblyMasterRecord)
+        private async Task<ServiceResponse> IsEventActivityDone(CheckEventActivity checkEventActivity)
         {
-            if (isPollInterruptedOfBooth)
+            ServiceResponse response = null;
+
+            switch (checkEventActivity.EventABBR)
             {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = pollInterruptedMsg };
+                case "PD": // Party Dispatch
+                    response = await _eamsRepository.IsPartyDispatch(checkEventActivity);
+                    break;
+
+                case "PA": // Party Arrived
+                    response = await _eamsRepository.IsPartyArrived(checkEventActivity);
+                    break;
+                case "SP": // Setup Polling Station
+                    response = await _eamsRepository.IsSetupPollingStation(checkEventActivity);
+                    break;
+                case "MP": // Mock Poll Done
+                    response = await _eamsRepository.IsMockPollDone(checkEventActivity);
+                    break;
+                case "PS": // Poll Started
+                    response = await _eamsRepository.IsPollStarted(checkEventActivity);
+                    break;
+                case "VT": // Voter Turn Out
+                    response = await _eamsRepository.IsVoterTurnOut(checkEventActivity);
+                    break;
+                case "VQ": // Voter In Queue
+                    response = await _eamsRepository.IsVoterInQueue(checkEventActivity);
+                    break;
+                case "FV": // Final Votes Polled
+                    response = await _eamsRepository.IsFinalVotesPolled(checkEventActivity);
+                    break;
+                case "PE": // Poll Ended
+                    response = await _eamsRepository.IsPollEnded(checkEventActivity);
+                    break;
+                case "EO": // EVMVVPATOff
+                    response = await _eamsRepository.IsEVMVVPATOff(checkEventActivity);
+                    break;
+
+                case "PC": // PartyDeparted	
+                    response = await _eamsRepository.IsPartyDeparted(checkEventActivity);
+                    break;
+
+                case "PR": // PartyReachedAtCollection
+                    response = await _eamsRepository.IsPartyReachedAtCollection(checkEventActivity);
+                    break;
+
+                case "ED": // EVMDeposited
+                    response = await _eamsRepository.IsEVMDeposited(checkEventActivity);
+                    break;
+
+
+
+                default:
+                    // Handle any unsupported events if necessary
+                    response = new ServiceResponse { IsSucceed = false };
+                    break;
             }
 
-            if (electionInfoRecord.IsPartyReached == true)
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Party Has Already Arrived." };
-            }
+            return response;
 
-            if (electionInfoRecord.IsPartyDispatched != null)
-            {
-                // Update electionInfoRecord and return response
-                electionInfoRecord.IsPartyDispatched = electionInfoMaster.IsPartyDispatched;
-                electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-                electionInfoRecord.PartyDispatchedLastUpdate = BharatDateTime();
-                electionInfoRecord.PCMasterId = assemblyMasterRecord.PCMasterId;
-
-                return await _eamsRepository.EventActivity(electionInfoRecord);
-
-            }
-            else
-            {// Party Dispatch status is already set
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Party Already Dispatched." };
-
-            }
-
-
-
-            //            if (isPollInterruptedOfBooth == false)
-            //            {
-            //                if (electionInfoRecord.IsPartyReached == false || electionInfoRecord.IsPartyReached == null)
-            //                {
-            //                    if (electionInfoRecord.IsPartyDispatched is not null)
-            //                    {
-            //                        electionInfoRecord.IsPartyDispatched = electionInfoMaster.IsPartyDispatched;
-            //                        electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-            //                        electionInfoRecord.PartyDispatchedLastUpdate = BharatDateTime();
-            //        electionInfoRecord.PartyDispatchedLastUpdate = BharatDateTime();
-            //        electionInfoRecord.PCMasterId = assemblyMasterRecord.PCMasterId;
-            //                        return await _eamsRepository.EventActivity(electionInfoRecord);
-            //    }
-            //                    else
-            //                    {
-            //                        //Already Yes
-            //                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Party Already Dispatched." };
-
-            //                    }
-            //                }
-            //                else
-            //{
-            //    // party alteady arrived, cnt change status!
-            //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Party Has Already Arrived." };
-            //}
-            //            }
-            //            else
-            //{
-            //    return new Response { Status = RequestStatusEnum.BadRequest, Message = pollInterruptedMsg };
-
-            //}
         }
 
-        private async Task<Response> HandlePartyReachEvent(ElectionInfoMaster electionInfoMaster, ElectionInfoMaster electionInfoRecord, bool isPollInterruptedOfBooth, string pollInterruptedMsg, AssemblyMaster assemblyMasterRecord)
+        private async Task<ServiceResponse> UpdateEventsActivity(UpdateEventActivity updateEventActivity, string userType)
         {
+            ServiceResponse response = null;
 
-
-
-            if (electionInfoRecord.IsSetupOfPolling == true)
+            switch (updateEventActivity.EventABBR)
             {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Can't Change Status, SetUpPolling Already yes." };
+                case "PD": // Party Dispatch
+                    response = await _eamsRepository.PartyDispatch(updateEventActivity);
+                    break;
+
+                case "PA": // Party Arrived
+                    response = await _eamsRepository.PartyArrived(updateEventActivity);
+                    break;
+                case "SP": // Setup Polling Station
+                    response = await _eamsRepository.SetupPollingStation(updateEventActivity);
+                    break;
+                case "MP": // Mock Poll Done
+                    response = await _eamsRepository.MockPollDone(updateEventActivity);
+                    break;
+                case "PS": // Poll Started
+                    response = await _eamsRepository.PollStarted(updateEventActivity);
+                    break;
+                case "VT": // Voter Turn Out
+                    response = await _eamsRepository.VoterTurnOut(updateEventActivity, userType);
+                    break;
+                case "VQ": // Voter In Queue
+                    response = await _eamsRepository.VoterInQueue(updateEventActivity);
+                    break;
+                case "FV": // Final Votes Polled
+                    response = await _eamsRepository.FinalVotesPolled(updateEventActivity);
+                    break;
+                case "PE": // Poll Ended
+                    response = await _eamsRepository.PollEnded(updateEventActivity);
+                    break;
+                case "EO": // EVMVVPATOff
+                    response = await _eamsRepository.EVMVVPATOff(updateEventActivity);
+                    break;
+
+                case "PC": // PartyDeparted	
+                    response = await _eamsRepository.PartyDeparted(updateEventActivity);
+                    break;
+
+                case "PR": // PartyReachedAtCollection
+                    response = await _eamsRepository.PartyReachedAtCollection(updateEventActivity);
+                    break;
+
+                case "ED": // EVMDeposited
+                    response = await _eamsRepository.EVMDeposited(updateEventActivity);
+                    break;
+
+
+
+                default:
+                    // Handle any unsupported events if necessary
+                    response = new ServiceResponse { IsSucceed = false };
+                    break;
             }
-            if (electionInfoRecord.IsPartyDispatched != true)
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Party Not Dispatched Yet." };
-            }
 
-            if (electionInfoRecord.IsSetupOfPolling != true)
-            {
-                // Update electionInfoRecord and return response
-                electionInfoRecord.IsPartyReached = electionInfoMaster.IsPartyReached;
-                electionInfoRecord.PartyReachedLastUpdate = BharatDateTime();
-                electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-
-                return await _eamsRepository.EventActivity(electionInfoRecord);
-
-            }
-            else
-            {// Party aarived status is already set
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Can't Change Status, SetUpPolling Already yes" };
-
-            }
-
-            //if (isPollInterruptedOfBooth == false)
-            //{
-            //    if (electionInfoRecord.IsPartyDispatched == true)
-            //    {
-
-            //        if (electionInfoRecord.IsSetupOfPolling == false || electionInfoRecord.IsSetupOfPolling == null)
-            //        {
-            //            electionInfoRecord.IsPartyReached = electionInfoMaster.IsPartyReached;
-            //            electionInfoRecord.PartyReachedLastUpdate = BharatDateTime();
-            //            electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-            //            electionInfoRecord.PCMasterId = assemblyMasterRecord.PCMasterId;
-            //            return await _eamsRepository.EventActivity(electionInfoRecord);
-            //        }
-            //        else
-            //        {
-
-            //            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Can't Change Status, SetUpPolling Already yes." };
-
-            //        }
-
-
-            //    }
-            //    else
-            //    {
-
-            //        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Party Not Dispatched Yet." };
-            //    }
-            //}
-            //else
-            //{
-            //    return new Response { Status = RequestStatusEnum.BadRequest, Message = pollInterruptedMsg };
-            //}
+            return response;
         }
-
-        private async Task<Response> HandleSetupPollingEvent(ElectionInfoMaster electionInfoMaster, ElectionInfoMaster electionInfoRecord, bool isPollInterruptedOfBooth, string pollInterruptedMsg, AssemblyMaster assemblyMasterRecord)
+        public async Task<List<BoothEvents>> GetBoothEventListById(int stateMasterId, int electionTypeMasterId, int boothMasterId)
         {
-            if (isPollInterruptedOfBooth)
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = pollInterruptedMsg };
-            }
-
-            if (electionInfoRecord.IsPartyReached != true)
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Party Not Arrived Yet." };
-            }
-
-            if (electionInfoRecord.IsMockPollDone == true)
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Can't Change Status, MockPoll Already yes." };
-            }
-
-            // Update electionInfoRecord and return response
-            electionInfoRecord.IsSetupOfPolling = electionInfoMaster.IsSetupOfPolling;
-            electionInfoRecord.SetupOfPollingLastUpdate = BharatDateTime();
-            electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-            electionInfoRecord.PCMasterId = assemblyMasterRecord.PCMasterId;
-
-            return await _eamsRepository.EventActivity(electionInfoRecord);
+            return await _eamsRepository.GetBoothEventListById(stateMasterId, electionTypeMasterId, boothMasterId);
         }
-        private async Task<Response> HandleMockPollEvent(ElectionInfoMaster electionInfoMaster, ElectionInfoMaster electionInfoRecord, bool isPollInterruptedOfBooth, string pollInterruptedMsg, AssemblyMaster assemblyMasterRecord)
+
+        public async Task<ServiceResponse> EventActivity(ElectionInfoMaster electionInfoMaster)
         {
-            if (isPollInterruptedOfBooth)
+            return new ServiceResponse
             {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = pollInterruptedMsg };
-            }
-
-            if (electionInfoRecord.IsSetupOfPolling != true)
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Set Up Of Polling Not Done Yet." };
-            }
-
-            if (electionInfoRecord.IsPollStarted == true)
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Can't Change Status, Poll Started Already yes." };
-            }
-
-            // Update electionInfoRecord and return response
-            electionInfoRecord.IsMockPollDone = electionInfoMaster.IsMockPollDone;
-            electionInfoRecord.NoOfPollingAgents = electionInfoMaster.NoOfPollingAgents;
-            electionInfoRecord.MockPollDoneLastUpdate = BharatDateTime();
-            electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-            //            electionInfoRecord.PCMasterId = assemblyMasterRecord.PCMasterId;
-
-            return await _eamsRepository.EventActivity(electionInfoRecord);
+                IsSucceed = false
+            };
         }
-        private async Task<Response> HandlePollStartedEvent(ElectionInfoMaster electionInfoMaster, ElectionInfoMaster electionInfoRecord, bool isPollInterruptedOfBooth, string pollInterruptedMsg, AssemblyMaster assemblyMasterRecord)
-        {
-            if (isPollInterruptedOfBooth)
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = pollInterruptedMsg };
-            }
-
-            if (electionInfoRecord.IsMockPollDone != true)
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Mock Poll Done is not Done Yet." };
-            }
-
-            // Check if voter turn out status is entered
-            var pollCanStart = await _eamsRepository.CanPollStart(electionInfoRecord.BoothMasterId, 6);
-            if (!pollCanStart)
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Can't Change Status, Voter Turn Out Status is Entered." };
-            }
-
-            // Update electionInfoRecord and return response
-            electionInfoRecord.PollStartedLastUpdate = BharatDateTime();
-            electionInfoRecord.IsPollStarted = electionInfoMaster.IsPollStarted;
-            electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-            electionInfoRecord.PCMasterId = assemblyMasterRecord.PCMasterId;
-
-            return await _eamsRepository.EventActivity(electionInfoRecord);
-        }
-
-        public async Task<Response> HandleQueueEvent(ElectionInfoMaster electionInfoMaster, ElectionInfoMaster electionInfoRecord, bool isPollInterruptedOfBooth)
-        {
-            var queueCanStart = await _eamsRepository.CanQueueStart(electionInfoRecord.BoothMasterId);
-            if (!queueCanStart)
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Voter Turn Out Not Entered any Values." };
-            }
-
-            var queueTime = await _eamsRepository.QueueTime(electionInfoRecord.BoothMasterId);
-            if (!queueTime)
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Queue will be Opened at specified Time." };
-            }
-
-            if (electionInfoRecord.FinalTVoteStatus != null && electionInfoRecord.FinalTVoteStatus == true)
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Queue has been Freezed as Final Vote has been entered." };
-            }
-
-            if (electionInfoMaster.VoterInQueue == null)
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Queue value cannot be null" };
-            }
-
-            if (electionInfoMaster.VoterInQueue != null)
-            {
-                if (electionInfoRecord.VoterInQueue == null && electionInfoMaster.ElectionInfoStatus == true)
-                {
-                    EAMS_ACore.Models.Queue fetchResult = await _eamsRepository.GetTotalRemainingVoters(electionInfoMaster.BoothMasterId.ToString());
-                    if (electionInfoMaster.VoterInQueue <= fetchResult.TotalVoters)
-                    {
-                        if (electionInfoMaster.VoterInQueue <= fetchResult.RemainingVotes)
-                        {
-                            electionInfoRecord.VoterInQueue = electionInfoMaster.VoterInQueue;
-                            electionInfoRecord.VoterInQueueLastUpdate = BharatDateTime();
-                            electionInfoRecord.IsVoterTurnOut = true;
-                            electionInfoRecord.VotingTurnOutLastUpdate = BharatDateTime();
-                            electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-                            //electionInfoRecord.PCMasterId = assemblyMasterRecord.PCMasterId;
-                            return await _eamsRepository.EventActivity(electionInfoRecord);
-                        }
-                        else
-                        {
-                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Voters in queue cannot exceed voter remaining!" };
-                        }
-                    }
-                    else
-                    {
-                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Polling should not be more than Total Voters!" };
-                    }
-                }
-                else
-                {
-                    if (electionInfoMaster.ElectionInfoStatus == false && electionInfoMaster.EventMasterId == 7 && electionInfoRecord.VoterInQueue != null && electionInfoMaster.VoterInQueue == 0)
-                    {
-                        //undo action
-                        electionInfoRecord.VoterInQueue = null;
-                        electionInfoRecord.IsQueueUndo = electionInfoMaster.IsQueueUndo;
-                        electionInfoRecord.VoterInQueueLastUpdate = BharatDateTime();
-                        electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-                        //electionInfoRecord.PCMasterId = assemblyMasterRecord.PCMasterId;
-                        return await _eamsRepository.EventActivity(electionInfoRecord);
-                    }
-                    else
-                    {
-                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Queue value Already Entered. Please proceed for the Final Voting value" };
-                    }
-                }
-            }
-            else
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Queue value cannot be null" };
-            }
-        }
-        public async Task<Response> HandleFinalVoteEvent(ElectionInfoMaster electionInfoMaster, ElectionInfoMaster electionInfoRecord, bool isPollInterruptedOfBooth)
-        {
-            //  Final Votes
-            if (electionInfoRecord.VoterInQueue != null)
-            {
-                if (electionInfoRecord.IsPollEnded == false || electionInfoRecord.IsPollEnded == null)
-                {
-                    if (electionInfoMaster.FinalTVoteStatus == true)
-                    {
-                        if (electionInfoRecord.FinalTVoteStatus == true)
-                        {
-                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Final Votes Already Status Yes." };
-                        }
-                        else
-                        {
-                            if (electionInfoMaster.FinalTVote != null && electionInfoMaster.FinalTVote > 0)
-                            {
-                                // one more check that last votes polled value and final vote now should not be greater than total voters
-                                EAMS_ACore.Models.Queue fetchResult = await _eamsRepository.GetTotalRemainingVoters(electionInfoMaster.BoothMasterId.ToString());
-                                if (electionInfoMaster.FinalTVote <= fetchResult.TotalVoters)
-                                {
-                                    if (electionInfoMaster.FinalTVote > 0)
-                                    {
-                                        //if (electionInfoMaster.FinalTVote >= fetchResult.VotesPolled)
-                                        //{
-                                        electionInfoRecord.FinalTVote = electionInfoMaster.FinalTVote;
-                                        electionInfoRecord.VotingLastUpdate = BharatDateTime();
-                                        electionInfoRecord.FinalTVoteStatus = true;
-                                        electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-                                        electionInfoRecord.Male = electionInfoMaster.Male;
-                                        electionInfoRecord.Female = electionInfoMaster.Female;
-                                        electionInfoRecord.Transgender = electionInfoMaster.Transgender;
-                                        electionInfoRecord.EDC = electionInfoMaster.EDC;
-                                        return await _eamsRepository.EventActivity(electionInfoRecord);
-                                        //}
-                                        //else
-                                        //{
-                                        //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Final Votes Cannot be less than Last Votes Polled" };
-                                        //}
-                                    }
-                                    else
-                                    {
-                                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Final Votes Cannot be Zero or Negative Value" };
-
-                                    }
-                                }
-                                else
-                                {
-                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Final Votes Cannot be Greater than Total Voters" };
-                                }
-                            }
-                            else
-                            {
-                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Final Votes Cannot be Null or 0." };
-                            }
-                        }
-                    }
-                    else if (electionInfoMaster.FinalTVoteStatus == false)
-                    {
-                        // undo case
-                        if (electionInfoRecord.FinalTVoteStatus == false)
-                        {
-                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Final Vote Already Status No." };
-                        }
-                        else
-                        {
-                            //check if record null
-                            if (electionInfoRecord.FinalTVoteStatus == null)
-                            {
-                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Final Vote Need to be filled first." };
-                            }
-                            else
-                            {
-                                electionInfoRecord.VotingLastUpdate = BharatDateTime();
-                                electionInfoRecord.FinalTVoteStatus = false;
-                                electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-                                return await _eamsRepository.EventActivity(electionInfoRecord);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Final Vote Can't be Empty." };
-                    }
-                }
-                else
-                {
-                    // already status Yes
-                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Can't Change Status, Poll Ended Already." };
-                }
-            }
-            else
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Voter in queue is not updated Yet." };
-            }
-        }
-        public async Task<Response> HandlePollEndedEvent(ElectionInfoMaster electionInfoMaster, ElectionInfoMaster electionInfoRecord)
-        {
-            if (electionInfoRecord.FinalTVote > 0 && electionInfoRecord.FinalTVoteStatus == true) // Poll ended--
-            {
-                if (electionInfoRecord.IsMCESwitchOff == false || electionInfoRecord.IsMCESwitchOff == null)
-                {
-                    //if (electionInfoRecord.IsPollEnded == false || electionInfoRecord.IsPollEnded == null)
-                    //{
-                    //
-                    electionInfoRecord.IsPollEnded = electionInfoMaster.IsPollEnded;
-                    electionInfoRecord.IsPollEndedLastUpdate = BharatDateTime();
-                    electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-                    return await _eamsRepository.EventActivity(electionInfoRecord);
-                    //}
-                    //else
-                    //{
-                    //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Can't Change Status, Poll Already Ended." };
-                    //}
-                }
-                else
-                {
-                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Can't Change Status, Machine Closed & EVM Switched Off Already Yes." };
-                }
-            }
-            else
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Final Votes not Done yet." };
-            }
-        }
-        public async Task<Response> HandleMCESwitchOffEvent(ElectionInfoMaster electionInfoMaster, ElectionInfoMaster electionInfoRecord)
-        {
-            if (electionInfoRecord.IsPollEnded == true)
-            {
-                //if (electionInfoRecord.IsMCESwitchOff == false || electionInfoRecord.IsMCESwitchOff == null)
-                //{
-                if (electionInfoRecord.IsPartyDeparted == false || electionInfoRecord.IsPartyDeparted == null)
-                {
-
-                    electionInfoRecord.IsMCESwitchOff = electionInfoMaster.IsMCESwitchOff;
-                    electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-                    electionInfoRecord.MCESwitchOffLastUpdate = BharatDateTime();
-                    return await _eamsRepository.EventActivity(electionInfoRecord);
-                }
-                else
-                {
-                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Can't Change Status, Party Already Departed." };
-                }
-                //}
-                //else
-                //{
-                //    // already status Yes
-                //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Machine Closed and EVM Switched Off Already yes." };
-                //}
-            }
-            else
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Poll Is Not Ended yet." };
-            }
-        }
-
-        public async Task<Response> HandlePartyDepartedEvent(ElectionInfoMaster electionInfoMaster, ElectionInfoMaster electionInfoRecord)
-        {
-            if (electionInfoRecord.IsMCESwitchOff == true) // machine switch off and EVM cleared
-            {
-                //if (electionInfoRecord.IsPartyDeparted == false || electionInfoRecord.IsPartyDeparted == null)
-                //{
-                if (electionInfoRecord.IsPartyReachedCollectionCenter == false || electionInfoRecord.IsPartyReachedCollectionCenter == null)
-                {
-                    electionInfoRecord.IsPartyDeparted = electionInfoMaster.IsPartyDeparted;
-                    electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-                    electionInfoRecord.PartyDepartedLastUpdate = BharatDateTime();
-                    return await _eamsRepository.EventActivity(electionInfoRecord);
-                }
-                else
-                {
-                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Can't Change Status, Party Already Reached at Collection Centre." };
-                }
-                //}
-                //else
-                //{
-                //    // already status Yes
-                //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Party Departed Already Yes." };
-                //}
-            }
-            else
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Machine Closed & EVM Not Switched Off yet." };
-            }
-        }
-        public async Task<Response> HandlePartyReachCollectionEvent(ElectionInfoMaster electionInfoMaster, ElectionInfoMaster electionInfoRecord)
-        {
-            if (electionInfoRecord.IsPartyDeparted == true)
-            {
-                //if (electionInfoRecord.IsPartyReachedCollectionCenter == false || electionInfoRecord.IsPartyReachedCollectionCenter == null)
-                //{
-                if (electionInfoRecord.IsEVMDeposited == false || electionInfoRecord.IsEVMDeposited == null)
-                {
-                    electionInfoRecord.IsPartyReachedCollectionCenter = electionInfoMaster.IsPartyReachedCollectionCenter;
-                    electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-                    electionInfoRecord.PartyReachedLastUpdate = BharatDateTime();
-                    return await _eamsRepository.EventActivity(electionInfoRecord);
-                }
-                else
-                {
-                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Can't Change Status, EVM Deposited." };
-                }
-                //}
-                //else
-                //{
-                //    // already status Yes
-                //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Party Arrived Already Yes." };
-                //}
-            }
-            else
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Party Is Not Departed yet." };
-            }
-        }
-
-        public async Task<Response> HandleEVMDepositedEvent(ElectionInfoMaster electionInfoMaster, ElectionInfoMaster electionInfoRecord)
-        {
-            if (electionInfoRecord.IsPartyReachedCollectionCenter == true)
-            {
-                if (electionInfoRecord.IsEVMDeposited == false || electionInfoRecord.IsEVMDeposited == null)
-                {
-                    electionInfoRecord.IsEVMDeposited = electionInfoMaster.IsEVMDeposited;
-                    electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-                    electionInfoRecord.PartyReachedCollectionCenterLastUpdate = BharatDateTime();
-                    return await _eamsRepository.EventActivity(electionInfoRecord);
-                }
-                else
-                {
-                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Can't Change Status, EVM Already Deposited." };
-                }
-            }
-            else
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Party Is Not Reached Collection Center yet." };
-            }
-        }
-
-
-        public async Task<Response> EventActivity2(ElectionInfoMaster electionInfoMaster)
-        {
-            var electionInfoRecord = await _eamsRepository.EventUpdationStatus(electionInfoMaster);
-            if (electionInfoRecord != null)
-            {
-                string pollInterruptedMsg = "You have not entered 'Resume Time' in Poll interruption againist this booth.";
-                bool isPollInterruptedOfBooth = false;
-                isPollInterruptedOfBooth = await _eamsRepository.IsPollInterrupted(electionInfoMaster.BoothMasterId);
-                var boothRecord = await _eamsRepository.GetBoothById(electionInfoMaster.BoothMasterId.ToString());
-                var assemblyMasterRecord = await _eamsRepository.GetAssemblyById(boothRecord.AssemblyMasterId.ToString());
-                switch (electionInfoMaster.EventMasterId)
-                {
-                    case 1: //party Dispatch
-                            //check evm deposited then no interruption
-
-                        if (isPollInterruptedOfBooth == false)
-                        {
-                            if (electionInfoRecord.IsPartyReached == false || electionInfoRecord.IsPartyReached == null)
-                            {
-                                if (electionInfoRecord.IsPartyDispatched is not null)
-                                {
-                                    electionInfoRecord.IsPartyDispatched = electionInfoMaster.IsPartyDispatched;
-                                    electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-                                    electionInfoRecord.PartyDispatchedLastUpdate = BharatDateTime();
-                                    electionInfoRecord.PartyDispatchedLastUpdate = BharatDateTime();
-                                    electionInfoRecord.PCMasterId = assemblyMasterRecord.PCMasterId;
-                                    return await _eamsRepository.EventActivity(electionInfoRecord);
-                                }
-                                else
-                                {
-                                    //Already Yes
-                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Party Already Dispatched." };
-
-                                }
-                            }
-                            else
-                            {
-                                // party alteady arrived, cnt change status!
-                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Party Has Already Arrived." };
-                            }
-                        }
-                        else
-                        {
-                            return new Response { Status = RequestStatusEnum.BadRequest, Message = pollInterruptedMsg };
-
-                        }
-                    case 2:
-
-                        if (isPollInterruptedOfBooth == false)
-                        {
-                            if (electionInfoRecord.IsPartyDispatched == true)
-                            {
-
-                                if (electionInfoRecord.IsSetupOfPolling == false || electionInfoRecord.IsSetupOfPolling == null)
-                                {
-                                    electionInfoRecord.IsPartyReached = electionInfoMaster.IsPartyReached;
-                                    electionInfoRecord.PartyReachedLastUpdate = BharatDateTime();
-                                    electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-                                    electionInfoRecord.PCMasterId = assemblyMasterRecord.PCMasterId;
-                                    return await _eamsRepository.EventActivity(electionInfoRecord);
-                                }
-                                else
-                                {
-
-                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Can't Change Status, SetUpPolling Already yes." };
-
-                                }
-
-
-                            }
-                            else
-                            {
-
-                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Party Not Dispatched Yet." };
-                            }
-                        }
-                        else
-                        {
-                            return new Response { Status = RequestStatusEnum.BadRequest, Message = pollInterruptedMsg };
-                        }
-
-                    case 3:
-                        if (isPollInterruptedOfBooth == false)
-                        {
-                            if (electionInfoRecord.IsPartyReached == true)
-                            {
-
-                                if (electionInfoRecord.IsMockPollDone == false || electionInfoRecord.IsMockPollDone == null)
-                                {
-                                    electionInfoRecord.IsSetupOfPolling = electionInfoMaster.IsSetupOfPolling;
-                                    electionInfoRecord.SetupOfPollingLastUpdate = BharatDateTime();
-                                    electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-                                    electionInfoRecord.PCMasterId = assemblyMasterRecord.PCMasterId;
-                                    return await _eamsRepository.EventActivity(electionInfoRecord);
-                                }
-                                else
-                                {
-
-                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Can't Change Status, MockPoll Already yes." };
-                                }
-
-
-
-                            }
-                            else
-                            {
-                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Party Not Arrived Yet." };
-
-                            }
-                        }
-                        else
-                        {
-                            return new Response { Status = RequestStatusEnum.BadRequest, Message = pollInterruptedMsg };
-
-                        }
-                    case 4:
-
-                        if (isPollInterruptedOfBooth == false)
-                        {
-                            if (electionInfoRecord.IsSetupOfPolling == true) // mockpoll event 4th event
-                            {
-
-                                if (electionInfoRecord.IsPollStarted == false || electionInfoRecord.IsPollStarted == null)
-                                {
-                                    electionInfoRecord.IsMockPollDone = electionInfoMaster.IsMockPollDone;
-                                    electionInfoRecord.NoOfPollingAgents = electionInfoMaster.NoOfPollingAgents;
-                                    electionInfoRecord.MockPollDoneLastUpdate = BharatDateTime();
-                                    electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-                                    electionInfoRecord.PCMasterId = assemblyMasterRecord.PCMasterId;
-                                    return await _eamsRepository.EventActivity(electionInfoRecord);
-                                }
-                                else
-                                {
-
-                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Can't Change Status, Poll Started Already yes." };
-                                }
-
-
-
-                            }
-                            else
-                            {
-                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Set Up Of Polling Not Done Yet." };
-
-                            }
-                        }
-                        else
-                        {
-                            return new Response { Status = RequestStatusEnum.BadRequest, Message = pollInterruptedMsg };
-
-                        }
-
-                    case 5:// poll started 5th event
-                        if (isPollInterruptedOfBooth == false)
-                        {
-                            if (electionInfoRecord.IsMockPollDone == true)  // prev event
-                            {
-                                //check polled detail for voter turn out, if enetered then cant change poll started status
-
-                                var pollCanStart = await _eamsRepository.CanPollStart(electionInfoRecord.BoothMasterId, 6);
-                                if (pollCanStart == true)
-                                {
-                                    electionInfoRecord.PollStartedLastUpdate = BharatDateTime();
-                                    electionInfoRecord.IsPollStarted = electionInfoMaster.IsPollStarted;
-                                    electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-                                    electionInfoRecord.PCMasterId = assemblyMasterRecord.PCMasterId;
-                                    return await _eamsRepository.EventActivity(electionInfoRecord);
-                                }
-                                else
-                                {
-                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Can't Change Status, Voter Turn Out Status is Entered." };
-
-                                }
-                            }
-                            else
-                            {
-                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Mock Poll Done is not Done Yet." };
-
-                            }
-                        }
-                        else
-                        {
-                            return new Response { Status = RequestStatusEnum.BadRequest, Message = pollInterruptedMsg };
-
-                        }
-                    case 7:
-                        //queue
-                        //check only voter turn out entered or not, but not check last entered value
-
-                        var QueueCanStart = await _eamsRepository.CanQueueStart(electionInfoRecord.BoothMasterId);
-                        if (QueueCanStart == true)
-                        {
-                            bool queueTime = await _eamsRepository.QueueTime(electionInfoRecord.BoothMasterId);
-                            if (queueTime == true)
-                            {
-
-                                //if (electionInfoRecord.FinalTVote == null)  // next event
-                                if (electionInfoRecord.FinalTVoteStatus == null || electionInfoRecord.FinalTVoteStatus == false)  // next event
-                                {
-
-                                    if (electionInfoMaster.VoterInQueue != null) //model my hve o or >0
-                                    {
-
-                                        if (electionInfoRecord.VoterInQueue == null && electionInfoMaster.ElectionInfoStatus == true) // electionInfo is null for queue
-                                        {
-
-                                            EAMS_ACore.Models.Queue fetchResult = await _eamsRepository.GetTotalRemainingVoters(electionInfoMaster.BoothMasterId.ToString());
-                                            if (electionInfoMaster.VoterInQueue <= fetchResult.TotalVoters)
-                                            {
-
-                                                if (electionInfoMaster.VoterInQueue <= fetchResult.RemainingVotes)
-                                                {
-                                                    //if (electionInfoMaster.VoterInQueue >= fetchResult.VotesPolled)
-                                                    //{
-
-                                                    electionInfoRecord.VoterInQueue = electionInfoMaster.VoterInQueue;
-                                                    //electionInfoRecord.IsQueueUndo = electionInfoMaster.IsQueueUndo;
-                                                    electionInfoRecord.VoterInQueueLastUpdate = BharatDateTime();
-                                                    electionInfoRecord.IsVoterTurnOut = true;
-                                                    electionInfoRecord.VotingTurnOutLastUpdate = BharatDateTime();
-                                                    electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-                                                    electionInfoRecord.PCMasterId = assemblyMasterRecord.PCMasterId;
-                                                    return await _eamsRepository.EventActivity(electionInfoRecord);
-                                                    //}
-                                                    //else
-                                                    //{
-                                                    //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Voters in queue canno t be less than Last Votes Polled!" };
-                                                    //}
-                                                }
-                                                else
-                                                {
-                                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Voters in queue cannot exceed voter remaining!" };
-
-                                                }
-                                            }
-
-                                            else
-                                            {
-
-                                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Polling should not be more than Total Voters!" };
-                                            }
-
-
-                                        }
-                                        else
-                                        {
-
-                                            // info must have value already , need to check for undo
-                                            if (electionInfoMaster.ElectionInfoStatus == false && electionInfoMaster.EventMasterId == 7 && electionInfoRecord.VoterInQueue != null && electionInfoMaster.VoterInQueue == 0)
-                                            {
-                                                //undo action
-                                                electionInfoRecord.VoterInQueue = null;
-                                                electionInfoRecord.IsQueueUndo = electionInfoMaster.IsQueueUndo;
-                                                electionInfoRecord.VoterInQueueLastUpdate = BharatDateTime();
-                                                electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-                                                electionInfoRecord.PCMasterId = assemblyMasterRecord.PCMasterId;
-
-                                                return await _eamsRepository.EventActivity(electionInfoRecord);
-
-                                            }
-                                            else
-                                            {
-                                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Queue value Already Entered. Pls proceed for the Final Voting value" };
-                                            }
-                                        }
-
-                                    }
-                                    else
-                                    {
-
-                                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Queue value cannot be null" };
-                                    }
-                                }
-                                else
-                                {
-
-                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Queue has been Freezed as Final Vote has been entered." };
-                                }
-                            }
-                            else
-                            {
-                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Queue will be Opened at specified Time." };
-                            }
-                        }
-                        else
-                        {
-                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Voter Turn Out Not Entered any Values." };
-
-                        }
-
-                    case 8:
-                        // Final Votes
-                        if (electionInfoRecord.VoterInQueue != null)
-                        {
-                            if (electionInfoRecord.IsPollEnded == false || electionInfoRecord.IsPollEnded == null)
-                            {
-
-
-                                if (electionInfoMaster.FinalTVoteStatus == true)
-                                {
-
-                                    if (electionInfoRecord.FinalTVoteStatus == true)
-                                    {
-                                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Final Votes Already Status Yes." };
-                                    }
-                                    else
-                                    {
-                                        if (electionInfoMaster.FinalTVote != null && electionInfoMaster.FinalTVote > 0)
-                                        {
-                                            // one more check that last votes polled value and final vote now should not be greater than total voters
-
-                                            EAMS_ACore.Models.Queue fetchResult = await _eamsRepository.GetTotalRemainingVoters(electionInfoMaster.BoothMasterId.ToString());
-                                            if (electionInfoMaster.FinalTVote <= fetchResult.TotalVoters) //
-                                            {
-                                                if (electionInfoMaster.FinalTVote >= fetchResult.VotesPolled)
-
-                                                {
-                                                    //electionInfoMaster.IsFinalVote= electionInfoMaster.IsFinalVote;
-                                                    electionInfoRecord.FinalTVote = electionInfoMaster.FinalTVote;
-                                                    electionInfoRecord.VotingLastUpdate = BharatDateTime();
-                                                    electionInfoRecord.FinalTVoteStatus = true;
-                                                    electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-                                                    electionInfoRecord.Male = electionInfoMaster.Male;
-                                                    electionInfoRecord.Female = electionInfoMaster.Female;
-                                                    electionInfoRecord.Transgender = electionInfoMaster.Transgender;
-                                                    return await _eamsRepository.EventActivity(electionInfoRecord);
-                                                }
-                                                else
-                                                {
-
-                                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Final Votes Cannot be less than Last Votes Polled" };
-
-                                                }
-
-                                            }
-                                            else
-                                            {
-                                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Final Votes Cannot be Greater than Total Voters" };
-                                            }
-                                        }
-                                        else
-                                        {
-                                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Final Votes Cannot be Null or 0." };
-                                        }
-                                    }
-                                }
-                                else if (electionInfoMaster.FinalTVoteStatus == false)
-                                {
-                                    // undo case
-                                    if (electionInfoRecord.FinalTVoteStatus == false)
-                                    {
-                                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Final Vote Already Status No." };
-                                        //electionInfoRecord.FinalTVote = electionInfoMaster.FinalTVote;//
-
-                                    }
-                                    else
-                                    {
-                                        //check if record null
-                                        if (electionInfoRecord.FinalTVoteStatus == null)
-                                        {
-                                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Final Vote Need to be filled first." };
-                                        }
-                                        else
-                                        {
-                                            electionInfoRecord.VotingLastUpdate = BharatDateTime();
-                                            electionInfoRecord.FinalTVoteStatus = false;
-                                            electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-                                            return await _eamsRepository.EventActivity(electionInfoRecord);
-                                        }
-                                    }
-
-                                }
-                                else
-                                {
-                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Final Vote Can't be Empty." };
-                                }
-
-
-                            }
-                            else
-                            {
-                                // already status Yes
-                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Can't Change Status, Poll Ended Already." };
-
-                            }
-
-                        }
-                        else
-                        {
-                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Voter in queue is not updated Yet." };
-
-                        }
-
-                    case 9:
-                        if (electionInfoRecord.FinalTVote > 0 && electionInfoRecord.FinalTVoteStatus == true) // Poll ended--
-                        {
-                            if (electionInfoRecord.IsMCESwitchOff == false || electionInfoRecord.IsMCESwitchOff == null)
-                            {
-                                if (electionInfoRecord.IsPollEnded == false || electionInfoRecord.IsPollEnded == null)
-                                {
-                                    //
-                                    electionInfoRecord.IsPollEnded = electionInfoMaster.IsPollEnded;
-                                    electionInfoRecord.IsPollEndedLastUpdate = BharatDateTime();
-                                    electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-                                    return await _eamsRepository.EventActivity(electionInfoRecord);
-                                }
-                                else
-                                {
-                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Can't Change Status, Poll Already Ended." };
-
-                                }
-                            }
-                            else
-                            {
-
-                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Can't Change Status, Machine Closed & EVM Switched Off Already Yes." };
-                            }
-
-
-
-                        }
-                        else
-                        {
-                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Final Votes not Done yet." };
-
-                        }
-
-                    case 10:
-                        if (electionInfoRecord.IsPollEnded == true) // Machine Switch Off and EVM Cleared
-                        {
-                            if (electionInfoRecord.IsMCESwitchOff == false || electionInfoRecord.IsMCESwitchOff == null)
-                            {
-                                if (electionInfoRecord.IsPartyDeparted == false || electionInfoRecord.IsMCESwitchOff == null)
-                                {
-                                    electionInfoRecord.IsMCESwitchOff = electionInfoMaster.IsMCESwitchOff;
-                                    electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-                                    electionInfoRecord.MCESwitchOffLastUpdate = BharatDateTime();
-                                    return await _eamsRepository.EventActivity(electionInfoRecord);
-                                }
-                                else
-                                {
-
-                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Can't Change Status, Party Already Departed." };
-                                }
-
-                            }
-                            else
-                            {
-                                // already status Yes
-                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Machine Closed and EVM Switched Off Already yes." };
-
-                            }
-
-                        }
-                        else
-                        {
-                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Poll Is Not Ended yet." };
-
-                        }
-
-                    case 11:
-                        if (electionInfoRecord.IsMCESwitchOff == true) // party departed
-                        {
-                            if (electionInfoRecord.IsPartyDeparted == false || electionInfoRecord.IsPartyDeparted == null)
-                            {
-                                if (electionInfoRecord.IsPartyReachedCollectionCenter == false || electionInfoRecord.IsPartyReachedCollectionCenter == null)
-                                {
-                                    electionInfoRecord.IsPartyDeparted = electionInfoMaster.IsPartyDeparted;
-                                    electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-                                    electionInfoRecord.PartyDepartedLastUpdate = BharatDateTime();
-                                    return await _eamsRepository.EventActivity(electionInfoRecord);
-                                }
-                                else
-                                {
-
-                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Can't Change Status, Party Already Reached at Collection Centre." };
-                                }
-
-                            }
-                            else
-                            {
-                                // already status Yes
-                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Party Departed Already Yes." };
-
-                            }
-
-                        }
-                        else
-                        {
-                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Machine Closed & EVM Not Switched Off yet." };
-
-                        }
-
-                    case 12:
-                        if (electionInfoRecord.IsPartyDeparted == true)
-                        {
-                            if (electionInfoRecord.IsPartyReachedCollectionCenter == false || electionInfoRecord.IsPartyReachedCollectionCenter == null)
-                            {
-                                if (electionInfoRecord.IsEVMDeposited == false || electionInfoRecord.IsEVMDeposited == null)
-                                {
-                                    electionInfoRecord.IsPartyReachedCollectionCenter = electionInfoMaster.IsPartyReachedCollectionCenter;
-                                    electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-                                    electionInfoRecord.PartyReachedLastUpdate = BharatDateTime();
-                                    return await _eamsRepository.EventActivity(electionInfoRecord);
-                                }
-                                else
-                                {
-
-                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Can't Change Status, EVM Deposited." };
-                                }
-
-                            }
-                            else
-                            {
-                                // already status Yes
-                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Party Arrived Already Yes." };
-
-                            }
-
-                        }
-                        else
-                        {
-                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Party Is Not Departed yet." };
-
-                        }
-
-                    case 13:
-                        if (electionInfoRecord.IsPartyReachedCollectionCenter == true) // Machine Switch Off and EVM Cleared
-                        {
-
-                            if (electionInfoRecord.IsEVMDeposited == false || electionInfoRecord.IsEVMDeposited == null)
-                            {
-                                electionInfoRecord.IsEVMDeposited = electionInfoMaster.IsEVMDeposited;
-                                electionInfoRecord.EventMasterId = electionInfoMaster.EventMasterId;
-                                electionInfoRecord.PartyReachedCollectionCenterLastUpdate = BharatDateTime();
-                                return await _eamsRepository.EventActivity(electionInfoRecord);
-                            }
-                            else
-                            {
-
-                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Can't Change Status, EVM Already Deposited." };
-                            }
-
-
-                        }
-                        else
-                        {
-                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Party Is Not Departed yet." };
-
-                        }
-
-                }
-            }
-            else if (electionInfoRecord == null)
-            {
-                if (electionInfoMaster.EventMasterId == 1)
-                {
-                    string pollInterruptedMsg = "You have not entered 'Resume Time' in Poll interruption againist this booth.";
-                    bool isPollInterruptedOfBooth = false;
-                    isPollInterruptedOfBooth = await _eamsRepository.IsPollInterrupted(electionInfoMaster.BoothMasterId);
-                    var boothRecord = await _eamsRepository.GetBoothById(electionInfoMaster.BoothMasterId.ToString());
-                    var assemblyMasterRecord = await _eamsRepository.GetAssemblyById(boothRecord.AssemblyMasterId.ToString());
-                    if (isPollInterruptedOfBooth == false)
-                    {
-                        electionInfoMaster.PCMasterId = assemblyMasterRecord.PCMasterId;
-                        return await _eamsRepository.EventActivity(electionInfoMaster);
-                    }
-                    else
-                    {
-                        return new Response { Status = RequestStatusEnum.BadRequest, Message = pollInterruptedMsg };
-
-                    }
-                }
-                else
-                {
-                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please Check Party Dispatch Event" };
-                }
-
-
-            }
-
-            return new Response { Status = RequestStatusEnum.BadRequest, Message = "something went wrong" };
-
-        }
-
         public async Task<List<EventWiseBoothStatus>> EventWiseBoothStatus(string soId)
         {
             return await _eamsRepository.EventWiseBoothStatus(soId);
         }
 
-        public async Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(string boothMasterId, int eventid)
+        public async Task<VoterTurnOutPolledDetailViewModel> GetLastUpdatedPollDetail(int boothMasterId, string userType)
 
         {
-            return await _eamsRepository.GetLastUpdatedPollDetail(boothMasterId, eventid);
+            return await _eamsRepository.GetLastUpdatedPollDetail(boothMasterId, userType);
 
         }
         public async Task<EAMS_ACore.Models.Queue> GetVoterInQueue(string boothMasterId)
@@ -1573,7 +677,7 @@ namespace EAMS_BLL.Services
         }
 
 
-        public async Task<FinalViewModel> GetFinalVotes(string boothMasterId)
+        public async Task<FinalViewModel> GetFinalVotes(int boothMasterId)
 
         {
             return await _eamsRepository.GetFinalVotes(boothMasterId);
@@ -1613,32 +717,73 @@ namespace EAMS_BLL.Services
 
 
         }
-
-
-
-        public async Task<List<EventActivityCount>> GetEventListDistrictWiseById(string stateId)
+        public async Task<(List<EventActivityForDashboard> eventActivities, int totalBoothCount)> GetEventActivitiesForDashboard(int stateMasterId, int districtMasterId)
         {
-            return await _eamsRepository.GetEventListDistrictWiseById(stateId);
+            // Calling the repository method
+            return await _eamsRepository.GetEventActivitiesForDashboard(stateMasterId, districtMasterId);
+        }
+
+        public async Task<int> GetTotalBoothActivity(int stateMasterId, int districtMasterId, string eventName)
+        {
+            // Logic to fetch the total booths based on the event
+            return await _eamsRepository.GetTotalBoothActivity(stateMasterId, districtMasterId, eventName);
+        }
+
+        //public async Task<(List<EventActivityForDashboard> eventActivities, int totalBoothCount)> GetEventActivitiesForDashboard(int stateMasterId, int districtMasterId)
+        //{
+        //    // Calling the repository method
+        //    return await _eamsRepository.GetEventActivitiesForDashboard(stateMasterId, districtMasterId);
+        //}
+        //public async Task<List<EventActivityForDashboard>> GetEventActivitiesForDashboard(int stateMasterId, int districtMasterId)
+        //{
+        //    // Calling the repository method
+        //    return await _eamsRepository.GetEventActivitiesForDashboard(stateMasterId, districtMasterId);
+        //}
+        public async Task<List<EventActivityCount>> GetEventListDistrictWiseById(int stateMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.GetEventListDistrictWiseById(stateMasterId, electionTypeMasterId);
+        }
+        ///This API fetches the district-wise event list for Pending events.
+
+        public async Task<List<EventActivityCount>> GetPendingEventListDistrictWiseById(int stateMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.GetPendingEventListDistrictWiseById(stateMasterId, electionTypeMasterId);
         }
         public async Task<List<EventActivityCount>> GetEventListPCWiseById(string stateId, string userId)
         {
             return await _eamsRepository.GetEventListPCWiseById(stateId, userId);
         }
-        public async Task<List<AssemblyEventActivityCount>> GetEventListAssemblyWiseById(string stateId, string districtId)
+        public async Task<List<AssemblyEventActivityCount>> GetEventListAssemblyWiseById(int stateMasterId, int? districtMasterId, int electionTypeMasterId)
         {
-            return await _eamsRepository.GetEventListAssemblyWiseById(stateId, districtId);
+            return await _eamsRepository.GetEventListAssemblyWiseById(stateMasterId, districtMasterId, electionTypeMasterId);
         }
-        //public async Task<List<AssemblyEventActivityCount>> GetEventListAssemblyWiseByStateId(string stateId)
-        //{
-        //    return await _eamsRepository.GetEventListAssemblyWiseByStateId(stateId);
-        //}
+        ///This API fetches the Assembly-wise event list for Pending events.
+        public async Task<List<AssemblyEventActivityCount>> GetPendingAssemblyWiseEventListById(int stateMasterId, int? districtMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.GetPendingAssemblyWiseEventListById(stateMasterId, districtMasterId, electionTypeMasterId);
+        }
+        public async Task<List<FourthLevelEventActivityCount>> GetEventListFourthLevelHWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.GetEventListFourthLevelHWiseById(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId);
+        }
+        ///This API fetches the FourthLevelH-wise event list for Pending events.
+
+        public async Task<List<FourthLevelEventActivityCount>> GetPendingEventListFourthLevelHWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.GetPendingEventListFourthLevelHWiseById(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId);
+        }
         public async Task<List<AssemblyEventActivityCountPCWise>> GetEventListAssemblyWiseByPCId(string stateId, string pcId)
         {
             return await _eamsRepository.GetEventListAssemblyWiseByPCId(stateId, pcId);
         }
-        public async Task<List<EventActivityBoothWise>> GetEventListBoothWiseById(string stateId, string districtId, string assemblyId)
+        public async Task<List<EventActivityBoothWise>> GetEventListBoothWiseById(int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelHMasterId, int? electionTypeMasterId)
         {
-            return await _eamsRepository.GetEventListBoothWiseById(stateId, districtId, assemblyId);
+            return await _eamsRepository.GetEventListBoothWiseById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, electionTypeMasterId);
+        }
+        ///This API fetches the Booth-wise event list for Pending events.
+        public async Task<List<EventActivityBoothWise>> GetPendingBoothWiseEventListById(int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelHMasterId, int? electionTypeMasterId)
+        {
+            return await _eamsRepository.GetPendingBoothWiseEventListById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, electionTypeMasterId);
         }
         public async Task<List<EventActivityBoothWise>> GetEventListBoothWiseByPCId(string stateId, string pcId, string assemblyId)
         {
@@ -1652,6 +797,12 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetDashBoardCount(claimsIdentity);
         }
+        public async Task<DashBoardRealTimeCount> GetEventActivityDashBoardCount(string role, int electionTypeMasterId, int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelMasterId)
+        {
+
+            return await _eamsRepository.GetEventActivityDashBoardCount(role, electionTypeMasterId, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId);
+        }
+
         public async Task<List<DashboardConnectedUser>> DashboardConnectedUser(DahboardMastersId dashboardMastersId, string roleType)
         {
             return await _eamsRepository.DashboardConnectedUser(dashboardMastersId, roleType);
@@ -1661,16 +812,21 @@ namespace EAMS_BLL.Services
         #endregion
 
         #region SlotManagement
-        public Task<Response> AddEventSlot(List<SlotManagementMaster> addEventSlot)
+        public async Task<Response> AddEventSlot(List<SlotManagementMaster> addEventSlot)
         {
-            return _eamsRepository.AddEventSlot(addEventSlot);
+            return await _eamsRepository.AddEventSlot(addEventSlot);
         }
 
-        public Task<List<SlotManagementMaster>> GetEventSlotList(int stateMasterId, int eventId)
+        public async Task<List<SlotManagementMaster>> GetEventSlotList(int stateMasterId, int electionTypeMasterId, int EventId)
         {
-            return _eamsRepository.GetEventSlotList(stateMasterId, eventId);
+            return await _eamsRepository.GetEventSlotList(stateMasterId, electionTypeMasterId, EventId);
         }
-        #endregion
+        public async Task<List<SlotManagementMaster>> GetEventSlotListByEventAbbr(int stateMasterId, int electionTypeMasterId, string eventAbbr)
+
+        {
+            return await _eamsRepository.GetEventSlotListByEventAbbr(stateMasterId, electionTypeMasterId, eventAbbr);
+        }
+         #endregion
 
         #region UserList
         public async Task<List<UserList>> GetUserList(string userName, string type)
@@ -1710,1140 +866,323 @@ namespace EAMS_BLL.Services
         #endregion
 
         #region PollInterruption Interruption
+        //public async Task<Response> AddPollInterruption(PollInterruption pollInterruption)
+        //{
+        //    // Fetch the booth master record based on the provided BoothMasterId
+        //    var boothMasterRecord = await _eamsRepository.GetBoothRecord(Convert.ToInt32(pollInterruption.BoothMasterId));
+        //    if (boothMasterRecord == null)
+        //    {
+        //        return new Response { Status = RequestStatusEnum.NotFound, Message = "Booth Record Not Found" };
+        //    }
+
+        //    bool isStopformat = IsHHmmFormat(pollInterruption.StopTime.ToString());
+        //    bool isResumeformat = IsHHmmFormat(pollInterruption.ResumeTime.ToString());
+
+        //    // Declare time comparison variables
+        //    bool stopTimeIsLessEqualToCurrentTime = true; // Default to true
+        //    bool resumeTimeIsLessEqualToCurrentTime = true; // Default to true
+        //    bool compareStopAndResumeTime = true; // Default to true
+
+        //    if (isStopformat && !isResumeformat)
+        //    {
+        //        stopTimeIsLessEqualToCurrentTime = StopTimeConvertTimeOnly(pollInterruption.StopTime.ToString());
+        //    }
+
+        //    if (!isStopformat && isResumeformat)
+        //    {
+        //        resumeTimeIsLessEqualToCurrentTime = ResumeTimeConvertTimeOnly(pollInterruption.ResumeTime.ToString());
+        //    }
+
+        //    if (isStopformat && isResumeformat)
+        //    {
+        //        compareStopAndResumeTime = CompareStopandResumeTime(pollInterruption.StopTime.ToString(), pollInterruption.ResumeTime.ToString());
+        //    }
+
+        //    if (!stopTimeIsLessEqualToCurrentTime)
+        //    {
+        //        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Stop Time Cannot be greater than Current Time" };
+        //    }
+        //    else if (!resumeTimeIsLessEqualToCurrentTime)
+        //    {
+        //        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Resume Time Cannot be greater than Current Time" };
+        //    }
+        //    else if (!compareStopAndResumeTime)
+        //    {
+        //        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Resume Time Cannot be less than Stop Time" };
+        //    }
+        //    var pollInterruptionRecord = await _eamsRepository.GetPollInterruptionData(pollInterruption.BoothMasterId.ToString());
+        //    if (pollInterruptionRecord == null) // if no poll added in table
+        //    {
+        //        ElectionInfoMaster electionInfoRecord = await _eamsRepository.GetElectionInfoRecord(boothMasterRecord.BoothMasterId);
+        //        if (electionInfoRecord != null)
+        //        {
+        //            PollInterruption pollInterruptionData = new PollInterruption
+        //            {
+        //                StateMasterId = boothMasterRecord.StateMasterId,
+        //                DistrictMasterId = boothMasterRecord.DistrictMasterId,
+        //                AssemblyMasterId = boothMasterRecord.AssemblyMasterId,
+        //                BoothMasterId = boothMasterRecord.BoothMasterId,
+        //                StopTime = isStopformat ? TimeOnly.ParseExact(pollInterruption.StopTime.ToString(), "HH:mm", CultureInfo.InvariantCulture) : (TimeOnly?)null,
+        //                ResumeTime = isResumeformat ? TimeOnly.ParseExact(pollInterruption.ResumeTime.ToString(), "HH:mm", CultureInfo.InvariantCulture) : (TimeOnly?)null,
+        //                InterruptionType = pollInterruption.InterruptionType,
+        //                Flag = isStopformat && isResumeformat ? InterruptionCategory.Both.ToString() :
+        //               isStopformat ? InterruptionCategory.Stop.ToString() :
+        //               isResumeformat ? InterruptionCategory.Resume.ToString() : null,
+        //                CreatedAt = BharatDateTime(),
+        //                UpdatedAt = BharatDateTime(),
+        //                IsPollInterrupted = false,
+        //                Remarks = pollInterruption.Remarks
+        //            };
+
+        //            if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.EVMFault)
+        //            {
+        //                if (pollInterruption.OldCU != null && pollInterruption.OldBU != null && pollInterruption.NewBU != null && pollInterruption.NewCU != null)
+        //                {
+        //                    pollInterruptionData.NewCU = pollInterruption.NewCU;
+        //                    pollInterruptionData.NewBU = pollInterruption.NewBU;
+        //                    pollInterruptionData.OldCU = pollInterruption.OldCU;
+        //                    pollInterruptionData.OldBU = pollInterruption.OldBU;
+
+        //                    var result = await _eamsRepository.AddPollInterruption(pollInterruptionData);
+        //                    return result;
+        //                }
+        //                else
+        //                {
+        //                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please Enter Old CU, Old BU, New CU & New BU Value" };
+        //                }
+        //            }
+        //            else if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.LawAndOrder ||
+        //                     (InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.Other)
+        //            {
+        //                var result = await _eamsRepository.AddPollInterruption(pollInterruptionData);
+        //                return result;
+        //            }
+        //            else
+        //            {
+        //                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Reason is not Valid" };
+        //            }
+        //        }
+        //    }
+
+
+        //    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Election info record not found" };
+        //}
 
         public async Task<Response> AddPollInterruption(PollInterruption pollInterruption)
         {
-
+            var latestPollInterruptionRecord = await _eamsRepository.GetPollInterruptionData(pollInterruption.BoothMasterId.ToString());
+            // Fetch the booth master record based on the provided BoothMasterId
             var boothMasterRecord = await _eamsRepository.GetBoothRecord(Convert.ToInt32(pollInterruption.BoothMasterId));
-            if (boothMasterRecord != null)
-            {// check is evm deposited then no interruption
-
-                ElectionInfoMaster electioninforecord = await _eamsRepository.GetElectionInfoRecord(boothMasterRecord.BoothMasterId);
-
-                if (electioninforecord != null)
-                {
-
-                    if (electioninforecord.IsEVMDeposited == false || electioninforecord.IsEVMDeposited == null)
-                    {
-                        AssemblyMaster asembrecord = await _eamsRepository.GetAssemblyById(boothMasterRecord.AssemblyMasterId.ToString());
-                        var pollInterruptionRecord = await _eamsRepository.GetPollInterruptionData(pollInterruption.BoothMasterId.ToString());
-
-                        if (pollInterruptionRecord == null) // if no poll added in table
-                        {
-                            // check stop time or if resume time only as it is Fresh record
-
-                            if (pollInterruption.StopTime != null && pollInterruption.ResumeTime != null)
-                            {
-
-                                // check both time in HHM format && comaprison wd each other and from current time
-                                bool isStopformat = IsHHmmFormat(pollInterruption.StopTime.ToString()); bool isResumeformat = IsHHmmFormat(pollInterruption.ResumeTime.ToString());
-                                if (isStopformat == true && isResumeformat == true)
-                                {
-                                    bool StopTimeisLessEqualToCurrentTime = StopTimeConvertTimeOnly(pollInterruption.StopTime.ToString());
-                                    bool ResumeTimeisLessEqualToCurrentTime = ResumeTimeConvertTimeOnly(pollInterruption.ResumeTime.ToString());
-                                    if (StopTimeisLessEqualToCurrentTime)
-                                    {
-                                        if (ResumeTimeisLessEqualToCurrentTime)
-                                        {
-                                            bool isResumeGreaterOrEqualToStopTime = CompareStopandResumeTime(pollInterruption.StopTime.ToString(), pollInterruption.ResumeTime.ToString());
-                                            if (isResumeGreaterOrEqualToStopTime)
-                                            {
-                                                PollInterruption pollInterruptionData = new PollInterruption()
-                                                {
-                                                    StateMasterId = boothMasterRecord.StateMasterId,
-                                                    DistrictMasterId = boothMasterRecord.DistrictMasterId,
-                                                    AssemblyMasterId = boothMasterRecord.AssemblyMasterId,
-                                                    BoothMasterId = boothMasterRecord.BoothMasterId,
-                                                    PCMasterId = asembrecord.PCMasterId,
-
-                                                };
-                                                if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.EVMFault)
-                                                // if evm fault- old cu and l bu enter
-                                                {
-                                                    // then check old cu bu entry
-                                                    if (pollInterruption.OldCU != null && pollInterruption.OldBU != null && pollInterruption.NewBU != null && pollInterruption.NewCU != null)
-                                                    {
-                                                        pollInterruptionData.InterruptionType = pollInterruption.InterruptionType;
-                                                        pollInterruptionData.NewCU = pollInterruption.NewCU;
-                                                        pollInterruptionData.NewBU = pollInterruption.NewBU;
-                                                        pollInterruptionData.OldCU = pollInterruption.OldCU;
-                                                        pollInterruptionData.OldBU = pollInterruption.OldBU;
-                                                        pollInterruptionData.StopTime = TimeOnly.ParseExact(pollInterruption.StopTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                                        pollInterruptionData.ResumeTime = TimeOnly.ParseExact(pollInterruption.ResumeTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                                        pollInterruptionData.InterruptionType = pollInterruption.InterruptionType;
-                                                        pollInterruptionData.Flag = InterruptionCategory.Both.ToString();
-                                                        pollInterruptionData.CreatedAt = BharatDateTime();
-                                                        pollInterruptionData.UpdatedAt = BharatDateTime();
-                                                        pollInterruptionData.IsPollInterrupted = false;
-                                                        pollInterruptionData.Remarks = pollInterruption.Remarks;
-
-                                                        var result = await _eamsRepository.AddPollInterruption(pollInterruptionData);
-                                                        return result;
-                                                    }
-                                                    else
-                                                    {
-                                                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please Enter Old CU,Old BU, New CU & New BU Value" };
-                                                    }
-
-
-
-                                                }
-                                                else if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.LawAndOrder)
-                                                {
-
-                                                    pollInterruptionData.StopTime = TimeOnly.ParseExact(pollInterruption.StopTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                                    pollInterruptionData.ResumeTime = TimeOnly.ParseExact(pollInterruption.ResumeTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                                    pollInterruptionData.InterruptionType = pollInterruption.InterruptionType;
-                                                    pollInterruptionData.Flag = InterruptionCategory.Both.ToString();
-                                                    pollInterruptionData.CreatedAt = BharatDateTime();
-                                                    pollInterruptionData.UpdatedAt = BharatDateTime();
-                                                    pollInterruptionData.Remarks = pollInterruption.Remarks;
-                                                    pollInterruptionData.IsPollInterrupted = false;
-                                                    pollInterruptionData.Remarks = pollInterruption.Remarks;
-                                                    var result = await _eamsRepository.AddPollInterruption(pollInterruptionData);
-                                                    return result;
-                                                }
-                                                else
-                                                {
-                                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Reason is not Valid" };
-                                                }
-
-
-
-                                            }
-                                            else
-                                            {
-                                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Resume Time Cannot be less than Stop Time" };
-
-                                            }
-
-                                        }
-                                        else
-                                        {
-                                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Resume Time Cannot be greater than Current Time" };
-
-                                        }
-                                    }
-                                    else
-                                    {
-                                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Stop Time Cannot be greater than Current Time" };
-
-                                    }
-
-
-                                }
-                                else
-                                {
-                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Time formats should be in 24Hr. format" };
-
-                                }
-                            }
-                            else if (pollInterruption.StopTime != null && pollInterruption.ResumeTime == null)
-                            {
-                                // user is entering only stopTime, so check hhm format && comprae from current time
-                                bool isStopformat = IsHHmmFormat(pollInterruption.StopTime.ToString());
-
-                                if (isStopformat == true)
-                                {
-                                    bool StopTimeisLessEqualToCurrentTime = StopTimeConvertTimeOnly(pollInterruption.StopTime.ToString());
-                                    if (StopTimeisLessEqualToCurrentTime)
-                                    {
-                                        PollInterruption pollInterruptionData = new PollInterruption()
-                                        {
-                                            StateMasterId = boothMasterRecord.StateMasterId,
-                                            DistrictMasterId = boothMasterRecord.DistrictMasterId,
-                                            AssemblyMasterId = boothMasterRecord.AssemblyMasterId,
-                                            BoothMasterId = boothMasterRecord.BoothMasterId,
-                                            PCMasterId = asembrecord.PCMasterId,
-                                        };
-                                        if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.EVMFault)
-                                        {
-
-                                            if (pollInterruption.OldBU != string.Empty && pollInterruption.OldCU != string.Empty)
-                                            {
-                                                pollInterruptionData.InterruptionType = pollInterruption.InterruptionType;
-                                                pollInterruptionData.OldCU = pollInterruption.OldCU;
-                                                pollInterruptionData.OldBU = pollInterruption.OldBU;
-                                                pollInterruptionData.StopTime = TimeOnly.ParseExact(pollInterruption.StopTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                                pollInterruptionData.InterruptionType = pollInterruption.InterruptionType;
-                                                pollInterruptionData.Flag = InterruptionCategory.Stop.ToString();
-                                                pollInterruptionData.CreatedAt = BharatDateTime();
-                                                pollInterruptionData.UpdatedAt = BharatDateTime();
-                                                pollInterruptionData.IsPollInterrupted = true;
-                                                pollInterruptionData.Remarks = pollInterruption.Remarks;
-                                                var result = await _eamsRepository.AddPollInterruption(pollInterruptionData);
-                                                return result;
-                                            }
-                                            else
-                                            {
-                                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please Enter OLD CU and Old BU Values." };
-                                            }
-
-
-                                        }
-                                        else if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.LawAndOrder)
-                                        {
-
-                                            pollInterruptionData.StopTime = TimeOnly.ParseExact(pollInterruption.StopTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                            pollInterruptionData.InterruptionType = pollInterruption.InterruptionType;
-                                            pollInterruptionData.Flag = InterruptionCategory.Stop.ToString();
-                                            pollInterruptionData.CreatedAt = BharatDateTime();
-                                            pollInterruptionData.UpdatedAt = BharatDateTime();
-                                            pollInterruptionData.IsPollInterrupted = true;
-                                            pollInterruptionData.Remarks = pollInterruption.Remarks;
-                                            var result = await _eamsRepository.AddPollInterruption(pollInterruptionData);
-                                            return result;
-                                        }
-                                        else
-                                        {
-                                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Reason is not Valid" };
-                                        }
-                                    }
-                                    else
-                                    {
-                                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Stop Time Cannot be greater than Current Time" };
-                                    }
-                                }
-                                else
-                                {
-                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Stop Time format should be in 24Hr. format" };
-
-                                }
-                            }
-                            else if (pollInterruption.StopTime == null && pollInterruption.ResumeTime != null)
-                            {
-                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Stop Time cannot be Empty!" };
-
-                            }
-
-                        }
-
-                        // Poll interrupted data Already in database like resolved or pending        
-                        else
-                        {
-                            if (pollInterruptionRecord.StopTime != null && pollInterruptionRecord.ResumeTime != null)
-                            {
-                                if (pollInterruption.StopTime != null && pollInterruption.ResumeTime != null)
-                                { // check both time in HHM format && comaprison wd each other and from current time
-                                    bool isStopformat = IsHHmmFormat(pollInterruption.StopTime.ToString()); bool isResumeformat = IsHHmmFormat(pollInterruption.ResumeTime.ToString());
-                                    if (isStopformat == true && isResumeformat == true)
-                                    {
-                                        // check last Resume time with pollInterruption.StopTime, it should be greater than stop
-                                        bool IsNewStopGreaterLastResumeTime = CheckLastResumeTime2(pollInterruptionRecord.ResumeTime, pollInterruption.StopTime.ToString());
-                                        if (IsNewStopGreaterLastResumeTime == true)
-                                        {
-
-
-                                            bool StopTimeisLessEqualToCurrentTime = StopTimeConvertTimeOnly(pollInterruption.StopTime.ToString());
-                                            bool ResumeTimeisLessEqualToCurrentTime = ResumeTimeConvertTimeOnly(pollInterruption.ResumeTime.ToString());
-                                            if (StopTimeisLessEqualToCurrentTime)
-                                            {
-                                                if (ResumeTimeisLessEqualToCurrentTime)
-                                                {
-                                                    bool isResumeGreaterOrEqualToStopTime = CompareStopandResumeTime(pollInterruption.StopTime.ToString(), pollInterruption.ResumeTime.ToString());
-                                                    if (isResumeGreaterOrEqualToStopTime)
-                                                    {
-                                                        PollInterruption pollInterruptionData = new PollInterruption()
-                                                        {
-                                                            StateMasterId = pollInterruptionRecord.StateMasterId,
-                                                            DistrictMasterId = pollInterruptionRecord.DistrictMasterId,
-                                                            AssemblyMasterId = pollInterruptionRecord.AssemblyMasterId,
-                                                            BoothMasterId = pollInterruptionRecord.BoothMasterId,
-                                                            PCMasterId = asembrecord.PCMasterId,
-                                                        };
-                                                        if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.EVMFault)
-
-                                                        {
-
-                                                            if (pollInterruption.OldBU != string.Empty && pollInterruption.OldCU != string.Empty && pollInterruption.NewBU != string.Empty && pollInterruption.NewCU != string.Empty)
-                                                            {
-                                                                pollInterruptionData.InterruptionType = pollInterruption.InterruptionType;
-                                                                pollInterruptionData.NewCU = pollInterruption.NewCU;
-                                                                pollInterruptionData.NewBU = pollInterruption.NewBU;
-                                                                pollInterruptionData.OldCU = pollInterruption.OldCU;
-                                                                pollInterruptionData.OldBU = pollInterruption.OldBU;
-                                                                pollInterruptionData.StopTime = TimeOnly.ParseExact(pollInterruption.StopTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                                                pollInterruptionData.ResumeTime = TimeOnly.ParseExact(pollInterruption.ResumeTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                                                pollInterruptionData.Flag = InterruptionCategory.Both.ToString();
-                                                                pollInterruptionData.CreatedAt = BharatDateTime();
-                                                                pollInterruptionData.UpdatedAt = BharatDateTime();
-                                                                pollInterruptionData.IsPollInterrupted = false;
-                                                                pollInterruptionData.Remarks = pollInterruption.Remarks;
-                                                                var result = await _eamsRepository.AddPollInterruption(pollInterruptionData);
-                                                                return result;
-                                                            }
-                                                            else
-                                                            {
-                                                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please Enter Old CU-BU and New CU-BU Values" };
-
-                                                            }
-
-
-                                                        }
-                                                        else if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.LawAndOrder)
-                                                        {
-
-                                                            pollInterruptionData.StopTime = TimeOnly.ParseExact(pollInterruption.StopTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                                            pollInterruptionData.ResumeTime = TimeOnly.ParseExact(pollInterruption.ResumeTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                                            pollInterruptionData.InterruptionType = pollInterruption.InterruptionType;
-                                                            pollInterruptionData.Flag = InterruptionCategory.Both.ToString();
-                                                            pollInterruptionData.CreatedAt = BharatDateTime();
-                                                            pollInterruptionData.UpdatedAt = BharatDateTime();
-                                                            pollInterruptionData.IsPollInterrupted = false;
-                                                            pollInterruptionData.Remarks = pollInterruption.Remarks;
-                                                            var result = await _eamsRepository.AddPollInterruption(pollInterruptionData);
-                                                            return result;
-                                                        }
-                                                        else
-                                                        {
-                                                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Reason is not Valid" };
-                                                        }
-
-
-
-                                                    }
-                                                    else
-                                                    {
-                                                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Resume Time Cannot be less than Stop Time" };
-
-                                                    }
-
-                                                }
-                                                else
-                                                {
-                                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Resume Time Cannot be greater than Current Time" };
-
-                                                }
-                                            }
-                                            else
-                                            {
-                                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Stop Time Cannot be greater than Current Time" };
-
-                                            }
-
-                                        }
-                                        else
-                                        {
-                                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Stop Time should be greater than from Last Resume Time Entered" };
-                                        }
-                                    }
-                                    else
-                                    {
-                                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Time formats should be in 24Hr. format" };
-
-                                    }
-                                }
-                                else if (pollInterruption.StopTime != null && pollInterruption.ResumeTime == null)
-                                {
-                                    // user is entering only stopTime, so check hhm format && comprae from current time
-                                    bool isStopformat = IsHHmmFormat(pollInterruption.StopTime.ToString());
-
-                                    if (isStopformat == true)
-                                    {
-                                        bool StopTimeisLessEqualToCurrentTime = StopTimeConvertTimeOnly(pollInterruption.StopTime.ToString());
-                                        if (StopTimeisLessEqualToCurrentTime)
-                                        {
-
-                                            // check last entered resume , newstoptime must be greater than equal to lastrsume
-                                            bool IsStopGreaterThanLastResumeTime = CheckLastResumeTime2(pollInterruptionRecord.ResumeTime, pollInterruption.StopTime.ToString());
-                                            if (IsStopGreaterThanLastResumeTime == true)
-                                            {
-                                                PollInterruption pollInterruptionData = new PollInterruption()
-                                                {
-                                                    StateMasterId = boothMasterRecord.StateMasterId,
-                                                    DistrictMasterId = boothMasterRecord.DistrictMasterId,
-                                                    AssemblyMasterId = boothMasterRecord.AssemblyMasterId,
-                                                    BoothMasterId = boothMasterRecord.BoothMasterId,
-                                                    PCMasterId = asembrecord.PCMasterId,
-                                                };
-                                                if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.EVMFault)
-
-                                                {
-                                                    if (pollInterruption.OldBU != string.Empty && pollInterruption.OldCU != string.Empty)
-                                                    {
-                                                        pollInterruptionData.InterruptionType = pollInterruption.InterruptionType;
-                                                        pollInterruptionData.OldCU = pollInterruption.OldCU;
-                                                        pollInterruptionData.OldBU = pollInterruption.OldBU;
-                                                        pollInterruptionData.StopTime = TimeOnly.ParseExact(pollInterruption.StopTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                                        pollInterruptionData.InterruptionType = pollInterruption.InterruptionType;
-                                                        pollInterruptionData.Flag = InterruptionCategory.Stop.ToString();
-                                                        pollInterruptionData.CreatedAt = BharatDateTime();
-                                                        pollInterruptionData.UpdatedAt = BharatDateTime();
-                                                        pollInterruptionData.IsPollInterrupted = true;
-                                                        pollInterruptionData.Remarks = pollInterruption.Remarks;
-                                                        var result = await _eamsRepository.AddPollInterruption(pollInterruptionData);
-                                                        return result;
-                                                    }
-                                                    else
-                                                    {
-                                                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please Enter Old CU-BU Values." };
-
-                                                    }
-
-
-                                                }
-                                                else if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.LawAndOrder)
-
-                                                {
-
-                                                    pollInterruptionData.StopTime = TimeOnly.ParseExact(pollInterruption.StopTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                                    pollInterruptionData.InterruptionType = pollInterruption.InterruptionType;
-                                                    pollInterruptionData.Flag = InterruptionCategory.Stop.ToString();
-                                                    pollInterruptionData.CreatedAt = BharatDateTime();
-                                                    pollInterruptionData.UpdatedAt = BharatDateTime();
-                                                    pollInterruptionData.IsPollInterrupted = true;
-                                                    pollInterruptionData.Remarks = pollInterruption.Remarks;
-                                                    var result = await _eamsRepository.AddPollInterruption(pollInterruptionData);
-                                                    return result;
-                                                }
-                                                else
-                                                {
-                                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Reason is not Valid" };
-                                                }
-                                            }
-                                            else
-                                            {
-                                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Stop Time Should be Greater than Last Entered Resume Time" };
-                                            }
-                                        }
-                                        else
-                                        {
-                                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Stop Time Cannot be greater than Current Time" };
-                                        }
-                                    }
-                                    else
-                                    {
-                                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Stop Time format should be in 24Hr. format" };
-
-                                    }
-                                }
-                                else if (pollInterruption.StopTime == null && pollInterruption.ResumeTime != null)
-                                {
-                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Stop Time cannot be Empty!" };
-
-                                }
-
-
-
-                            }
-
-                            //case cleared
-                            else if (pollInterruptionRecord.StopTime != null && pollInterruptionRecord.ResumeTime == null)
-                            {
-                                //need to enter Resume Time
-                                if (pollInterruption.ResumeTime.ToString() != null)
-                                {
-                                    bool isResumeformat = IsHHmmFormat(pollInterruption.ResumeTime.ToString());
-
-                                    if (isResumeformat == true)
-                                    {
-                                        bool ResumeTimeisLessEqualToCurrentTime = ResumeTimeConvertTimeOnly(pollInterruption.ResumeTime.ToString());
-                                        if (ResumeTimeisLessEqualToCurrentTime == true)
-                                        {
-
-                                            bool IsNewResumeTimeGreaterLastStopTime = CheckLastStopTime(pollInterruptionRecord.StopTime, pollInterruption.ResumeTime.ToString());
-                                            if (IsNewResumeTimeGreaterLastStopTime == true)
-                                            {
-                                                PollInterruption pollInterruptionData = new PollInterruption()
-                                                {
-                                                    StateMasterId = pollInterruptionRecord.StateMasterId,
-                                                    DistrictMasterId = pollInterruptionRecord.DistrictMasterId,
-                                                    AssemblyMasterId = pollInterruptionRecord.AssemblyMasterId,
-                                                    BoothMasterId = pollInterruptionRecord.BoothMasterId,
-                                                    PCMasterId = asembrecord.PCMasterId,
-                                                };
-                                                if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.EVMFault)
-
-                                                {
-                                                    if (pollInterruption.NewCU != string.Empty && pollInterruption.NewBU != string.Empty)
-                                                    {
-                                                        pollInterruptionData.InterruptionType = pollInterruptionRecord.InterruptionType;
-                                                        pollInterruptionData.OldCU = pollInterruptionRecord.OldCU;
-                                                        pollInterruptionData.OldBU = pollInterruptionRecord.OldBU;
-                                                        pollInterruptionData.NewCU = pollInterruption.NewCU;
-                                                        pollInterruptionData.NewBU = pollInterruption.NewBU;
-                                                        pollInterruptionData.StopTime = pollInterruptionRecord.StopTime;
-                                                        pollInterruptionData.ResumeTime = TimeOnly.ParseExact(pollInterruption.ResumeTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                                        pollInterruptionData.Flag = InterruptionCategory.Resume.ToString();
-                                                        pollInterruptionData.CreatedAt = BharatDateTime();
-                                                        pollInterruptionData.UpdatedAt = BharatDateTime();
-                                                        pollInterruptionData.IsPollInterrupted = false;
-                                                        pollInterruptionData.Remarks = pollInterruption.Remarks;
-                                                        var result = await _eamsRepository.AddPollInterruption(pollInterruptionData);
-                                                        return result;
-
-                                                    }
-                                                    else
-                                                    {
-                                                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please Enter New CU-BU Value." };
-
-                                                    }
-
-
-                                                }
-                                                else if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.LawAndOrder)
-
-                                                {
-
-                                                    pollInterruptionData.StopTime = pollInterruptionRecord.StopTime;
-                                                    pollInterruptionData.ResumeTime = TimeOnly.ParseExact(pollInterruption.ResumeTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                                    pollInterruptionData.InterruptionType = pollInterruption.InterruptionType;
-                                                    pollInterruptionData.Flag = InterruptionCategory.Resume.ToString();
-                                                    pollInterruptionData.CreatedAt = BharatDateTime();
-                                                    pollInterruptionData.UpdatedAt = BharatDateTime();
-                                                    pollInterruptionData.IsPollInterrupted = false;
-                                                    pollInterruptionData.Remarks = pollInterruption.Remarks;
-                                                    var result = await _eamsRepository.AddPollInterruption(pollInterruptionData);
-                                                    return result;
-                                                }
-                                                else
-                                                {
-                                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Reason is not Valid" };
-                                                }
-
-                                            }
-                                            else
-                                            {
-                                                return new Response { Status = RequestStatusEnum.NotFound, Message = "Resume Time must be greater than Last Entered Stop Time." };
-
-                                            }
-                                        }
-                                        else
-                                        {
-                                            return new Response { Status = RequestStatusEnum.NotFound, Message = "Resume Time Cannot be greater than Current Time." };
-
-                                        }
-                                    }
-                                    else
-                                    {
-                                        return new Response { Status = RequestStatusEnum.NotFound, Message = "Resume Time must be in 24Hr Format." };
-                                    }
-                                }
-                                else
-                                {
-                                    return new Response { Status = RequestStatusEnum.NotFound, Message = "Please Enter Resume Time in 24Hr Format." };
-                                }
-
-                            }
-
-
-                        }
-                    }
-
-                    else
-                    {
-                        return new Response { Status = RequestStatusEnum.NotFound, Message = "Can't Raise Interruption as EVM has been deposited." };
-
-                    }
-
-                }
-                else
-                {
-                    // when no electioninfo record then also elgible
-                    AssemblyMaster asembrecord = await _eamsRepository.GetAssemblyById(boothMasterRecord.AssemblyMasterId.ToString());
-                    var pollInterruptionRecord = await _eamsRepository.GetPollInterruptionData(pollInterruption.BoothMasterId.ToString());
-
-                    if (pollInterruptionRecord == null) // if no poll added in table
-                    {
-                        // check stop time or if resume time only as it is Fresh record
-
-                        if (pollInterruption.StopTime != null && pollInterruption.ResumeTime != null)
-                        {
-
-                            // check both time in HHM format && comaprison wd each other and from current time
-                            bool isStopformat = IsHHmmFormat(pollInterruption.StopTime.ToString()); bool isResumeformat = IsHHmmFormat(pollInterruption.ResumeTime.ToString());
-                            if (isStopformat == true && isResumeformat == true)
-                            {
-                                bool StopTimeisLessEqualToCurrentTime = StopTimeConvertTimeOnly(pollInterruption.StopTime.ToString());
-                                bool ResumeTimeisLessEqualToCurrentTime = ResumeTimeConvertTimeOnly(pollInterruption.ResumeTime.ToString());
-                                if (StopTimeisLessEqualToCurrentTime)
-                                {
-                                    if (ResumeTimeisLessEqualToCurrentTime)
-                                    {
-                                        bool isResumeGreaterOrEqualToStopTime = CompareStopandResumeTime(pollInterruption.StopTime.ToString(), pollInterruption.ResumeTime.ToString());
-                                        if (isResumeGreaterOrEqualToStopTime)
-                                        {
-                                            PollInterruption pollInterruptionData = new PollInterruption()
-                                            {
-                                                StateMasterId = boothMasterRecord.StateMasterId,
-                                                DistrictMasterId = boothMasterRecord.DistrictMasterId,
-                                                AssemblyMasterId = boothMasterRecord.AssemblyMasterId,
-                                                BoothMasterId = boothMasterRecord.BoothMasterId,
-                                                PCMasterId = asembrecord.PCMasterId,
-
-                                            };
-                                            if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.EVMFault)
-                                            // if evm fault- old cu and l bu enter
-                                            {
-                                                // then check old cu bu entry
-                                                if (pollInterruption.OldCU != null && pollInterruption.OldBU != null && pollInterruption.NewBU != null && pollInterruption.NewCU != null)
-                                                {
-                                                    pollInterruptionData.InterruptionType = pollInterruption.InterruptionType;
-                                                    pollInterruptionData.NewCU = pollInterruption.NewCU;
-                                                    pollInterruptionData.NewBU = pollInterruption.NewBU;
-                                                    pollInterruptionData.OldCU = pollInterruption.OldCU;
-                                                    pollInterruptionData.OldBU = pollInterruption.OldBU;
-                                                    pollInterruptionData.StopTime = TimeOnly.ParseExact(pollInterruption.StopTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                                    pollInterruptionData.ResumeTime = TimeOnly.ParseExact(pollInterruption.ResumeTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                                    pollInterruptionData.InterruptionType = pollInterruption.InterruptionType;
-                                                    pollInterruptionData.Flag = InterruptionCategory.Both.ToString();
-                                                    pollInterruptionData.CreatedAt = BharatDateTime();
-                                                    pollInterruptionData.UpdatedAt = BharatDateTime();
-                                                    pollInterruptionData.IsPollInterrupted = false;
-                                                    pollInterruptionData.Remarks = pollInterruption.Remarks;
-
-                                                    var result = await _eamsRepository.AddPollInterruption(pollInterruptionData);
-                                                    return result;
-                                                }
-                                                else
-                                                {
-                                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please Enter Old CU,Old BU, New CU & New BU Value" };
-                                                }
-
-
-
-                                            }
-                                            else if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.LawAndOrder)
-                                            {
-
-                                                pollInterruptionData.StopTime = TimeOnly.ParseExact(pollInterruption.StopTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                                pollInterruptionData.ResumeTime = TimeOnly.ParseExact(pollInterruption.ResumeTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                                pollInterruptionData.InterruptionType = pollInterruption.InterruptionType;
-                                                pollInterruptionData.Flag = InterruptionCategory.Both.ToString();
-                                                pollInterruptionData.CreatedAt = BharatDateTime();
-                                                pollInterruptionData.UpdatedAt = BharatDateTime();
-                                                pollInterruptionData.Remarks = pollInterruption.Remarks;
-                                                pollInterruptionData.IsPollInterrupted = false;
-                                                pollInterruptionData.Remarks = pollInterruption.Remarks;
-                                                var result = await _eamsRepository.AddPollInterruption(pollInterruptionData);
-                                                return result;
-                                            }
-                                            else
-                                            {
-                                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Reason is not Valid" };
-                                            }
-
-
-
-                                        }
-                                        else
-                                        {
-                                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Resume Time Cannot be less than Stop Time" };
-
-                                        }
-
-                                    }
-                                    else
-                                    {
-                                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Resume Time Cannot be greater than Current Time" };
-
-                                    }
-                                }
-                                else
-                                {
-                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Stop Time Cannot be greater than Current Time" };
-
-                                }
-
-
-                            }
-                            else
-                            {
-                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Time formats should be in 24Hr. format" };
-
-                            }
-                        }
-                        else if (pollInterruption.StopTime != null && pollInterruption.ResumeTime == null)
-                        {
-                            // user is entering only stopTime, so check hhm format && comprae from current time
-                            bool isStopformat = IsHHmmFormat(pollInterruption.StopTime.ToString());
-
-                            if (isStopformat == true)
-                            {
-                                bool StopTimeisLessEqualToCurrentTime = StopTimeConvertTimeOnly(pollInterruption.StopTime.ToString());
-                                if (StopTimeisLessEqualToCurrentTime)
-                                {
-                                    PollInterruption pollInterruptionData = new PollInterruption()
-                                    {
-                                        StateMasterId = boothMasterRecord.StateMasterId,
-                                        DistrictMasterId = boothMasterRecord.DistrictMasterId,
-                                        AssemblyMasterId = boothMasterRecord.AssemblyMasterId,
-                                        BoothMasterId = boothMasterRecord.BoothMasterId,
-                                        PCMasterId = asembrecord.PCMasterId,
-                                    };
-                                    if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.EVMFault)
-                                    {
-
-                                        if (pollInterruption.OldBU != string.Empty && pollInterruption.OldCU != string.Empty)
-                                        {
-                                            pollInterruptionData.InterruptionType = pollInterruption.InterruptionType;
-                                            pollInterruptionData.OldCU = pollInterruption.OldCU;
-                                            pollInterruptionData.OldBU = pollInterruption.OldBU;
-                                            pollInterruptionData.StopTime = TimeOnly.ParseExact(pollInterruption.StopTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                            pollInterruptionData.InterruptionType = pollInterruption.InterruptionType;
-                                            pollInterruptionData.Flag = InterruptionCategory.Stop.ToString();
-                                            pollInterruptionData.CreatedAt = BharatDateTime();
-                                            pollInterruptionData.UpdatedAt = BharatDateTime();
-                                            pollInterruptionData.IsPollInterrupted = true;
-                                            pollInterruptionData.Remarks = pollInterruption.Remarks;
-                                            var result = await _eamsRepository.AddPollInterruption(pollInterruptionData);
-                                            return result;
-                                        }
-                                        else
-                                        {
-                                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please Enter OLD CU and Old BU Values." };
-                                        }
-
-
-                                    }
-                                    else if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.LawAndOrder)
-                                    {
-
-                                        pollInterruptionData.StopTime = TimeOnly.ParseExact(pollInterruption.StopTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                        pollInterruptionData.InterruptionType = pollInterruption.InterruptionType;
-                                        pollInterruptionData.Flag = InterruptionCategory.Stop.ToString();
-                                        pollInterruptionData.CreatedAt = BharatDateTime();
-                                        pollInterruptionData.UpdatedAt = BharatDateTime();
-                                        pollInterruptionData.IsPollInterrupted = true;
-                                        pollInterruptionData.Remarks = pollInterruption.Remarks;
-                                        var result = await _eamsRepository.AddPollInterruption(pollInterruptionData);
-                                        return result;
-                                    }
-                                    else
-                                    {
-                                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Reason is not Valid" };
-                                    }
-                                }
-                                else
-                                {
-                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Stop Time Cannot be greater than Current Time" };
-                                }
-                            }
-                            else
-                            {
-                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Stop Time format should be in 24Hr. format" };
-
-                            }
-                        }
-                        else if (pollInterruption.StopTime == null && pollInterruption.ResumeTime != null)
-                        {
-                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Stop Time cannot be Empty!" };
-
-                        }
-
-                    }
-
-                    // Poll interrupted data Already in database like resolved or pending        
-                    else
-                    {
-                        if (pollInterruptionRecord.StopTime != null && pollInterruptionRecord.ResumeTime != null)
-                        {
-                            if (pollInterruption.StopTime != null && pollInterruption.ResumeTime != null)
-                            { // check both time in HHM format && comaprison wd each other and from current time
-                                bool isStopformat = IsHHmmFormat(pollInterruption.StopTime.ToString()); bool isResumeformat = IsHHmmFormat(pollInterruption.ResumeTime.ToString());
-                                if (isStopformat == true && isResumeformat == true)
-                                {
-                                    // check last Resume time with pollInterruption.StopTime, it should be greater than stop
-                                    bool IsNewStopGreaterLastResumeTime = CheckLastResumeTime2(pollInterruptionRecord.ResumeTime, pollInterruption.StopTime.ToString());
-                                    if (IsNewStopGreaterLastResumeTime == true)
-                                    {
-
-
-                                        bool StopTimeisLessEqualToCurrentTime = StopTimeConvertTimeOnly(pollInterruption.StopTime.ToString());
-                                        bool ResumeTimeisLessEqualToCurrentTime = ResumeTimeConvertTimeOnly(pollInterruption.ResumeTime.ToString());
-                                        if (StopTimeisLessEqualToCurrentTime)
-                                        {
-                                            if (ResumeTimeisLessEqualToCurrentTime)
-                                            {
-                                                bool isResumeGreaterOrEqualToStopTime = CompareStopandResumeTime(pollInterruption.StopTime.ToString(), pollInterruption.ResumeTime.ToString());
-                                                if (isResumeGreaterOrEqualToStopTime)
-                                                {
-                                                    PollInterruption pollInterruptionData = new PollInterruption()
-                                                    {
-                                                        StateMasterId = pollInterruptionRecord.StateMasterId,
-                                                        DistrictMasterId = pollInterruptionRecord.DistrictMasterId,
-                                                        AssemblyMasterId = pollInterruptionRecord.AssemblyMasterId,
-                                                        BoothMasterId = pollInterruptionRecord.BoothMasterId,
-                                                        PCMasterId = asembrecord.PCMasterId,
-                                                    };
-                                                    if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.EVMFault)
-
-                                                    {
-
-                                                        if (pollInterruption.OldBU != string.Empty && pollInterruption.OldCU != string.Empty && pollInterruption.NewBU != string.Empty && pollInterruption.NewCU != string.Empty)
-                                                        {
-                                                            pollInterruptionData.InterruptionType = pollInterruption.InterruptionType;
-                                                            pollInterruptionData.NewCU = pollInterruption.NewCU;
-                                                            pollInterruptionData.NewBU = pollInterruption.NewBU;
-                                                            pollInterruptionData.OldCU = pollInterruption.OldCU;
-                                                            pollInterruptionData.OldBU = pollInterruption.OldBU;
-                                                            pollInterruptionData.StopTime = TimeOnly.ParseExact(pollInterruption.StopTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                                            pollInterruptionData.ResumeTime = TimeOnly.ParseExact(pollInterruption.ResumeTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                                            pollInterruptionData.Flag = InterruptionCategory.Both.ToString();
-                                                            pollInterruptionData.CreatedAt = BharatDateTime();
-                                                            pollInterruptionData.UpdatedAt = BharatDateTime();
-                                                            pollInterruptionData.IsPollInterrupted = false;
-                                                            pollInterruptionData.Remarks = pollInterruption.Remarks;
-                                                            var result = await _eamsRepository.AddPollInterruption(pollInterruptionData);
-                                                            return result;
-                                                        }
-                                                        else
-                                                        {
-                                                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please Enter Old CU-BU and New CU-BU Values" };
-
-                                                        }
-
-
-                                                    }
-                                                    else if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.LawAndOrder)
-                                                    {
-
-                                                        pollInterruptionData.StopTime = TimeOnly.ParseExact(pollInterruption.StopTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                                        pollInterruptionData.ResumeTime = TimeOnly.ParseExact(pollInterruption.ResumeTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                                        pollInterruptionData.InterruptionType = pollInterruption.InterruptionType;
-                                                        pollInterruptionData.Flag = InterruptionCategory.Both.ToString();
-                                                        pollInterruptionData.CreatedAt = BharatDateTime();
-                                                        pollInterruptionData.UpdatedAt = BharatDateTime();
-                                                        pollInterruptionData.IsPollInterrupted = false;
-                                                        pollInterruptionData.Remarks = pollInterruption.Remarks;
-                                                        var result = await _eamsRepository.AddPollInterruption(pollInterruptionData);
-                                                        return result;
-                                                    }
-                                                    else
-                                                    {
-                                                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Reason is not Valid" };
-                                                    }
-
-
-
-                                                }
-                                                else
-                                                {
-                                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Resume Time Cannot be less than Stop Time" };
-
-                                                }
-
-                                            }
-                                            else
-                                            {
-                                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Resume Time Cannot be greater than Current Time" };
-
-                                            }
-                                        }
-                                        else
-                                        {
-                                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Stop Time Cannot be greater than Current Time" };
-
-                                        }
-
-                                    }
-                                    else
-                                    {
-                                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Stop Time should be greater than from Last Resume Time Entered" };
-                                    }
-                                }
-                                else
-                                {
-                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Time formats should be in 24Hr. format" };
-
-                                }
-                            }
-                            else if (pollInterruption.StopTime != null && pollInterruption.ResumeTime == null)
-                            {
-                                // user is entering only stopTime, so check hhm format && comprae from current time
-                                bool isStopformat = IsHHmmFormat(pollInterruption.StopTime.ToString());
-
-                                if (isStopformat == true)
-                                {
-                                    bool StopTimeisLessEqualToCurrentTime = StopTimeConvertTimeOnly(pollInterruption.StopTime.ToString());
-                                    if (StopTimeisLessEqualToCurrentTime)
-                                    {
-
-                                        // check last entered resume , newstoptime must be greater than equal to lastrsume
-                                        bool IsStopGreaterThanLastResumeTime = CheckLastResumeTime2(pollInterruptionRecord.ResumeTime, pollInterruption.StopTime.ToString());
-                                        if (IsStopGreaterThanLastResumeTime == true)
-                                        {
-                                            PollInterruption pollInterruptionData = new PollInterruption()
-                                            {
-                                                StateMasterId = boothMasterRecord.StateMasterId,
-                                                DistrictMasterId = boothMasterRecord.DistrictMasterId,
-                                                AssemblyMasterId = boothMasterRecord.AssemblyMasterId,
-                                                BoothMasterId = boothMasterRecord.BoothMasterId,
-                                                PCMasterId = asembrecord.PCMasterId,
-                                            };
-                                            if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.EVMFault)
-
-                                            {
-                                                if (pollInterruption.OldBU != string.Empty && pollInterruption.OldCU != string.Empty)
-                                                {
-                                                    pollInterruptionData.InterruptionType = pollInterruption.InterruptionType;
-                                                    pollInterruptionData.OldCU = pollInterruption.OldCU;
-                                                    pollInterruptionData.OldBU = pollInterruption.OldBU;
-                                                    pollInterruptionData.StopTime = TimeOnly.ParseExact(pollInterruption.StopTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                                    pollInterruptionData.InterruptionType = pollInterruption.InterruptionType;
-                                                    pollInterruptionData.Flag = InterruptionCategory.Stop.ToString();
-                                                    pollInterruptionData.CreatedAt = BharatDateTime();
-                                                    pollInterruptionData.UpdatedAt = BharatDateTime();
-                                                    pollInterruptionData.IsPollInterrupted = true;
-                                                    pollInterruptionData.Remarks = pollInterruption.Remarks;
-                                                    var result = await _eamsRepository.AddPollInterruption(pollInterruptionData);
-                                                    return result;
-                                                }
-                                                else
-                                                {
-                                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please Enter Old CU-BU Values." };
-
-                                                }
-
-
-                                            }
-                                            else if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.LawAndOrder)
-
-                                            {
-
-                                                pollInterruptionData.StopTime = TimeOnly.ParseExact(pollInterruption.StopTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                                pollInterruptionData.InterruptionType = pollInterruption.InterruptionType;
-                                                pollInterruptionData.Flag = InterruptionCategory.Stop.ToString();
-                                                pollInterruptionData.CreatedAt = BharatDateTime();
-                                                pollInterruptionData.UpdatedAt = BharatDateTime();
-                                                pollInterruptionData.IsPollInterrupted = true;
-                                                pollInterruptionData.Remarks = pollInterruption.Remarks;
-                                                var result = await _eamsRepository.AddPollInterruption(pollInterruptionData);
-                                                return result;
-                                            }
-                                            else
-                                            {
-                                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Reason is not Valid" };
-                                            }
-                                        }
-                                        else
-                                        {
-                                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Stop Time Should be Greater than Last Entered Resume Time" };
-                                        }
-                                    }
-                                    else
-                                    {
-                                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Stop Time Cannot be greater than Current Time" };
-                                    }
-                                }
-                                else
-                                {
-                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Stop Time format should be in 24Hr. format" };
-
-                                }
-                            }
-                            else if (pollInterruption.StopTime == null && pollInterruption.ResumeTime != null)
-                            {
-                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Stop Time cannot be Empty!" };
-
-                            }
-
-
-
-                        }
-
-                        //case cleared
-                        else if (pollInterruptionRecord.StopTime != null && pollInterruptionRecord.ResumeTime == null)
-                        {
-                            //need to enter Resume Time
-                            if (pollInterruption.ResumeTime.ToString() != null)
-                            {
-                                bool isResumeformat = IsHHmmFormat(pollInterruption.ResumeTime.ToString());
-
-                                if (isResumeformat == true)
-                                {
-                                    bool ResumeTimeisLessEqualToCurrentTime = ResumeTimeConvertTimeOnly(pollInterruption.ResumeTime.ToString());
-                                    if (ResumeTimeisLessEqualToCurrentTime == true)
-                                    {
-
-                                        bool IsNewResumeTimeGreaterLastStopTime = CheckLastStopTime(pollInterruptionRecord.StopTime, pollInterruption.ResumeTime.ToString());
-                                        if (IsNewResumeTimeGreaterLastStopTime == true)
-                                        {
-                                            PollInterruption pollInterruptionData = new PollInterruption()
-                                            {
-                                                StateMasterId = pollInterruptionRecord.StateMasterId,
-                                                DistrictMasterId = pollInterruptionRecord.DistrictMasterId,
-                                                AssemblyMasterId = pollInterruptionRecord.AssemblyMasterId,
-                                                BoothMasterId = pollInterruptionRecord.BoothMasterId,
-                                                PCMasterId = asembrecord.PCMasterId,
-                                            };
-                                            if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.EVMFault)
-
-                                            {
-                                                if (pollInterruption.NewCU != string.Empty && pollInterruption.NewBU != string.Empty)
-                                                {
-                                                    pollInterruptionData.InterruptionType = pollInterruptionRecord.InterruptionType;
-                                                    pollInterruptionData.OldCU = pollInterruptionRecord.OldCU;
-                                                    pollInterruptionData.OldBU = pollInterruptionRecord.OldBU;
-                                                    pollInterruptionData.NewCU = pollInterruption.NewCU;
-                                                    pollInterruptionData.NewBU = pollInterruption.NewBU;
-                                                    pollInterruptionData.StopTime = pollInterruptionRecord.StopTime;
-                                                    pollInterruptionData.ResumeTime = TimeOnly.ParseExact(pollInterruption.ResumeTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                                    pollInterruptionData.Flag = InterruptionCategory.Resume.ToString();
-                                                    pollInterruptionData.CreatedAt = BharatDateTime();
-                                                    pollInterruptionData.UpdatedAt = BharatDateTime();
-                                                    pollInterruptionData.IsPollInterrupted = false;
-                                                    pollInterruptionData.Remarks = pollInterruption.Remarks;
-                                                    var result = await _eamsRepository.AddPollInterruption(pollInterruptionData);
-                                                    return result;
-
-                                                }
-                                                else
-                                                {
-                                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please Enter New CU-BU Value." };
-
-                                                }
-
-
-                                            }
-                                            else if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.LawAndOrder)
-
-                                            {
-
-                                                pollInterruptionData.StopTime = pollInterruptionRecord.StopTime;
-                                                pollInterruptionData.ResumeTime = TimeOnly.ParseExact(pollInterruption.ResumeTime.ToString(), "HH:mm", CultureInfo.InvariantCulture);
-                                                pollInterruptionData.InterruptionType = pollInterruption.InterruptionType;
-                                                pollInterruptionData.Flag = InterruptionCategory.Resume.ToString();
-                                                pollInterruptionData.CreatedAt = BharatDateTime();
-                                                pollInterruptionData.UpdatedAt = BharatDateTime();
-                                                pollInterruptionData.IsPollInterrupted = false;
-                                                pollInterruptionData.Remarks = pollInterruption.Remarks;
-                                                var result = await _eamsRepository.AddPollInterruption(pollInterruptionData);
-                                                return result;
-                                            }
-                                            else
-                                            {
-                                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Reason is not Valid" };
-                                            }
-
-                                        }
-                                        else
-                                        {
-                                            return new Response { Status = RequestStatusEnum.NotFound, Message = "Resume Time must be greater than Last Entered Stop Time." };
-
-                                        }
-                                    }
-                                    else
-                                    {
-                                        return new Response { Status = RequestStatusEnum.NotFound, Message = "Resume Time Cannot be greater than Current Time." };
-
-                                    }
-                                }
-                                else
-                                {
-                                    return new Response { Status = RequestStatusEnum.NotFound, Message = "Resume Time must be in 24Hr Format." };
-                                }
-                            }
-                            else
-                            {
-                                return new Response { Status = RequestStatusEnum.NotFound, Message = "Please Enter Resume Time in 24Hr Format." };
-                            }
-
-                        }
-
-
-                    }
-                }
-            }
-            else
+            if (boothMasterRecord == null)
             {
                 return new Response { Status = RequestStatusEnum.NotFound, Message = "Booth Record Not Found" };
             }
-            return null;
+
+            bool isStopformat = IsHHmmFormat(pollInterruption.StopTime.ToString());
+            bool isResumeformat = IsHHmmFormat(pollInterruption.ResumeTime.ToString());
+
+            // Declare time comparison variables
+            bool stopTimeIsLessEqualToCurrentTime = true; // Default to true
+            bool resumeTimeIsLessEqualToCurrentTime = true; // Default to true
+            bool compareStopAndResumeTime = true; // Default to true
+
+            if (isStopformat && !isResumeformat)
+            {
+                stopTimeIsLessEqualToCurrentTime = StopTimeConvertTimeOnly(pollInterruption.StopTime.ToString());
+            }
+
+            if (!isStopformat && isResumeformat)
+            {
+                resumeTimeIsLessEqualToCurrentTime = ResumeTimeConvertTimeOnly(pollInterruption.ResumeTime.ToString());
+            }
+
+            if (isStopformat && isResumeformat)
+            {
+                compareStopAndResumeTime = CompareStopandResumeTime(pollInterruption.StopTime.ToString(), pollInterruption.ResumeTime.ToString());
+            }
+
+            if (!stopTimeIsLessEqualToCurrentTime)
+            {
+                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Stop Time Cannot be greater than Current Time" };
+            }
+            else if (!resumeTimeIsLessEqualToCurrentTime)
+            {
+                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Resume Time Cannot be greater than Current Time" };
+            }
+            else if (!compareStopAndResumeTime)
+            {
+                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Resume Time Cannot be less than Stop Time" };
+            }
+
+
+            PollInterruption pollInterruptionData = new PollInterruption
+            {
+                StateMasterId = boothMasterRecord.StateMasterId,
+                DistrictMasterId = boothMasterRecord.DistrictMasterId,
+                AssemblyMasterId = boothMasterRecord.AssemblyMasterId,
+                BoothMasterId = boothMasterRecord.BoothMasterId,
+                InterruptionType = pollInterruption.InterruptionType,
+                // Flag = isStopformat && isResumeformat ? InterruptionCategory.Both.ToString() :
+                //isStopformat ? InterruptionCategory.Stop.ToString() :
+                //isResumeformat ? InterruptionCategory.Resume.ToString() : null,
+                CreatedAt = BharatDateTime(),
+                Remarks = pollInterruption.Remarks,
+                ElectionTypeMasterId = pollInterruption.ElectionTypeMasterId
+
+            };
+            if (isStopformat == true)
+            {
+                pollInterruptionData.StopTime = pollInterruption.StopTime;
+                pollInterruptionData.IsPollInterrupted = true;
+                pollInterruptionData.Flag = InterruptionCategory.Stop.ToString();
+                boothMasterRecord.IsBoothInterrupted = true;
+                await _eamsRepository.UpdateBooth(boothMasterRecord);
+            }
+            if (isResumeformat == true)
+            {
+                pollInterruptionData.StopTime = latestPollInterruptionRecord.StopTime;
+                pollInterruptionData.ResumeTime = pollInterruption.ResumeTime;
+                pollInterruptionData.IsPollInterrupted = false;
+                pollInterruptionData.Flag = InterruptionCategory.Resume.ToString();
+                boothMasterRecord.IsBoothInterrupted = false;
+                await _eamsRepository.UpdateBooth(boothMasterRecord);
+            }
+            if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.EVMFault)
+            {
+                if (isStopformat)
+                {
+                    if (pollInterruption.OldCU != null && pollInterruption.OldBU != null)
+                    {
+                        pollInterruptionData.NewCU = pollInterruption.NewCU;
+                        pollInterruptionData.NewBU = pollInterruption.NewBU;
+                        pollInterruptionData.OldCU = pollInterruption.OldCU;
+                        pollInterruptionData.OldBU = pollInterruption.OldBU;
+
+                        return await _eamsRepository.AddPollInterruption(pollInterruptionData);
+
+                    }
+                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please Enter Old CU, Old BU Value" };
+                }
+
+                if (isResumeformat)
+                {
+                    if (pollInterruption.NewCU != null && pollInterruption.NewBU != null)
+                    {
+                        pollInterruptionData.NewCU = pollInterruption.NewCU;
+                        pollInterruptionData.NewBU = pollInterruption.NewBU;
+                        pollInterruptionData.OldCU = pollInterruption.OldCU;
+                        pollInterruptionData.OldBU = pollInterruption.OldBU;
+
+                        return await _eamsRepository.AddPollInterruption(pollInterruptionData);
+
+                    }
+                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please Enter New CU & New BU Value" };
+                }
+            }
+            else if ((InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.LawAndOrder ||
+                     (InterruptionReason)pollInterruption.InterruptionType == InterruptionReason.Other)
+            {
+                return await _eamsRepository.AddPollInterruption(pollInterruptionData);
+
+            }
+
+            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Reason is not valid" };
+
+
         }
 
-        //public async Task<PollInterruption> GetPollInterruption(string boothMasterId)
-        //{
-        //    var res = await _eamsRepository.GetPollInterruptionData(boothMasterId);
-        //    var boothExists = await _eamsRepository.GetBoothRecord(Convert.ToInt32(boothMasterId));
-        //    if (res.StopTime != null && res.ResumeTime != null)
-        //    {
-        //        PollInterruption pollInterruptionData = new PollInterruption()
-        //        {
-        //            StateMasterId = res.StateMasterId,
-        //            DistrictMasterId = res.DistrictMasterId,
-        //            AssemblyMasterId = res.AssemblyMasterId,
-        //            BoothMasterId = res.BoothMasterId,
-        //            StopTime = res.StopTime,
-        //            ResumeTime = res.ResumeTime,
-        //            PollInterruptionId = res.PollInterruptionId,
-        //            InterruptionType = res.InterruptionType,
-        //            Flag = "New",
-        //            UpdatedAt = res.UpdatedAt,
-        //            IsPollInterrupted = false,
-
-
-        //        };
-        //        return pollInterruptionData;
-        //    }
-        //    else if (res.StopTime != null && res.ResumeTime == null)
-        //    {
-        //        PollInterruption pollInterruptionData = new PollInterruption()
-        //        {
-        //            StateMasterId = res.StateMasterId,
-        //            DistrictMasterId = res.DistrictMasterId,
-        //            AssemblyMasterId = res.AssemblyMasterId,
-        //            BoothMasterId = res.BoothMasterId,
-        //            StopTime = res.StopTime,
-        //            ResumeTime = res.ResumeTime,
-        //            PollInterruptionId = res.PollInterruptionId,
-        //            InterruptionType = res.InterruptionType,
-        //            Flag = "Resume",
-        //            UpdatedAt = res.UpdatedAt,
-        //            IsPollInterrupted = true,
-
-
-        //        };
-        //        return pollInterruptionData;
-        //    }
-        //    else if (res == null)
-        //    {
-        //        PollInterruption pollInterruptionData = new PollInterruption()
-        //        {
-        //            StateMasterId = res.StateMasterId,
-        //            DistrictMasterId = res.DistrictMasterId,
-        //            AssemblyMasterId = res.AssemblyMasterId,
-        //            BoothMasterId = res.BoothMasterId,
-        //            StopTime = res.StopTime,
-        //            ResumeTime = res.ResumeTime,
-        //            PollInterruptionId = res.PollInterruptionId,
-        //            InterruptionType = res.InterruptionType,
-        //            Flag = "Initial",
-        //            IsPollInterrupted = false,
-
-
-        //        };
-        //        return pollInterruptionData;
-        //    }
-        //    else
-        //    {
-        //        PollInterruption pollInterruptionData = new PollInterruption()
-        //        {
-        //            StateMasterId = boothExists.StateMasterId,
-        //            DistrictMasterId = boothExists.DistrictMasterId,
-        //            AssemblyMasterId = boothExists.AssemblyMasterId,
-        //            BoothMasterId = boothExists.BoothMasterId,
-        //            StopTime = null,
-        //            ResumeTime = null,
-        //            Flag = "Initial",
-        //            IsPollInterrupted = false,
-
-
-        //        };
-        //        return pollInterruptionData;
-
-        //    }
-        //}
-
-
-        public Task<PollInterruption> GetPollInterruptionbyId(string boothMasterId)
+       
+        public async Task<PollInterruption> GetPollInterruption(string boothMasterId)
         {
-            return _eamsRepository.GetPollInterruptionData(boothMasterId);
+            var res = await _eamsRepository.GetPollInterruptionData(boothMasterId);
+            var boothExists = await _eamsRepository.GetBoothRecord(Convert.ToInt32(boothMasterId));
+            if (res.StopTime != null && res.ResumeTime != null)
+            {
+                PollInterruption pollInterruptionData = new PollInterruption()
+                {
+                    StateMasterId = res.StateMasterId,
+                    DistrictMasterId = res.DistrictMasterId,
+                    AssemblyMasterId = res.AssemblyMasterId,
+                    BoothMasterId = res.BoothMasterId,
+                    StopTime = res.StopTime,
+                    ResumeTime = res.ResumeTime,
+                    PollInterruptionId = res.PollInterruptionId,
+                    InterruptionType = res.InterruptionType,
+                    Flag = "New",
+                    UpdatedAt = res.UpdatedAt,
+                    IsPollInterrupted = false,
+
+
+                };
+                return pollInterruptionData;
+            }
+            else if (res.StopTime != null && res.ResumeTime == null)
+            {
+                PollInterruption pollInterruptionData = new PollInterruption()
+                {
+                    StateMasterId = res.StateMasterId,
+                    DistrictMasterId = res.DistrictMasterId,
+                    AssemblyMasterId = res.AssemblyMasterId,
+                    BoothMasterId = res.BoothMasterId,
+                    StopTime = res.StopTime,
+                    ResumeTime = res.ResumeTime,
+                    PollInterruptionId = res.PollInterruptionId,
+                    InterruptionType = res.InterruptionType,
+                    Flag = "Resume",
+                    UpdatedAt = res.UpdatedAt,
+                    IsPollInterrupted = true,
+
+
+                };
+                return pollInterruptionData;
+            }
+            else if (res == null)
+            {
+                PollInterruption pollInterruptionData = new PollInterruption()
+                {
+                    StateMasterId = res.StateMasterId,
+                    DistrictMasterId = res.DistrictMasterId,
+                    AssemblyMasterId = res.AssemblyMasterId,
+                    BoothMasterId = res.BoothMasterId,
+                    StopTime = res.StopTime,
+                    ResumeTime = res.ResumeTime,
+                    PollInterruptionId = res.PollInterruptionId,
+                    InterruptionType = res.InterruptionType,
+                    Flag = "Initial",
+                    IsPollInterrupted = false,
+
+
+                };
+                return pollInterruptionData;
+            }
+            else
+            {
+                PollInterruption pollInterruptionData = new PollInterruption()
+                {
+                    StateMasterId = boothExists.StateMasterId,
+                    DistrictMasterId = boothExists.DistrictMasterId,
+                    AssemblyMasterId = boothExists.AssemblyMasterId,
+                    BoothMasterId = boothExists.BoothMasterId,
+                    StopTime = null,
+                    ResumeTime = null,
+                    Flag = "Initial",
+                    IsPollInterrupted = false,
+
+
+                };
+                return pollInterruptionData;
+
+            }
         }
 
-        public Task<List<PollInterruptionHistoryModel>> GetPollInterruptionHistoryById(string boothMasterId)
+        public async Task<PollInterruption> GetPollInterruptionbyId(string boothMasterId)
         {
-            return _eamsRepository.GetPollInterruptionHistoryById(boothMasterId);
+            return await _eamsRepository.GetPollInterruptionData(boothMasterId);
+        }
+
+        public async Task<List<PollInterruptionHistoryModel>> GetPollInterruptionHistoryById(string boothMasterId)
+        {
+            return await _eamsRepository.GetPollInterruptionHistoryById(boothMasterId);
         }
         public string GetInterruptionReason(string reason)
         {
@@ -2867,19 +1206,20 @@ namespace EAMS_BLL.Services
             return reasonStatus;
         }
 
-        public Task<List<PollInterruptionDashboard>> GetPollInterruptionDashboard(ClaimsIdentity claimsIdentity)
+        public async Task<List<PollInterruptionDashboard>> GetPollInterruptionDashboard(ClaimsIdentity claimsIdentity)
         {
-            return _eamsRepository.GetPollInterruptionDashboard(claimsIdentity);
+            return await _eamsRepository.GetPollInterruptionDashboard(claimsIdentity);
         }
 
-        public Task<int> GetPollInterruptionDashboardCount(ClaimsIdentity claimsIdentity)
+
+        public async Task<int> GetPollInterruptionDashboardCount(string role, int electionTypeMasterId, int stateMasterId, int? districtMasterId, int? assemblyMasterId, int? fourthLevelMasterId)
         {
-            return _eamsRepository.GetPollInterruptionDashboardCount(claimsIdentity);
+            return await _eamsRepository.GetPollInterruptionDashboardCount(role, electionTypeMasterId, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId);
         }
 
-        public Task<List<PollInterruptionDashboard>> GetBoothListBySoIdfoInterruption(ClaimsIdentity claimsIdentity)
+        public async Task<List<PollInterruptionDashboard>> GetBoothListBySoIdfoInterruption(ClaimsIdentity claimsIdentity)
         {
-            return _eamsRepository.GetBoothListBySoIdfoInterruption(claimsIdentity);
+            return await _eamsRepository.GetBoothListBySoIdfoInterruption(claimsIdentity);
         }
 
         #endregion
@@ -2890,7 +1230,11 @@ namespace EAMS_BLL.Services
             DateTime dummyDate; // A dummy date to use for parsing
             return DateTime.TryParseExact(timeString, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out dummyDate);
         }
-
+        /// <summary>
+        /// Checking stop time is less then current Time
+        /// </summary>
+        /// <param name="stopTime"></param>
+        /// <returns></returns>
         static bool StopTimeConvertTimeOnly(string stopTime)
         {
 
@@ -2907,7 +1251,11 @@ namespace EAMS_BLL.Services
                 return false;
             }
         }
-
+        /// <summary>
+        /// Checking Resume time is less then current Time
+        /// </summary>
+        /// <param name="resumeTime"></param>
+        /// <returns></returns>
         static bool ResumeTimeConvertTimeOnly(string resumeTime)
         {
 
@@ -2924,7 +1272,12 @@ namespace EAMS_BLL.Services
                 return false;
             }
         }
-
+        /// <summary>
+        /// Compare Stop and ResumeTime
+        /// </summary>
+        /// <param name="stopTime"></param>
+        /// <param name="resumeTime"></param>
+        /// <returns></returns>
         static bool CompareStopandResumeTime(string stopTime, string resumeTime)
         {
 
@@ -3045,12 +1398,57 @@ namespace EAMS_BLL.Services
         #endregion
 
         #region Reports
+        public async Task<List<ConsolidatePanchResultDeclarationReportList>> GetConsolidatedPanchResultDeclarationReport(ResultDeclaration resultDeclaration)
+        {
+
+            return await _eamsRepository.GetConsolidatedPanchResultDeclarationReport(resultDeclaration);
+        }
+        public async Task<List<ConsolidatedUnOpposedPanchSarPanchAndNoKycCandidateReportList>> GetConsolidatedUnOppossedPanchResultDeclarationReport(ResultDeclaration resultDeclaration)
+        {
+
+            return await _eamsRepository.GetConsolidatedUnOppossedPanchResultDeclarationReport(resultDeclaration);
+        }
+        public async Task<List<ConsolidatedUnOpposedPanchSarPanchAndNoKycCandidateReportList>> GetConsolidatedNoKycPanchResultDeclarationReport(ResultDeclaration resultDeclaration)
+        {
+
+            return await _eamsRepository.GetConsolidatedNoKycPanchResultDeclarationReport(resultDeclaration);
+        }
+        public async Task<List<ConsolidateSarPanchResultDeclarationReportList>> GetConsolidatedSarPanchResultDeclarationReport(ResultDeclarationReportListModel resultDeclaration)
+        {
+
+            return await _eamsRepository.GetConsolidatedSarPanchResultDeclarationReport(resultDeclaration);
+        }
+        public async Task<List<ConsolidatedUnOpposedPanchSarPanchAndNoKycCandidateReportList>> GetConsolidatedUnOppossedSarPanchResultDeclarationReport(ResultDeclarationReportListModel resultDeclaration)
+        {
+
+            return await _eamsRepository.GetConsolidatedUnOppossedSarPanchResultDeclarationReport(resultDeclaration);
+        }
+
+        public async Task<List<ConsolidatedUnOpposedPanchSarPanchAndNoKycCandidateReportList>> GetConsolidatedNoKycSarPanchResultDeclarationReport(ResultDeclarationReportListModel resultDeclaration)
+        {
+
+            return await _eamsRepository.GetConsolidatedNoKycSarPanchResultDeclarationReport(resultDeclaration);
+        }
+        public async Task<List<ConsolidatePanchResultDeclarationReportList>> GetConsolidatedElectedPanchResultDeclarationReport(ResultDeclaration resultDeclaration)
+        {
+
+            return await _eamsRepository.GetConsolidatedElectedPanchResultDeclarationReport(resultDeclaration);
+        }
+        public async Task<List<ConsolidateSarPanchResultDeclarationReportList>> GetConsolidatedElectedSarPanchResultDeclarationReport(ResultDeclarationReportListModel resultDeclaration)
+        {
+
+            return await _eamsRepository.GetConsolidatedElectedSarPanchResultDeclarationReport(resultDeclaration);
+        }
         public async Task<List<ConsolidateBoothReport>> GetConsolidateBoothReports(BoothReportModel boothReportModel)
         {
 
             return await _eamsRepository.GetConsolidateBoothReports(boothReportModel);
         }
+        public async Task<List<ConsolidateBoothReport>> GetConsolidateGPWardReports(BoothReportModel boothReportModel)
+        {
 
+            return await _eamsRepository.GetConsolidateGPWardReports(boothReportModel);
+        }
         public async Task<List<SoReport>> GetSOReport(BoothReportModel boothReportModel)
         {
 
@@ -3081,20 +1479,28 @@ namespace EAMS_BLL.Services
 
             return await _eamsRepository.GetSlotBasedVoterTurnOutReport(boothReportModel);
         }
-        public async Task<List<VoterTurnOutSlotWise>> GetVoterTurnOutSlotBasedReport(string stateMasterId)
+        public async Task<List<VoterTurnOutSlotWise>> GetVoterTurnOutSlotBasedReport(string stateMasterId, string electionTypeMasterId)
         {
 
-            return await _eamsRepository.GetVoterTurnOutSlotBasedReport(stateMasterId);
+            return await _eamsRepository.GetVoterTurnOutSlotBasedReport(stateMasterId, electionTypeMasterId);
         }
-        public async Task<List<AssemblyVoterTurnOutSlotWise>> GetSlotVTReporttAssemblyWise(string stateMasterId, string districtMasterId)
+        public async Task<List<VoterTurnOutSlotWise>> GetConsolidateSlotBasedVTOutReports(int stateMasterId, int electionTypeMasterId)
         {
-
-            return await _eamsRepository.GetSlotVTReporttAssemblyWise(stateMasterId, districtMasterId);
+            return await _eamsRepository.GetConsolidateSlotBasedVTOutReports(stateMasterId, electionTypeMasterId);
         }
-        public async Task<List<BoothWiseVoterTurnOutSlotWise>> GetSlotVTReportBoothWise(string stateMasterId, string districtMasterId, string assemblyId)
+        public async Task<List<VoterTurnOutSlotWise>> GetConsolidateSlotBasedVTOutReportsByElectionType(int stateMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.GetConsolidateSlotBasedVTOutReportsByElectionType(stateMasterId, electionTypeMasterId);
+        }
+        public async Task<List<AssemblyVoterTurnOutSlotWise>> GetSlotVTReporttAssemblyWise(string stateMasterId, string districtMasterId, string electionTypeMasterId)
         {
 
-            return await _eamsRepository.GetSlotVTReportBoothWise(stateMasterId, districtMasterId, assemblyId);
+            return await _eamsRepository.GetSlotVTReporttAssemblyWise(stateMasterId, districtMasterId, electionTypeMasterId);
+        }
+        public async Task<List<BoothWiseVoterTurnOutSlotWise>> GetSlotVTReportBoothWise(string stateMasterId, string districtMasterId, string assemblyId, string electionTypeMasterId)
+        {
+
+            return await _eamsRepository.GetSlotVTReportBoothWise(stateMasterId, districtMasterId, assemblyId, electionTypeMasterId);
         }
 
 
@@ -3114,13 +1520,7 @@ namespace EAMS_BLL.Services
         #endregion
 
 
-        #region
-        public async Task<List<ChartConsolidatedReport>> GetChartConsolidatedReport(ChartReportModel chartReportModel)
-        {
 
-            return await _eamsRepository.GetChartConsolidatedReport(chartReportModel);
-        }
-        #endregion
 
         #region HelpDesk
         public async Task<Response> AddHelpDeskInfo(HelpDeskDetail helpDeskDetail)
@@ -3139,10 +1539,10 @@ namespace EAMS_BLL.Services
 
             return await _eamsRepository.GetDistrictWiseSOCountEventWiseCount(stateMasterId);
         }
-        public async Task<List<SectorOfficerPendencyAssembly>> GetAssemblyWiseSOCountEventWiseCount(string stateMasterId, string districtmasterid)
+        public async Task<List<SectorOfficerPendencyAssembly>> GetAssemblyWiseSOCountEventWiseCount(string stateMasterId, string districtmasterid, string electionTypeMasterId)
         {
 
-            return await _eamsRepository.GetAssemblyWiseSOCountEventWiseCount(stateMasterId, districtmasterid);
+            return await _eamsRepository.GetAssemblyWiseSOCountEventWiseCount(stateMasterId, districtmasterid, electionTypeMasterId);
         }
         //public async Task<List<SectorOfficerPendencyBooth>> GetBoothWiseSOEventWiseCount(string stateMasterId, string districtmasterid, string assemblyMasterid)
         //{
@@ -3155,10 +1555,10 @@ namespace EAMS_BLL.Services
 
             return await _eamsRepository.GetBoothWiseSOEventWiseCount(soMasterId);
         }
-        public async Task<List<SectorOfficerPendencybySoNames>> GetSONamesEventWiseCount(string stateMasterId, string districtmasterid, string assemblyMasterid)
+        public async Task<List<SectorOfficerPendencybySoNames>> GetSONamesEventWiseCount(string stateMasterId, string districtmasterid, string assemblyMasterid, string electionTypeMasterId)
         {
 
-            return await _eamsRepository.GetSONamesEventWiseCount(stateMasterId, districtmasterid, assemblyMasterid);
+            return await _eamsRepository.GetSONamesEventWiseCount(stateMasterId, districtmasterid, assemblyMasterid, electionTypeMasterId);
         }
 
 
@@ -3306,11 +1706,38 @@ namespace EAMS_BLL.Services
         #region KYC Public Details
         public async Task<ServiceResponse> AddKYCDetails(Kyc kyc)
         {
-            return await _eamsRepository.AddKYCDetails(kyc);
+            if (!int.TryParse(kyc.Age, out int age) || age < 21)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "Age must be 21 or above." };
+            }
+            if (kyc.ElectionTypeMasterId == 1)
+            {
+                return await _eamsRepository.AddKYCDetailsForGP(kyc);
+            }
+            // ElectionTypeMasterId == 4 For "Municipal Corporation","Municipal Council" and "Nagar Panchayat"
+            else if (kyc.ElectionTypeMasterId == 4 || kyc.ElectionTypeMasterId == 5 || kyc.ElectionTypeMasterId == 6)
+            {
+                return await _eamsRepository.AddKYCDetailsForMCorpMCounAndNP(kyc);
+            }
+            return null;
         }
         public async Task<ServiceResponse> UpdateKycDetails(Kyc kyc)
         {
-            return await _eamsRepository.UpdateKycDetails(kyc);
+            if (!int.TryParse(kyc.Age, out int age) || age < 21)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "Age must be 21 or above." };
+            }
+            // ElectionTypeMasterId == 1 For "Gram Panchayats"
+            if (kyc.ElectionTypeMasterId == 1)
+            {
+                return await _eamsRepository.UpdateKycDetailsForGP(kyc);
+            }
+            // ElectionTypeMasterId == 4 For "Municipal Corporation","Municipal Council" and "Nagar Panchayat"
+            else if (kyc.ElectionTypeMasterId == 4 || kyc.ElectionTypeMasterId == 5 || kyc.ElectionTypeMasterId == 6)
+            {
+                return await _eamsRepository.UpdateKycDetailsForMCorpMCounAndNP(kyc);
+            }
+            return null;
         }
 
         public async Task<List<Kyc>> GetKYCDetails()
@@ -3326,6 +1753,14 @@ namespace EAMS_BLL.Services
         public async Task<List<KycList>> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
             return await _eamsRepository.GetKYCDetailByAssemblyId(electionType, stateMasterId, districtMasterId, assemblyMasterId);
+        }
+        public async Task<List<KycList>> GetKYCDetailByFourthAndWardId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelMasterId, int? wardMasterId)
+        {
+            return await _eamsRepository.GetKYCDetailByFourthAndWardId(electionType, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId, wardMasterId);
+        }
+        public async Task<List<KycList>> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId, string userId)
+        {
+            return await _eamsRepository.GetKYCDetailByAssemblyId(electionType, stateMasterId, districtMasterId, assemblyMasterId, userId);
         }
         public async Task<ServiceResponse> DeleteKycById(int kycMasterId)
         {
@@ -3423,9 +1858,9 @@ namespace EAMS_BLL.Services
 
             return await _eamsRepository.AddGPPanchayatWards(gpPanchayatWards);
         }
-        public async Task<List<GPPanchayatWards>> GetGPPanchayatWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId)
+        public async Task<List<GPPanchayatWards>> GetPanchayatWardforResultDeclaration(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
-            return await _eamsRepository.GetGPPanchayatWardsListById(stateMasterId, districtMasterId, assemblyMasterId, FourthLevelHMasterId);
+            return await _eamsRepository.GetPanchayatWardforResultDeclaration(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);
         }
         public async Task<Response> UpdateGPPanchayatWards(GPPanchayatWards gpPanchayatWards)
         {
@@ -3441,10 +1876,17 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.DeleteGPPanchayatWardsById(gpPanchayatWardsMasterId);
         }
-
+        public async Task<List<GPPanchayatWards>> GetGPPanchayatWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId)
+        {
+            return await _eamsRepository.GetGPPanchayatWardsListById(stateMasterId, districtMasterId, assemblyMasterId, FourthLevelHMasterId);
+        }
         #endregion
 
         #region GPVoter
+        public async Task<ServiceResponse> IsVoterAndKycExist(int fourthLevelMasterId)
+        {
+            return await _eamsRepository.IsVoterAndKycExist(fourthLevelMasterId);
+        }
         public async Task<ServiceResponse> AddGPVoterDetails(GPVoter gpVoterPdf)
         {
             return await _eamsRepository.AddGPVoterDetails(gpVoterPdf);
@@ -3458,20 +1900,458 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetGPVoterById(gpVoterMasterId);
         }
-        public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
         {
-            return await _eamsRepository.GetGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId);
+            return await _eamsRepository.GetGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId);
+        }
+        public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId, string userId)
+        {
+            return await _eamsRepository.GetGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId, userId);
         }
         public async Task<ServiceResponse> DeleteGPVoterById(int gpVoterMasterId)
         {
             return await _eamsRepository.DeleteGPVoterById(gpVoterMasterId);
         }
+
+        public async Task<List<VoterType>> GetVoterTypeListById()
+        {
+            return await _eamsRepository.GetVoterTypeListById();
+        }
         #endregion
 
         #region ResultDeclaration
-        public async Task<ServiceResponse> AddResultDeclarationDetails(ResultDeclaration resultDeclaration)
+
+        public async Task<ServiceResponseForRD> AddResultDeclarationDetails(List<ResultDeclaration> resultDeclaration)
         {
+            if (resultDeclaration == null || !resultDeclaration.Any())
+            {
+                return new ServiceResponseForRD
+                {
+                    IsWinner = false,
+                    IsDraw = false,
+                    IsSucceed = false,
+                    Message = "No data provided."
+                };
+            }
+            if (resultDeclaration.Any(r => string.IsNullOrEmpty(r.VoteMargin.ToString()) && !r.IsDrawLottery))
+            {
+                return new ServiceResponseForRD
+                {
+                    IsSucceed = false,
+                    Message = "All fields are required."
+                };
+            }
+            // Fetch all candidate names for the given KycMasterIds
+            var kycMasterIds = resultDeclaration.Select(r => r.KycMasterId).Distinct().ToList();
+            var candidateNames = await _eamsRepository.GetCandidateNameByKycMasterId(kycMasterIds);
+
+            // Filter valid results and sort by VoteMargin
+            var validResults = resultDeclaration
+                .Where(r => !string.IsNullOrEmpty(r.VoteMargin.ToString()) && r.IsNOTA == false)
+                .OrderByDescending(r =>
+                {
+                    int voteMargin;
+                    return int.TryParse(r.VoteMargin.ToString(), out voteMargin) ? voteMargin : 0;
+                })
+                .ToList();
+
+            if (!validResults.Any())
+            {
+                return new ServiceResponseForRD
+                {
+                    IsWinner = false,
+                    IsDraw = false,
+                    IsSucceed = false,
+                    Message = "No valid vote margins found."
+                };
+            }
+            // Assuming you have a method to fetch the TotalVoters for the ward based on the provided parameters
+            var totalVotersInWard = await _eamsRepository.GetTotalVotersForUrbanRDAsync(validResults.First().StateMasterId, validResults.First().DistrictMasterId, validResults.First().AssemblyMasterId, validResults.First().FourthLevelHMasterId);
+            //if (  totalVotersInWard is null || totalVotersInWard is 0)
+            //{
+            //    return new ServiceResponseForRD
+            //    {
+            //        IsSucceed = false,
+            //        Message = "There is no Voters Available"
+            //    };
+            //}
+            // Calculate the sum of VoteMargin
+            var totalVoteMargin = validResults.Sum(r => r.VoteMargin);
+
+            // Check if sum of VoteMargin is less than or equal to total voters in the ward
+            if (totalVoteMargin > totalVotersInWard)
+            {
+                return new ServiceResponseForRD
+                {
+                    IsSucceed = false,
+                    Message = "Total Vote Margin is greater than total votes of the ward."
+                };
+            }
+            // Determine highest vote margin
+            var highestVoteMarginStr = validResults[0].VoteMargin;
+            if (int.TryParse(highestVoteMarginStr.ToString(), out var highestVoteMargin))
+            {
+                var highestMarginCandidates = validResults
+                    .Where(r => int.TryParse(r.VoteMargin.ToString(), out var margin) && margin == highestVoteMargin)
+                    .ToList();
+
+                // Case 4: Lottery Winner
+                var lotteryCandidate = validResults.FirstOrDefault(c => c.IsDrawLottery && c.IsWinner == true);
+                if (lotteryCandidate != null)
+                {
+                    lotteryCandidate.IsWinner = true;
+                    var candidateName = candidateNames.GetValueOrDefault(lotteryCandidate.KycMasterId, "Unknown Candidate");
+                    await _eamsRepository.AddResultDeclarationDetails(resultDeclaration);
+
+                    return new ServiceResponseForRD
+                    {
+                        IsWinner = true,
+                        IsDraw = false,
+                        IsSucceed = true,
+                        Message = $"Candidate {candidateName} won by lottery."
+                    };
+                }
+
+                // Case 3: Recounting
+                if (validResults.Any(c => c.IsReCounting))
+                {
+                    if (highestMarginCandidates.Count > 1)
+                    {
+                        foreach (var candidate in highestMarginCandidates)
+                        {
+                            candidate.IsDraw = true;
+                        }
+                        var candidateNamesList = highestMarginCandidates
+                            .Select(c => candidateNames.GetValueOrDefault(c.KycMasterId, "Unknown Candidate"))
+                            .ToList();
+                        await _eamsRepository.AddResultDeclarationDetails(resultDeclaration);
+
+                        return new ServiceResponseForRD
+                        {
+                            IsWinner = false,
+                            IsDraw = true,
+                            IsSucceed = false,
+                            Message = $"Recount detected a draw situation between candidates: {string.Join(", ", candidateNamesList)}."
+                        };
+                    }
+                    else
+                    {
+                        var candidateName = candidateNames.GetValueOrDefault(highestMarginCandidates[0].KycMasterId, "Unknown Candidate");
+                        highestMarginCandidates[0].IsWinner = true;
+                        await _eamsRepository.AddResultDeclarationDetails(resultDeclaration);
+
+                        return new ServiceResponseForRD
+                        {
+                            IsWinner = true,
+                            IsDraw = false,
+                            IsSucceed = true,
+                            Message = $"Candidate {candidateName} is the winner after recounting."
+                        };
+                    }
+                }
+
+                // Case 2: Draw Situation
+                if (highestMarginCandidates.Count > 1)
+                {
+                    foreach (var candidate in highestMarginCandidates)
+                    {
+                        candidate.IsDraw = true;
+                    }
+                    var candidateNamesList = highestMarginCandidates
+                        .Select(c => candidateNames.GetValueOrDefault(c.KycMasterId, "Unknown Candidate"))
+                        .ToList();
+                    await _eamsRepository.AddResultDeclarationDetails(resultDeclaration);
+
+                    return new ServiceResponseForRD
+                    {
+                        IsWinner = false,
+                        IsDraw = true,
+                        IsSucceed = false,
+                        Message = $"Draw situation detected between candidates: {string.Join(", ", candidateNamesList)}."
+                    };
+                }
+
+                // Case 1: Single Winner
+                if (highestMarginCandidates.Count == 1)
+                {
+                    var candidateName = candidateNames.GetValueOrDefault(highestMarginCandidates[0].KycMasterId, "Unknown Candidate");
+                    highestMarginCandidates[0].IsWinner = true;
+                    await _eamsRepository.AddResultDeclarationDetails(resultDeclaration);
+
+                    return new ServiceResponseForRD
+                    {
+                        IsWinner = true,
+                        IsDraw = false,
+                        IsSucceed = true,
+                        Message = $"Candidate {candidateName} is the winner with the highest vote margin."
+                    };
+                }
+            }
+
             return await _eamsRepository.AddResultDeclarationDetails(resultDeclaration);
+        }
+
+        public async Task<ServiceResponseForRD> UpdateResultDeclarationForPortal(List<ResultDeclaration> resultDeclaration)
+        {
+            if (resultDeclaration == null || !resultDeclaration.Any())
+            {
+                return new ServiceResponseForRD { IsSucceed = false, Message = "No data provided." };
+            }
+            if (resultDeclaration.Any(r => string.IsNullOrEmpty(r.VoteMargin.ToString()) && !r.IsDrawLottery))
+            {
+                return new ServiceResponseForRD
+                {
+                    IsSucceed = false,
+                    Message = "All fields are required."
+                };
+            }
+            // Fetch all candidate names for the given KycMasterIds
+            var kycMasterIds = resultDeclaration.Select(r => r.KycMasterId).Distinct().ToList();
+            var candidateNames = await _eamsRepository.GetCandidateNameByKycMasterId(kycMasterIds);
+
+            // Filter the records that have non-null and non-empty VoteMargin
+            var validResults = resultDeclaration
+                .Where(r => !string.IsNullOrEmpty(r.VoteMargin.ToString()) && r.IsNOTA == false)
+                .OrderByDescending(r =>
+                {
+                    int voteMargin;
+                    return int.TryParse(r.VoteMargin.ToString(), out voteMargin) ? voteMargin : 0;
+                })
+                .ToList();
+
+            // Calculate the total vote margin
+            var totalVoteMargin = validResults.Sum(r => r.VoteMargin);
+
+            // Fetch total votes in the ward (this may require a method to fetch this data)
+            var totalVotersInWard = await _eamsRepository.GetTotalVotersForUrbanRDAsync(validResults.First().StateMasterId, validResults.First().DistrictMasterId, validResults.First().AssemblyMasterId, validResults.First().FourthLevelHMasterId);
+
+            // Check if the total vote margin exceeds the total votes in the ward
+            if (totalVoteMargin > totalVotersInWard)
+            {
+                return new ServiceResponseForRD
+                {
+                    IsSucceed = false,
+                    Message = "Total vote margin is greater than the total votes of the ward."
+                };
+            }
+
+            if (validResults.Count > 0)
+            {
+                var highestVoteMarginStr = validResults[0].VoteMargin;
+                if (int.TryParse(highestVoteMarginStr.ToString(), out var highestVoteMargin))
+                {
+                    var highestMarginCandidates = validResults
+                        .Where(r => int.TryParse(r.VoteMargin.ToString(), out var margin) && margin == highestVoteMargin)
+                        .ToList();
+
+                    // Case 4: Lottery Winner
+                    var lotteryCandidate = validResults.FirstOrDefault(c => c.IsDrawLottery && c.IsWinner == true);
+                    if (lotteryCandidate != null)
+                    {
+                        lotteryCandidate.IsWinner = true;
+                        var candidateName = candidateNames.GetValueOrDefault(lotteryCandidate.KycMasterId, "Unknown Candidate");
+                        await _eamsRepository.UpdateResultDeclarationForPortal(resultDeclaration);
+
+                        return new ServiceResponseForRD
+                        {
+                            IsWinner = true,
+                            IsDraw = false,
+                            IsSucceed = true,
+                            Message = $"Candidate {candidateName} won by lottery."
+                        };
+                    }
+
+                    // Case 3: Recounting
+                    if (validResults.Any(c => c.IsReCounting))
+                    {
+                        if (highestMarginCandidates.Count > 1)
+                        {
+                            foreach (var candidate in highestMarginCandidates)
+                            {
+                                candidate.IsDraw = true;
+                            }
+                            var candidateNamesList = highestMarginCandidates
+                                .Select(c => candidateNames.GetValueOrDefault(c.KycMasterId, "Unknown Candidate"))
+                                .ToList();
+
+                            await _eamsRepository.UpdateResultDeclarationForPortal(resultDeclaration);
+
+                            return new ServiceResponseForRD
+                            {
+                                IsWinner = false,
+                                IsDraw = true,
+                                IsSucceed = false,
+                                Message = $"Recount detected a draw situation between candidates: {string.Join(", ", candidateNamesList)}."
+                            };
+                        }
+                        else
+                        {
+                            var candidateName = candidateNames.GetValueOrDefault(highestMarginCandidates[0].KycMasterId, "Unknown Candidate");
+                            highestMarginCandidates[0].IsWinner = true;
+                            await _eamsRepository.UpdateResultDeclarationForPortal(resultDeclaration);
+
+                            return new ServiceResponseForRD
+                            {
+                                IsWinner = true,
+                                IsDraw = false,
+                                IsSucceed = true,
+                                Message = $"Candidate {candidateName} is the winner after recounting."
+                            };
+                        }
+                    }
+
+                    // Case 2: Draw Situation
+                    if (highestMarginCandidates.Count > 1)
+                    {
+                        foreach (var candidate in highestMarginCandidates)
+                        {
+                            candidate.IsDraw = true;
+                        }
+                        var candidateNamesList = highestMarginCandidates
+                            .Select(c => candidateNames.GetValueOrDefault(c.KycMasterId, "Unknown Candidate"))
+                            .ToList();
+
+                        await _eamsRepository.UpdateResultDeclarationForPortal(resultDeclaration);
+
+                        return new ServiceResponseForRD
+                        {
+                            IsWinner = false,
+                            IsDraw = true,
+                            IsSucceed = false,
+                            Message = $"Draw situation detected between candidates: {string.Join(", ", candidateNamesList)}."
+                        };
+                    }
+
+                    // Case 1: Single Winner
+                    if (highestMarginCandidates.Count == 1)
+                    {
+                        var candidateName = candidateNames.GetValueOrDefault(highestMarginCandidates[0].KycMasterId, "Unknown Candidate");
+                        highestMarginCandidates[0].IsWinner = true;
+                        await _eamsRepository.UpdateResultDeclarationForPortal(resultDeclaration);
+
+                        return new ServiceResponseForRD
+                        {
+                            IsWinner = true,
+                            IsDraw = false,
+                            IsSucceed = true,
+                            Message = $"Candidate {candidateName} is the winner with the highest vote margin."
+                        };
+                    }
+                }
+            }
+
+            return await _eamsRepository.UpdateResultDeclarationForPortal(resultDeclaration);
+        }
+
+
+        //public async Task<ServiceResponse> UpdateResultDeclarationForPortal(List<ResultDeclaration> resultDeclaration)
+        //{
+        //    if (resultDeclaration == null || !resultDeclaration.Any())
+        //    {
+        //        return new ServiceResponse { IsSucceed = false, Message = "No data provided." };
+        //    }
+
+        //    // Filter the records that have non-null and non-empty VoteMargin
+        //    var validResults = resultDeclaration
+        //        .Where(r => !string.IsNullOrEmpty(r.VoteMargin))
+        //        .OrderByDescending(r =>
+        //        {
+        //            // Use TryParse to safely convert VoteMargin to int
+        //            int voteMargin;
+        //            return int.TryParse(r.VoteMargin, out voteMargin) ? voteMargin : 0;
+        //        })
+        //        .ToList();
+
+        //    if (validResults.Count > 0)
+        //    {
+        //        // Get the highest VoteMargin
+        //        var highestVoteMarginStr = validResults[0].VoteMargin;
+        //        if (int.TryParse(highestVoteMarginStr, out var highestVoteMargin))
+        //        {
+        //            // Get all candidates with the highest vote margin
+        //            var highestMarginCandidates = validResults
+        //                .Where(r => int.TryParse(r.VoteMargin, out var margin) && margin == highestVoteMargin)
+        //                .ToList();
+
+        //            // Case 4: If any candidate has IsLottery = true, mark that candidate as the winner
+        //            var lotteryCandidate = validResults.FirstOrDefault(c => c.IsDrawLottery && c.IsWinner == true);
+        //            if (lotteryCandidate != null)
+        //            {
+        //                lotteryCandidate.IsWinner = true;
+        //                await _eamsRepository.UpdateResultDeclarationForPortal(resultDeclaration); // Persist after determining winner
+        //                return new ServiceResponse
+        //                {
+        //                    IsSucceed = true,
+        //                    Message = $"Candidate won by lottery."
+        //                };
+        //            }
+
+        //            // Case 3: If ReCounting is true, recheck candidates and handle the draw situation again
+        //            if (validResults.Any(c => c.IsReCounting))
+        //            {
+        //                // Handle recounting logic (essentially similar to regular draw check)
+        //                if (highestMarginCandidates.Count > 1)
+        //                {
+        //                    foreach (var candidate in highestMarginCandidates)
+        //                    {
+        //                        candidate.IsDraw = true;
+        //                    }
+        //                    await _eamsRepository.UpdateResultDeclarationForPortal(resultDeclaration); // Persist draw situation
+        //                    return new ServiceResponse
+        //                    {
+        //                        IsSucceed = false,
+        //                        Message = "Recount detected a draw situation between the highest vote margins."
+        //                    };
+        //                }
+        //                else
+        //                {
+        //                    highestMarginCandidates[0].IsWinner = true;
+        //                    await _eamsRepository.UpdateResultDeclarationForPortal(resultDeclaration); // Persist after declaring winner
+        //                    return new ServiceResponse
+        //                    {
+        //                        IsSucceed = true,
+        //                        Message = $"Candidate is the winner after recounting."
+        //                    };
+        //                }
+        //            }
+
+        //            // Case 2: If multiple candidates have the same highest vote margin, mark as draw
+        //            if (highestMarginCandidates.Count > 1)
+        //            {
+        //                foreach (var candidate in highestMarginCandidates)
+        //                {
+        //                    candidate.IsDraw = true;
+        //                }
+        //                await _eamsRepository.UpdateResultDeclarationForPortal(resultDeclaration); // Persist draw situation
+        //                return new ServiceResponse
+        //                {
+        //                    IsSucceed = false,
+        //                    Message = $"Draw situation detected between candidates."
+        //                };
+        //            }
+
+        //            // Case 1: If only one candidate has the highest vote margin, mark as winner
+        //            if (highestMarginCandidates.Count == 1)
+        //            {
+        //                highestMarginCandidates[0].IsWinner = true;
+        //                await _eamsRepository.UpdateResultDeclarationForPortal(resultDeclaration); // Persist after declaring winner
+        //                return new ServiceResponse
+        //                {
+        //                    IsSucceed = true,
+        //                    Message = $"Candidate is the winner with the highest vote margin."
+        //                };
+        //            }
+        //        }
+        //    }
+
+        //    // If no specific condition was met, proceed with default update persistence
+        //    return await _eamsRepository.UpdateResultDeclarationForPortal(resultDeclaration);
+        //}
+
+
+        public async Task<ServiceResponse> CheckIfAllBoothsPollEnded(int fieldOfficerMasterId)
+        {
+            return await _eamsRepository.CheckIfAllBoothsPollEnded(fieldOfficerMasterId);
         }
         public async Task<Response> UpdateResultDeclarationDetails(ResultDeclaration resultDeclaration)
         {
@@ -3486,21 +2366,148 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.DeleteResultDeclarationById(resultDeclarationMasterId);
         }
-        public async Task<List<ResultDeclarationList>> GetPanchayatWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId)
+        public async Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
-            return await _eamsRepository.GetPanchayatWiseResults(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId, gpPanchayatWardsMasterId);
+            return await _eamsRepository.GetSarpanchListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId);
         }
 
-        public async Task<List<ResultDeclarationList>> GetBlockWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        public async Task<List<CandidateListForResultDeclaration>> GetPanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gPPanchayatWardsMasterId)
         {
-            return await _eamsRepository.GetBlockWiseResults(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId);
+            return await _eamsRepository.GetPanchListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId, gPPanchayatWardsMasterId);
+        }
+        public async Task<List<ResultDeclarationList>> GetResultDeclarationsByElectionType(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId)
+        {
+            return await _eamsRepository.GetResultDeclarationsByElectionType(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId, gpPanchayatWardsMasterId);
         }
 
-        public async Task<List<ResultDeclarationList>> GetDistrictWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId)
+        public async Task<ResultDeclarationBoothWardList> GetResultByBoothId(int boothMasterId)
         {
-            return await _eamsRepository.GetDistrictWiseResults(stateMasterId, districtMasterId, electionTypeMasterId);
+            return await _eamsRepository.GetResultByBoothId(boothMasterId);
+        }
+        public async Task<ResultDeclarationBoothWardList> GetResultByFourthLevelHMasterId(int fourthLevelHMasterId)
+        {
+            return await _eamsRepository.GetResultByFourthLevelHMasterId(fourthLevelHMasterId);
+        }
+        public async Task<ResultDeclarationBoothWardList> GetResultHistoryByFourthLevelHMasterId(int fourthLevelHMasterId)
+        {
+            return await _eamsRepository.GetResultByFourthLevelHMasterId(fourthLevelHMasterId);
+        }
+        public async Task<List<BoothResultList>> GetBoothResultListByFourthLevelId(int fourthlevelMasterId)
+        {
+            return await _eamsRepository.GetBoothResultListByFourthLevelId(fourthlevelMasterId);
+        }
+
+        public async Task<ResultDeclarationBoothWardList> GetResultByWardId(int boothMasterId)
+        {
+            return await _eamsRepository.GetResultByWardId(boothMasterId);
+        }
+
+        public async Task<List<BoothResultList>> GetWardResultListByFourthLevelId(int fourthlevelMasterId)
+        {
+            return await _eamsRepository.GetWardResultListByFourthLevelId(fourthlevelMasterId);
         }
         #endregion
 
+        #region PancahyatMapping
+        public async Task<Response> PanchayatMapping(List<FourthLevelH> fourthLevels)
+        {
+            return await _eamsRepository.PanchayatMapping(fourthLevels);
+        }
+        public async Task<Response> ReleasePanchayat(FourthLevelH fourthLevels)
+        {
+            return await _eamsRepository.ReleasePanchayat(fourthLevels);
+        }
+
+        public async Task<List<CombinedPanchayatMaster>> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId, string roId, string assginedType)
+        {
+            return await _eamsRepository.GetPanchayatListByROId(stateMasterId, districtMasterId, assemblyMasterId, roId, assginedType);
+        }
+        public async Task<List<CombinedPanchayatMaster>> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId, string roId)
+        {
+            return await _eamsRepository.GetPanchayatListByROId(stateMasterId, districtMasterId, assemblyMasterId, roId);
+        }
+        public async Task<List<CombinedPanchayatMaster>> GetFourthLevelHListExistInRDForRO(int stateMasterId, int districtMasterId, int assemblyMasterId, string roId)
+        {
+            return await _eamsRepository.GetFourthLevelHListExistInRDForRO(stateMasterId, districtMasterId, assemblyMasterId, roId);
+        }
+        public async Task<List<CombinedPanchayatMaster>> GetFourthLevelHExistInRDListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        {
+            return await _eamsRepository.GetFourthLevelHExistInRDListById(stateMasterId, districtMasterId, assemblyMasterId);
+        }
+        public async Task<List<CombinedPanchayatMaster>> GetFourthLevelListByAROId(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId, string roId, string assginedType)
+        {
+            return await _eamsRepository.GetFourthLevelListByAROId(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId, roId, assginedType);
+        }
+        public async Task<List<CombinedPanchayatMaster>> GetUnassignedPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, string assginedType)
+        {
+            return await _eamsRepository.GetUnassignedPanchayatListById(stateMasterId, districtMasterId, assemblyMasterId, assginedType);
+
+        }
+
+        #endregion
+
+        #region CompletedVoterList
+        public async Task<List<CompletedVTList>> GetCompletedVTList(CommonReportModel commonReportModel)
+        {
+
+            return await _eamsRepository.GetCompletedVTList(commonReportModel);
+        }
+        #endregion
+
+
+        /// <summary>
+        /// This API checks for dependencies in descending order before performing the operation.
+        /// </summary>
+        /// <returns></returns>
+        /// 
+        public async Task<IsMasterEditable> IsMasterEditable(int masterId, string type, int electionTypeMasterId)
+        {
+            return await _eamsRepository.IsMasterEditable(masterId, type, electionTypeMasterId);
+        }
+
+        ///
+
+
+        //public async Task<List<Disaster>> GetFieldAllOfficerMaster()
+        //{
+        //    return await _eamsRepository.GetFieldAllOfficerMaster();
+        //}
+        //public async Task<List<int>> GetFOAsginedBooth(int foId)
+        //{
+        //    return await _eamsRepository.GetFOAsginedBooth(foId);
+        //}
+        //public async Task<ServiceResponse> PushDisasterEvent(List<ElectionInfoMaster> electionInfoMaster)
+        //{
+        //    return await _eamsRepository.PushDisasterEvent(electionInfoMaster);
+        //}
+
+        #region Result Declartion DashBoard
+        public async Task<List<ResultList>> GetResultByStateId(int stateMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.GetResultByStateId(stateMasterId, electionTypeMasterId);
+        }
+        public async Task<List<ResultList>> GetResultByDistrictId(int stateMasterId, int districtMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.GetResultByDistrictId(stateMasterId, districtMasterId, electionTypeMasterId);
+        }
+        public async Task<List<ResultList>> GetResultByAssemblyId(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.GetResultByAssemblyId(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId);
+        }
+        public async Task<List<ResultList>> GetResultByFourthLevelId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.GetResultByFourthLevelId(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId, electionTypeMasterId);
+        }
+
+        public async Task<List<PartyWiseResult>> GetPartyWiseResultByStateId(int stateMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.GetPartyWiseResultByStateId(stateMasterId,electionTypeMasterId);
+        }
+
+        public async Task<List<DistrictConsolidateResultReport>> GetConsolidateResultReportByDistrictId(int stateMasterId, int districtMasterId, int electionTyepMasterId)
+        {
+            return await _eamsRepository.GetConsolidateResultReportByDistrictId(stateMasterId, districtMasterId,   electionTyepMasterId);
+        }
+        #endregion
     }
 }

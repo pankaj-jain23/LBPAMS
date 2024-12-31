@@ -23,13 +23,24 @@
             get;
             set;
         }
+        public int? ElectionTypeMasterId
+
+        {
+            get;
+            set;
+        }
         public IFormFile? GPVoterPdf
         {
             get;
             set;
         }
-       
+        public string WardRange
+        {
+            get;
+            set;
+        }
         public bool GPVoterStatus { get; set; }
+        public int VoterTypeMasterId { get; set; }
     }
     public class UpdateGPVoterViewModel
     {
@@ -59,11 +70,23 @@
             get;
             set;
         }
+        public int? ElectionTypeMasterId
+
+        {
+            get;
+            set;
+        }
         public IFormFile? GPVoterPdf
         {
             get;
             set;
         }
+        public string WardRange
+        {
+            get;
+            set;
+        }
         public bool GPVoterStatus { get; set; }
+        public int VoterTypeMasterId { get; set; }
     }
 }

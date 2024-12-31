@@ -98,11 +98,17 @@ namespace EAMS_DAL.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("text");
 
+                    b.Property<string>("CurrentToken")
+                        .HasColumnType("text");
+
                     b.Property<int?>("DistrictMasterId")
                         .HasColumnType("integer");
 
                     b.Property<int?>("ElectionTypeMasterId")
                         .HasColumnType("integer");
+
+                    b.Property<DateTime>("ElectionTypeUpdatedTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -113,6 +119,9 @@ namespace EAMS_DAL.Migrations
 
                     b.Property<int?>("FourthLevelHMasterId")
                         .HasColumnType("integer");
+
+                    b.Property<bool>("IsPasswordExpire")
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean");
@@ -138,6 +147,9 @@ namespace EAMS_DAL.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("OTPGeneratedTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("PasswordExpireTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("PasswordHash")
@@ -243,10 +255,16 @@ namespace EAMS_DAL.Migrations
                     b.Property<bool>("IsAssigned")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsBoothInterrupted")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsPSOFormDone")
                         .HasColumnType("boolean");
 
-                    b.Property<bool?>("IsPrimaryBooth")
+                    b.Property<bool>("IsPrimaryBooth")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsVTInterrupted")
                         .HasColumnType("boolean");
 
                     b.Property<double?>("Latitude")
@@ -365,6 +383,9 @@ namespace EAMS_DAL.Migrations
                     b.Property<int>("EventSequence")
                         .HasColumnType("integer");
 
+                    b.Property<bool>("IsPrePolled")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime?>("StartDateTime")
                         .HasColumnType("timestamp with time zone");
 
@@ -384,6 +405,86 @@ namespace EAMS_DAL.Migrations
                     b.HasIndex("StateMasterId");
 
                     b.ToTable("EventMaster");
+                });
+
+            modelBuilder.Entity("EAMS_ACore.Models.AROResultMaster", b =>
+                {
+                    b.Property<int>("AROMasterId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("AROMasterId"));
+
+                    b.Property<DateTime?>("AROCreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ARODesignation")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("AROMobile")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("AROName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("AROOfficeName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("AROUpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("AppPin")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("AssemblyMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DistrictMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ElectionTypeMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("FourthLevelHMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsLocked")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsStatus")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("OTP")
+                        .HasColumnType("text");
+
+                    b.Property<int>("OTPAttempts")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("OTPExpireTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("OTPGeneratedTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ROUserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("RefreshTokenExpiryTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("StateMasterId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("AROMasterId");
+
+                    b.ToTable("AROResultMaster");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.BLOModels.BLOMaster", b =>
@@ -638,70 +739,84 @@ namespace EAMS_DAL.Migrations
                     b.Property<DateTime?>("EVMDepositedLastUpdate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime?>("ElectionInfoCreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("ElectionInfoDeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool?>("ElectionInfoStatus")
+                    b.Property<bool>("ElectionInfoStatus")
                         .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("ElectionInfoUpdatedAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("ElectionTypeMasterId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("EventABBR")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<int>("EventMasterId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("EventName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("EventSequence")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("EventStatus")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("FOUserId")
+                        .HasColumnType("text");
 
                     b.Property<int?>("Female")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("FinalTVote")
+                    b.Property<int?>("FinalVote")
                         .HasColumnType("integer");
 
-                    b.Property<bool?>("FinalTVoteStatus")
+                    b.Property<DateTime?>("FinalVoteLastUpdate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("FourthLevelMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsEVMDeposited")
                         .HasColumnType("boolean");
 
-                    b.Property<bool?>("IsEVMDeposited")
+                    b.Property<bool>("IsFinalVote")
                         .HasColumnType("boolean");
 
-                    b.Property<bool?>("IsMCESwitchOff")
+                    b.Property<bool>("IsMCESwitchOff")
                         .HasColumnType("boolean");
 
-                    b.Property<bool?>("IsMockPollDone")
+                    b.Property<bool>("IsMockPollDone")
                         .HasColumnType("boolean");
 
-                    b.Property<bool?>("IsPartyDeparted")
+                    b.Property<bool>("IsPartyDeparted")
                         .HasColumnType("boolean");
 
-                    b.Property<bool?>("IsPartyDispatched")
+                    b.Property<bool>("IsPartyDispatched")
                         .HasColumnType("boolean");
 
-                    b.Property<bool?>("IsPartyReached")
+                    b.Property<bool>("IsPartyReached")
                         .HasColumnType("boolean");
 
-                    b.Property<bool?>("IsPartyReachedCollectionCenter")
+                    b.Property<bool>("IsPartyReachedCollectionCenter")
                         .HasColumnType("boolean");
 
-                    b.Property<bool?>("IsPollEnded")
+                    b.Property<bool>("IsPollEnded")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime?>("IsPollEndedLastUpdate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool?>("IsPollStarted")
+                    b.Property<bool>("IsPollStarted")
                         .HasColumnType("boolean");
 
-                    b.Property<bool?>("IsQueueUndo")
+                    b.Property<bool>("IsSetupOfPolling")
                         .HasColumnType("boolean");
 
-                    b.Property<bool?>("IsSetupOfPolling")
+                    b.Property<bool>("IsVoterInQueue")
                         .HasColumnType("boolean");
 
-                    b.Property<bool?>("IsVoterTurnOut")
+                    b.Property<bool>("IsVoterTurnOut")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime?>("MCESwitchOffLastUpdate")
@@ -716,7 +831,7 @@ namespace EAMS_DAL.Migrations
                     b.Property<int?>("NoOfPollingAgents")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("PCMasterId")
+                    b.Property<int?>("PSZoneMasterId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("PartyDepartedLastUpdate")
@@ -734,9 +849,6 @@ namespace EAMS_DAL.Migrations
                     b.Property<DateTime?>("PollStartedLastUpdate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("SOUserId")
-                        .HasColumnType("text");
-
                     b.Property<DateTime?>("SetupOfPollingLastUpdate")
                         .HasColumnType("timestamp with time zone");
 
@@ -750,6 +862,12 @@ namespace EAMS_DAL.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("VoterInQueueLastUpdate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("VotesPolled")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("VotesPolledLastUpdate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("VotingLastUpdate")
@@ -770,6 +888,10 @@ namespace EAMS_DAL.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ElectionTypeMasterId"));
+
+                    b.Property<string>("ElectionArea")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<bool>("ElectionStatus")
                         .HasColumnType("boolean");
@@ -892,13 +1014,28 @@ namespace EAMS_DAL.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("FourthLevelHMasterId"));
 
+                    b.Property<string>("AROAssignedBy")
+                        .HasColumnType("text");
+
                     b.Property<int>("AssemblyMasterId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("AssginedType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("AssignedToARO")
+                        .HasColumnType("text");
+
+                    b.Property<string>("AssignedToRO")
+                        .HasColumnType("text");
 
                     b.Property<int>("DistrictMasterId")
                         .HasColumnType("integer");
 
                     b.Property<int>("ElectionTypeMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("Female")
                         .HasColumnType("integer");
 
                     b.Property<int>("HierarchyCode")
@@ -922,10 +1059,34 @@ namespace EAMS_DAL.Migrations
                     b.Property<DateTime?>("HierarchyUpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<bool>("IsAssignedARO")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsAssignedRO")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsCC")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsNN")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("Male")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ROAssignedBy")
+                        .HasColumnType("text");
+
                     b.Property<string>("SecondLanguage")
                         .HasColumnType("text");
 
                     b.Property<int>("StateMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("TotalVoters")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("Transgender")
                         .HasColumnType("integer");
 
                     b.HasKey("FourthLevelHMasterId");
@@ -958,6 +1119,9 @@ namespace EAMS_DAL.Migrations
                     b.Property<int>("ElectionTypeMasterId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("Female")
+                        .HasColumnType("integer");
+
                     b.Property<int>("FourthLevelHMasterId")
                         .HasColumnType("integer");
 
@@ -986,7 +1150,22 @@ namespace EAMS_DAL.Migrations
                     b.Property<DateTime?>("GPPanchayatWardsUpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<bool>("IsCC")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsNN")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("Male")
+                        .HasColumnType("integer");
+
                     b.Property<int>("StateMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("TotalVoters")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("Transgender")
                         .HasColumnType("integer");
 
                     b.HasKey("GPPanchayatWardsMasterId");
@@ -1152,9 +1331,6 @@ namespace EAMS_DAL.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PollDetailMasterId"));
 
-                    b.Property<int>("AddedBy")
-                        .HasColumnType("integer");
-
                     b.Property<int>("AssemblyMasterId")
                         .HasColumnType("integer");
 
@@ -1167,32 +1343,48 @@ namespace EAMS_DAL.Migrations
                     b.Property<int>("ElectionTypeMasterId")
                         .HasColumnType("integer");
 
+                    b.Property<TimeOnly?>("EndTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<string>("EventABBR")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<int>("EventMasterId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("Female")
+                    b.Property<string>("EventName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("EventSequence")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("Male")
+                    b.Property<bool>("EventStatus")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("FourthLevelHMasterId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("PCMasterId")
-                        .HasColumnType("integer");
+                    b.Property<bool>("IsLastSlot")
+                        .HasColumnType("boolean");
+
+                    b.Property<TimeOnly?>("LockTime")
+                        .HasColumnType("time without time zone");
 
                     b.Property<int?>("SlotManagementId")
                         .HasColumnType("integer");
 
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time without time zone");
+
                     b.Property<int>("StateMasterId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("Transgender")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("UserType")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("VotesPolled")
+                    b.Property<int?>("VotesPolled")
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("VotesPolledRecivedTime")
@@ -1223,13 +1415,19 @@ namespace EAMS_DAL.Migrations
                     b.Property<int>("DistrictMasterId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("ElectionTypeMasterId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Flag")
                         .HasColumnType("text");
 
                     b.Property<int>("InterruptionType")
                         .HasColumnType("integer");
 
-                    b.Property<bool?>("IsPollInterrupted")
+                    b.Property<bool>("IsPollInterrupted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsStatus")
                         .HasColumnType("boolean");
 
                     b.Property<string>("NewBU")
@@ -1243,9 +1441,6 @@ namespace EAMS_DAL.Migrations
 
                     b.Property<string>("OldCU")
                         .HasColumnType("text");
-
-                    b.Property<int?>("PCMasterId")
-                        .HasColumnType("integer");
 
                     b.Property<string>("Remarks")
                         .HasColumnType("text");
@@ -1296,8 +1491,10 @@ namespace EAMS_DAL.Migrations
                     b.Property<int>("DistrictMasterId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("ElectionTypeMasterId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Flag")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("InterruptionType")
@@ -1306,20 +1503,22 @@ namespace EAMS_DAL.Migrations
                     b.Property<bool>("IsPollInterrupted")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsStatus")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("NewBU")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("NewCU")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("OldBU")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("OldCU")
-                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Remarks")
                         .HasColumnType("text");
 
                     b.Property<TimeOnly?>("ResumeTime")
@@ -1335,15 +1534,12 @@ namespace EAMS_DAL.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("UserRole")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("UserType")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("PollInterruptionHisId");
@@ -1678,6 +1874,9 @@ namespace EAMS_DAL.Migrations
                     b.Property<int?>("DistrictMasterId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("ElectionTypeMasterId")
+                        .HasColumnType("integer");
+
                     b.Property<int?>("FourthLevelHMasterId")
                         .HasColumnType("integer");
 
@@ -1699,6 +1898,13 @@ namespace EAMS_DAL.Migrations
                     b.Property<int?>("StateMasterId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("VoterTypeMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("WardRange")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("GPVoterMasterId");
 
                     b.ToTable("GPVoter");
@@ -1711,6 +1917,12 @@ namespace EAMS_DAL.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("KycMasterId"));
+
+                    b.Property<string>("AffidavitPdfPath")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Age")
+                        .HasColumnType("text");
 
                     b.Property<int?>("AssemblyMasterId")
                         .HasColumnType("integer");
@@ -1735,11 +1947,14 @@ namespace EAMS_DAL.Migrations
                     b.Property<int>("GPPanchayatWardsMasterId")
                         .HasColumnType("integer");
 
+                    b.Property<bool>("IsNOTA")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsUnOppossed")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("NominationPdfPath")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Option1")
                         .HasColumnType("text");
 
                     b.Property<string>("Option2")
@@ -1747,6 +1962,9 @@ namespace EAMS_DAL.Migrations
 
                     b.Property<int>("PSZonePanchayatMasterId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("PartyName")
+                        .HasColumnType("text");
 
                     b.Property<int>("StateMasterId")
                         .HasColumnType("integer");
@@ -1764,27 +1982,43 @@ namespace EAMS_DAL.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ResultDeclarationMasterId"));
 
-                    b.Property<int?>("AssemblyMasterId")
+                    b.Property<int>("AssemblyMasterId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("CandidateName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int?>("DistrictMasterId")
+                    b.Property<int?>("BoothMasterId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("ElectionTypeMasterId")
+                    b.Property<int>("DistrictMasterId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("FatherName")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("ElectionTypeMasterId")
+                        .HasColumnType("integer");
 
-                    b.Property<int?>("FourthLevelHMasterId")
+                    b.Property<int>("FourthLevelHMasterId")
                         .HasColumnType("integer");
 
                     b.Property<int?>("GPPanchayatWardsMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsDraw")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDrawLottery")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsNOTA")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsReCounting")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsResultDeclared")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsWinner")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("KycMasterId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("ResultDecCreatedAt")
@@ -1799,15 +2033,102 @@ namespace EAMS_DAL.Migrations
                     b.Property<DateTime?>("ResultDecUpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("StateMasterId")
+                    b.Property<string>("ResultDeclaredByMobile")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ResultDeclaredByPortal")
+                        .HasColumnType("text");
+
+                    b.Property<int>("StateMasterId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("VoteMargin")
-                        .HasColumnType("text");
+                    b.Property<int?>("VoteMargin")
+                        .HasColumnType("integer");
 
                     b.HasKey("ResultDeclarationMasterId");
 
                     b.ToTable("ResultDeclaration");
+                });
+
+            modelBuilder.Entity("EAMS_ACore.Models.PublicModels.ResultDeclarationHistory", b =>
+                {
+                    b.Property<int>("ResultDeclarationHistoryMasterId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ResultDeclarationHistoryMasterId"));
+
+                    b.Property<int>("AssemblyMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("BoothMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DistrictMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ElectionTypeMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("FourthLevelHMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("GPPanchayatWardsMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsDraw")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDrawLottery")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsNOTA")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsReCounting")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsResultDeclared")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsWinner")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("KycMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("ResultDecCreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ResultDecDeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("ResultDecStatus")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("ResultDecUpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ResultDeclarationMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ResultDeclaredByMobile")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ResultDeclaredByPortal")
+                        .HasColumnType("text");
+
+                    b.Property<int>("StateMasterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("VoteMargin")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ResultDeclarationHistoryMasterId");
+
+                    b.HasIndex("ResultDeclarationMasterId");
+
+                    b.ToTable("ResultDeclarationHistory");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.PublicModels.UnOpposed", b =>
@@ -1860,6 +2181,23 @@ namespace EAMS_DAL.Migrations
                     b.HasKey("UnOpposedMasterId");
 
                     b.ToTable("UnOpposed");
+                });
+
+            modelBuilder.Entity("EAMS_ACore.Models.PublicModels.VoterType", b =>
+                {
+                    b.Property<int>("VoterTypeMasterId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("VoterTypeMasterId"));
+
+                    b.Property<string>("VoterTypeName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("VoterTypeMasterId");
+
+                    b.ToTable("VoterType");
                 });
 
             modelBuilder.Entity("EAMS_ACore.Models.QueueModel.QIS", b =>
@@ -1920,6 +2258,9 @@ namespace EAMS_DAL.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("SlotManagementId"));
 
+                    b.Property<int>("ElectionTypeMasterId")
+                        .HasColumnType("integer");
+
                     b.Property<TimeOnly?>("EndTime")
                         .HasColumnType("time without time zone");
 
@@ -1927,6 +2268,9 @@ namespace EAMS_DAL.Migrations
                         .HasColumnType("integer");
 
                     b.Property<bool>("IsLastSlot")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsVTEventTimeExtended")
                         .HasColumnType("boolean");
 
                     b.Property<TimeOnly?>("LockTime")
@@ -2637,6 +2981,17 @@ namespace EAMS_DAL.Migrations
                     b.Navigation("PollingStationMaster");
                 });
 
+            modelBuilder.Entity("EAMS_ACore.Models.PublicModels.ResultDeclarationHistory", b =>
+                {
+                    b.HasOne("EAMS_ACore.Models.PublicModels.ResultDeclaration", "ResultDeclaration")
+                        .WithMany("ResultDeclarationHistory")
+                        .HasForeignKey("ResultDeclarationMasterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ResultDeclaration");
+                });
+
             modelBuilder.Entity("EAMS_ACore.NotificationModels.SMSSent", b =>
                 {
                     b.HasOne("EAMS_ACore.NotificationModels.SMSTemplate", "SMSTemplate")
@@ -2741,6 +3096,11 @@ namespace EAMS_DAL.Migrations
             modelBuilder.Entity("EAMS_ACore.Models.PollingStationFormModels.PollingStationMaster", b =>
                 {
                     b.Navigation("PollingStationGender");
+                });
+
+            modelBuilder.Entity("EAMS_ACore.Models.PublicModels.ResultDeclaration", b =>
+                {
+                    b.Navigation("ResultDeclarationHistory");
                 });
 
             modelBuilder.Entity("EAMS_ACore.NotificationModels.SMSTemplate", b =>

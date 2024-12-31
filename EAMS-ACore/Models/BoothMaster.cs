@@ -103,15 +103,16 @@ namespace EAMS_ACore
 
         public DateTime? BoothDeletedAt { get; set; }
 
-        public string? AssignedTo { get; set; }
+        public string? AssignedTo { get; set; }//FieldOfficer Mobile User
         public string? AssignedToBLO { get; set; }
-        public string? AssignedBy { get; set; }
+        public string? AssignedBy { get; set; }//Portal User
         public DateTime? AssignedOnTime { get; set; }
         public bool IsAssigned { get; set; }
         public int? LocationMasterId { get; set; }
-        public bool IsPSOFormDone { get; set; } 
-        public bool? IsPrimaryBooth { get; set; }
-        
+        public bool IsPSOFormDone { get; set; }
+        public bool IsPrimaryBooth { get; set; }
+        public bool IsBoothInterrupted { get; set; }
+        public bool IsVTInterrupted { get; set; }//Voter Turnout Event 
 
 
 

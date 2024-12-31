@@ -1,66 +1,63 @@
-﻿using System.Text;
+﻿using EAMS_ACore.AuthModels;
+using Microsoft.AspNetCore.Identity;
+using System.Text;
 
 namespace EAMS.Middleware
 {
     public class TokenExpirationMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly byte[] _encryptionKey;
 
         public TokenExpirationMiddleware(RequestDelegate next)
         {
             _next = next;
-            // Initialize encryption key from configuration or wherever it's stored
-            _encryptionKey = Encoding.UTF8.GetBytes("YourEncryptionKeyHere");
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task Invoke(HttpContext context, IServiceProvider serviceProvider)
         {
-            //var encryptedTokenBytes1 = Convert.FromBase64String(context.User.Identity.AuthenticationType);
-
             // Check if the user is authenticated
-            if (context.User.Identity.IsAuthenticated)
+            if (context.User.Identity?.IsAuthenticated == true)
             {
+                // Resolve scoped services within the request pipeline
+                var userManager = serviceProvider.GetRequiredService<UserManager<UserRegistration>>();
+                var userId = context.User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+                var userRole = context.User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
 
-                // Check for the existence of the "exp" claim
-                var expirationClaim = context.User.FindFirst("exp");
-
-                if (expirationClaim != null && long.TryParse(expirationClaim.Value, out long expirationTimestamp))
+                // If userId or userRole is missing, proceed with the next middleware
+                if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userRole))
                 {
-                    // Convert the expiration timestamp to DateTime 
-                    // var expirationTime = DateTimeOffset.FromUnixTimeSeconds(expirationTimestamp).UtcDateTime;
-
-                    DateTimeOffset expirationTime = DateTimeOffset.FromUnixTimeSeconds(expirationTimestamp);
-                    TimeSpan istOffset = TimeSpan.FromHours(5) + TimeSpan.FromMinutes(30);
-                    DateTime expirationIST = expirationTime.UtcDateTime + istOffset;
-
-
-
-                    DateTime dateTime = DateTime.Now;
-                    DateTime utcDateTime = DateTime.SpecifyKind(dateTime.ToUniversalTime(), DateTimeKind.Utc);
-                    TimeZoneInfo istTimeZone = TimeZoneInfo.CreateCustomTimeZone("IST", istOffset, "IST", "IST");
-                    DateTime hiINDateTimeNow = TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, istTimeZone);
-
-                    // Check if the token is expired
-                    if (expirationIST < hiINDateTimeNow)
-                    {
-                        // Token is expired, you can handle this as needed
-                        context.Response.StatusCode = 401; // Unauthorized
-                        await context.Response.WriteAsync("Token has expired.");
-                        return;
-                    }
+                    await _next(context);
+                    return;
                 }
-                //else if ()
-                //{
 
-                //}
+                // If userId exists, validate the token
+                var user = await userManager.FindByIdAsync(userId);
+                var token = context.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+                if (user?.CurrentToken != token)
+                {
+                    // Check if the response has already started
+                    if (!context.Response.HasStarted)
+                    {
+                        // Set custom status code and response
+                        context.Response.StatusCode = 440; // Custom status code for session expired
+                        var response = new
+                        {
+                            Code = 440,
+                            Message = "Session expired. Please log in again."
+                        };
+
+                        context.Response.ContentType = "application/json";
+                        await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(response));
+                    }
+                    return; // Stop further processing
+                }
             }
 
-            // Continue to the next middleware in the pipeline
+            // Proceed to the next middleware if everything is valid
             await _next(context);
         }
     }
-
 
     public static class TokenExpirationMiddlewareExtensions
     {

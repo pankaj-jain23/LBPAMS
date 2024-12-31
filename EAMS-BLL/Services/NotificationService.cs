@@ -1,4 +1,6 @@
-﻿using EAMS_ACore.HelperModels;
+﻿using EAMS.Helper;
+using EAMS_ACore.HelperModels;
+using EAMS_ACore.IExternal;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.IRepository;
 using EAMS_ACore.NotificationModels;
@@ -6,8 +8,10 @@ using EAMS_ACore.ReportModels;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 namespace EAMS_BLL.Services
 {
     public class NotificationService : INotificationService
@@ -15,11 +19,16 @@ namespace EAMS_BLL.Services
         private readonly INotificationRepository _notificationRepository;
         private readonly FcmNotificationSetting _fcmNotificationSetting;
         private readonly ILogger<NotificationService> _logger;
-        public NotificationService(IOptions<FcmNotificationSetting> settings, INotificationRepository notificationRepository, ILogger<NotificationService> logger)
+        private readonly IExternal _external;
+
+        public NotificationService(IOptions<FcmNotificationSetting> settings, INotificationRepository notificationRepository, ILogger<NotificationService> logger, IExternal external
+)
         {
             _fcmNotificationSetting = settings.Value;
             _notificationRepository = notificationRepository;
             _logger = logger;
+            _external = external;   
+
         }
         private DateTime? BharatDateTime()
         {
@@ -62,8 +71,6 @@ namespace EAMS_BLL.Services
         {
             return await _notificationRepository.UpdateSMSTemplateById(sMSTemplate);
         }
-
-
         public async Task<ServiceResponse> SendOtp(string mobile, string otp)
         {
             string userNameSMS = SMSEnum.UserName.GetStringValue();
@@ -73,21 +80,46 @@ namespace EAMS_BLL.Services
             string smsTypeOTP = SMSEnum.OTP.GetStringValue();
             string placeholder = "{#var#}";
 
+            // Get the SMS template from the repository
             var getTemplate = await _notificationRepository.GetSMSTemplateById(smsTypeOTP);
             string template = getTemplate.Message;
 
+            // Replace the placeholder with the OTP
             string finalsmsTemplateMsg = template.Replace(placeholder, otp.Trim());
 
-            var result = await SendSMSAsync(userNameSMS, password, senderId, mobile, finalsmsTemplateMsg, entityId, getTemplate.TemplateId.ToString());
-            
-            bool isSucceed = result.Contains(SMSEnum.MessageAccepted.GetStringValue());
+            // Call the SendSmsAsync method from ExternalService
+           var smsResponse = await _external.SendSmsAsync(userNameSMS, password, senderId, mobile, finalsmsTemplateMsg, entityId, getTemplate.TemplateId.ToString());
 
-            return new ServiceResponse
-            {
-                IsSucceed = isSucceed,
-                Message = result
-            };
+            // Return the service response
+            return smsResponse;
         }
+
+
+
+        //public async Task<ServiceResponse> SendOtp(string mobile, string otp)
+        //{
+        //    string userNameSMS = SMSEnum.UserName.GetStringValue();
+        //    string password = SMSEnum.Password.GetStringValue();
+        //    string senderId = SMSEnum.SenderId.GetStringValue();
+        //    string entityId = SMSEnum.EntityId.GetStringValue();
+        //    string smsTypeOTP = SMSEnum.OTP.GetStringValue();
+        //    string placeholder = "{#var#}";
+
+        //    var getTemplate = await _notificationRepository.GetSMSTemplateById(smsTypeOTP);
+        //    string template = getTemplate.Message;
+
+        //    string finalsmsTemplateMsg = template.Replace(placeholder, otp.Trim());
+
+        //    var result = await SendSMSAsync(userNameSMS, password, senderId, mobile, finalsmsTemplateMsg, entityId, getTemplate.TemplateId.ToString());
+
+        //    bool isSucceed = result.Contains(SMSEnum.MessageAccepted.GetStringValue());
+
+        //    return new ServiceResponse
+        //    {
+        //        IsSucceed = isSucceed,
+        //        Message = result
+        //    };
+        //}
         public async Task<ServiceResponse> SendSMSToSectorOfficers(SendSMSModel sendSMSModel)
         {
             SMSSentModel sMSSentModel = new SMSSentModel(); int sent = 0; int Notsent = 0;
@@ -238,6 +270,7 @@ namespace EAMS_BLL.Services
             if (string.IsNullOrWhiteSpace(msg))
                 return string.Empty;
 
+            //string smsPostUrl = "https://smsgw.sms.gov.in/failsafe/MLink?username={0}&pin={1}&message={2}&mnumber={3}&signature={4}&dlt_entity_id={5}&dlt_template_id={6}";
             string smsPostUrl = "https://smsgw.sms.gov.in/failsafe/MLink?username={0}&pin={1}&message={2}&mnumber={3}&signature={4}&dlt_entity_id={5}&dlt_template_id={6}";
             string requestUrl = string.Format(smsPostUrl, username, pin, Uri.EscapeDataString(msg), mobileNo, senderid, entityid, templateid);
 
@@ -247,8 +280,6 @@ namespace EAMS_BLL.Services
                 try
                 {
                     HttpResponseMessage response = await client.GetAsync(requestUrl);
-                    _logger.LogInformation($"SMS URL  {requestUrl}");
-                    _logger.LogInformation($"Calling SMS {response.Content.ToString()}");
                     response.EnsureSuccessStatusCode();
                     return await response.Content.ReadAsStringAsync();
                 }
@@ -258,6 +289,58 @@ namespace EAMS_BLL.Services
                 }
             }
         }
+
+        //public async Task<string> SendSMSAsync(string uname, string password, string mobileNo, string message, string senderid, string entityid, string templateid)
+        //{
+        //    string username = uname?.Trim() ?? string.Empty;
+        //    string pin = password?.Trim() ?? string.Empty;
+        //    string msg = message?.Trim() ?? string.Empty;
+
+        //    if (string.IsNullOrWhiteSpace(msg))
+        //        return string.Empty;
+
+        //    var url = "https://smsgw.sms.gov.in/failsafe/MLink";
+
+        //    // Prepare the data as a string
+        //    var postData = $"username={username}&pin={pin}&mnumber={mobileNo}&message={Uri.EscapeDataString(msg)}&signature={senderid}&dlt_entity_id={entityid}&dlt_template_id={templateid}";
+
+        //    using (var httpClient = new HttpClient())
+        //    {
+        //        httpClient.Timeout = TimeSpan.FromMinutes(3); // Adjust the timeout as necessary
+        //        httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+        //        // Create StringContent for POST
+        //        var content = new StringContent(postData, Encoding.UTF8, "text/plain");
+
+        //        try
+        //        {
+        //            // Send POST request
+        //            HttpResponseMessage response = await httpClient.PostAsync(url, content);
+        //            response.EnsureSuccessStatusCode();
+        //            _logger.LogInformation("ValidateCheckKro"+response);
+        //            // Read the response content
+        //            string result = await response.Content.ReadAsStringAsync();
+        //            Console.WriteLine(response.StatusCode);
+        //            return result;
+        //        }
+        //        catch (HttpRequestException ex)
+        //        {
+        //            _logger.LogInformation("ValidateCheckKro" + ex.Message); // Log exception details if necessary
+        //            Console.WriteLine(ex.Message);
+        //            return ex.Message;
+        //        }
+        //    }
+        //}
+
+
+
+
+
+
+
+
+
+
         public static void Check_SSL_Certificate()
         {
             ServicePointManager.ServerCertificateValidationCallback = RemoteCertificateValidate;

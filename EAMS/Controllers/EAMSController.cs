@@ -6,13 +6,17 @@ using EAMS.ViewModels.PSFormViewModel;
 using EAMS.ViewModels.QueueViewModel;
 using EAMS_ACore;
 using EAMS_ACore.HelperModels;
+using EAMS_ACore.IExternal;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
 using EAMS_ACore.Models.ElectionType;
+using EAMS_ACore.Models.EventActivityModels;
 using EAMS_ACore.Models.PollingStationFormModels;
 using EAMS_ACore.Models.QueueModel;
+using EAMS_BLL.Services;
 using LBPAMS.ViewModels;
+using LBPAMS.ViewModels.EventActivityViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -27,12 +31,13 @@ namespace EAMS.Controllers
         private readonly ILogger<EAMSController> _logger;
         private readonly IEamsService _EAMSService;
         private readonly IMapper _mapper;
-
-        public EAMSController(IEamsService eamsService, IMapper mapper, ILogger<EAMSController> logger)
+        private readonly ICacheService _cacheService;
+        public EAMSController(IEamsService eamsService, IMapper mapper, ILogger<EAMSController> logger, ICacheService cacheService)
         {
             _EAMSService = eamsService;
             _mapper = mapper;
             _logger = logger;
+            _cacheService = cacheService;
         }
 
 
@@ -65,6 +70,77 @@ namespace EAMS.Controllers
                 return StatusCode(500, "Internal Server Error");
             }
         }
+        #endregion
+
+        #region Clear Mappings
+
+        [HttpPost("ClearBLOMappings")]
+        [Authorize]
+        public async Task<IActionResult> ClearBLOMappings(int electionTypeMasterId)
+        {
+            var stateMasterIdStr = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            if (int.TryParse(stateMasterIdStr, out var stateMasterId))
+            {
+                var response = await _EAMSService.IsClearBLOMappings(stateMasterId, electionTypeMasterId);
+                return Ok(response); // Assuming response is of type ServiceResponse
+            }
+            return BadRequest("Invalid StateMasterId");
+        }
+
+        [HttpPost("ClearSOMappings")]
+        [Authorize]
+        public async Task<IActionResult> ClearSOMappings(int electionTypeMasterId)
+        {
+            var stateMasterIdStr = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            if (int.TryParse(stateMasterIdStr, out var stateMasterId))
+            {
+                var response = await _EAMSService.IsClearSOMappings(stateMasterId, electionTypeMasterId);
+                return Ok(response); // Assuming response is of type ServiceResponse
+            }
+            return BadRequest("Invalid StateMasterId");
+        }
+
+        [HttpPost("ClearPollDetails")]
+        [Authorize]
+        public async Task<IActionResult> ClearPollDetails(int electionTypeMasterId)
+        {
+            var stateMasterIdStr = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            if (int.TryParse(stateMasterIdStr, out var stateMasterId))
+            {
+                var response = await _EAMSService.IsClearPollDetails(stateMasterId, electionTypeMasterId);
+                return Ok(response); // Assuming response is of type ServiceResponse
+            }
+            return BadRequest("Invalid StateMasterId");
+        }
+
+        [HttpPost("ClearElectionInfo")]
+        [Authorize]
+        public async Task<IActionResult> ClearElectionInfo(int electionTypeMasterId)
+        {
+            var stateMasterIdStr = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            if (int.TryParse(stateMasterIdStr, out var stateMasterId))
+            {
+                var response = await _EAMSService.IsClearElectionInfo(stateMasterId, electionTypeMasterId);
+                return Ok(response); // Assuming response is of type ServiceResponse
+            }
+            return BadRequest("Invalid StateMasterId");
+        }
+
+        [HttpPost("ClearSlotInfo")]
+        [Authorize]
+        public async Task<IActionResult> ClearSlotInfo(int electionTypeMasterId, int eventMasterId)
+        {
+            var stateMasterIdStr = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            if (int.TryParse(stateMasterIdStr, out var stateMasterId))
+            {
+                var response = await _EAMSService.IsClearSlotInfo(stateMasterId, electionTypeMasterId, eventMasterId);
+                return Ok(response); // Assuming response is of type ServiceResponse
+            }
+            return BadRequest("Invalid StateMasterId");
+        }
+
+
+
         #endregion
 
         #region MasterUpdation Status
@@ -111,12 +187,13 @@ namespace EAMS.Controllers
         [HttpDelete]
         [Route("DeleteMasterStatus")]
         [Authorize]
-        public async Task<IActionResult> DeleteMaster(string Id, string type)
+        public async Task<IActionResult> DeleteMaster(string Id, int electionTypeMasterId, string type)
         {
             DeleteMasterStatusViewModel deleteMasterStatusViewModel = new DeleteMasterStatusViewModel()
             {
                 Id = Id,
                 Type = type,
+                ElectionTypeMasterId = electionTypeMasterId
             };
             try
             {
@@ -160,8 +237,16 @@ namespace EAMS.Controllers
         {
             try
             {
+                //var getState = await _cacheService.GetDataAsync<List<StateMasterViewModel>>("GetState");
+
+                //if (getState == null)
+                //{
+                // Cache miss, fetch data from the service
                 var stateList = await _EAMSService.GetState();
                 var mappedData = _mapper.Map<List<StateMasterViewModel>>(stateList);
+
+                // Optionally set data in cache
+                // await _cacheService.SetDataAsync("GetState", mappedData, DateTimeOffset.Now.AddSeconds(20)); // Example expiration
 
                 var data = new
                 {
@@ -169,6 +254,15 @@ namespace EAMS.Controllers
                     data = mappedData
                 };
                 return Ok(data);
+                //}
+
+                //// Cache hit
+                //var dataFromCache = new
+                //{
+                //    count = getState.Count,
+                //    data = getState
+                //};
+                //return Ok(dataFromCache);
             }
             catch (Exception ex)
             {
@@ -176,6 +270,7 @@ namespace EAMS.Controllers
                 return StatusCode(500, "Internal Server Error");
             }
         }
+
 
         [HttpPut]
         [Route("UpdateStateById")]
@@ -591,9 +686,9 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetFieldOfficersListById")]
         [Authorize]
-        public async Task<IActionResult> GetFieldOfficersListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        public async Task<IActionResult> GetFieldOfficersListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
         {
-            var foList = await _EAMSService.GetFieldOfficersListById(stateMasterId, districtMasterId, assemblyMasterId);  // Corrected to await the asynchronous method
+            var foList = await _EAMSService.GetFieldOfficersListById(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId);  // Corrected to await the asynchronous method
             if (foList != null)
             {
                 var data = new
@@ -611,21 +706,39 @@ namespace EAMS.Controllers
         }
 
         [HttpGet]
-        [Route("GetSectorOfficerProfile")]
+        [Route("GetFieldOfficerProfile")]
         [Authorize]
-        public async Task<IActionResult> GetSectorOfficerProfile()
+        public async Task<IActionResult> GetFieldOfficerProfile()
         {
-            var soIdClaim = User.Claims.FirstOrDefault(c => c.Type == "SoId")?.Value;
+            var foIdClaim = User.Claims.FirstOrDefault(c => c.Type == "FieldOfficerMasterId")?.Value;
             var bloMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "BLOMasterId")?.Value;
-            if (soIdClaim is not null)
+            var aroMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "AROMasterId")?.Value;
+            if (foIdClaim is not null)
             {
-                var soList = await _EAMSService.GetSectorOfficerProfile(soIdClaim, "SO");  // Corrected to await the asynchronous method
+                var foList = await _EAMSService.GetFieldOfficerProfile(foIdClaim, "FO");  // Corrected to await the asynchronous method
 
-                if (soList != null)
+                if (foList != null)
                 {
                     var data = new
                     {
-                        data = soList
+                        data = foList
+                    };
+                    return Ok(data);
+                }
+                else
+                {
+                    return BadRequest("No Record Found");
+                }
+            }
+            else if (bloMasterIdClaim is not null)
+            {
+                var bloList = await _EAMSService.GetFieldOfficerProfile(bloMasterIdClaim, "BLO");  // Corrected to await the asynchronous method
+
+                if (bloList != null)
+                {
+                    var data = new
+                    {
+                        data = bloList
                     };
                     return Ok(data);
                 }
@@ -636,13 +749,13 @@ namespace EAMS.Controllers
             }
             else
             {
-                var bloList = await _EAMSService.GetSectorOfficerProfile(bloMasterIdClaim, "BLO");  // Corrected to await the asynchronous method
+                var aroList = await _EAMSService.GetFieldOfficerProfile(aroMasterIdClaim, "ARO");  // Corrected to await the asynchronous method
 
-                if (bloList != null)
+                if (aroList != null)
                 {
                     var data = new
                     {
-                        data = bloList
+                        data = aroList
                     };
                     return Ok(data);
                 }
@@ -661,6 +774,11 @@ namespace EAMS.Controllers
             {
 
                 var mappedData = _mapper.Map<FieldOfficerMaster>(fieldOfficerViewModel);
+                var isUniqueMobile = await _EAMSService.IsMobileNumberUnique(fieldOfficerViewModel.FieldOfficerMobile);
+                if (isUniqueMobile.IsSucceed == false)
+                {
+                    return BadRequest(isUniqueMobile.Message);
+                }
                 var result = await _EAMSService.AddFieldOfficer(mappedData);
 
                 switch (result.Status)
@@ -713,6 +831,7 @@ namespace EAMS.Controllers
                 return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
             }
         }
+
         /// <summary this api for portal>
         [HttpGet]
         [Route("GetBoothListByFoId")]
@@ -726,13 +845,49 @@ namespace EAMS.Controllers
             {
                 AssignedCount = mappedData.Count,
                 UnAssignedCount = unAssignedMappedData.Count,
-                Assigned = mappedData.OrderBy(p => Int32.Parse(p.BoothCode_No)),
+                Assigned = mappedData,
                 Unassigned = unAssignedMappedData
             };
             return Ok(data);
         }
+
+        [HttpGet]
+        [Route("GetBoothEventListByFoId")]
+        public async Task<IActionResult> GetBoothEventListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
+        {
+            var boothList = await _EAMSService.GetBoothListForFo(stateMasterId, districtMasterId, assemblyMasterId, foId);
+
+            var mappedData = _mapper.Map<List<FieldOfficerBoothViewModel>>(boothList);
+            var data = new
+            {
+                count = mappedData.Count,
+                data = mappedData,
+            };
+            return Ok(data);
+        }
+
+        /// <summary>
+        /// For Poll Interuption Booth List
         /// </summary>
-        
+        /// <param name="stateMasterId"></param>
+        /// <param name="districtMasterId"></param>
+        /// <param name="assemblyMasterId"></param>
+        /// <param name="foId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("GetPIBoothListByFoId")]
+        public async Task<IActionResult> GetPIBoothListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
+        {
+            var boothList = await _EAMSService.GetBoothListByFoId(stateMasterId, districtMasterId, assemblyMasterId, foId);  // Corrected to await the asynchronous method
+            var mappedData = _mapper.Map<List<FieldOfficerBoothViewModel>>(boothList);
+            var data = new
+            {
+                Count = mappedData.Count,
+                Data = mappedData,
+            };
+            return Ok(data);
+        }
+
         /// <summary this api for Mobile App>
         [HttpGet]
         [Route("GetBoothListForFo")]
@@ -746,17 +901,57 @@ namespace EAMS.Controllers
 
             var boothList = await _EAMSService.GetBoothListForFo(stateMasterId, districtMasterId, assemblyMasterId, foId);
 
-            var mappedData = _mapper.Map<List<FieldOfficerBoothViewModel>>(boothList); 
+            var mappedData = _mapper.Map<List<FieldOfficerBoothViewModel>>(boothList);
             var data = new
             {
-                count = mappedData.Count, 
-                data = mappedData.OrderBy(p => Int32.Parse(p.BoothCode_No)), 
+                count = mappedData.Count,
+                data = mappedData,
             };
             return Ok(data);
         }
-        /// </summary>
 
+        /// <summary this api for Portal>
+        [HttpGet]
+        [Route("GetBoothListForFoPortal")]
+        [Authorize]
+        public async Task<IActionResult> GetBoothListForFoPortal(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
+        {
+            //int foId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "FieldOfficerMasterId")?.Value);
+            //int stateMasterId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value);
+            //int districtMasterId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value);
+            //int assemblyMasterId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId")?.Value);
 
+            var boothList = await _EAMSService.GetBoothListForFo(stateMasterId, districtMasterId, assemblyMasterId, foId);
+
+            var mappedData = _mapper.Map<List<FieldOfficerBoothViewModel>>(boothList);
+            var data = new
+            {
+                count = mappedData.Count,
+                data = mappedData,
+            };
+            return Ok(data);
+        }
+
+        [HttpGet]
+        [Route("GetBoothListForResultDeclaration")]
+        [Authorize]
+        public async Task<IActionResult> GetBoothListForResultDeclaration()
+        {
+            int foId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "FieldOfficerMasterId")?.Value);
+            int stateMasterId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value);
+            int districtMasterId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value);
+            int assemblyMasterId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId")?.Value);
+
+            var boothList = await _EAMSService.GetBoothListForResultDeclaration(stateMasterId, districtMasterId, assemblyMasterId, foId);
+
+            var mappedData = _mapper.Map<List<FieldOfficerBoothViewModel>>(boothList);
+            var data = new
+            {
+                count = mappedData.Count,
+                data = mappedData,
+            };
+            return Ok(data);
+        }
 
         [HttpGet]
         [Route("GetFieldOfficerById")]
@@ -916,34 +1111,7 @@ namespace EAMS.Controllers
             return Ok(data);
         }
 
-        //[HttpGet]
-        //[Route("GetSectorOfficersListforARO")]
-        //[Authorize]
-        //public async Task<IActionResult> GetSectorOfficersListforARO()
-        //{
-        //    Claim stateMaster = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId");
-        //    Claim districtMaster = User.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId");
-        //    Claim assemblyMaster = User.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId");
-        //    string stateMasterId = stateMaster.Value;
-        //    string districtMasterId = districtMaster.Value;
-        //    string assemblyMasterId = assemblyMaster.Value;
 
-        //    var soList = await _EAMSService.GetSectorOfficersListById(stateMasterId, districtMasterId, assemblyMasterId);  // Corrected to await the asynchronous method
-        //    if (soList != null)
-        //    {
-        //        var data = new
-        //        {
-        //            count = soList.Count,
-        //            data = soList
-        //        };
-        //        return Ok(data);
-        //    }
-        //    else
-        //    {
-        //        return BadRequest("No Record Found");
-        //    }
-
-        //}
 
         /// <summary>
         /// Insert Booth Under Assembly, District, State
@@ -1232,6 +1400,21 @@ namespace EAMS.Controllers
                 return NotFound($"[{boothMasterId}] not exist");
             }
         }
+
+        [HttpGet]
+        [Route("GetBoothDetailForVoterInQueue")]
+        public async Task<IActionResult> GetBoothDetailForVoterInQueue(int boothMasterId)
+        {
+            var boothMasterDetail = await _EAMSService.GetBoothDetailForVoterInQueue(boothMasterId);
+            if (boothMasterDetail != null)
+            {
+                return Ok(boothMasterDetail);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
         #endregion
 
         #region Event Master
@@ -1262,7 +1445,7 @@ namespace EAMS.Controllers
             var eventList = await _EAMSService.GetEventListById(stateMasterId, electionTypeMasterId);
             if (eventList != null)
             {
-                var mappedEvent = _mapper.Map<List<EventMasterViewModel>>(eventList);
+                var mappedEvent = _mapper.Map<List<EventMasterListViewModel>>(eventList);
                 if (mappedEvent != null)
                 {
                     var data = new
@@ -1347,6 +1530,7 @@ namespace EAMS.Controllers
             return BadRequest(result.Message); // Return a 400 BadRequest with the error message if the service fails
 
         }
+
         [HttpPut]
         [Route("UpdateEventStatus")]
         [Authorize]
@@ -1356,7 +1540,7 @@ namespace EAMS.Controllers
             {
 
                 var mappedData = _mapper.Map<EventMaster>(updateEventStatusViewModel);
-                var isSucced = await _EAMSService.UpdateEventStaus(mappedData);
+                var isSucced = await _EAMSService.UpdateEventStatus(mappedData);
                 if (isSucced.IsSucceed)
                 {
                     return Ok(isSucced);
@@ -1389,6 +1573,7 @@ namespace EAMS.Controllers
 
             // Fetch the event by ID
             var result = await _EAMSService.GetEventById(eventMasterId);
+            var mappedData = _mapper.Map<EventMasterByIdViewModel>(result);
 
             // Check if the event was found
             if (result == null)
@@ -1397,7 +1582,7 @@ namespace EAMS.Controllers
             }
 
             // Return the event
-            return Ok(result);
+            return Ok(mappedData);
         }
 
         [HttpDelete]
@@ -1786,7 +1971,6 @@ namespace EAMS.Controllers
         }
 
         [HttpGet("GetFourthLevelHListById")]
-        [Authorize]
         public async Task<IActionResult> GetFourthLevelHListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null)
@@ -1817,6 +2001,118 @@ namespace EAMS.Controllers
                 return BadRequest("State, District and Assembly Master Id's cannot be null");
             }
 
+        }
+
+        [HttpGet("GetFourthLevelHListForRO")]
+        [Authorize]
+        public async Task<IActionResult> GetFourthLevelHListForRO()
+        {
+            var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
+            int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
+            int districtMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("DistrictMasterId"));
+            int assemblyMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AssemblyMasterId"));
+            int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
+            string roId = userClaims.GetValueOrDefault("UserId");
+
+            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && roId != null)
+            {
+
+                var panchayatList = await _EAMSService.GetPanchayatListByROId(stateMasterId, districtMasterId, assemblyMasterId, roId);  // Corrected to await the asynchronous method
+                                                                                                                                         // var mappedData = _mapper.Map<List<FourthLevelH>, List<ListFourthLevelHViewModel>>(panchayatList);
+                if (panchayatList != null)
+                {
+                    var data = new
+                    {
+                        count = panchayatList.Count,
+                        data = panchayatList.ToList(),
+                        //data = boothList.OrderBy(p => Int32.Parse(p.BoothCode_No)).ToList(),
+
+                    };
+                    return Ok(data);
+
+                }
+                else
+                {
+                    return NotFound("Booth Not Found");
+
+                }
+
+
+            }
+            else
+            {
+
+                return BadRequest("Master Id's cannot be null");
+            }
+        }
+        [HttpGet("GetFourthLevelHListExistInRDForRO")]
+        [Authorize]
+        public async Task<IActionResult> GetFourthLevelHListExistInRDForRO()
+        {
+            var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
+            int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
+            int districtMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("DistrictMasterId"));
+            int assemblyMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AssemblyMasterId"));
+            int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
+            string roId = userClaims.GetValueOrDefault("UserId");
+
+            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && roId != null)
+            {
+
+                var panchayatList = await _EAMSService.GetFourthLevelHListExistInRDForRO(stateMasterId, districtMasterId, assemblyMasterId, roId);  // Corrected to await the asynchronous method
+                                                                                                                                                    // var mappedData = _mapper.Map<List<FourthLevelH>, List<ListFourthLevelHViewModel>>(panchayatList);
+                if (panchayatList != null)
+                {
+                    var data = new
+                    {
+                        count = panchayatList.Count,
+                        data = panchayatList.ToList(),
+                        //data = boothList.OrderBy(p => Int32.Parse(p.BoothCode_No)).ToList(),
+
+                    };
+                    return Ok(data);
+
+                }
+                else
+                {
+                    return NotFound("Booth Not Found");
+
+                }
+
+
+            }
+            else
+            {
+
+                return BadRequest("Master Id's cannot be null");
+            }
+        }
+        [HttpGet("GetFourthLevelHExistInRDListById")]
+        public async Task<IActionResult> GetFourthLevelHExistInRDListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        {
+            // Validate input parameters (ensure they are greater than 0)
+            if (stateMasterId > 0 && districtMasterId > 0 && assemblyMasterId > 0)
+            {
+                var fourthLevelHList = await _EAMSService.GetFourthLevelHExistInRDListById(stateMasterId, districtMasterId, assemblyMasterId);
+
+                if (fourthLevelHList != null && fourthLevelHList.Any()) // Check if data is not null and contains elements
+                {
+                    var response = new
+                    {
+                        count = fourthLevelHList.Count,
+                        data = fourthLevelHList
+                    };
+                    return Ok(response);
+                }
+                else
+                {
+                    return NotFound("No records found.");
+                }
+            }
+            else
+            {
+                return BadRequest("StateMasterId, DistrictMasterId, and AssemblyMasterId must be greater than 0.");
+            }
         }
 
         [HttpPut]
@@ -1882,6 +2178,11 @@ namespace EAMS.Controllers
         {
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && fourthLevelHMasterId != null)
             {
+                var isVoterAndKycExist = await _EAMSService.IsVoterAndKycExist(fourthLevelHMasterId);
+                if (isVoterAndKycExist.IsSucceed == true)
+                {
+                    return Ok(isVoterAndKycExist.Message);
+                }
                 var isSucceed = await _EAMSService.DeleteFourthLevelHById(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);  // Corrected to await the asynchronous method
                 if (isSucceed.IsSucceed)
                 {
@@ -2057,6 +2358,7 @@ namespace EAMS.Controllers
         #endregion
 
         #region  GPPanchayatWards 
+
         [HttpPost]
         [Route("AddGPPanchayatWards")]
         [Authorize]
@@ -2088,8 +2390,49 @@ namespace EAMS.Controllers
             }
         }
 
-        [HttpGet("GetGPPanchayatWardsListById")]
+        [HttpGet("GetPanchayatWardforResultDeclaration")]
         [Authorize]
+        public async Task<IActionResult> GetPanchayatWardforResultDeclaration(int fourthLevelHMasterId)
+        {
+            var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
+            int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
+            int districtMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("DistrictMasterId"));
+            int assemblyMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AssemblyMasterId"));
+            //int fourthLevelHMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("FourthLevelHMasterId"));
+            int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
+
+            if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && fourthLevelHMasterId != null)
+            {
+                var list = await _EAMSService.GetPanchayatWardforResultDeclaration(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);  // Corrected to await the asynchronous method
+
+                var mappedData = _mapper.Map<List<GPPanchayatWards>, List<ListGPPanchayatWardsViewModel>>(list);
+                if (list != null)
+                {
+                    var data = new
+                    {
+                        count = list.Count,
+                        data = mappedData.ToList(),
+                        //data = boothList.OrderBy(p => Int32.Parse(p.BoothCode_No)).ToList(),
+
+                    };
+                    return Ok(data);
+
+                }
+                else
+                {
+                    return NotFound("ARO Not Found");
+
+                }
+            }
+            else
+            {
+
+                return BadRequest("State, District and Assembly Master Id's cannot be null");
+            }
+
+        }
+
+        [HttpGet("GetGPPanchayatWardsListById")]
         public async Task<IActionResult> GetGPPanchayatWardsListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId)
         {
             if (stateMasterId != null && districtMasterId != null && assemblyMasterId != null && FourthLevelHMasterId != null)
@@ -2122,6 +2465,7 @@ namespace EAMS.Controllers
             }
 
         }
+
 
         [HttpPut]
         [Route("UpdateGPPanchayatWards")]
@@ -2213,304 +2557,378 @@ namespace EAMS.Controllers
 
         #region Event Activity
 
-        #region All Events 
+        #region Event Activity for Portal
 
-        [HttpPost]
-        [Route("EventActivity")]
+        [HttpPut("ExtendVTEventTimeForPortal")]
         [Authorize]
-        public async Task<IActionResult> EventActivity(ElectionInfoViewModel electionInfoViewModel)
+        public async Task<IActionResult> ExtendVTEventTimeForPortal(int stateMasterId, int electionTypeMasterId, bool isVTEventTimeExtended)
         {
-            if (ModelState.IsValid)
+            // Validate input
+            if (electionTypeMasterId <= 0)
             {
-                switch (electionInfoViewModel.EventMasterId)
-                {
-                    case 1:
-                        var result = await PartyDispatch(electionInfoViewModel);
-                        switch (result.Status)
-                        {
-                            case RequestStatusEnum.OK:
-                                return Ok(result.Message);
-                            case RequestStatusEnum.BadRequest:
-                                return BadRequest(result.Message);
-                            case RequestStatusEnum.NotFound:
-                                return NotFound(result.Message);
+                return BadRequest(new { Message = "Kindly select a valid election type." });
+            }
 
-                            default:
-                                return StatusCode(500, "Internal Server Error");
-                        }
+            var response = await _EAMSService.IsVTEventTimeExtended(stateMasterId, electionTypeMasterId, isVTEventTimeExtended);
 
-                    case 2:
-                        var result_part_reach = await PartyReached(electionInfoViewModel);
-                        switch (result_part_reach.Status)
-                        {
-                            case RequestStatusEnum.OK:
-                                return Ok(result_part_reach.Message);
-                            case RequestStatusEnum.BadRequest:
-                                return BadRequest(result_part_reach.Message);
-                            case RequestStatusEnum.NotFound:
-                                return NotFound(result_part_reach.Message);
+            if (!response.IsSucceed)
+            {
+                return BadRequest(new { response.Message });
+            }
 
-                            default:
-                                return StatusCode(500, "Internal Server Error");
-                        }
-                    case 3:
-                        var result_setup_polling = await SetupPollingStation(electionInfoViewModel);
-                        switch (result_setup_polling.Status)
-                        {
-                            case RequestStatusEnum.OK:
-                                return Ok(result_setup_polling.Message);
-                            case RequestStatusEnum.BadRequest:
-                                return BadRequest(result_setup_polling.Message);
-                            case RequestStatusEnum.NotFound:
-                                return NotFound(result_setup_polling.Message);
-
-                            default:
-                                return StatusCode(500, "Internal Server Error");
-                        }
-                    case 4:
-                        var result_mock_poll = await MockPollDone(electionInfoViewModel);
-
-                        switch (result_mock_poll.Status)
-                        {
-                            case RequestStatusEnum.OK:
-                                return Ok(result_mock_poll.Message);
-                            case RequestStatusEnum.BadRequest:
-                                return BadRequest(result_mock_poll.Message);
-                            case RequestStatusEnum.NotFound:
-                                return NotFound(result_mock_poll.Message);
-
-                            default:
-                                return StatusCode(500, "Internal Server Error");
-                        }
-                    case 5:
-                        var res_pollstarted = await PollStarted(electionInfoViewModel);
-                        switch (res_pollstarted.Status)
-                        {
-                            case RequestStatusEnum.OK:
-                                return Ok(res_pollstarted.Message);
-                            case RequestStatusEnum.BadRequest:
-                                return BadRequest(res_pollstarted.Message);
-                            case RequestStatusEnum.NotFound:
-                                return NotFound(res_pollstarted.Message);
-
-                            default:
-                                return StatusCode(500, "Internal Server Error");
-                        }
-                    case 7:
-                        var res_voter_in_queue = await VoterInQueue(electionInfoViewModel);
-                        switch (res_voter_in_queue.Status)
-                        {
-                            case RequestStatusEnum.OK:
-                                return Ok(res_voter_in_queue.Message);
-                            case RequestStatusEnum.BadRequest:
-                                return BadRequest(res_voter_in_queue.Message);
-                            case RequestStatusEnum.NotFound:
-                                return NotFound(res_voter_in_queue.Message);
-
-                            default:
-                                return StatusCode(500, "Internal Server Error");
-                        }
-
-                    case 8:
-                        var res_final_votes = await FinalVotes(electionInfoViewModel);
-                        switch (res_final_votes.Status)
-                        {
-                            case RequestStatusEnum.OK:
-                                return Ok(res_final_votes.Message);
-                            case RequestStatusEnum.BadRequest:
-                                return BadRequest(res_final_votes.Message);
-                            case RequestStatusEnum.NotFound:
-                                return NotFound(res_final_votes.Message);
-
-                            default:
-                                return StatusCode(500, "Internal Server Error");
-                        }
-
-                    case 9:
-                        var res_poll_ended = await PollEnded(electionInfoViewModel);
-                        switch (res_poll_ended.Status)
-                        {
-                            case RequestStatusEnum.OK:
-                                return Ok(res_poll_ended.Message);
-                            case RequestStatusEnum.BadRequest:
-                                return BadRequest(res_poll_ended.Message);
-                            case RequestStatusEnum.NotFound:
-                                return NotFound(res_poll_ended.Message);
-
-                            default:
-                                return StatusCode(500, "Internal Server Error");
-                        }
-                    case 10:
-                        var res_evm_swicthoff = await MCEVM(electionInfoViewModel);
-                        switch (res_evm_swicthoff.Status)
-                        {
-                            case RequestStatusEnum.OK:
-                                return Ok(res_evm_swicthoff.Message);
-                            case RequestStatusEnum.BadRequest:
-                                return BadRequest(res_evm_swicthoff.Message);
-                            case RequestStatusEnum.NotFound:
-                                return NotFound(res_evm_swicthoff.Message);
-
-                            default:
-                                return StatusCode(500, "Internal Server Error");
-                        }
-                    case 11:
-                        var res_party_departed = await PartyDeparted(electionInfoViewModel);
-                        switch (res_party_departed.Status)
-                        {
-                            case RequestStatusEnum.OK:
-                                return Ok(res_party_departed.Message);
-                            case RequestStatusEnum.BadRequest:
-                                return BadRequest(res_party_departed.Message);
-                            case RequestStatusEnum.NotFound:
-                                return NotFound(res_party_departed.Message);
-
-                            default:
-                                return StatusCode(500, "Internal Server Error");
-                        }
-
-                    case 12:
-                        var res_party_reachd_collection_centre = await PartyReachedCollectionCentre(electionInfoViewModel);
-                        switch (res_party_reachd_collection_centre.Status)
-                        {
-                            case RequestStatusEnum.OK:
-                                return Ok(res_party_reachd_collection_centre.Message);
-                            case RequestStatusEnum.BadRequest:
-                                return BadRequest(res_party_reachd_collection_centre.Message);
-                            case RequestStatusEnum.NotFound:
-                                return NotFound(res_party_reachd_collection_centre.Message);
-
-                            default:
-                                return StatusCode(500, "Internal Server Error");
-                        }
-
-                    case 13:
-                        var res_evm_deposited = await EVMDeposited(electionInfoViewModel);
-                        switch (res_evm_deposited.Status)
-                        {
-                            case RequestStatusEnum.OK:
-                                return Ok(res_evm_deposited.Message);
-                            case RequestStatusEnum.BadRequest:
-                                return BadRequest(res_evm_deposited.Message);
-                            case RequestStatusEnum.NotFound:
-                                return NotFound(res_evm_deposited.Message);
-
-                            default:
-                                return StatusCode(500, "Internal Server Error");
-                        }
+            return Ok(new { response.Message });
+        }
 
 
-                    default:
-                        // Handle the case when EventMasterId doesn't match any known case
-                        return BadRequest("Invalid EventMasterId");
-                }
+
+        [HttpPut]
+        [Route("UpdateEventActivityForPortal")]
+        [Authorize]
+        public async Task<IActionResult> UpdateEventActivityForPortal(UpdateEventActivityViewModel updateEventActivityViewModel,
+            int stateMasterId,
+            int districtMasterId,
+            int assemblyMasterId,
+            int electionTypeMasterId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Invalid model state.");
+            }
+            var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
+            string userId = userClaims.GetValueOrDefault("UserId");
+            var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
+
+            string userType = userRole != null && (userRole.Contains("FO") || userRole.Contains("ARO"))
+                ? "MobileUser"
+                : "DashBoardUser";
+
+            var mappedData = _mapper.Map<UpdateEventActivity>(updateEventActivityViewModel);
+
+            var isEventActivityValid = await _EAMSService.IsEventActivityValid(stateMasterId, electionTypeMasterId, updateEventActivityViewModel.EventMasterId);
+
+            //If election date is not same it will through msg
+            if (!isEventActivityValid.IsToday)
+            {
+                return BadRequest($"This activity is scheduled to start on the election day: {isEventActivityValid.StartDateString}.");
+            }
+            // Set IDs from claims
+            mappedData.StateMasterId = stateMasterId;
+            mappedData.DistrictMasterId = districtMasterId;
+            mappedData.AssemblyMasterId = assemblyMasterId;
+            mappedData.ElectionTypeMasterId = electionTypeMasterId;
+            mappedData.AROUserId = userId;
+            var result = await _EAMSService.UpdateEventActivity(mappedData, userType);
+            if (result.IsSucceed == true)
+            {
+                return Ok(result.Message);
             }
             else
             {
-                return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
+                return BadRequest(result.Message);
             }
-        }
-
-        private async Task<Response> PartyDispatch(ElectionInfoViewModel electionInfoViewModel)
-        {
-
-            ElectionInfoMaster electionInfoMaster = new ElectionInfoMaster()
-            {
-                StateMasterId = electionInfoViewModel.StateMasterId,
-                DistrictMasterId = electionInfoViewModel.DistrictMasterId,
-                AssemblyMasterId = electionInfoViewModel.AssemblyMasterId,
-                BoothMasterId = electionInfoViewModel.BoothMasterId,
-                EventMasterId = electionInfoViewModel.EventMasterId,
-                IsPartyDispatched = electionInfoViewModel.EventStatus,
-
-            };
-            var result = await _EAMSService.EventActivity(electionInfoMaster);
-            return result;
 
         }
 
-        private async Task<Response> PartyReached(ElectionInfoViewModel electionInfoViewModel)
+        [HttpPut]
+        [Route("UpdateVTEventActivityForPortal")]
+        [Authorize]
+        public async Task<IActionResult> UpdateVTEventActivityForPortal(UpdateVTEventActivityViewModel updateEventActivityViewModel,
+            int stateMasterId,
+            int districtMasterId,
+            int assemblyMasterId,
+            int electionTypeMasterId
+            )
         {
-            ElectionInfoMaster electionInfoMaster = new ElectionInfoMaster()
+            if (!ModelState.IsValid)
             {
-                StateMasterId = electionInfoViewModel.StateMasterId,
-                DistrictMasterId = electionInfoViewModel.DistrictMasterId,
-                AssemblyMasterId = electionInfoViewModel.AssemblyMasterId,
-                BoothMasterId = electionInfoViewModel.BoothMasterId,
-                EventMasterId = electionInfoViewModel.EventMasterId,
-                IsPartyReached = electionInfoViewModel.EventStatus
+                return BadRequest("Invalid model state.");
+            }
 
-            };
-            var result = await _EAMSService.EventActivity(electionInfoMaster);
-            return result;
-        }
+            var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
 
-        private async Task<Response> SetupPollingStation(ElectionInfoViewModel electionInfoViewModel)
-        {
-            ElectionInfoMaster electionInfoMaster = new ElectionInfoMaster()
+            string userType = userRole != null && (userRole.Contains("FO") || userRole.Contains("ARO"))
+                ? "MobileUser"
+                : "DashBoardUser";
+            var isEventActivityValid = await _EAMSService.IsEventActivityValid(stateMasterId, electionTypeMasterId, updateEventActivityViewModel.EventMasterId);
+
+            //If election date is not same it will through msg
+            if (!isEventActivityValid.IsToday)
             {
-                StateMasterId = electionInfoViewModel.StateMasterId,
-                DistrictMasterId = electionInfoViewModel.DistrictMasterId,
-                AssemblyMasterId = electionInfoViewModel.AssemblyMasterId,
-                BoothMasterId = electionInfoViewModel.BoothMasterId,
-                EventMasterId = electionInfoViewModel.EventMasterId,
-                IsSetupOfPolling = electionInfoViewModel.EventStatus
+                return BadRequest($"This activity is scheduled to start on the election day: {isEventActivityValid.StartDateString}.");
+            }
+            // Map view model to entity
+            var mappedData = _mapper.Map<UpdateEventActivity>(updateEventActivityViewModel);
 
-            };
-            var result = await _EAMSService.EventActivity(electionInfoMaster);
-            return result;
-        }
+            mappedData.StateMasterId = stateMasterId;
+            mappedData.DistrictMasterId = districtMasterId;
+            mappedData.AssemblyMasterId = assemblyMasterId;
+            mappedData.ElectionTypeMasterId = electionTypeMasterId;
 
-        private async Task<Response> MockPollDone(ElectionInfoViewModel electionInfoViewModel)
-        {
-            if (electionInfoViewModel.NoOfPollingAgents != null && electionInfoViewModel.NoOfPollingAgents >= 0)
+            var result = await _EAMSService.UpdateEventActivity(mappedData, userType);
+            if (result.IsSucceed == true)
             {
-                ElectionInfoMaster electionInfoMaster = new ElectionInfoMaster()
-                {
-                    StateMasterId = electionInfoViewModel.StateMasterId,
-                    DistrictMasterId = electionInfoViewModel.DistrictMasterId,
-                    AssemblyMasterId = electionInfoViewModel.AssemblyMasterId,
-                    BoothMasterId = electionInfoViewModel.BoothMasterId,
-                    EventMasterId = electionInfoViewModel.EventMasterId,
-                    IsMockPollDone = electionInfoViewModel.EventStatus,
-                    NoOfPollingAgents = electionInfoViewModel.NoOfPollingAgents
-                };
-                var result = await _EAMSService.EventActivity(electionInfoMaster);
-                return result;
-
+                return Ok(result.Message);
             }
             else
             {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Number Of Polling Agents can't be Null or a negative value." };
-
+                return BadRequest(result.Message);
             }
+
         }
 
-        private async Task<Response> PollStarted(ElectionInfoViewModel electionInfoViewModel)
+        [HttpPut]
+        [Route("UpdateFinalVoteEventActivityForPortal")]
+        [Authorize]
+        public async Task<IActionResult> UpdateFinalVoteEventActivityForPortal(UpdateFinalVoteEventActivityViewModel updateEventActivityViewModel,
+             int stateMasterId,
+            int districtMasterId,
+            int assemblyMasterId,
+            int electionTypeMasterId)
         {
-            ElectionInfoMaster electionInfoMaster = new ElectionInfoMaster()
+            if (!ModelState.IsValid)
             {
-                StateMasterId = electionInfoViewModel.StateMasterId,
-                DistrictMasterId = electionInfoViewModel.DistrictMasterId,
-                AssemblyMasterId = electionInfoViewModel.AssemblyMasterId,
-                BoothMasterId = electionInfoViewModel.BoothMasterId,
-                EventMasterId = electionInfoViewModel.EventMasterId,
-                IsPollStarted = electionInfoViewModel.EventStatus
+                return BadRequest("Invalid model state.");
+            }
 
-            };
-            var result = await _EAMSService.EventActivity(electionInfoMaster);
-            return result;
+            var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
+
+            string userType = userRole != null && (userRole.Contains("FO") || userRole.Contains("ARO"))
+                ? "MobileUser"
+                : "DashBoardUser";
+            var isEventActivityValid = await _EAMSService.IsEventActivityValid(stateMasterId, electionTypeMasterId, updateEventActivityViewModel.EventMasterId);
+
+            //If election date is not same it will through msg
+            if (!isEventActivityValid.IsToday)
+            {
+                return BadRequest($"This activity is scheduled to start on the election day: {isEventActivityValid.StartDateString}.");
+            }
+            // Map view model to entity
+            var mappedData = _mapper.Map<UpdateEventActivity>(updateEventActivityViewModel);
+            mappedData.StateMasterId = stateMasterId;
+            mappedData.DistrictMasterId = districtMasterId;
+            mappedData.AssemblyMasterId = assemblyMasterId;
+            mappedData.ElectionTypeMasterId = electionTypeMasterId;
+
+            var result = await _EAMSService.UpdateEventActivity(mappedData, userType);
+            if (result.IsSucceed == true)
+            {
+                return Ok(result.Message);
+            }
+            else
+            {
+                return BadRequest(result.Message);
+            }
+
         }
-        #endregion
 
+        #endregion 
+
+        [HttpPut]
+        [Route("UpdateEventActivity")]
+        [Authorize]
+        public async Task<IActionResult> UpdateEventActivity(UpdateEventActivityViewModel updateEventActivityViewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Invalid model state.");
+            }
+
+            // Extract the required claims
+            if (!TryGetClaimValue(User, "StateMasterId", out int stateMasterId) ||
+                !TryGetClaimValue(User, "DistrictMasterId", out int districtMasterId) ||
+                !TryGetClaimValue(User, "AssemblyMasterId", out int assemblyMasterId) ||
+                !TryGetClaimValue(User, "ElectionTypeMasterId", out int electionTypeMasterId)
+                || !TryGetClaimValue(User, "FieldOfficerMasterId", out int fieldOfficerMasterId))
+            {
+                return BadRequest("Missing or invalid claims.");
+            }
+            var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
+            var electionTypeMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
+
+            string userType = userRole != null && (userRole.Contains("FO") || userRole.Contains("ARO"))
+                ? "MobileUser"
+                : "DashBoardUser";
+            var isEventActivityValid = await _EAMSService.IsEventActivityValid(stateMasterId, Convert.ToInt32(electionTypeMasterIdClaim), updateEventActivityViewModel.EventMasterId);
+
+            //If election date is not same it will through msg
+            if (!isEventActivityValid.IsToday)
+            {
+                return BadRequest($"This activity is scheduled to start on the election day: {isEventActivityValid.StartDateString}.");
+            }
+            var mappedData = _mapper.Map<UpdateEventActivity>(updateEventActivityViewModel);
+
+            // Set IDs from claims
+            mappedData.StateMasterId = stateMasterId;
+            mappedData.DistrictMasterId = districtMasterId;
+            mappedData.AssemblyMasterId = assemblyMasterId;
+            mappedData.ElectionTypeMasterId = Convert.ToInt32(electionTypeMasterIdClaim);
+            mappedData.FieldOfficerMasterId = fieldOfficerMasterId.ToString();
+            var result = await _EAMSService.UpdateEventActivity(mappedData, userType);
+            if (result.IsSucceed == true)
+            {
+                return Ok(result.Message);
+            }
+            else
+            {
+                return BadRequest(result.Message);
+            }
+
+        }
+
+        [HttpPut]
+        [Route("UpdateVTEventActivity")]
+        [Authorize]
+        public async Task<IActionResult> UpdateVTEventActivity(UpdateVTEventActivityViewModel updateEventActivityViewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Invalid model state.");
+            }
+
+            // Extract the required claims
+            if (!TryGetClaimValue(User, "StateMasterId", out int stateMasterId) ||
+                !TryGetClaimValue(User, "DistrictMasterId", out int districtMasterId) ||
+                !TryGetClaimValue(User, "AssemblyMasterId", out int assemblyMasterId) ||
+                !TryGetClaimValue(User, "ElectionTypeMasterId", out int electionTypeMasterId))
+            {
+                return BadRequest("Missing or invalid claims.");
+            }
+            var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
+            var electionTypeMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
+
+            string userType = userRole != null && (userRole.Contains("FO") || userRole.Contains("ARO"))
+                ? "MobileUser"
+                : "DashBoardUser";
+            var isEventActivityValid = await _EAMSService.IsEventActivityValid(stateMasterId, Convert.ToInt32(electionTypeMasterIdClaim), updateEventActivityViewModel.EventMasterId);
+
+            //If election date is not same it will through msg
+            if (!isEventActivityValid.IsToday)
+            {
+                return BadRequest($"This activity is scheduled to start on the election day: {isEventActivityValid.StartDateString}.");
+            }
+            // Map view model to entity
+            var mappedData = _mapper.Map<UpdateEventActivity>(updateEventActivityViewModel);
+
+            mappedData.StateMasterId = stateMasterId;
+            mappedData.DistrictMasterId = districtMasterId;
+            mappedData.AssemblyMasterId = assemblyMasterId;
+            mappedData.ElectionTypeMasterId = Convert.ToInt32(electionTypeMasterIdClaim);
+
+            var result = await _EAMSService.UpdateEventActivity(mappedData, userType);
+            if (result.IsSucceed == true)
+            {
+                return Ok(result.Message);
+            }
+            else
+            {
+                return BadRequest(result.Message);
+            }
+
+        }
+
+        [HttpPut]
+        [Route("UpdateFinalVoteEventActivity")]
+        [Authorize]
+        public async Task<IActionResult> UpdateFinalVoteEventActivity(UpdateFinalVoteEventActivityViewModel updateEventActivityViewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Invalid model state.");
+            }
+
+            // Extract the required claims
+            if (!TryGetClaimValue(User, "StateMasterId", out int stateMasterId) ||
+                !TryGetClaimValue(User, "DistrictMasterId", out int districtMasterId) ||
+                !TryGetClaimValue(User, "AssemblyMasterId", out int assemblyMasterId) ||
+                !TryGetClaimValue(User, "ElectionTypeMasterId", out int electionTypeMasterId))
+            {
+                return BadRequest("Missing or invalid claims.");
+            }
+            var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
+
+            string userType = userRole != null && (userRole.Contains("FO") || userRole.Contains("ARO"))
+                ? "MobileUser"
+                : "DashBoardUser";
+            var electionTypeMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
+
+            var isEventActivityValid = await _EAMSService.IsEventActivityValid(stateMasterId, Convert.ToInt32(electionTypeMasterIdClaim), updateEventActivityViewModel.EventMasterId);
+
+            //If election date is not same it will through msg
+            if (!isEventActivityValid.IsToday)
+            {
+                return BadRequest($"This activity is scheduled to start on the election day: {isEventActivityValid.StartDateString}.");
+            }
+            // Map view model to entity
+            var mappedData = _mapper.Map<UpdateEventActivity>(updateEventActivityViewModel);
+
+            mappedData.StateMasterId = stateMasterId;
+            mappedData.DistrictMasterId = districtMasterId;
+            mappedData.AssemblyMasterId = assemblyMasterId;
+            mappedData.ElectionTypeMasterId = Convert.ToInt32(electionTypeMasterIdClaim);
+
+            var result = await _EAMSService.UpdateEventActivity(mappedData, userType);
+            if (result.IsSucceed == true)
+            {
+                return Ok(result.Message);
+            }
+            else
+            {
+                return BadRequest(result.Message);
+            }
+
+        }
+
+        private bool TryGetClaimValue(ClaimsPrincipal user, string claimType, out int result)
+        {
+            result = 0;
+            var claimValue = user.Claims.FirstOrDefault(c => c.Type == claimType)?.Value;
+            return !string.IsNullOrEmpty(claimValue) && int.TryParse(claimValue, out result);
+        }
+
+        [HttpGet]
+        [Route("GetBoothEventListById")]
+        [Authorize]
+        public async Task<IActionResult> GetBoothEventListById(int boothMasterId, int electionTypeMasterId)
+        {
+            if (!TryGetClaimValue(User, "StateMasterId", out int stateMasterId))
+            {
+                return BadRequest("Missing or invalid claims.");
+            }
+            var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
+
+            string userType = userRole != null && (userRole.Contains("FO") || userRole.Contains("ARO"))
+                ? "MobileUser"
+                : "DashBoardUser";
+
+            var result = await _EAMSService.GetBoothEventListById(stateMasterId, electionTypeMasterId, boothMasterId);
+            if (result == null || result.Count == 0)
+            {
+                return BadRequest("No events found for the given parameters.");
+            }
+
+            return Ok(result);
+        }
+
+        #region All Events 
         [HttpGet]
         [Route("GetLastUpdatedPollDetail")]
         [Authorize]
-        public async Task<IActionResult> GetLastUpdatedPollDetail(string boothMasterId)
+        public async Task<IActionResult> GetLastUpdatedPollDetail(int boothMasterId)
         {
-            int voterturnotEventId = 6;
-            //return BadRequest("Enter Voter Turn Out in Next Slot( 5 - 5:30). Thanks for your Support.");
-            var result = await _EAMSService.GetLastUpdatedPollDetail(boothMasterId, voterturnotEventId);
+            var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
+            var StateMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            var electionTypeMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
+
+            var isSlotDateValid = await _EAMSService.IsVTEventValidSlotDate(Convert.ToInt32(StateMasterIdClaim), Convert.ToInt32(electionTypeMasterIdClaim));
+            if (!isSlotDateValid)
+            {
+                return BadRequest("The slot is not valid. Please note that it will only be available starting on the election day.");
+            }
+
+            string userType = userRole != null && (userRole.Contains("FO") || userRole.Contains("ARO"))
+                ? "MobileUser"
+                : "DashBoardUser";
+            var result = await _EAMSService.GetLastUpdatedPollDetail(boothMasterId, userType);
             if (result is not null)
             {
                 return Ok(result);
@@ -2602,7 +3020,7 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetFinalVotes")]
         [Authorize]
-        public async Task<IActionResult> GetFinalVotes(string boothMasterId)
+        public async Task<IActionResult> GetFinalVotes(int boothMasterId)
         {
 
             var result = await _EAMSService.GetFinalVotes(boothMasterId);
@@ -2612,220 +3030,112 @@ namespace EAMS.Controllers
             }
             else
             {
-                return BadRequest();
+                return BadRequest("Final Vote is not active");
             }
 
         }
-
-        private async Task<Response> VoterInQueue(ElectionInfoViewModel electionInfoViewModel)
-        {
-            ElectionInfoMaster electionInfoMaster = new ElectionInfoMaster()
-            {
-                StateMasterId = electionInfoViewModel.StateMasterId,
-                DistrictMasterId = electionInfoViewModel.DistrictMasterId,
-                AssemblyMasterId = electionInfoViewModel.AssemblyMasterId,
-                BoothMasterId = electionInfoViewModel.BoothMasterId,
-                EventMasterId = electionInfoViewModel.EventMasterId,
-                ElectionInfoStatus = electionInfoViewModel.EventStatus,
-                VoterInQueue = Convert.ToInt32(electionInfoViewModel.VoterInQueue
-                ),
-                IsQueueUndo = electionInfoViewModel.IsQueueUndo
-
-            };
-            var result = await _EAMSService.EventActivity(electionInfoMaster);
-            return result;
-        }
-
-        private async Task<Response> FinalVotes(ElectionInfoViewModel electionInfoViewModel)
-        {
-
-            var boothRecord = await _EAMSService.GetBoothById(electionInfoViewModel.BoothMasterId.ToString());
-            if (boothRecord != null)
-            {
-                if (electionInfoViewModel.Male != null && Convert.ToInt32(electionInfoViewModel.Male) >= 0 && electionInfoViewModel.Female != null && Convert.ToInt32(electionInfoViewModel.Female) >= 0 && electionInfoViewModel.Transgender != null && Convert.ToInt32(electionInfoViewModel.Transgender) >= 0)
-                {
-                    if (Convert.ToInt32(electionInfoViewModel.Male) <= boothRecord.Male && Convert.ToInt32(electionInfoViewModel.Female) <= boothRecord.Female && Convert.ToInt32(electionInfoViewModel.Transgender) <= boothRecord.Transgender)
-                    {
-                        int sumValue = Convert.ToInt32(electionInfoViewModel.Male) + Convert.ToInt32(electionInfoViewModel.Female) + Convert.ToInt32(electionInfoViewModel.Transgender);
-                        if (Convert.ToInt32(electionInfoViewModel.FinalVotes) == sumValue)
-                        {
-                            // check available male female and match with user entered
-                            //if (electionInfoViewModel.EDC.Trim() != "")
-                            if (!string.IsNullOrWhiteSpace(electionInfoViewModel.EDC))
-
-                            {
-                                //if (Convert.ToInt32(electionInfoViewModel.EDC) >= 0)
-                                if (int.TryParse(electionInfoViewModel.EDC, out int edcValue))
-                                {
-                                    if (edcValue >= 0)
-                                    {
-
-                                        ElectionInfoMaster electionInfoMaster = new ElectionInfoMaster()
-                                        {
-                                            StateMasterId = electionInfoViewModel.StateMasterId,
-                                            DistrictMasterId = electionInfoViewModel.DistrictMasterId,
-                                            AssemblyMasterId = electionInfoViewModel.AssemblyMasterId,
-                                            BoothMasterId = electionInfoViewModel.BoothMasterId,
-                                            EventMasterId = electionInfoViewModel.EventMasterId,
-                                            FinalTVote = Convert.ToInt32(electionInfoViewModel.FinalVotes),
-                                            FinalTVoteStatus = electionInfoViewModel.EventStatus,
-                                            Male = Convert.ToInt32(electionInfoViewModel.Male),
-                                            Female = Convert.ToInt32(electionInfoViewModel.Female),
-                                            Transgender = Convert.ToInt32(electionInfoViewModel.Transgender),
-                                            EDC = Convert.ToInt32(electionInfoViewModel.EDC)
-
-                                        };
-
-                                        var result = await _EAMSService.EventActivity(electionInfoMaster);
-                                        return result;
-                                    }
-                                    else
-                                    {
-                                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "EDC value cannot be negative value !" };
-
-                                    }
-                                }
-                                else
-                                {
-                                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Please enter a valid value in the EDC field. If there is no EDC Voters, enter 0. If there is an EDC Voters, please provide the exact figure." };
-
-                                }
-                            }
-                            else
-                            {
-                                return new Response { Status = RequestStatusEnum.BadRequest, Message = "EDC value cannot be null !" };
-
-                            }
-
-                        }
-                        else
-                        {
-                            return new Response { Status = RequestStatusEnum.BadRequest, Message = "Total Final Votes Value must be sum of Male,Female & Transgender entered values." };
-
-                        }
-
-                    }
-                    else
-                    {
-                        //                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Male,Female,Transgender Cannot be Null and should be greater than zero." };
-                        return new Response { Status = RequestStatusEnum.BadRequest, Message = "Male,Female,Transgender Values must be equal or less than Available Male,Female & Transgender Values." };
-                    }
-                }
-                else
-                {
-                    return new Response { Status = RequestStatusEnum.BadRequest, Message = "Enter valid inputs in Male,Female & Transgender." };
-
-                }
-
-
-
-            }
-            else
-            {
-                return new Response { Status = RequestStatusEnum.BadRequest, Message = "Booth record Not Found." };
-
-            }
-
-
-
-        }
-
-        private async Task<Response> PollEnded(ElectionInfoViewModel electionInfoViewModel)
-        {
-            ElectionInfoMaster electionInfoMaster = new ElectionInfoMaster()
-            {
-                StateMasterId = electionInfoViewModel.StateMasterId,
-                DistrictMasterId = electionInfoViewModel.DistrictMasterId,
-                AssemblyMasterId = electionInfoViewModel.AssemblyMasterId,
-                BoothMasterId = electionInfoViewModel.BoothMasterId,
-                EventMasterId = electionInfoViewModel.EventMasterId,
-                IsPollEnded = electionInfoViewModel.EventStatus
-
-            };
-            var result = await _EAMSService.EventActivity(electionInfoMaster);
-            return result;
-        }
-
-        private async Task<Response> MCEVM(ElectionInfoViewModel electionInfoViewModel)
-        {
-            ElectionInfoMaster electionInfoMaster = new ElectionInfoMaster()
-            {
-                StateMasterId = electionInfoViewModel.StateMasterId,
-                DistrictMasterId = electionInfoViewModel.DistrictMasterId,
-                AssemblyMasterId = electionInfoViewModel.AssemblyMasterId,
-                BoothMasterId = electionInfoViewModel.BoothMasterId,
-                EventMasterId = electionInfoViewModel.EventMasterId,
-                IsMCESwitchOff = electionInfoViewModel.EventStatus
-
-            };
-            var result = await _EAMSService.EventActivity(electionInfoMaster);
-            return result;
-        }
-        private async Task<Response> PartyDeparted(ElectionInfoViewModel electionInfoViewModel)
-        {
-            ElectionInfoMaster electionInfoMaster = new ElectionInfoMaster()
-            {
-                StateMasterId = electionInfoViewModel.StateMasterId,
-                DistrictMasterId = electionInfoViewModel.DistrictMasterId,
-                AssemblyMasterId = electionInfoViewModel.AssemblyMasterId,
-                BoothMasterId = electionInfoViewModel.BoothMasterId,
-                EventMasterId = electionInfoViewModel.EventMasterId,
-                IsPartyDeparted = electionInfoViewModel.EventStatus
-
-            };
-
-            var result = await _EAMSService.EventActivity(electionInfoMaster);
-            return result;
-        }
-        private async Task<Response> PartyReachedCollectionCentre(ElectionInfoViewModel electionInfoViewModel)
-        {
-            ElectionInfoMaster electionInfoMaster = new ElectionInfoMaster()
-            {
-                StateMasterId = electionInfoViewModel.StateMasterId,
-                DistrictMasterId = electionInfoViewModel.DistrictMasterId,
-                AssemblyMasterId = electionInfoViewModel.AssemblyMasterId,
-                BoothMasterId = electionInfoViewModel.BoothMasterId,
-                EventMasterId = electionInfoViewModel.EventMasterId,
-                IsPartyReachedCollectionCenter = electionInfoViewModel.EventStatus
-
-            };
-            var result = await _EAMSService.EventActivity(electionInfoMaster);
-            return result;
-        }
-        private async Task<Response> EVMDeposited(ElectionInfoViewModel electionInfoViewModel)
-        {
-            ElectionInfoMaster electionInfoMaster = new ElectionInfoMaster()
-            {
-                StateMasterId = electionInfoViewModel.StateMasterId,
-                DistrictMasterId = electionInfoViewModel.DistrictMasterId,
-                AssemblyMasterId = electionInfoViewModel.AssemblyMasterId,
-                BoothMasterId = electionInfoViewModel.BoothMasterId,
-                EventMasterId = electionInfoViewModel.EventMasterId,
-                IsEVMDeposited = electionInfoViewModel.EventStatus
-
-            };
-            var result = await _EAMSService.EventActivity(electionInfoMaster);
-            return result;
-        }
+        #endregion
 
         #region Event Count for Dashboard
-        [HttpGet]
-        [Route("GetDistrictWiseEventListById")]
-        [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,PC")]
-        public async Task<IActionResult> EventListDistrictWiseById(string? stateId)
+        //[HttpGet("GetEventActivitiesForDashboard")]
+        //public async Task<ActionResult<EventActivityCountForDashboard>> GetEventActivitiesForDashboard( int stateMasterId, int districtMasterId)
+        //{
+        //    var result = await _EAMSService.GetEventActivitiesForDashboard(stateMasterId, districtMasterId);
+        //    if (result == null || !result.Any())
+        //    {
+        //        return NotFound("No event activities found.");
+        //    }
+
+        //    var response = new EventActivityCountForDashboard
+        //    {
+        //        eventActivityForDashboard = result
+        //    };
+
+        //    return Ok(response);
+        //}
+        //[HttpGet("GetEventActivitiesForDashboard")]
+        //public async Task<ActionResult<EventActivityCountForDashboard>> GetEventActivitiesForDashboard(int stateMasterId, int districtMasterId)
+        //{
+        //    var (eventActivities, totalBoothCount) = await _EAMSService.GetEventActivitiesForDashboard(stateMasterId, districtMasterId);
+
+        //    if (eventActivities == null || !eventActivities.Any())
+        //    {
+        //        return NotFound("No event activities found.");
+        //    }
+
+        //    var response = new EventActivityCountForDashboard
+        //    {
+        //        eventActivityForDashboardHeader = eventActivities,
+        //        TotalBoothCount = totalBoothCount // Include the total booth count
+        //    };
+
+        //    return Ok(response);
+        //}
+        [HttpGet("GetEventActivitiesForDashboard")]
+        public async Task<ActionResult<EventActivityCountForDashboard>> GetEventActivitiesForDashboard(int stateMasterId, int districtMasterId)
         {
-            if (string.IsNullOrEmpty(stateId) || stateId.Contains("undefined"))
+            var (eventActivities, totalBoothCount) = await _EAMSService.GetEventActivitiesForDashboard(stateMasterId, districtMasterId);
+
+            if (eventActivities == null || !eventActivities.Any())
             {
-                return BadRequest("Parameter miss match");
+                return NotFound("No event activities found.");
             }
 
-            string stateMasterId = stateId ?? User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            // Fetching the activity data
+            var eventActivityData = new List<EventActivityForDashboardData>();
+            foreach (var activity in eventActivities)
+            {
+                var totalBoothActivity = await _EAMSService.GetTotalBoothActivity(stateMasterId, districtMasterId, activity.EventName);
+                var remainingBooths = totalBoothCount - totalBoothActivity;
+                var activityPercentage = ((totalBoothActivity / (double)totalBoothCount) * 100).ToString("0.0%");
+
+                eventActivityData.Add(new EventActivityForDashboardData
+                {
+                    TotalBoothCount = totalBoothCount.ToString(),
+                    EventName = activity.EventName,
+                    TotalBoothActivity = totalBoothActivity.ToString(),
+                    ActivityPercentage = activityPercentage
+                });
+            }
+
+            var response = new EventActivityCountForDashboard
+            {
+                eventActivityForDashboardHeader = eventActivities,
+                TotalBoothCount = totalBoothCount,
+                eventActivityForDashboardData = eventActivityData // Set the event activity data
+            };
+
+            return Ok(response);
+        }
+        /// <summary>
+        /// This API fetches the district-wise event list for running events.
+        /// The event list is filtered based on the StateMasterId of the authenticated user.
+        /// </summary>
+        /// <returns>Returns a list of events for the districts in the user's state.</returns>
+        [HttpGet]
+        [Route("GetDistrictWiseEventListById")]
+        [Authorize(Roles = "SuperAdmin,StateAdmin")]
+        public async Task<IActionResult> EventListDistrictWiseById(int? electionTypeMasterId)
+        {
+
+            var stateMasterId = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+
             if (string.IsNullOrEmpty(stateMasterId))
             {
                 return BadRequest("StateMasterId is required.");
             }
+            if (!electionTypeMasterId.HasValue)
+            {
+                var electionTypeMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
 
-            var eventDistrictWiseList = await _EAMSService.GetEventListDistrictWiseById(stateMasterId);
+                if (!int.TryParse(electionTypeMasterIdClaim, out var electionTypeId))
+                {
+                    return BadRequest("ElectionTypeMasterId is required.");
+                }
+
+                electionTypeMasterId = electionTypeId;
+            }
+            var eventDistrictWiseList = await _EAMSService.GetEventListDistrictWiseById(Convert.ToInt32(stateMasterId), electionTypeMasterId.Value);
             if (eventDistrictWiseList != null)
             {
                 return Ok(eventDistrictWiseList);
@@ -2836,44 +3146,242 @@ namespace EAMS.Controllers
             }
         }
 
-
-
+        /// <summary>
+        /// This API fetches the district-wise event list for Pending events.
+        /// The event list is filtered based on the StateMasterId of the authenticated user.
+        /// </summary>
+        /// <returns>Returns a list of events for the districts in the user's state.</returns>
         [HttpGet]
-        [Route("GetPCWiseEventListById")]
-        [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,PC")]
-        public async Task<IActionResult> EventListPCWiseById(string? stateId)
+        [Route("GetPendingEventListDistrictWiseById")]
+        [Authorize(Roles = "SuperAdmin,StateAdmin")]
+        public async Task<IActionResult> EventPendingListDistrictWiseById(int? electionTypeMasterId)
         {
-            string stateMasterId;
-            var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId").Value;
-            var stateMasterIdC = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId").Value;
-            if (stateId != null)
+            var stateMasterId = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            if (string.IsNullOrEmpty(stateMasterId))
             {
-                stateMasterId = stateId;
+                return BadRequest("StateMasterId is required.");
+            }
+            if (!electionTypeMasterId.HasValue)
+            {
+                var electionTypeMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
+
+                if (!int.TryParse(electionTypeMasterIdClaim, out var electionTypeId))
+                {
+                    return BadRequest("ElectionTypeMasterId is required.");
+                }
+
+                electionTypeMasterId = electionTypeId;
+            }
+            var eventDistrictWiseList = await _EAMSService.GetPendingEventListDistrictWiseById(Convert.ToInt32(stateMasterId), electionTypeMasterId.Value);
+            if (eventDistrictWiseList != null)
+            {
+                return Ok(eventDistrictWiseList);
             }
             else
             {
-                stateMasterId = stateMasterIdC.ToString();
-            }
-            var eventPCWiseList = await _EAMSService.GetEventListPCWiseById(stateMasterId, userId);
-            if (eventPCWiseList is not null)
-                return Ok(eventPCWiseList);
-            else
                 return NotFound();
+            }
         }
 
         [HttpGet]
         [Route("GetAssemblyWiseEventListById")]
-        [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,PC")]
-        public async Task<IActionResult> EventListAssemblyWiseById(string? stateId, string? districtId)
+        [Authorize(Roles = "SuperAdmin,StateAdmin,DistrictAdmin")]
+        public async Task<IActionResult> EventListAssemblyWiseById(int? districtMasterId, int? electionTypeMasterId)
         {
-            var eventAssemblyList = await _EAMSService.GetEventListAssemblyWiseById(stateId, districtId);
+            // Retrieve StateMasterId from user claims
+            var stateMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            // Validate StateMasterId
+            if (!int.TryParse(stateMasterIdClaim, out var stateMasterId))
+            {
+                return BadRequest("StateMasterId is required.");
+            }
+
+            // If districtMasterId is not provided, retrieve it from claims
+            if (!districtMasterId.HasValue)
+            {
+                var districtMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value;
+
+                if (!int.TryParse(districtMasterIdClaim, out var districtId))
+                {
+                    return BadRequest("DistrictMasterId is required.");
+                }
+
+                districtMasterId = districtId;
+            }
+
+            if (!electionTypeMasterId.HasValue)
+            {
+                var electionTypeMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
+
+                if (!int.TryParse(electionTypeMasterIdClaim, out var electionTypeId))
+                {
+                    return BadRequest("ElectionTypeMasterId is required.");
+                }
+
+                electionTypeMasterId = electionTypeId;
+            }
+
+            // Fetch the event assembly list
+            var eventAssemblyList = await _EAMSService.GetEventListAssemblyWiseById(stateMasterId, districtMasterId.Value, electionTypeMasterId.Value);
+
+            // Return the appropriate response
+            return eventAssemblyList?.Any() == true ? Ok(eventAssemblyList) : NotFound("No events found for the specified state and district.");
+        }
+        /// <summary>
+        /// This API fetches the Assembly-wise event list for Pending events.
+        /// The event list is filtered based on the StateMasterId and districtMasterId of the authenticated user.
+        /// </summary>
+        /// <returns>Returns a list of events for the districts in the user's state.</returns>
+        [HttpGet]
+        [Route("GetPendingAssemblyWiseEventListById")]
+        [Authorize(Roles = "SuperAdmin,StateAdmin,DistrictAdmin")]
+        public async Task<IActionResult> EventPendingListAssemblyWiseById(int? districtMasterId, int? electionTypeMasterId)
+        {
+            // Retrieve StateMasterId from user claims
+            var stateMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            // Validate StateMasterId
+            if (!int.TryParse(stateMasterIdClaim, out var stateMasterId))
+            {
+                return BadRequest("StateMasterId is required.");
+            }
+
+            // If districtMasterId is not provided, retrieve it from claims
+            if (!districtMasterId.HasValue)
+            {
+                var districtMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value;
+
+                if (!int.TryParse(districtMasterIdClaim, out var districtId))
+                {
+                    return BadRequest("DistrictMasterId is required.");
+                }
+
+                districtMasterId = districtId;
+            }
+            if (!electionTypeMasterId.HasValue)
+            {
+                var electionTypeMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
+
+                if (!int.TryParse(electionTypeMasterIdClaim, out var electionTypeId))
+                {
+                    return BadRequest("ElectionTypeMasterId is required.");
+                }
+
+                electionTypeMasterId = electionTypeId;
+            }
+            // Fetch the event assembly list
+            var eventAssemblyList = await _EAMSService.GetPendingAssemblyWiseEventListById(stateMasterId, districtMasterId.Value, electionTypeMasterId.Value);
+
+            // Return the appropriate response
+            return eventAssemblyList?.Any() == true ? Ok(eventAssemblyList) : NotFound("No events found for the specified state and district.");
+        }
+
+        [HttpGet]
+        [Route("GetEventListFourthLevelHWiseById")]
+        [Authorize(Roles = "SuperAdmin,StateAdmin,DistrictAdmin,LocalBodiesAdmin,RO")]
+        public async Task<IActionResult> EventListFourthLevelHWiseById(int? districtMasterId, int? assemblyMasterId, int? electionTypeMasterId)
+        {
+            var stateMasterId = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            if (string.IsNullOrEmpty(stateMasterId))
+            {
+                return BadRequest("StateMasterId is required.");
+            }
+            if (!districtMasterId.HasValue)
+            {
+                var districtMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value;
+
+                if (!int.TryParse(districtMasterIdClaim, out var districtId))
+                {
+                    return BadRequest("DistrictMasterId is required.");
+                }
+
+                districtMasterId = districtId;
+            }
+
+            if (!assemblyMasterId.HasValue)
+            {
+                var assemblyMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId")?.Value;
+
+                if (!int.TryParse(assemblyMasterIdClaim, out var assemblyId))
+                {
+                    return BadRequest("AssemblyMasterId is required.");
+                }
+
+                assemblyMasterId = assemblyId;
+            }
+            if (!electionTypeMasterId.HasValue)
+            {
+                var electionTypeMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
+
+                if (!int.TryParse(electionTypeMasterIdClaim, out var electionTypeId))
+                {
+                    return BadRequest("ElectionTypeMasterId is required.");
+                }
+
+                electionTypeMasterId = electionTypeId;
+            }
+            var eventAssemblyList = await _EAMSService.GetEventListFourthLevelHWiseById(Convert.ToInt32(stateMasterId), districtMasterId.Value, assemblyMasterId.Value, electionTypeMasterId.Value);
             if (eventAssemblyList is not null)
                 return Ok(eventAssemblyList);
             else
                 return NotFound();
         }
 
+        /// <summary>
+        /// This API fetches the FourthLevelH-wise event list for Pending events.
+        /// The event list is filtered based on the StateMasterId and districtMasterId of the authenticated user.
+        /// </summary>
+        /// <returns>Returns a list of events for the districts in the user's state.</returns>
+        /// 
+        [HttpGet]
+        [Route("GetPendingEventListFourthLevelHWiseById")]
+        [Authorize(Roles = "SuperAdmin,StateAdmin,DistrictAdmin,LocalBodiesAdmin,RO")]
+        public async Task<IActionResult> EventPendingListFourthLevelHWiseById(int? districtMasterId, int? assemblyMasterId, int? electionTypeMasterId)
+        {
+            var stateMasterId = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            if (string.IsNullOrEmpty(stateMasterId))
+            {
+                return BadRequest("StateMasterId is required.");
+            }
+            if (!districtMasterId.HasValue)
+            {
+                var districtMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value;
 
+                if (!int.TryParse(districtMasterIdClaim, out var districtId))
+                {
+                    return BadRequest("DistrictMasterId is required.");
+                }
+
+                districtMasterId = districtId;
+            }
+
+            if (!assemblyMasterId.HasValue)
+            {
+                var assemblyMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId")?.Value;
+
+                if (!int.TryParse(assemblyMasterIdClaim, out var assemblyId))
+                {
+                    return BadRequest("AssemblyMasterId is required.");
+                }
+
+                assemblyMasterId = assemblyId;
+            }
+            if (!electionTypeMasterId.HasValue)
+            {
+                var electionTypeMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
+
+                if (!int.TryParse(electionTypeMasterIdClaim, out var electionTypeId))
+                {
+                    return BadRequest("ElectionTypeMasterId is required.");
+                }
+
+                electionTypeMasterId = electionTypeId;
+            }
+            var eventAssemblyList = await _EAMSService.GetPendingEventListFourthLevelHWiseById(Convert.ToInt32(stateMasterId), districtMasterId, assemblyMasterId, electionTypeMasterId.Value);
+            if (eventAssemblyList is not null)
+                return Ok(eventAssemblyList);
+            else
+                return NotFound();
+        }
         [HttpGet]
         [Route("GetAssemblyWiseEventListByPCId")]
         [Authorize(Roles = "ECI,SuperAdmin,StateAdmin,DistrictAdmin,PC")]
@@ -2889,16 +3397,131 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetBoothWiseEventListById")]
         [Authorize]
-        public async Task<IActionResult> EventListBoothWiseById(string? stateId, string? districtId, string? assemblyId)
+        public async Task<IActionResult> EventListBoothWiseById(int? districtMasterId, int? assemblyMasterId, int? fourthLevelHMasterId, int? electionTypeMasterId)
         {
-            var eventBoothList = await _EAMSService.GetEventListBoothWiseById(stateId, districtId, assemblyId);
+            var stateMasterId = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            if (string.IsNullOrEmpty(stateMasterId))
+            {
+                return BadRequest("StateMasterId is required.");
+            }
+            if (!districtMasterId.HasValue)
+            {
+                var districtMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value;
+
+                if (!int.TryParse(districtMasterIdClaim, out var districtId))
+                {
+                    return BadRequest("DistrictMasterId is required.");
+                }
+
+                districtMasterId = districtId;
+            }
+
+            if (!assemblyMasterId.HasValue)
+            {
+                var assemblyMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId")?.Value;
+
+                if (!int.TryParse(assemblyMasterIdClaim, out var assemblyId))
+                {
+                    return BadRequest("AssemblyMasterId is required.");
+                }
+
+                assemblyMasterId = assemblyId;
+            }
+            if (!fourthLevelHMasterId.HasValue)
+            {
+                var fourthLevelHMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "FourthLevelHMasterId")?.Value;
+
+                if (!int.TryParse(fourthLevelHMasterIdClaim, out var fourthLevelId))
+                {
+                    return BadRequest("FourthLevelHMasterId is required.");
+                }
+
+                fourthLevelHMasterId = fourthLevelId;
+            }
+            if (!electionTypeMasterId.HasValue)
+            {
+                var electionTypeMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
+
+                if (!int.TryParse(electionTypeMasterIdClaim, out var electionTypeId))
+                {
+                    return BadRequest("ElectionTypeMasterId is required.");
+                }
+
+                electionTypeMasterId = electionTypeId;
+            }
+            var eventBoothList = await _EAMSService.GetEventListBoothWiseById(Convert.ToInt32(stateMasterId), districtMasterId, assemblyMasterId, fourthLevelHMasterId, electionTypeMasterId.Value);
             if (eventBoothList is not null)
                 return Ok(eventBoothList);
             else
                 return NotFound();
         }
+        /// <summary>
+        /// This API fetches the Booth-wise event list for Pending events.
+        /// The event list is filtered based on the StateMasterId and districtMasterId of the authenticated user.
+        /// </summary>
+        /// <returns>Returns a list of events for the districts in the user's state.</returns>
+        /// 
+        [HttpGet]
+        [Route("GetPendingBoothWiseEventListById")]
+        [Authorize]
+        public async Task<IActionResult> EventPendingListBoothWiseById(int? districtMasterId, int? assemblyMasterId, int? fourthLevelHMasterId, int? electionTypeMasterId)
+        {
+            var stateMasterId = User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            if (string.IsNullOrEmpty(stateMasterId))
+            {
+                return BadRequest("StateMasterId is required.");
+            }
+            if (!districtMasterId.HasValue)
+            {
+                var districtMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value;
 
+                if (!int.TryParse(districtMasterIdClaim, out var districtId))
+                {
+                    return BadRequest("DistrictMasterId is required.");
+                }
 
+                districtMasterId = districtId;
+            }
+
+            if (!assemblyMasterId.HasValue)
+            {
+                var assemblyMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId")?.Value;
+
+                if (!int.TryParse(assemblyMasterIdClaim, out var assemblyId))
+                {
+                    return BadRequest("AssemblyMasterId is required.");
+                }
+
+                assemblyMasterId = assemblyId;
+            }
+            if (!fourthLevelHMasterId.HasValue)
+            {
+                var fourthLevelHMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "FourthLevelHMasterId")?.Value;
+
+                if (!int.TryParse(fourthLevelHMasterIdClaim, out var fourthLevelId))
+                {
+                    return BadRequest("FourthLevelHMasterId is required.");
+                }
+
+                fourthLevelHMasterId = fourthLevelId;
+            }
+            if (!electionTypeMasterId.HasValue)
+            {
+                var electionTypeMasterIdClaim = User.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
+
+                if (!int.TryParse(electionTypeMasterIdClaim, out var electionTypeId))
+                {
+                    return BadRequest("ElectionTypeMasterId is required.");
+                }
+
+                electionTypeMasterId = electionTypeId;
+            }
+            var eventBoothList = await _EAMSService.GetPendingBoothWiseEventListById(Convert.ToInt32(stateMasterId), districtMasterId, assemblyMasterId, fourthLevelHMasterId, electionTypeMasterId.Value);
+            if (eventBoothList is not null)
+                return Ok(eventBoothList);
+            else
+                return NotFound();
+        }
 
         [HttpGet]
         [Route("GetPCBoothWiseEventListById")]
@@ -2986,19 +3609,30 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetEventSlotListById")]
         [Authorize]
-        public async Task<IActionResult> GetEventSlotList(int stateMasterId, int EventId)
+        public async Task<IActionResult> GetEventSlotList(int stateMasterId, int electionTypeMasterId, int EventId)
         {
-            var result = await _EAMSService.GetEventSlotList(stateMasterId, EventId);
-            if (result is not null)
+            var result = await _EAMSService.GetEventSlotList(stateMasterId, electionTypeMasterId, EventId);
+            if (result is null)
             {
-
-                return Ok(result);
+                return BadRequest(result);
             }
-            else
+            return Ok(result);
+
+
+
+        }
+        [HttpGet]
+        [Route("GetEventSlotListByEventAbbr")]
+        [Authorize]
+        public async Task<IActionResult> GetEventSlotListByEventAbbr(int stateMasterId, int electionTypeMasterId, string eventAbbr)
+        {
+            var result = await _EAMSService.GetEventSlotListByEventAbbr(stateMasterId, electionTypeMasterId, eventAbbr);
+            if (result is null)
             {
-
-                return BadRequest();
+                return BadRequest(result);
             }
+            return Ok(result);
+
 
 
         }
@@ -3029,8 +3663,9 @@ namespace EAMS.Controllers
         public async Task<IActionResult> AddPollInterruption(InterruptionViewModel interruptionViewModel)
         {
             if (ModelState.IsValid)
-            {
-                var mappedData = _mapper.Map<PollInterruption>(interruptionViewModel);
+            { 
+              
+                var mappedData = _mapper.Map<PollInterruption>(interruptionViewModel); 
                 var result = await _EAMSService.AddPollInterruption(mappedData);
 
                 switch (result.Status)
@@ -3054,33 +3689,16 @@ namespace EAMS.Controllers
             }
         }
 
-
+        
         [HttpGet]
         [Route("GetPollInterruptionbyId")]
         [Authorize]
         public async Task<IActionResult> GetPollInterruptionbyId(string boothMasterId)
         {
-            PollInterruption? data = await _EAMSService.GetPollInterruptionbyId(boothMasterId);
-            PollInterruption pollInterruptionData = new PollInterruption();
-            if (data == null)
-            {
-
-                pollInterruptionData.BoothMasterId = Convert.ToInt32(boothMasterId);
-                pollInterruptionData.Flag = "Fresh";
-                pollInterruptionData.IsPollInterrupted = false;
-
-            }
-            else
-            {
-                pollInterruptionData = data;
-
-            }
+            var pollInterruptionData = await _EAMSService.GetPollInterruptionbyId(boothMasterId);
 
             return Ok(pollInterruptionData);
-
         }
-
-
         [HttpGet]
         [Route("GetPollInterruptionHistoryById")]
         [Authorize]
@@ -3095,8 +3713,6 @@ namespace EAMS.Controllers
             {
                 return BadRequest("No Data Found !");
             }
-
-
         }
 
         [HttpGet]
@@ -3159,7 +3775,35 @@ namespace EAMS.Controllers
             }
 
         }
+
+        [HttpGet]
+        [Route("GetPollInterruptionDashboardCount")]
+        [Authorize]
+        public async Task<IActionResult> GetPollInterruptionDashboardCount()
+        {
+            ClaimsIdentity claimsIdentity = User.Identity as ClaimsIdentity;
+            var rolesClaim = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role");
+            var roles = rolesClaim?.Value;
+
+            var stateMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            int stateMasterId = int.Parse(stateMasterIdString);
+
+            var electionTypeMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
+            int electionTypeMasterId = int.Parse(electionTypeMasterIdString);
+
+            var districtMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value;
+            int? districtMasterId = !string.IsNullOrEmpty(districtMasterIdString) ? int.Parse(districtMasterIdString) : (int?)null;
+
+            var assemblyMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId")?.Value;
+            int? assemblyMasterId = !string.IsNullOrEmpty(assemblyMasterIdString) ? int.Parse(assemblyMasterIdString) : (int?)null;
+
+            var fourthLevelHMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "FourthLevelHMasterId")?.Value;
+            int? fourthLevelHMasterId = !string.IsNullOrEmpty(fourthLevelHMasterIdString) ? int.Parse(fourthLevelHMasterIdString) : (int?)null;
+            var eventDashboardCount = await _EAMSService.GetPollInterruptionDashboardCount(roles, electionTypeMasterId, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);
+            return Ok(eventDashboardCount);
+        }
         #endregion
+
 
         #region PSO Form
 
@@ -3939,6 +4583,42 @@ namespace EAMS.Controllers
 
         #endregion
 
+        #region Stream-GetDashBoardCount
+        [HttpGet("stream-dashboard-count")]
+        [Authorize]
+        public async Task StreamDashboardCount(CancellationToken cancellationToken)
+        {
+            // Set the response headers for Server-Sent Events
+            Response.Headers.Append("Content-Type", "text/event-stream");
+            await Response.Body.FlushAsync(cancellationToken);
+
+            ClaimsIdentity claimsIdentity = User.Identity as ClaimsIdentity;
+            _logger.LogInformation("stream-dashboard-count -Under Request");
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                _logger.LogInformation("stream-dashboard-count -Under Working");
+                // Fetch the latest dashboard count data
+                var dashboardRecord = await _EAMSService.GetDashBoardCount(claimsIdentity);
+                _logger.LogInformation("stream-dashboard-count -Under query");
+                // Convert data to JSON format and send as SSE event
+                var jsonData = System.Text.Json.JsonSerializer.Serialize(dashboardRecord);
+                var message = $"data: {jsonData}\n\n";
+
+                byte[] data = System.Text.Encoding.UTF8.GetBytes(message);
+                await Response.Body.WriteAsync(data, 0, data.Length, cancellationToken);
+                _logger.LogInformation("stream-dashboard-count -Under Writing" + message);
+
+                // Flush to ensure the data is sent immediately
+                await Response.Body.FlushAsync(cancellationToken);
+                _logger.LogInformation("stream-dashboard-count -Under Flushed");
+
+                // Optional: Set a delay to control event frequency
+                await Task.Delay(30000, cancellationToken); // 30 seconds delay
+            }
+        }
+        #endregion
+
         #region GetDashBoardCount
         [HttpGet]
         [Route("GetDashBoardCount")]
@@ -3948,6 +4628,34 @@ namespace EAMS.Controllers
             ClaimsIdentity claimsIdentity = User.Identity as ClaimsIdentity;
 
             var getDashboardRecord = await _EAMSService.GetDashBoardCount(claimsIdentity);
+            return Ok(getDashboardRecord);
+        }
+
+        [HttpGet]
+        [Route("GetEventActivityDashBoardCount")]
+        [Authorize]
+        public async Task<IActionResult> GetEventActivityDashBoardCount()
+        {
+            ClaimsIdentity claimsIdentity = User.Identity as ClaimsIdentity;
+            var rolesClaim = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role");
+            var roles = rolesClaim?.Value;
+
+            var stateMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            int stateMasterId = int.Parse(stateMasterIdString);
+
+            var electionTypeMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
+            int electionTypeMasterId = int.Parse(electionTypeMasterIdString);
+
+            var districtMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value;
+            int? districtMasterId = !string.IsNullOrEmpty(districtMasterIdString) ? int.Parse(districtMasterIdString) : (int?)null;
+
+            var assemblyMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId")?.Value;
+            int? assemblyMasterId = !string.IsNullOrEmpty(assemblyMasterIdString) ? int.Parse(assemblyMasterIdString) : (int?)null;
+
+            var fourthLevelHMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "FourthLevelHMasterId")?.Value;
+            int? fourthLevelHMasterId = !string.IsNullOrEmpty(fourthLevelHMasterIdString) ? int.Parse(fourthLevelHMasterIdString) : (int?)null;
+
+            var getDashboardRecord = await _EAMSService.GetEventActivityDashBoardCount(roles, electionTypeMasterId, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);
             return Ok(getDashboardRecord);
         }
         #endregion
@@ -4408,7 +5116,7 @@ namespace EAMS.Controllers
         #region Election Type Master
         [HttpGet]
         [Route("GetElectionType")]
-        [Authorize]
+        // [Authorize]
         public async Task<IActionResult> GetAllElectionTypes()
         {
             var elecTypeList = await _EAMSService.GetAllElectionTypes();  // Corrected to await the asynchronous method
@@ -4431,6 +5139,347 @@ namespace EAMS.Controllers
         }
 
         #endregion
+
+        #region AROResult Master
+
+        [HttpPost]
+        [Route("AddAROResult")]
+        public async Task<IActionResult> AddAROResult(AROResultMasterViewModel fieldOfficerViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+
+                var mappedData = _mapper.Map<AROResultMaster>(fieldOfficerViewModel);
+                var isUniqueMobile = await _EAMSService.IsMobileNumberUnique(fieldOfficerViewModel.AROMobile);
+                if (isUniqueMobile.IsSucceed == false)
+                {
+                    return BadRequest(isUniqueMobile.Message);
+                }
+                var result = await _EAMSService.AddAROResult(mappedData);
+
+                switch (result.Status)
+                {
+                    case RequestStatusEnum.OK:
+                        return Ok(result.Message);
+                    case RequestStatusEnum.BadRequest:
+                        return BadRequest(result.Message);
+                    case RequestStatusEnum.NotFound:
+                        return NotFound(result.Message);
+
+                    default:
+                        return StatusCode(500, "Internal Server Error");
+
+                }
+            }
+            else
+            {
+                return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
+            }
+        }
+
+        [HttpPut]
+        [Route("UpdateAROResult")]
+        public async Task<IActionResult> UpdateAROResult(UpdateAROResultViewModel updateAROResultViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                var mappedData = _mapper.Map<AROResultMaster>(updateAROResultViewModel);
+
+                var result = await _EAMSService.UpdateAROResult(mappedData);
+                switch (result.Status)
+                {
+                    case RequestStatusEnum.OK:
+                        return Ok(result.Message);
+                    case RequestStatusEnum.BadRequest:
+                        return BadRequest(result.Message);
+                    case RequestStatusEnum.NotFound:
+                        return NotFound(result.Message);
+
+                    default:
+                        return StatusCode(500, "Internal Server Error");
+                }
+
+
+
+            }
+            else
+            {
+                return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
+            }
+        }
+
+        [HttpGet]
+        [Route("GetAROResultById")]
+        public async Task<IActionResult> GetAROResultById(int aroMasterId)
+        {
+            var foRecord = await _EAMSService.GetAROResultById(aroMasterId);
+            var mappedData = _mapper.Map<ResultListViewModel>(foRecord);
+            if (mappedData != null)
+            {
+
+
+
+                return Ok(mappedData);
+            }
+            else
+            {
+                return NotFound($"[{mappedData}] not exist");
+            }
+
+        }
+
+
+        [HttpGet]
+        [Route("GetAROListById")]
+        public async Task<IActionResult> GetAROListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        {
+            var aroList = await _EAMSService.GetAROListById(stateMasterId, districtMasterId, assemblyMasterId);  // Corrected to await the asynchronous method
+            if (aroList != null)
+            {
+                var data = new
+                {
+                    count = aroList.Count,
+                    data = aroList
+                };
+                return Ok(data);
+            }
+            else
+            {
+                return BadRequest("No Record Found");
+            }
+
+        }
+        /// <summary>
+        /// This API adds an entry in the ARO master table, allowing the RO to proceed with result declaration. 
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("IsRDProfileUpdated")]
+        [Authorize]
+        public async Task<IActionResult> IsRDProfileUpdated(int aroMasterId)
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return BadRequest("UserId not found in the token.");
+            }
+
+            var result = await _EAMSService.IsRDProfileUpdated(aroMasterId, userId);
+            return Ok(result);
+        }
+
+        #endregion
+
+        #region  RO Panchayat Mapping
+        [HttpPost]
+        [Route("PanchayatMapping")]
+        [Authorize]
+        public async Task<IActionResult> PanchayatMapping(PanchayatMappingViewModel panchayatMappingViewModel)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var errorMessage = ModelState.Values.SelectMany(d => d.Errors)
+                                                         .Select(d => d.ErrorMessage)
+                                                         .FirstOrDefault();
+                    return BadRequest(errorMessage);
+                }
+
+                if (IsValidPanchayatMappingRequest(panchayatMappingViewModel))
+                {
+                    var fourthLevels = panchayatMappingViewModel.FourthLevelHMasterId.Select(fLevelMasterId => new FourthLevelH
+                    {
+                        FourthLevelHMasterId = fLevelMasterId,
+                        StateMasterId = panchayatMappingViewModel.StateMasterId,
+                        DistrictMasterId = panchayatMappingViewModel.DistrictMasterId,
+                        AssemblyMasterId = panchayatMappingViewModel.AssemblyMasterId,
+                        ElectionTypeMasterId = panchayatMappingViewModel.ElectionTypeMasterId,
+
+                        AROAssignedBy = panchayatMappingViewModel.AssginedType == "ARO" ? panchayatMappingViewModel.AssignedBy : null,
+                        IsAssignedARO = panchayatMappingViewModel.AssginedType == "ARO" ? panchayatMappingViewModel.IsAssigned : false,
+                        AssignedToARO = panchayatMappingViewModel.AssginedType == "ARO" ? panchayatMappingViewModel.AssignedTo : null,
+
+                        ROAssignedBy = panchayatMappingViewModel.AssginedType == "RO" ? panchayatMappingViewModel.AssignedBy : null,
+                        AssignedToRO = panchayatMappingViewModel.AssginedType == "RO" ? panchayatMappingViewModel.AssignedTo : null,
+                        IsAssignedRO = panchayatMappingViewModel.AssginedType == "RO" ? panchayatMappingViewModel.IsAssigned : false,
+
+                    }).ToList();
+
+                    var result = await _EAMSService.PanchayatMapping(fourthLevels);
+                    return HandleResult(result);
+                }
+
+                return BadRequest(new Response { Status = RequestStatusEnum.BadRequest, Message = "Please Check the Parameters" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"BoothMapping: {ex.Message}");
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
+
+        // Helper methods for better readability and maintainability
+        private bool IsValidPanchayatMappingRequest(PanchayatMappingViewModel viewModel)
+        {
+            return viewModel.FourthLevelHMasterId != null && viewModel.FourthLevelHMasterId.Any() &&
+                   viewModel.IsAssigned && !string.IsNullOrWhiteSpace(viewModel.AssignedTo);
+        }
+
+
+        [HttpPut]
+        [Route("ReleasePanchayat")]
+        [Authorize]
+        public async Task<IActionResult> ReleasePanchayat(PanchayatReleaseViewModel panchayatReleaseViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var mapperdata = _mapper.Map<FourthLevelH>(panchayatReleaseViewModel);
+                    if (panchayatReleaseViewModel.AssginedType == "RO")
+                    {
+                        mapperdata.IsAssignedRO = panchayatReleaseViewModel.IsAssigned;
+                    }
+                    else
+                    {
+                        mapperdata.IsAssignedARO = panchayatReleaseViewModel.IsAssigned;
+                    }
+                    var boothReleaseResponse = await _EAMSService.ReleasePanchayat(mapperdata);
+
+                    return HandleResult(boothReleaseResponse);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return BadRequest(ex.Message);
+                }
+
+            }
+
+
+            else
+            {
+                return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
+            }
+        }
+
+        [HttpGet]
+        [Route("GetPanchayatListByROId")]
+        public async Task<IActionResult> GetPanchayatListByROId(int stateMasterId, int districtMasterId, int assemblyMasterId, string roId, string assginedType)
+        {
+            var panchayatList = await _EAMSService.GetPanchayatListByROId(stateMasterId, districtMasterId, assemblyMasterId, roId, assginedType);
+            var getUnassignedPanchayatList = await _EAMSService.GetUnassignedPanchayatListById(stateMasterId, districtMasterId, assemblyMasterId, assginedType);
+            var data = new
+            {
+                AssignedCount = panchayatList.Count,
+                UnAssignedCount = getUnassignedPanchayatList.Count,
+                Assigned = panchayatList,
+                Unassigned = getUnassignedPanchayatList
+            };
+            return Ok(data);
+        }
+
+        [HttpGet]
+        [Route("GetFourthLevelListByAROId")]
+        [Authorize]
+        public async Task<IActionResult> GetFourthLevelListByAROId()
+        {
+            var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
+            int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
+            int districtMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("DistrictMasterId"));
+            int assemblyMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AssemblyMasterId"));
+            int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
+            string roId = userClaims.GetValueOrDefault("AROMasterId");
+            string assginedType = "ARO";
+
+            var panchayatList = await _EAMSService.GetFourthLevelListByAROId(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId, roId, assginedType);
+            //var getUnassignedPanchayatList = await _EAMSService.GetUnassignedPanchayatListById(stateMasterId, districtMasterId, assemblyMasterId, assginedType);
+            var data = new
+            {
+                AssignedCount = panchayatList.Count,
+                //UnAssignedCount = getUnassignedPanchayatList.Count,
+                Assigned = panchayatList,
+                //Unassigned = getUnassignedPanchayatList
+            };
+            return Ok(data);
+        }
+        #endregion 
+
+        #region Handle API Response
+        private IActionResult HandleResult(Response result)
+        {
+            return result.Status switch
+            {
+                RequestStatusEnum.OK => Ok(result.Message),
+                RequestStatusEnum.BadRequest => BadRequest(result.Message),
+                RequestStatusEnum.NotFound => NotFound(result.Message),
+                _ => StatusCode(500, "Internal Server Error"),
+            };
+        }
+        #endregion
+
+        /// <summary>
+        /// This API checks for dependencies in descending order before performing the operation.
+        /// </summary>
+        /// <returns></returns>
+
+        [HttpGet("IsMasterEditable")]
+        public async Task<IActionResult> IsMasterEditable(int masterId, string type, int electionTypeMasterId)
+        {
+            if (masterId < 0)
+            {
+                return BadRequest("masterId not found.");
+            }
+
+            var result = await _EAMSService.IsMasterEditable(masterId, type, electionTypeMasterId);
+            return Ok(result);
+        }
+
+
+        //[HttpPost("PushDisasterEvent")]
+        //public async Task<IActionResult> PushDisasterEvent()
+        //{
+        //    // Step 1: Fetch all field officers matching the criteria
+        //    var getFieldAllOfficerMaster = await _EAMSService.GetFieldAllOfficerMaster();
+
+        //    // Step 2: Process records in parallel and collect the ElectionInfoMaster instances
+        //    var electionInfoTasks = getFieldAllOfficerMaster.SelectMany(disaster =>
+        //    {
+        //        // Create a list of tasks, one for each BoothMasterId in the disaster
+        //        return disaster.BoothMasterId.Select(boothId =>
+        //        {
+        //            // Create and return ElectionInfoMaster for each BoothMasterId
+        //            var electionInfo = new ElectionInfoMaster
+        //            {
+        //                StateMasterId = disaster.StateMasterId,
+        //                ElectionTypeMasterId = disaster.ElectionTypeMasterId,
+        //                DistrictMasterId = disaster.DistrictMasterId,
+        //                AssemblyMasterId = disaster.AssemblyMasterId, 
+        //                BoothMasterId = boothId,
+        //                FOUserId = disaster.FieldOfficerMasterId.ToString(),
+        //                AROUserId = null,
+        //                ElectionInfoStatus = false,
+        //                EventMasterId = 1,
+        //                IsPartyDispatched = true,
+        //                NoOfPollingAgents = null,
+        //                IsVoterInQueue = false,
+        //                EDC = null,
+        //                EventABBR = "PD",
+        //                EventSequence = 1,
+        //                EventName = "Party Dispatched",
+        //                EventStatus = true
+        //            };
+
+        //            return electionInfo;
+        //        });
+        //    }).ToList();
+
+        //    // Step 3: Save the ElectionInfoMaster list to the database
+        //    var getList= electionInfoTasks.ToList();
+        //    var result = await _EAMSService.PushDisasterEvent(getList);
+        //    return Ok(electionInfoTasks.Count);
+        //}
+
 
     }
 }

@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using EAMS.AuthViewModels;
 using EAMS.ViewModels;
+using EAMS_ACore;
 using EAMS_ACore.AuthInterfaces;
 using EAMS_ACore.AuthModels;
 using EAMS_ACore.HelperModels;
+using EAMS_ACore.Models.ElectionType;
 using LBPAMS.AuthViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,13 +18,13 @@ namespace EAMS.Controllers
     {
         private readonly IAuthService _authService;
         private readonly IMapper _mapper;
-        private readonly ILogger<EAMSAuthController> _logger; 
-        public EAMSAuthController(IAuthService authService, IMapper mapper, ILogger<EAMSAuthController> logger )
+        private readonly ILogger<EAMSAuthController> _logger;
+        public EAMSAuthController(IAuthService authService, IMapper mapper, ILogger<EAMSAuthController> logger)
         {
             _authService = authService;
             _mapper = mapper;
             _logger = logger;
-            
+
         }
 
         #region Register
@@ -35,9 +37,8 @@ namespace EAMS.Controllers
             {
                 if (!ModelState.IsValid)
                     return BadRequest("Invalid payload");
-                var mappedData = _mapper.Map<UserRegistration>(registerViewModel);
-                var roleId = registerViewModel.RoleId;
-                var registerResult = await _authService.RegisterAsync(mappedData, roleId);
+                var mappedData = _mapper.Map<UserRegistration>(registerViewModel); 
+                var registerResult = await _authService.RegisterAsync(mappedData, registerViewModel.RoleId);
                 if (registerResult.IsSucceed == false)
                 {
                     return BadRequest(registerResult.Message);
@@ -55,11 +56,50 @@ namespace EAMS.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
+ 
+        [HttpPut] 
+        [Route("SwitchDashboardUser")]
+        [Authorize]
+        public async Task<IActionResult> SwitchDashboardUser( SwitchDashboardUserViewModel switchDashboardUserViewModel)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
 
+                // Assuming you have a logged-in user, you can fetch their ID from the current context
+                var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId").Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized("User doesn't exist.");
+                }
+                // Validate the new ElectionTypeMasterId
+                if (switchDashboardUserViewModel.ElectionTypeMasterId <= 0)
+                {
+                    return BadRequest("ElectionType doesn't exist.");
+                }
+                // Call the service to update the mobile number
+                var updateResult = await _authService.SwitchDashboardUser(userId, switchDashboardUserViewModel.ElectionTypeMasterId);
+
+                if (!updateResult.IsSucceed)
+                {
+                    return BadRequest(updateResult);
+                }
+
+                return Ok(updateResult);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"SwitchDashboardUser: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while Switching Dashboard User.");
+            }
+        }
+       
         #endregion
 
         #region Login
-     
+
 
         [HttpPost]
         [Route("login")]
@@ -128,6 +168,7 @@ namespace EAMS.Controllers
                 return StatusCode(500, "Internal Server Error");
             }
         }
+
         [HttpGet]
         [Route("GetRoles")]
         [Authorize]
@@ -215,9 +256,8 @@ namespace EAMS.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"RefreshToken: {ex.Message}");
-
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                 
+                return null;
             }
         }
         #endregion
@@ -273,12 +313,12 @@ namespace EAMS.Controllers
         #region DashBoardProfile
         [HttpGet]
         [Route("GetDashboardProfile")]
-        [Authorize] 
+        [Authorize]
         public async Task<IActionResult> GetDashboardProfile()
         {
-            var soId = User.Claims.FirstOrDefault(c => c.Type == "UserId").Value;
-            var soMasterId = Convert.ToInt32(User.Claims.FirstOrDefault(c => c.Type == "StateMasterId").Value);
-            var userRecord = await _authService.GetDashboardProfile(soId, soMasterId);
+            var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId").Value;
+            var stateMasterId = Convert.ToInt32(User.Claims.FirstOrDefault(c => c.Type == "StateMasterId").Value);
+            var userRecord = await _authService.GetDashboardProfile(userId, stateMasterId);
 
             if (userRecord is not null)
 
@@ -335,21 +375,24 @@ namespace EAMS.Controllers
         #region ForgetPassword && ResetPasswordViewModel    
         [HttpPost]
         [Route("ForgetPassword")]
-        //[Authorize]
         public async Task<IActionResult> ForgetPassword(ForgetPasswordViewModel forgetPassword)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var mapped = _mapper.Map<ForgetPasswordModel>(forgetPassword);
-                var result = await _authService.ForgetPassword(mapped);
+                return BadRequest("Invalid data provided.");
+            }
+
+            var mapped = _mapper.Map<ForgetPasswordModel>(forgetPassword);
+            var result = await _authService.ForgetPassword(mapped);
+
+            if (result.IsSucceed)
+            {
                 return Ok(result.Message);
             }
-            else
-            {
 
-            }
-            return Ok("Under Development");
+            return BadRequest(result.Message);
         }
+
         [HttpPost]
         [Route("ResetPassword")]
         [Authorize]
@@ -390,6 +433,30 @@ namespace EAMS.Controllers
                 return BadRequest();
             }
 
+        }
+
+        [HttpPost]
+        [Route("UpdateLockoutUser")]
+        [Authorize]
+        public async Task<IActionResult> UpdateLockoutUser(UpdateLockoutUserViewModel updateLockoutUserViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                var mappedData = _mapper.Map<UpdateLockoutUser>(updateLockoutUserViewModel);
+                var result = await _authService.UpdateLockoutUser(mappedData);
+                if (result)
+                {
+                    return Ok(new { message = "Lockout updated successfully." });
+                }
+                else
+                {
+                    return NotFound(new { message = "User not found." });
+                }
+            }
+            else
+            {
+                return BadRequest(new { message = "Invalid input." });
+            }
         }
         #endregion
 
@@ -505,6 +572,26 @@ namespace EAMS.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while updating the mobile number.");
             }
         }
+        #endregion 
+
+        #region  GetROUserListByAssemblyId
+        [HttpGet]
+        [Route("GetROUserListByAssemblyId")]
+        public async Task<IActionResult> GetROUserListByAssemblyId(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        {
+            // Get the list of RO users based on the provided parameters
+            var roUserList = await _authService.GetROUserListByAssemblyId(stateMasterId, districtMasterId, assemblyMasterId);
+
+            // If no users found, return 404 Not Found
+            if (roUserList == null || !roUserList.Any())
+            {
+                return NotFound(new { Message = "No users with the role RO found for the specified parameters." });
+            }
+
+            // Return the list of RO users with a 200 OK response
+            return Ok(roUserList);
+        }
+
         #endregion
     }
 }

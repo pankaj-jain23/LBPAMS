@@ -41,7 +41,7 @@
             set;
         }
 
-        public string? Option1
+        public string? Age
         {
 
             get; set;
@@ -56,6 +56,11 @@
             get;
             set;
         }
+        public IFormFile? AffidavitPdf
+        {
+            get;
+            set;
+        }
         public string CandidateName
         {
             get;
@@ -66,7 +71,16 @@
             get;
             set;
         }
-
+        public bool IsUnOppossed
+        {
+            get;
+            set;
+        }
+        public string? PartyName
+        {
+            get;
+            set;
+        }
     }
     public class UpdateKycViewModel
     {
@@ -115,7 +129,7 @@
             set;
         }
 
-        public string? Option1
+        public string? Age
         {
 
             get; set;
@@ -130,6 +144,11 @@
             get;
             set;
         }
+        public IFormFile? AffidavitPdf
+        {
+            get;
+            set;
+        }
         public string CandidateName
         {
             get;
@@ -140,6 +159,15 @@
             get;
             set;
         }
-
+        public bool IsUnOppossed
+        {
+            get;
+            set;
+        }
+        public string? PartyName
+        {
+            get;
+            set;
+        }
     }
 }

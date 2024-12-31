@@ -38,11 +38,17 @@
             get;
             set;
         }
-       
+
 
         public string? GPPanchayatWardsCategory { get; set; }
 
         public bool IsStatus { get; set; }
+        public bool IsCC { get; set; }
+        public bool IsNN { get; set; }
+        public int? Male { get; set; }
+        public int? Female { get; set; }
+        public int? Transgender { get; set; }
+        public int? TotalVoters { get; set; }
 
     }
     public class UpdateGPPanchayatWardsViewModel
@@ -87,11 +93,16 @@
             get;
             set;
         }
-        
+
         public string? GPPanchayatWardsCategory { get; set; }
 
         public bool IsStatus { get; set; }
-
+        public bool IsCC { get; set; }
+        public bool IsNN { get; set; }
+        public int? Male { get; set; }
+        public int? Female { get; set; }
+        public int? Transgender { get; set; }
+        public int? TotalVoters { get; set; }
     }
 
     public class ListGPPanchayatWardsViewModel
@@ -135,9 +146,21 @@
             set;
         }
         public string FourthLevelHName { get; set; }
-       
+
         public string? GPPanchayatWardsCategory { get; set; }
 
         public bool IsStatus { get; set; }
+        public bool IsCC { get; set; }
+        public bool IsNN { get; set; }
+        public int? Male { get; set; }
+        public int? Female { get; set; }
+        public int? Transgender { get; set; }
+        public int? TotalVoters { get; set; }
+    }
+    public class GPPanchListViewModel
+    {
+        public int GPPanchayatWardsMasterId { get; set; }
+        public string GPPanchayatWardsName { get; set; }
+        public int GPPanchayatWardsCode { get; set; }
     }
 }

@@ -62,6 +62,11 @@
             get;
             set;
         }
+        public string? AffidavitPdfPath
+        {
+            get;
+            set;
+        }
         public string CandidateName
         {
             get;
@@ -71,6 +76,16 @@
         {
             get;
             set;
+        }
+        public bool IsUnOppossed
+        {
+            get;
+            set;
+        }
+        public string? Age
+        {
+
+            get; set;
         }
     }
 

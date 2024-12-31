@@ -8,6 +8,10 @@
         public string Code { get; set; }
         public string Name { get; set; }
         public string DistrictName { get; set; }
+        public string AssemblyName { get; set; }
+        public string HierarchyName { get; set; }
+        public string HierarchyCategory { get; set; }
+        public string PSZonePanchayatName { get; set; }
         public string LocationName { get; set; }
         public int? TotalNumberOfBooths { get; set; }
         public int? TotalNumberOfBoothsEntered { get; set; }
@@ -16,6 +20,8 @@
         public int? Trans { get; set; }
         public int? Total { get; set; }
         public bool IsStatus { get; set; }
+        public bool IsCC { get; set; }
+        public bool IsNN { get; set; }
     }
 
 }

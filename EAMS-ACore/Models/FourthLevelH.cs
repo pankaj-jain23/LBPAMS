@@ -68,6 +68,19 @@ namespace EAMS_ACore.Models
         public DateTime? HierarchyDeletedAt { get; set; }
         public bool HierarchyStatus { get; set; }
         public string? SecondLanguage { get; set; }
+        public string? AssignedToRO { get; set; }
+        public bool IsAssignedRO { get; set; }
+        public string? AssignedToARO { get; set; }
+        public bool IsAssignedARO { get; set; }
+        public string? ROAssignedBy { get; set; }
+        public string? AROAssignedBy { get; set; }
+        public string? AssginedType { get; set; }//For Mapping of RO And ARO. RO is Portal User, ARO is Mobile User.
+        public bool IsCC { get; set; }
+        public bool IsNN { get; set; }
+        public int? Male { get; set; }
+        public int? Female { get; set; }
+        public int? Transgender { get; set; }
+        public int? TotalVoters { get; set; }
         public virtual List<BoothMaster> BoothMaster
         {
             get;
@@ -85,5 +98,6 @@ namespace EAMS_ACore.Models
             get;
             set;
         }
+       
     }
 }

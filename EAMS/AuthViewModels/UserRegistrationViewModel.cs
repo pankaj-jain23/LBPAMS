@@ -44,5 +44,10 @@ namespace EAMS.AuthViewModels
             set;
         }
     }
+    public class SwitchDashboardUserViewModel
+    {
+        [Required]
+        public int ElectionTypeMasterId { get; set; }
+    }
 
 }

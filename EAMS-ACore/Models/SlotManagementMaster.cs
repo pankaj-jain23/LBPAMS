@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using EAMS_ACore.HelperModels;
+using EAMS_ACore.IRepository;
+using System.ComponentModel.DataAnnotations;
 
 namespace EAMS_ACore.Models
 {
@@ -7,6 +9,7 @@ namespace EAMS_ACore.Models
         [Key]
         public int SlotManagementId { get; set; }
         public int StateMasterId { get; set; }
+        public int ElectionTypeMasterId { get; set; }
         public int EventMasterId { get; set; }
         public int SlotSequenceNumber { get; set; }
         public DateOnly StartDate { get; set; }
@@ -15,6 +18,8 @@ namespace EAMS_ACore.Models
         public TimeOnly? LockTime { get; set; }
         public bool IsLastSlot { get; set; }
         public DateTimeOffset SlotCreatedTime { get; set; } = DateTimeOffset.Now;
+
+        public bool IsVTEventTimeExtended { get; set; }
 
 
     }

@@ -1,12 +1,18 @@
 ﻿using AutoMapper;
 using EAMS.ViewModels;
 using EAMS.ViewModels.PublicModels;
+using EAMS.ViewModels.ReportViewModel;
 using EAMS_ACore;
 using EAMS_ACore.HelperModels;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.Models.PublicModels;
+using EAMS_ACore.ReportModels;
+using EAMS_BLL.Services;
 using LBPAMS.ViewModels.PublicModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.Design;
 
 namespace EAMS.Controllers
 {
@@ -29,16 +35,78 @@ namespace EAMS.Controllers
         [HttpPost("AddKYCDetails")]
         public async Task<IActionResult> AddKyc([FromForm] KycViewModel kycViewModel)
         {
-            if (kycViewModel.NominationPdf == null || kycViewModel.NominationPdf.Length == 0)
+            var uploadKycNomination = await UploadKycNominationPdfAsync(kycViewModel);
+
+            if (uploadKycNomination.IsSucceed == false)
             {
-                return BadRequest("PDF file is missing.");
+                return BadRequest(uploadKycNomination.Message);
             }
 
+            // Map the ViewModel to the Model
+            var kyc = _mapper.Map<Kyc>(kycViewModel);
+            var fullpathNameNomination = Path.Combine("kyc", uploadKycNomination.Message); // Nomination
+            kyc.NominationPdfPath = $"{fullpathNameNomination.Replace("\\", "/")}";
+
+            // ElectionTypeMasterId == 4 For "Municipal Corporation","Municipal Council" and "Nagar Panchayat"
+            if (kycViewModel.ElectionTypeMasterId == 4 || kycViewModel.ElectionTypeMasterId == 5 || kycViewModel.ElectionTypeMasterId == 6)
+            {
+                var uploadKycAffidavit = await UploadKycAffidavitPdfAsync(kycViewModel);
+
+                if (uploadKycAffidavit.IsSucceed == false)
+                {
+                    return BadRequest(uploadKycAffidavit.Message);
+                }
+                var fullpathNameAffidavit = Path.Combine("kyc", uploadKycAffidavit.Message); // Nomination
+                kyc.AffidavitPdfPath = $"{fullpathNameAffidavit.Replace("\\", "/")}";
+
+            }
+            // Call your service method to add KYC details
+            var result = await _eamsService.AddKYCDetails(kyc);
+
+            // Check if adding GP Voter details was successful
+            if (!result.IsSucceed)
+            {
+                return BadRequest(result.Message);
+
+            }
+            return Ok(result.Message);
+        }
+
+        private async Task<ServiceResponse> UploadKycNominationPdfAsync(KycViewModel kycViewModel)
+        {
+            if (kycViewModel.NominationPdf == null || kycViewModel.NominationPdf.Length == 0)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "PDF file is missing"
+                };
+
+            }
+
+            if (!kycViewModel.NominationPdf.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase))
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "Only PDF files are allowed."
+                };
+
+            }
+            const long MaxFileSize = 7 * 1024 * 1024;
+
+            // Check if the file exceeds the maximum size
+            if (kycViewModel.NominationPdf.Length > MaxFileSize)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "File size exceeds the 7 MB limit"
+                };
+            }
             // Generate a unique file name for the PDF file
             var fileName = Guid.NewGuid().ToString() + Path.GetExtension(kycViewModel.NominationPdf.FileName);
             var folderPath = @"C:\inetpub\wwwroot\LBPAMSDOC\kyc";
-
-
             var filePath = Path.Combine(folderPath, fileName);
 
             // Ensure the directory exists
@@ -51,25 +119,163 @@ namespace EAMS.Controllers
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
                 await kycViewModel.NominationPdf.CopyToAsync(stream);
+
             }
-
-            // Map the ViewModel to the Model
-            var kyc = _mapper.Map<Kyc>(kycViewModel);
-            var fullpathName = Path.Combine("kyc", fileName); // Store relative path
-            kyc.NominationPdfPath = $"{fullpathName.Replace("\\", "/")}";
-            // Call your service method to add KYC details
-            var result = await _eamsService.AddKYCDetails(kyc);
-
-            // Check if adding KYC details was successful
-            if (result.IsSucceed == true)
+            return new ServiceResponse() { IsSucceed = true, Message = fileName };
+        }
+        private async Task<ServiceResponse> UploadKycAffidavitPdfAsync(KycViewModel kycViewModel)
+        {
+            if (kycViewModel.AffidavitPdf == null || kycViewModel.AffidavitPdf.Length == 0)
             {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "PDF file is missing"
+                };
 
-                return Ok(new { Message = "KYC data added successfully" });
             }
-            else
+
+            if (!kycViewModel.AffidavitPdf.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase))
             {
-                return BadRequest("Failed to add KYC data.");
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "Only PDF files are allowed."
+                };
+
             }
+            const long MaxFileSize = 7 * 1024 * 1024;
+
+            // Check if the file exceeds the maximum size
+            if (kycViewModel.AffidavitPdf.Length > MaxFileSize)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "File size exceeds the 7 MB limit"
+                };
+            }
+            // Generate a unique file name for the PDF file
+            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(kycViewModel.AffidavitPdf.FileName);
+            var folderPath = @"C:\inetpub\wwwroot\LBPAMSDOC\kyc";
+            var filePath = Path.Combine(folderPath, fileName);
+
+            // Ensure the directory exists
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
+            }
+
+            // Save the file to the server
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await kycViewModel.AffidavitPdf.CopyToAsync(stream);
+
+            }
+            return new ServiceResponse() { IsSucceed = true, Message = fileName };
+        }
+
+        private async Task<ServiceResponse> UpdateKycNominationPdfAsync(UpdateKycViewModel updateKycViewModel)
+        {
+            if (updateKycViewModel.NominationPdf == null || updateKycViewModel.NominationPdf.Length == 0)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "PDF file is missing"
+                };
+
+            }
+
+            if (!updateKycViewModel.NominationPdf.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase))
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "Only PDF files are allowed."
+                };
+
+            }
+            const long MaxFileSize = 7 * 1024 * 1024;
+
+            // Check if the file exceeds the maximum size
+            if (updateKycViewModel.NominationPdf.Length > MaxFileSize)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "File size exceeds the 7 MB limit"
+                };
+            }
+            // Generate a unique file name for the PDF file
+            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(updateKycViewModel.NominationPdf.FileName);
+            var folderPath = @"C:\inetpub\wwwroot\LBPAMSDOC\kyc";
+            var filePath = Path.Combine(folderPath, fileName);
+
+            // Ensure the directory exists
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
+            }
+
+            // Save the file to the server
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await updateKycViewModel.NominationPdf.CopyToAsync(stream);
+
+            }
+            return new ServiceResponse() { IsSucceed = true, Message = fileName };
+        }
+        private async Task<ServiceResponse> UpdateKycAffidavitPdfAsync(UpdateKycViewModel updateKycViewModel)
+        {
+            if (updateKycViewModel.AffidavitPdf == null || updateKycViewModel.AffidavitPdf.Length == 0)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "PDF file is missing"
+                };
+
+            }
+
+            if (!updateKycViewModel.AffidavitPdf.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase))
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "Only PDF files are allowed."
+                };
+
+            }
+            const long MaxFileSize = 7 * 1024 * 1024;
+
+            // Check if the file exceeds the maximum size
+            if (updateKycViewModel.AffidavitPdf.Length > MaxFileSize)
+            {
+                return new ServiceResponse()
+                {
+                    IsSucceed = false,
+                    Message = "File size exceeds the 7 MB limit"
+                };
+            }
+            // Generate a unique file name for the PDF file
+            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(updateKycViewModel.AffidavitPdf.FileName);
+            var folderPath = @"C:\inetpub\wwwroot\LBPAMSDOC\kyc";
+            var filePath = Path.Combine(folderPath, fileName);
+
+            // Ensure the directory exists
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
+            }
+
+            // Save the file to the server
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await updateKycViewModel.AffidavitPdf.CopyToAsync(stream);
+
+            }
+            return new ServiceResponse() { IsSucceed = true, Message = fileName };
         }
 
         [HttpGet("GetKYCDetails")]
@@ -79,8 +285,6 @@ namespace EAMS.Controllers
 
             var request = HttpContext.Request;
             var baseUrl = $"{request.Scheme}://{request.Host}/LBPAMSDOC/kyc";
-
-
             var kycResponses = kycList.Select(kyc => new KycResponseViewModel
             {
                 KycMasterId = kyc.KycMasterId,
@@ -92,10 +296,14 @@ namespace EAMS.Controllers
                 GPPanchayatWardsMasterId = kyc.GPPanchayatWardsMasterId,
                 CandidateName = kyc.CandidateName,
                 FatherName = kyc.FatherName,
+                IsUnOppossed = kyc.IsUnOppossed,
+                Age = kyc.Age,
                 NominationPdfPath = !string.IsNullOrEmpty(kyc.NominationPdfPath)
                     ? $"{baseUrl}/{Path.GetFileName(kyc.NominationPdfPath)}"
                     : null,
-
+                AffidavitPdfPath = !string.IsNullOrEmpty(kyc.AffidavitPdfPath)
+                    ? $"{baseUrl}/{Path.GetFileName(kyc.AffidavitPdfPath)}"
+                    : null,
             }).ToList();
 
             return Ok(kycResponses);
@@ -105,79 +313,107 @@ namespace EAMS.Controllers
         [HttpPut("UpdateKycDetails")]
         public async Task<IActionResult> UpdateKyc([FromForm] UpdateKycViewModel updateKycViewModel)
         {
-
-            // Update properties of the existing KYC object (except NominationPdfPath)
             var mappedData = _mapper.Map<Kyc>(updateKycViewModel);
 
-            // Handle file upload (if applicable):
-            if (mappedData.NominationPdfPath != null && mappedData.NominationPdfPath.Length > 0)
+            if (updateKycViewModel.NominationPdf != null)
             {
-                // Generate a unique file name for the PDF file
-                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(updateKycViewModel.NominationPdf.FileName);
-                var folderPath = @"C:\inetpub\wwwroot\LBPAMSDOC\kyc";
-                var filePath = Path.Combine(folderPath, fileName);
+                var uploadKycNomination = await UpdateKycNominationPdfAsync(updateKycViewModel);
 
-                // Ensure the directory exists
-                if (!Directory.Exists(folderPath))
+                if (uploadKycNomination.IsSucceed == false)
                 {
-                    Directory.CreateDirectory(folderPath);
+                    return BadRequest(uploadKycNomination.Message);
                 }
+                var fullpathNameNomination = Path.Combine("kyc", uploadKycNomination.Message); // Nomination
+                mappedData.NominationPdfPath = $"{fullpathNameNomination.Replace("\\", "/")}";
 
-                // Save the new file to the server
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await updateKycViewModel.NominationPdf.CopyToAsync(stream);
-                }
 
-                // Update NominationPdfPath with the new file name
-                mappedData.NominationPdfPath = Path.Combine("kyc", fileName);
-
-                // Optionally, delete the old file if needed
-                if (!string.IsNullOrEmpty(mappedData.NominationPdfPath))
-                {
-                    var oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", mappedData.NominationPdfPath);
-                    if (System.IO.File.Exists(oldFilePath))
-                    {
-                        System.IO.File.Delete(oldFilePath);
-                    }
-                }
             }
 
-            // Call your service method to update KYC details
+            // ElectionTypeMasterId == 4 For "Municipal Corporation","Municipal Council" and "Nagar Panchayat"
+            if (updateKycViewModel.ElectionTypeMasterId == 4 || updateKycViewModel.ElectionTypeMasterId == 5 || updateKycViewModel.ElectionTypeMasterId == 6)
+            {
+                if (updateKycViewModel.AffidavitPdf != null)
+                {
+                    var uploadKycAffidavit = await UpdateKycAffidavitPdfAsync(updateKycViewModel);
+
+                    if (uploadKycAffidavit.IsSucceed == false)
+                    {
+                        return BadRequest(uploadKycAffidavit.Message);
+                    }
+                    var fullpathNameAffidavit = Path.Combine("kyc", uploadKycAffidavit.Message); // Nomination
+                    mappedData.AffidavitPdfPath = $"{fullpathNameAffidavit.Replace("\\", "/")}";
+
+                }
+
+            }
+
             var result = await _eamsService.UpdateKycDetails(mappedData);
 
-            if (result.IsSucceed == true)
+            if (result.IsSucceed)
             {
-                return Ok(new { Message = "KYC data updated successfully" });
+                return Ok(new { Message = "KYC data updated successfully." });
             }
             else
             {
-                return BadRequest("Failed to update KYC data.");
+                return BadRequest(result.Message);
+
+
             }
         }
 
         [HttpGet("GetKYCDetailByAssemblyId")]
-        public async Task<IActionResult> GetKYCDetailByAssemblyId(int electionType,int stateMasterId, int districtMasterId, int assemblyMasterId)
+        public async Task<IActionResult> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            var result = await _eamsService.GetKYCDetailByAssemblyId(electionType, stateMasterId, districtMasterId, assemblyMasterId);
+            var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+            var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
 
-            if (result != null)
-            {
-                var data = new
-                {
-                    count = result.Count,
-                    Sarpacnh = result.Where(k => k.GPPanchayatWardsMasterId == 0).ToList(),
-                    Panch = result.Where(k => k.GPPanchayatWardsMasterId != 0).ToList()
+            // Determine whether to call the method with user ID or not
+            var roresult = userRole?.Contains("RO") == true
+                ? await _eamsService.GetKYCDetailByAssemblyId(electionType, stateMasterId, districtMasterId, assemblyMasterId, userId)
+                : await _eamsService.GetKYCDetailByAssemblyId(electionType, stateMasterId, districtMasterId, assemblyMasterId);
 
-                };
-                return Ok(data);
-            }
-            else
+            if (roresult == null)
             {
                 return NotFound();
             }
+
+            // Prepare the response data
+            var data = new
+            {
+                count = roresult.Count,
+                Sarpacnh = roresult.Where(k => k.GPPanchayatWardsMasterId == 0).ToList(),
+                Panch = roresult.Where(k => k.GPPanchayatWardsMasterId != 0).ToList()
+            };
+
+            return Ok(data);
         }
-        
+
+
+        [HttpGet("GetKYCDetailByFourthAndWardId")]
+        public async Task<IActionResult> GetKYCDetailByFourthAndWardId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelMasterId, int? wardMasterId)
+        {
+
+
+            // Determine whether to call the method with user ID or not
+            var roresult = await _eamsService.GetKYCDetailByFourthAndWardId(electionType, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId, wardMasterId);
+
+            if (roresult == null)
+            {
+                return NotFound();
+            }
+
+            // Prepare the response data
+            var data = new
+            {
+                count = roresult.Count,
+                Sarpacnh = roresult.Where(k => k.GPPanchayatWardsMasterId == 0).ToList(),
+                Panch = roresult.Where(k => k.GPPanchayatWardsMasterId != 0).ToList()
+            };
+
+            return Ok(data);
+        }
+
+
         [HttpGet("GetKycById")]
         public async Task<IActionResult> GetKycById(int KycMasterId)
         {
@@ -187,7 +423,6 @@ namespace EAMS.Controllers
             }
             else
             {
-
 
                 var resutlt = await _eamsService.GetKycById(KycMasterId);
                 if (resutlt is not null)
@@ -223,7 +458,7 @@ namespace EAMS.Controllers
                 }
             }
         }
-       
+
         #endregion
 
         #region UnOpposed 
@@ -235,7 +470,12 @@ namespace EAMS.Controllers
             {
                 return BadRequest("PDF file is missing.");
             }
-
+            const long MaxFileSize = 7 * 1024 * 1024; // 7 MB in bytes
+            // Check if the file exceeds the maximum size
+            if (unOppoedViewModel.NominationPdf.Length > MaxFileSize)
+            {
+                return BadRequest($"File size exceeds the 7 MB limit.");
+            }
             // Generate a unique file name for the PDF file
             var fileName = Guid.NewGuid().ToString() + Path.GetExtension(unOppoedViewModel.NominationPdf.FileName);
             var folderPath = @"C:\inetpub\wwwroot\LBPAMSDOC\unopposed";
@@ -254,7 +494,7 @@ namespace EAMS.Controllers
             }
 
             // Map the ViewModel to the Model
-            var mappedData = _mapper.Map<UnOpposed>(unOppoedViewModel); 
+            var mappedData = _mapper.Map<UnOpposed>(unOppoedViewModel);
             var fullpathName = Path.Combine("unopposed", fileName); // Store relative path
             mappedData.NominationPdfPath = $"{fullpathName.Replace("\\", "/")}";
             // Call your service method to add KYC details
@@ -264,7 +504,7 @@ namespace EAMS.Controllers
             // Check if adding KYC details was successful
             if (result.IsSucceed == true)
             {
-                
+
                 return Ok(new { Message = "UnOpposed data added successfully" });
             }
             else
@@ -280,7 +520,7 @@ namespace EAMS.Controllers
 
             var request = HttpContext.Request;
             var baseUrl = $"{request.Scheme}://{request.Host}/LBPAMSDOC/unopposed";
-             
+
             var kycResponses = list.Select(unOpposed => new UnOpposedResponseViewModel
             {
                 UnOpposedMasterId = unOpposed.UnOpposedMasterId,
@@ -301,11 +541,11 @@ namespace EAMS.Controllers
 
             return Ok(kycResponses);
         }
-         
+
         [HttpGet("GetUnOpposedDetailsByAssemblyId")]
-        public async Task<IActionResult> GetUnOpposedDetailsByAssemblyId(int electionType,int stateMasterId, int districtMasterId, int assemblyMasterId )
+        public async Task<IActionResult> GetUnOpposedDetailsByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            var result = await _eamsService.GetUnOpposedDetailsByAssemblyId(electionType,stateMasterId, districtMasterId, assemblyMasterId);
+            var result = await _eamsService.GetUnOpposedDetailsByAssemblyId(electionType, stateMasterId, districtMasterId, assemblyMasterId);
 
             if (result != null)
             {
@@ -327,7 +567,12 @@ namespace EAMS.Controllers
         [HttpPut("UpdateUnOpposedDetails")]
         public async Task<IActionResult> UpdateUnOpposedDetails([FromForm] UpdateUnOpposedViewModel updateUnOpposedViewModel)
         {
-
+            const long MaxFileSize = 7 * 1024 * 1024; // 7 MB in bytes
+            // Check if the file exceeds the maximum size
+            if (updateUnOpposedViewModel.NominationPdf != null && updateUnOpposedViewModel.NominationPdf.Length > MaxFileSize)
+            {
+                return BadRequest($"File size exceeds the 7 MB limit.");
+            }
             // Update properties of the existing KYC object (except NominationPdfPath)
             var mappedData = _mapper.Map<UnOpposed>(updateUnOpposedViewModel);
 
@@ -400,7 +645,7 @@ namespace EAMS.Controllers
                 }
             }
         }
-      
+
         [HttpDelete("DeleteUnOpposedById")]
         public async Task<IActionResult> DeleteUnOpposedById(int unOpposedMasterId)
         {
@@ -433,7 +678,21 @@ namespace EAMS.Controllers
             {
                 return BadRequest("PDF file is missing.");
             }
+            if (gpVoterPdfViewModel.GPVoterPdf != null)
+            {
+                if (!gpVoterPdfViewModel.GPVoterPdf.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase) &&
+                    !Path.GetExtension(gpVoterPdfViewModel.GPVoterPdf.FileName).Equals(".pdf", StringComparison.OrdinalIgnoreCase))
+                {
+                    return BadRequest("Only PDF files are allowed.");
+                }
+            }
+            const long MaxFileSize = 10 * 1024 * 1024; // 10 MB in bytes
 
+            // Check if the file exceeds the maximum size
+            if (gpVoterPdfViewModel.GPVoterPdf.Length > MaxFileSize)
+            {
+                return BadRequest($"File size exceeds the 10 MB limit.");
+            }
             // Generate a unique file name for the PDF file
             var fileName = Guid.NewGuid().ToString() + Path.GetExtension(gpVoterPdfViewModel.GPVoterPdf.FileName);
             var staticFolderPath = @"C:\inetpub\wwwroot\LBPAMSDOC\GPVoter";
@@ -456,20 +715,19 @@ namespace EAMS.Controllers
             var mappedData = _mapper.Map<GPVoter>(gpVoterPdfViewModel);
             var fullpathName = Path.Combine("GPVoter", fileName);
             mappedData.GPVoterPdfPath = $"{fullpathName.Replace("\\", "/")}";
-            mappedData.GPVoterCreatedAt = DateTime.UtcNow; 
+            mappedData.GPVoterCreatedAt = DateTime.UtcNow;
             mappedData.GPVoterUpdatedAt = DateTime.UtcNow;
             mappedData.GPVoterDeletedAt = DateTime.UtcNow;
             var result = await _eamsService.AddGPVoterDetails(mappedData);
 
             // Check if adding GP Voter details was successful
-            if (result.IsSucceed)
+            if (!result.IsSucceed)
             {
-                return Ok(new { Message = "GP Voter data added successfully" });
+                return BadRequest(result.Message);
+
             }
-            else
-            {
-                return BadRequest("Failed to add GP Voter data.");
-            }
+            return Ok(result.Message);
+
         }
         [HttpPut("UpdateGPVoterDetails")]
         public async Task<IActionResult> UpdateGPVoterDetails([FromForm] UpdateGPVoterViewModel updateGPVoterViewModel)
@@ -480,7 +738,22 @@ namespace EAMS.Controllers
             {
                 return NotFound("GP Voter not found.");
             }
+            if (updateGPVoterViewModel.GPVoterPdf != null)
+            {
+                if (!updateGPVoterViewModel.GPVoterPdf.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase) &&
+                !Path.GetExtension(updateGPVoterViewModel.GPVoterPdf.FileName).Equals(".pdf", StringComparison.OrdinalIgnoreCase))
+                {
+                    return BadRequest("Only PDF files are allowed.");
+                }
+            }
+            // Define the maximum allowed size (7 MB)
+            const long MaxFileSize = 7 * 1024 * 1024; // 7 MB in bytes
 
+            // Check if the file exceeds the maximum size
+            if (updateGPVoterViewModel.GPVoterPdf != null && updateGPVoterViewModel.GPVoterPdf.Length > MaxFileSize)
+            {
+                return BadRequest($"File size exceeds the 7 MB limit.");
+            }
             // Map the ViewModel to the Model
             var mappedData = _mapper.Map<GPVoter>(updateGPVoterViewModel);
 
@@ -519,26 +792,19 @@ namespace EAMS.Controllers
                 // Update GPVoterPath with the new file name
                 mappedData.GPVoterPdfPath = Path.Combine("GPVoter", fileName).Replace("\\", "/");
             }
-            else
-            {
-                // If no new file is uploaded, retain the existing file path
-                mappedData.GPVoterPdfPath = existingGPVoter.GPVoterPdfPath;
-            }
 
             // Update the timestamp for when the record was updated
             mappedData.GPVoterUpdatedAt = DateTime.UtcNow;
 
             // Call your service method to update GP Voter details
             var result = await _eamsService.UpdateGPVoterDetails(mappedData);
+            // Check if adding GP Voter details was successful
+            if (!result.IsSucceed)
+            {
+                return BadRequest(result.Message);
 
-            if (result.IsSucceed)
-            {
-                return Ok(new { Message = "GP Voter data updated successfully" });
             }
-            else
-            {
-                return BadRequest("Failed to update GP Voter data.");
-            }
+            return Ok(result.Message);
         }
 
         [HttpGet("GetGPVoterById")]
@@ -561,24 +827,33 @@ namespace EAMS.Controllers
         }
 
         [HttpGet("GetGPVoterListById")]
-        public async Task<IActionResult> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
+        public async Task<IActionResult> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
         {
-            var result = await _eamsService.GetGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId);
+            var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+            var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
 
-            if (result.Count != 0 || result != null)
-            {
-                var data = new
-                {
-                    count = result.Count,
-                    gpVoter = result.Where(k => k.GPVoterMasterId != 0).ToList(),
 
-                };
-                return Ok(data);
-            }
-            else
+
+            // Determine whether to call the method with user ID or not
+            var result = userRole?.Contains("RO") == true
+                ? await _eamsService.GetGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId, userId)
+                : await _eamsService.GetGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId);
+
+
+
+            if (result == null)
             {
                 return NotFound();
             }
+
+            // Prepare the response data
+            var data = new
+            {
+                count = result.Count,
+                gpVoter = result,
+            };
+
+            return Ok(data);
         }
         [HttpDelete("DeleteGPVoterById")]
         public async Task<IActionResult> DeleteGPVoterById(int gpVoterMasterId)
@@ -601,31 +876,405 @@ namespace EAMS.Controllers
                 }
             }
         }
+
+
+        [HttpGet("GetVoterTypeListById")]
+        public async Task<IActionResult> GetVoterTypeListById()
+        {
+            var result = await _eamsService.GetVoterTypeListById();
+
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            // Prepare the response data
+            var data = new
+            {
+                count = result.Count,
+                voterType = result,
+            };
+
+            return Ok(data);
+        }
         #endregion
 
-        #region ResultDeclaration 
-
-        [HttpPost("AddResultDeclarationDetails")]
-        public async Task<IActionResult> AddResultDeclarationDetails([FromForm] ResultDeclarationViewModel resultDeclarationViewModel)
+        #region Result Declaration for Portal
+        [HttpPost("AddResultDeclarationForPortal")]
+        [Authorize]
+        public async Task<IActionResult> AddResultDeclarationForPortal(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId, ResultDeclarationViewModel resultDeclarationViewModel)
         {
-            var mappedData = _mapper.Map<ResultDeclaration>(resultDeclarationViewModel);
-            mappedData.ResultDecCreatedAt = DateTime.UtcNow;
-            mappedData.ResultDecUpdatedAt = DateTime.UtcNow;
-            mappedData.ResultDecDeletedAt = DateTime.UtcNow;
+            if (resultDeclarationViewModel.resultDeclarationLists == null || !resultDeclarationViewModel.resultDeclarationLists.Any())
+            {
+                return BadRequest("No data provided.");
+            }
+
+            // Retrieve claims efficiently
+            var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
+
+            string userId = userClaims.GetValueOrDefault("UserId").ToString();
+
+
+            var mappedData = _mapper.Map<List<ResultDeclaration>>(resultDeclarationViewModel.resultDeclarationLists);
+
+            // Assign common values
+            mappedData.ForEach(resultDeclaration =>
+            {
+                resultDeclaration.StateMasterId = stateMasterId;
+                resultDeclaration.DistrictMasterId = districtMasterId;
+                resultDeclaration.AssemblyMasterId = assemblyMasterId;
+                resultDeclaration.ElectionTypeMasterId = electionTypeMasterId;
+                resultDeclaration.ResultDeclaredByPortal = userId;
+            });
+
+            // Save the mapped data
             var result = await _eamsService.AddResultDeclarationDetails(mappedData);
 
-            if (result.IsSucceed == true)
+            // Handle the result
+            if (!result.IsSucceed)
             {
+                return BadRequest(result);
+            }
 
-                return Ok(new { Message = "Result Declaration data added successfully" });
+            return Ok(result);
+        }
+      
+        [HttpPut("UpdateResultDeclarationForPortal")]
+        [Authorize]
+        public async Task<IActionResult> UpdateResultDeclarationForPortal(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId, UpdateResultDeclarationViewModel updateResultDeclarationViewModel)
+        {
+            if (updateResultDeclarationViewModel == null)
+            {
+                return BadRequest("No data provided.");
+            }
+
+             
+            // Retrieve claims efficiently
+            var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
+
+            string userId = userClaims.GetValueOrDefault("UserId").ToString();
+
+            // Check if all assigned booths have polls ended
+            //var pollCheckResponse = await _eamsService.CheckIfAllBoothsPollEnded(fieldOfficerMasterId);
+
+            //if (!pollCheckResponse.IsSucceed)
+            //{
+            //    return BadRequest(pollCheckResponse.Message);
+            //}
+            // Map ViewModel to Entity
+            var mappedData = _mapper.Map<List<ResultDeclaration>>(updateResultDeclarationViewModel.updateResultDeclarationLists);
+
+            // Assign common values
+            mappedData.ForEach(resultDeclaration =>
+            {
+                resultDeclaration.StateMasterId = stateMasterId;
+                resultDeclaration.DistrictMasterId = districtMasterId;
+                resultDeclaration.AssemblyMasterId = assemblyMasterId;
+                resultDeclaration.ElectionTypeMasterId = electionTypeMasterId;
+                resultDeclaration.ResultDeclaredByPortal = userId;
+            });
+
+            // Save the mapped data
+            var result = await _eamsService.UpdateResultDeclarationForPortal(mappedData);
+
+            // Handle the result
+            if (!result.IsSucceed)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+
+        [HttpGet("GetResultByBoothId")]
+        //[Authorize]
+        public async Task<IActionResult> GetResultByBoothId(int boothMasterId)
+        {
+            if (boothMasterId is 0)
+            {
+                return BadRequest("Booth MasterId is Required");
+            }
+            var result = await _eamsService.GetResultByBoothId(boothMasterId);
+            if (result is null)
+            {
+                return BadRequest();
+            }
+            return Ok(result);
+
+        }
+
+
+        [HttpGet("GetResultByFourthLevelHMasterId")]
+        //[Authorize]
+        public async Task<IActionResult> GetResultByFourthLevelHMasterId(int fourthLevelHMasterId)
+        {
+            if (fourthLevelHMasterId is 0)
+            {
+                return BadRequest("Fourth Level H MasterId is Required");
+            }
+            var result = await _eamsService.GetResultByFourthLevelHMasterId(fourthLevelHMasterId);
+            if (result is null)
+            {
+                return BadRequest();
+            }
+            return Ok(result);
+
+        }
+
+        [HttpGet("GetResultHistoryByFourthLevelHMasterId")]
+        //[Authorize]
+        public async Task<IActionResult> GetResultHistoryByFourthLevelHMasterId(int fourthLevelHMasterId)
+        {
+            if (fourthLevelHMasterId is 0)
+            {
+                return BadRequest("Fourth Level H MasterId is Required");
+            }
+            var result = await _eamsService.GetResultHistoryByFourthLevelHMasterId(fourthLevelHMasterId);
+            if (result is null)
+            {
+                return BadRequest();
+            }
+            return Ok(result);
+
+        }
+
+        [HttpGet("GetBoothResultListByFourthLevelId")]
+        //[Authorize]
+        public async Task<IActionResult> GetBoothResultListByFourthLevelId(int fourthLevelHMasterId)
+        {
+            if (fourthLevelHMasterId is 0)
+            {
+                return BadRequest("Booth MasterId is Required");
+            }
+            var result = await _eamsService.GetBoothResultListByFourthLevelId(fourthLevelHMasterId);
+            if (result is null)
+            {
+                return BadRequest();
+            }
+            return Ok(result);
+
+        }
+        [HttpGet("GetResultByWardId")]
+        //[Authorize]
+        public async Task<IActionResult> GetResultByWardId(int wardMasterId)
+        {
+            if (wardMasterId is 0)
+            {
+                return BadRequest("Booth MasterId is Required");
+            }
+            var result = await _eamsService.GetResultByWardId(wardMasterId);
+            if (result is null)
+            {
+                return BadRequest();
+            }
+            return Ok(result);
+
+        }
+
+        [HttpGet("GetWardResultListByFourthLevelId")]
+        //[Authorize]
+        public async Task<IActionResult> GetWardResultListByFourthLevelId(int fourthLevelHMasterId)
+        {
+            if (fourthLevelHMasterId is 0)
+            {
+                return BadRequest("Booth MasterId is Required");
+            }
+            var result = await _eamsService.GetWardResultListByFourthLevelId(fourthLevelHMasterId);
+            if (result is null)
+            {
+                return BadRequest();
+            }
+            return Ok(result);
+
+        }
+        #endregion
+
+        #region ResultDeclaration For Mobile
+
+        [HttpPost("AddResultDeclarationDetails")]
+        [Authorize]
+        public async Task<IActionResult> AddResultDeclarationDetails(ResultDeclarationViewModel resultDeclarationViewModel)
+        {
+            if (resultDeclarationViewModel.resultDeclarationLists == null || !resultDeclarationViewModel.resultDeclarationLists.Any())
+            {
+                return BadRequest("No data provided.");
+            }
+
+            // Retrieve claims efficiently
+            var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
+            int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
+            int districtMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("DistrictMasterId"));
+            int assemblyMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AssemblyMasterId"));
+            int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
+            int fieldOfficerMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AROMasterId"));
+
+            // Check if all assigned booths have polls ended
+            //var pollCheckResponse = await _eamsService.CheckIfAllBoothsPollEnded(fieldOfficerMasterId);
+
+            //if (!pollCheckResponse.IsSucceed)
+            //{
+            //    return BadRequest(pollCheckResponse.Message);
+            //}
+            // Map ViewModel to Entity
+            var mappedData = _mapper.Map<List<ResultDeclaration>>(resultDeclarationViewModel.resultDeclarationLists);
+
+            // Assign common values
+            mappedData.ForEach(resultDeclaration =>
+            {
+                resultDeclaration.StateMasterId = stateMasterId;
+                resultDeclaration.DistrictMasterId = districtMasterId;
+                resultDeclaration.AssemblyMasterId = assemblyMasterId;
+                //resultDeclaration.FourthLevelHMasterId = fourthLevelMasterId;
+                resultDeclaration.ElectionTypeMasterId = electionTypeMasterId;
+                resultDeclaration.ResultDeclaredByMobile = fieldOfficerMasterId.ToString();
+            });
+
+            // Save the mapped data
+            var result = await _eamsService.AddResultDeclarationDetails(mappedData);
+
+            // Handle the result
+            if (!result.IsSucceed)
+            {
+                return BadRequest(result.Message);
+            }
+
+            return Ok(result.Message);
+        }
+
+
+
+        [HttpGet("GetSarpanchListById")]
+        [Authorize]
+
+        public async Task<IActionResult> GetSarpanchListById(int fourthLevelHMasterId)
+        {
+            var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
+
+            int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
+            int districtMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("DistrictMasterId"));
+            int assemblyMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AssemblyMasterId"));
+            //int fourthLevelHMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("FourthLevelHMasterId"));
+            int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
+            var result = await _eamsService.GetSarpanchListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId);
+
+            // Check for a message indicating the poll has not ended
+            if (result.Any() && !string.IsNullOrEmpty(result.First().Message))
+            {
+                return BadRequest(result.First().Message); // Return the error message if the poll has not ended
+            }
+
+            if (result.Count != 0 || result != null)
+            {
+                var data = new
+                {
+                    count = result.Count,
+                    resultDeclaration = result.Where(k => k.KycMasterId != 0).ToList(),
+
+                };
+                return Ok(data);
             }
             else
             {
-                return BadRequest("Failed to add Result Declaration data.");
+                return NotFound();
             }
         }
-        [HttpPut("UpdateResultDeclarationDetails")]
 
+        [HttpGet("GetSarpanchListByIdForPortal")]
+        [Authorize]
+        public async Task<IActionResult> GetSarpanchListByIdForPortal(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
+        {
+            var result = await _eamsService.GetSarpanchListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId);
+
+            // Check for a message indicating the poll has not ended
+            if (result.Any() && !string.IsNullOrEmpty(result.First().Message))
+            {
+                return BadRequest(result.First().Message); // Return the error message if the poll has not ended
+            }
+
+            if (result.Count != 0 || result != null)
+            {
+                var data = new
+                {
+                    count = result.Count,
+                    resultDeclaration = result.Where(k => k.KycMasterId != 0).ToList(),
+
+                };
+                return Ok(data);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpGet("GetPanchListById")]
+        [Authorize]
+        public async Task<IActionResult> GetPanchListById(int fourthLevelHMasterId, int gPPanchayatWardsMasterId)
+        {
+            var userClaims = User.Claims.ToDictionary(c => c.Type, c => c.Value);
+
+            int stateMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("StateMasterId"));
+            int districtMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("DistrictMasterId"));
+            int assemblyMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("AssemblyMasterId"));
+            //int fourthLevelHMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("FourthLevelHMasterId"));
+            int electionTypeMasterId = Convert.ToInt32(userClaims.GetValueOrDefault("ElectionTypeMasterId"));
+
+            var result = await _eamsService.GetPanchListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId, gPPanchayatWardsMasterId);
+
+            // Check for a message indicating the poll has not ended
+            if (result.Any() && !string.IsNullOrEmpty(result.First().Message))
+            {
+                return BadRequest(result.First().Message); // Return the error message if the poll has not ended
+            }
+
+            if (result.Count != 0 || result != null)
+            {
+                var data = new
+                {
+                    count = result.Count,
+                    resultDeclaration = result.Where(k => k.KycMasterId != 0).ToList(),
+
+                };
+                return Ok(data);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpGet("GetPanchListByIdForPortal")]
+        [Authorize]
+        public async Task<IActionResult> GetPanchListByIdForPortal(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gPPanchayatWardsMasterId)
+        {
+
+            var result = await _eamsService.GetPanchListById(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId, gPPanchayatWardsMasterId);
+
+            // Check for a message indicating the poll has not ended
+            if (result.Any() && !string.IsNullOrEmpty(result.First().Message))
+            {
+                return BadRequest(result.First().Message); // Return the error message if the poll has not ended
+            }
+
+            if (result.Count != 0 || result != null)
+            {
+                var data = new
+                {
+                    count = result.Count,
+                    resultDeclaration = result.Where(k => k.KycMasterId != 0).ToList(),
+
+                };
+                return Ok(data);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
+
+        [HttpPut("UpdateResultDeclarationDetails")]
+        [Authorize]
         public async Task<IActionResult> UpdateResultDeclarationDetails(UpdateResultDeclarationViewModel updateResultDeclarationViewModel)
         {
             if (ModelState.IsValid)
@@ -653,7 +1302,9 @@ namespace EAMS.Controllers
             }
         }
 
+
         [HttpGet("GetResultDeclarationById")]
+        [Authorize]
         public async Task<IActionResult> GetResultDeclarationById(int resultDeclarationMasterId)
         {
             if (resultDeclarationMasterId == null)
@@ -675,7 +1326,9 @@ namespace EAMS.Controllers
                 }
             }
         }
+
         [HttpDelete("DeleteResultDeclarationById")]
+        [Authorize]
         public async Task<IActionResult> DeleteResultDeclarationById(int resultDeclarationMasterId)
         {
             if (resultDeclarationMasterId == null)
@@ -697,50 +1350,10 @@ namespace EAMS.Controllers
             }
         }
 
-        [HttpGet("GetPanchayatWiseResults")]
-        public async Task<IActionResult> GetPanchayatWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId)
+        [HttpGet("GetResultDeclarationsByElectionType")]
+        public async Task<IActionResult> GetResultDeclarationsByElectionType(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId)
         {
-            var result = await _eamsService.GetPanchayatWiseResults(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId, gpPanchayatWardsMasterId);
-
-            if (result.Count != 0 || result != null)
-            {
-                var data = new
-                {
-                    count = result.Count,
-                    resultDeclaration = result.Where(k => k.ResultDeclarationMasterId != 0).ToList(),
-
-                };
-                return Ok(data);
-            }
-            else
-            {
-                return NotFound();
-            }
-        }
-        [HttpGet("GetBlockWiseResults")]
-        public async Task<IActionResult> GetBlockWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId)
-        {
-            var result = await _eamsService.GetBlockWiseResults(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId);
-
-            if (result.Count != 0 || result != null)
-            {
-                var data = new
-                {
-                    count = result.Count,
-                    resultDeclaration = result.Where(k => k.ResultDeclarationMasterId != 0).ToList(),
-
-                };
-                return Ok(data);
-            }
-            else
-            {
-                return NotFound();
-            }
-        }
-        [HttpGet("GetDistrictWiseResults")]
-        public async Task<IActionResult> GetDistrictWiseResults(int stateMasterId, int districtMasterId, int electionTypeMasterId)
-        {
-            var result = await _eamsService.GetDistrictWiseResults(stateMasterId, districtMasterId, electionTypeMasterId);
+            var result = await _eamsService.GetResultDeclarationsByElectionType(stateMasterId, districtMasterId, electionTypeMasterId, assemblyMasterId, fourthLevelHMasterId, gpPanchayatWardsMasterId);
 
             if (result.Count != 0 || result != null)
             {

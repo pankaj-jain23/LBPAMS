@@ -1,75 +1,41 @@
 ﻿using EAMS_ACore.Interfaces;
-using EAMS_ACore.IRealTime;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 
 namespace EAMS.Hubs
 {
-    [Authorize]
-    public class DashBoardHub : Hub
+    public sealed class DashBoardHub : Hub
     {
         private readonly IEamsService _eamsService;
-        private readonly IUserConnectionService _userConnectionService;
         private readonly ILogger<DashBoardHub> _logger;
-        private readonly IRealTime _realTime;
 
-        public DashBoardHub(IEamsService eamsService, IUserConnectionService userConnectionService,
-            ILogger<DashBoardHub> logger, IRealTime realTime)
+        // Static counters to track connected users
+        private static int _dashboardUserCount = 0;
+        private static int _mobileUserCount = 0;
+
+        public DashBoardHub(IEamsService eamsService, ILogger<DashBoardHub> logger)
         {
             _eamsService = eamsService;
-            _userConnectionService = userConnectionService;
             _logger = logger;
-            _realTime = realTime;
-        }
-
-        public async Task GetDashboardCount()
-        {
-            var newClaimsIdentity = new ClaimsIdentity(Context.User.Identity);
-            var latestRecord = await _realTime.GetDashBoardCount(newClaimsIdentity);
-            await Clients.Client(Context.ConnectionId).SendAsync("GetDashboardCount", latestRecord);
-        }
-
-        public async Task GetDashboardCountByContextId()
-        {
-            var newClaimsIdentity = new ClaimsIdentity(Context.User.Identity);
-            var latestRecord = await _realTime.GetDashBoardCount(newClaimsIdentity);
-            await Clients.Client(Context.ConnectionId).SendAsync("GetDashboardCount", latestRecord);
-        }
-
-        public async Task GetPollIntreuption()
-        {
-            var newClaimsIdentity = new ClaimsIdentity(Context.User.Identity);
-            var dataCount = await _eamsService.GetPollInterruptionDashboardCount(newClaimsIdentity);
-            await Clients.Client(Context.ConnectionId).SendAsync("GetPollIntreuption", dataCount);
-        }
-
-        public async Task GetPollIntreuptionByContextId()
-        {
-            var newClaimsIdentity = new ClaimsIdentity(Context.User.Identity);
-            var dataCount = await _eamsService.GetPollInterruptionDashboardCount(newClaimsIdentity);
-            await Clients.Client(Context.ConnectionId).SendAsync("GetPollIntreuption", dataCount);
         }
 
         public override async Task OnConnectedAsync()
         {
             try
             {
-                var newClaimsIdentity = new ClaimsIdentity(Context.User.Identity);
                 var role = Context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
-                _userConnectionService.AddUser(Context.ConnectionId, newClaimsIdentity);
-                var dashboardUserCount = await GetDashboardConnectedUserStateWise();
-                //  var mobileUserCount = await GetMobileConnectedUserStateWise();
 
-                _logger.LogInformation("Dashboard Client connected to DashBoardHub. ConnectionId: {ConnectionId}", Context.ConnectionId);
-                await GetDashboardCount();
-                await GetPollIntreuption();
-                await Clients.All.SendAsync("ActiveUser", dashboardUserCount);
+                if (role.Contains("FO"))
+                {
+                    await HandleMobileUserConnected();
+                }
+                else
+                {
+                    await HandleDashboardUserConnected();
+                }
 
-
-
-                await Ping();
+              
             }
             catch (Exception ex)
             {
@@ -77,49 +43,22 @@ namespace EAMS.Hubs
             }
         }
 
-        public async Task Ping()
-        {
-            await GetDashboardCountByContextId();
-            await GetPollIntreuptionByContextId();
-            await Clients.Client(Context.ConnectionId).SendAsync("ping", "HeartBeat");
-        }
-
-        //public async Task MobileActiveUserConnected()
-        //{
-        //    var mobileUserCount = await GetMobileConnectedUserStateWise();
-        //    await Clients.All.SendAsync("MobileActiveUser", mobileUserCount);
-        //}
-
-        //public async Task MobileActiveUserDisConnected()
-        //{
-        //    var mobileUserCount = await GetMobileConnectedUserStateWise();
-        //    await Clients.All.SendAsync("MobileActiveUser", mobileUserCount);
-        //}
-
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             try
             {
-                var getUserConnection = await _userConnectionService.GetConnectionIdByUserId(Context.ConnectionId);
-                _logger.LogInformation($"User Found IN DB {getUserConnection.ConnectionId} and {getUserConnection.Role}");
-                var mobileUserCount = await GetMobileConnectedUserStateWise();
+                var role = Context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
 
-                if (getUserConnection.Role != "SO" && getUserConnection.Role != "BLO")
+                if (role.Contains("FO"))
                 {
-                    _logger.LogInformation("Dashboard Client Disconnected from DashBoardHub. ConnectionId: {ConnectionId}", Context.ConnectionId);
-                    var dashboardUserCount = await GetDashboardConnectedUserStateWise();
-                    await Clients.All.SendAsync("ActiveUser", dashboardUserCount);
-                    await Clients.All.SendAsync("GetMobileActiveUser", mobileUserCount);
+                    await HandleMobileUserDisconnected();
                 }
                 else
                 {
-                    _logger.LogInformation("SO/BLO Client Disconnected from DashBoardHub. ConnectionId: {ConnectionId}", Context.ConnectionId);
-                    await Clients.All.SendAsync("GetMobileActiveUser", mobileUserCount);
-
+                    await HandleDashboardUserDisconnected();
                 }
 
-                var isRemoved = await _userConnectionService.RemoveUser(Context.ConnectionId);
-                _logger.LogInformation($"{isRemoved}");
+                await SendUserCounts(); // Send updated user counts to all clients
             }
             catch (Exception ex)
             {
@@ -131,20 +70,91 @@ namespace EAMS.Hubs
             }
         }
 
-        private async Task<int?> GetDashboardConnectedUserStateWise()
+        private async Task HandleMobileUserConnected()
         {
-            var stateMasterId = Context.User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
-            return stateMasterId != null
-                ? await _userConnectionService.GetDashboardConnectedUserCountByStateId(Convert.ToInt32(stateMasterId))
-                : null;
+            _mobileUserCount++;
+            await Clients.Client(Context.ConnectionId).SendAsync("UserType", "MobileUser");
         }
 
-        private async Task<int?> GetMobileConnectedUserStateWise()
+        private async Task HandleDashboardUserConnected()
         {
-            var stateMasterId = Context.User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
-            return stateMasterId != null
-                ? await _userConnectionService.GetMobileConnectedUserCountByStateId(Convert.ToInt32(stateMasterId))
-                : null;
+            _dashboardUserCount++;
+            await Clients.Client(Context.ConnectionId).SendAsync("UserType", "DashboardUser");
+        }
+        private async Task HandleMobileUserDisconnected()
+        {
+            _mobileUserCount--;
+        }
+
+        private async Task HandleDashboardUserDisconnected()
+        {
+            _dashboardUserCount--;
+        }
+
+        public async Task SendUserCounts()
+        {
+            var counts = new
+            {
+                MobileUserCount = _mobileUserCount,
+                DashboardUserCount = _dashboardUserCount
+            };
+
+            // Broadcast the updated counts to all connected clients
+            await Clients.All.SendAsync("ReceiveUserCounts", counts);
+        }
+        public async Task SendDashBoardCount()
+        {
+            ClaimsIdentity claimsIdentity = Context.User.Identity as ClaimsIdentity;
+            var rolesClaim = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role");
+            var roles = rolesClaim?.Value;
+
+            var stateMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            int stateMasterId = int.Parse(stateMasterIdString);
+
+            var electionTypeMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
+            int electionTypeMasterId = int.Parse(electionTypeMasterIdString);
+
+            var districtMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value;
+            int? districtMasterId = !string.IsNullOrEmpty(districtMasterIdString) ? int.Parse(districtMasterIdString) : (int?)null;
+
+            var assemblyMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId")?.Value;
+            int? assemblyMasterId = !string.IsNullOrEmpty(assemblyMasterIdString) ? int.Parse(assemblyMasterIdString) : (int?)null;
+
+            var fourthLevelHMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "FourthLevelHMasterId")?.Value;
+            int? fourthLevelHMasterId = !string.IsNullOrEmpty(fourthLevelHMasterIdString) ? int.Parse(fourthLevelHMasterIdString) : (int?)null;
+            var eventDashboardCount = await _eamsService.GetEventActivityDashBoardCount(roles, electionTypeMasterId, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);
+            
+            await Clients.Client(Context.ConnectionId).SendAsync("GetDashBoardCount", eventDashboardCount);
+        }
+        public async Task SendDashBoardPollInterruptionCount()
+        {
+            ClaimsIdentity claimsIdentity = Context.User.Identity as ClaimsIdentity;
+            var rolesClaim = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role");
+            var roles = rolesClaim?.Value;
+
+            var stateMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value;
+            int stateMasterId = int.Parse(stateMasterIdString);
+
+            var electionTypeMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "ElectionTypeMasterId")?.Value;
+            int electionTypeMasterId = int.Parse(electionTypeMasterIdString);
+
+            var districtMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value;
+            int? districtMasterId = !string.IsNullOrEmpty(districtMasterIdString) ? int.Parse(districtMasterIdString) : (int?)null;
+
+            var assemblyMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId")?.Value;
+            int? assemblyMasterId = !string.IsNullOrEmpty(assemblyMasterIdString) ? int.Parse(assemblyMasterIdString) : (int?)null;
+
+            var fourthLevelHMasterIdString = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "FourthLevelHMasterId")?.Value;
+            int? fourthLevelHMasterId = !string.IsNullOrEmpty(fourthLevelHMasterIdString) ? int.Parse(fourthLevelHMasterIdString) : (int?)null;
+            var eventDashboardCount = await _eamsService.GetPollInterruptionDashboardCount(roles, electionTypeMasterId, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId);
+
+            await Clients.Client(Context.ConnectionId).SendAsync("GetPollInterruptionCount", eventDashboardCount);
+        }
+        public async Task Ping()
+        {
+            await SendDashBoardCount();
+            await SendDashBoardPollInterruptionCount();
+            await Clients.Client(Context.ConnectionId).SendAsync("Ping", "HeartBeat");
         }
     }
 }

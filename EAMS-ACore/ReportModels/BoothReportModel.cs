@@ -35,5 +35,7 @@
             set;
         }
         public string? Type { get; set; }
+        public bool IsCC { get; set; }
+        public bool IsNN { get; set; }
     }
 }

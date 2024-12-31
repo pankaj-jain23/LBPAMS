@@ -8,6 +8,7 @@ namespace EAMS_ACore.AuthInterfaces
     public interface IAuthService
     {
         Task<ServiceResponse> RegisterAsync(UserRegistration userRegistration, List<string> roleIds);
+        Task<ServiceResponse> SwitchDashboardUser(string userId, int electionTypeMasterId);
         Task<Token> LoginAsync(Login login);
         
 
@@ -24,9 +25,10 @@ namespace EAMS_ACore.AuthInterfaces
         Task<ServiceResponse> ForgetPassword(ForgetPasswordModel forgetPasswordModel);
         Task<ServiceResponse> ResetPassword(ResetPasswordModel resetPasswordModel);
         Task<Dictionary<string, object>> GetUserList(GetUser getUser);
+        Task<bool> UpdateLockoutUser(UpdateLockoutUser updateLockoutUser);
         Task<ServiceResponse> UpdateUserDetail(string userId, string mobileNumber, string? otp);
         Task<ServiceResponse> UpdateFieldOfficerDetail(string mobileNumber, int? otp);
 
-
+        Task<List<ROUserList>> GetROUserListByAssemblyId(int stateMasterId, int districtMasterId, int assemblyMasterId);
     }
 }
