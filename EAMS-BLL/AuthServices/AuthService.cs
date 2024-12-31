@@ -6,19 +6,15 @@ using EAMS_ACore.IAuthRepository;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.IRepository;
 using EAMS_ACore.Models;
-using EAMS_ACore.ReportModels;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using static System.Net.WebRequestMethods;
 
 namespace EAMS_BLL.AuthServices
 {
@@ -70,15 +66,7 @@ namespace EAMS_BLL.AuthServices
 
             // Check if the user exists
             var user = await _authRepository.CheckUserLogin(login);
-            if (user.LockoutEnabled)
-            {
-                return new Token()
-                {
-                    IsSucceed = false,
-                    Message = "User is Disabled Kindly contact your admin"
-                };
-
-            }
+           
             var is2FA = await _authRepository.LoginWithTwoFactorCheckAsync(login);
             if (user is null)
             {
@@ -89,7 +77,15 @@ namespace EAMS_BLL.AuthServices
                     Message = "User Name or Password is Invalid"
                 };
             }
+            if (user.LockoutEnabled)
+            {
+                return new Token()
+                {
+                    IsSucceed = false,
+                    Message = "User is Disabled Kindly contact your admin"
+                };
 
+            }
             var isDashBoardUserValidate = await IsDashBoardUserValidate(login);
             if (!isDashBoardUserValidate.IsSucceed)
             {
