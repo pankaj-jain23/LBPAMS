@@ -826,6 +826,17 @@ namespace EAMS_DAL.AuthRepository
 
             return result;
         }
+        public async Task<bool> UpdateLockoutUser(UpdateLockoutUser updateLockoutUser)
+        {
+            var user = await _userManager.FindByIdAsync(updateLockoutUser.UserId);
+            if (user != null)
+            {
+                user.LockoutEnabled = updateLockoutUser.LockoutEnabled;
+                var result = await _userManager.UpdateAsync(user);
+                return result.Succeeded;
+            }
+            return false;
+        }
         #endregion
 
 

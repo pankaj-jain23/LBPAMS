@@ -9,4 +9,10 @@
         public int Page { get; set; }
         public int PageSize { get; set; }
     }
+
+    public class UpdateLockoutUser
+    {
+        public string UserId { get; set; }
+        public bool LockoutEnabled { get; set; }
+    }
 }

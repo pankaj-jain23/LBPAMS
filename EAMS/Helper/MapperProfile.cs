@@ -78,6 +78,10 @@ namespace EAMS.Helper
 
             #region GetUserViewModel GetUser
             CreateMap<GetUserViewModel, GetUser>().ReverseMap();
+
+            CreateMap<UpdateLockoutUserViewModel, UpdateLockoutUser>()
+           .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
+           .ForMember(dest => dest.LockoutEnabled, opt => opt.MapFrom(src => src.LockoutEnabled));
             #endregion
 
             #region NotificationViewModel NotificationModel

@@ -434,6 +434,30 @@ namespace EAMS.Controllers
             }
 
         }
+
+        [HttpPost]
+        [Route("UpdateLockoutUser")]
+        [Authorize]
+        public async Task<IActionResult> UpdateLockoutUser(UpdateLockoutUserViewModel updateLockoutUserViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                var mappedData = _mapper.Map<UpdateLockoutUser>(updateLockoutUserViewModel);
+                var result = await _authService.UpdateLockoutUser(mappedData);
+                if (result)
+                {
+                    return Ok(new { message = "Lockout updated successfully." });
+                }
+                else
+                {
+                    return NotFound(new { message = "User not found." });
+                }
+            }
+            else
+            {
+                return BadRequest(new { message = "Invalid input." });
+            }
+        }
         #endregion
 
         #region Delete User

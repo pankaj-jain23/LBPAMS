@@ -9,4 +9,11 @@
         public bool LockoutEnabled { get; set; }
 
     }
+
+    public class UpdateLockoutUserViewModel
+    {
+        public string UserId { get; set; }
+        public bool LockoutEnabled { get; set; }
+
+    }
 }

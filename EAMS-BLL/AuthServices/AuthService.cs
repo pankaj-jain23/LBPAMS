@@ -1159,6 +1159,11 @@ namespace EAMS_BLL.AuthServices
         {
             return await _authRepository.GetUserList(getUser);
         }
+        public async Task<bool> UpdateLockoutUser(UpdateLockoutUser updateLockoutUser)
+        {
+            return await _authRepository.UpdateLockoutUser(updateLockoutUser);
+        }
+
         #endregion
 
         #region UpdateUserDetail
