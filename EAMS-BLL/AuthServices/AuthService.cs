@@ -77,7 +77,7 @@ namespace EAMS_BLL.AuthServices
                     Message = "User Name or Password is Invalid"
                 };
             }
-            if (user.LockoutEnabled)
+            if (!user.LockoutEnabled)
             {
                 return new Token()
                 {
@@ -92,6 +92,7 @@ namespace EAMS_BLL.AuthServices
                 return new Token()
                 {
                     IsSucceed = false,
+                    IsOtp=true,
                     Message = isDashBoardUserValidate.Message
 
                 };

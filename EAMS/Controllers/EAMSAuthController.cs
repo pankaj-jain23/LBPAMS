@@ -116,7 +116,7 @@ namespace EAMS.Controllers
                 var loginResult = await _authService.LoginAsync(mappedData);
 
                 if (loginResult.IsSucceed == false)
-                    return BadRequest(loginResult.Message);
+                    return BadRequest(loginResult);
                 return Ok(loginResult);
             }
             catch (Exception ex)
@@ -461,7 +461,7 @@ namespace EAMS.Controllers
 
         [HttpPut]
         [Route("UpdateLockoutUserInBulk")]
-        //[Authorize]
+        [Authorize]
         public async Task<IActionResult> UpdateLockoutUserInBulk(UpdateLockoutUserInBulkViewModel updateLockoutUserInBulkViewModel)
         {
             if (ModelState.IsValid)
