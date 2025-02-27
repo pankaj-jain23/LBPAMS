@@ -1698,7 +1698,8 @@ namespace EAMS_DAL.Repository
                                 on dist.StateMasterId equals state.StateMasterId // key selector for StateMaster
                                 join elec in _context.ElectionTypeMaster
                                 on asemb.ElectionTypeMasterId equals elec.ElectionTypeMasterId
-                                where state.StateMasterId == Convert.ToInt32(stateId) && asemb.ElectionTypeMasterId == Convert.ToInt32(electionTypeId) // condition for StateMasterId equal to 21
+                                where state.StateMasterId == Convert.ToInt32(stateId) 
+                                && asemb.ElectionTypeMasterId == Convert.ToInt32(electionTypeId) // condition for StateMasterId equal to 21
                                 orderby asemb.AssemblyMasterId
                                 select new CombinedMaster
                                 { // result selector 
@@ -1721,6 +1722,40 @@ namespace EAMS_DAL.Repository
             {
                 return null;
             }
+        }
+        
+        public async Task<List<CombinedMaster>> GetAllAssemblies(string stateId, string districtId, string electionTypeId)
+        {
+            var isStateActive = _context.StateMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateId)).FirstOrDefault();
+            var isDistrictActive = _context.DistrictMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateId) && d.DistrictMasterId == Convert.ToInt32(districtId)).FirstOrDefault();
+            
+                var innerJoin = from asemb in _context.AssemblyMaster.Where(d => d.DistrictMasterId == Convert.ToInt32(districtId)) // outer sequence
+                                join dist in _context.DistrictMaster // inner sequence 
+                                on asemb.DistrictMasterId equals dist.DistrictMasterId // key selector
+                                join state in _context.StateMaster // additional join for StateMaster
+                                on dist.StateMasterId equals state.StateMasterId // key selector for StateMaster
+                                join elec in _context.ElectionTypeMaster
+                                on asemb.ElectionTypeMasterId equals elec.ElectionTypeMasterId
+                                where state.StateMasterId == Convert.ToInt32(stateId) 
+                                && asemb.ElectionTypeMasterId == Convert.ToInt32(electionTypeId) // condition for StateMasterId equal to 21
+                                orderby asemb.AssemblyMasterId
+                                select new CombinedMaster
+                                { // result selector 
+                                    StateName = state.StateName,
+                                    DistrictId = dist.DistrictMasterId,
+                                    DistrictName = dist.DistrictName,
+                                    DistrictCode = dist.DistrictCode,
+                                    AssemblyId = asemb.AssemblyMasterId,
+                                    AssemblyName = asemb.AssemblyName,
+                                    SecondLanguage = asemb.SecondLanguage,
+                                    AssemblyCode = asemb.AssemblyCode,
+                                    IsStatus = asemb.AssemblyStatus,
+                                    ElectionTypeMasterId = asemb.ElectionTypeMasterId,
+                                    ElectionTypeName = elec.ElectionType
+                                };
+
+                return await innerJoin.ToListAsync();
+            
         }
 
         public async Task<List<CombinedMaster>> GetAssembliesByElectionType(string stateId, string districtId, string electionTypeMasterId)
@@ -19692,6 +19727,65 @@ namespace EAMS_DAL.Repository
                       am => am.AssemblyMasterId,
                       (j, am) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, AssemblyMaster = am })
                .Join(_context.FourthLevelH.Where(flh => flh.HierarchyStatus == true), // Add condition here
+              j => j.GPVoter.FourthLevelHMasterId,
+              flh => flh.FourthLevelHMasterId,
+              (j, flh) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, j.AssemblyMaster, FourthLevelH = flh })
+                .Join(_context.ElectionTypeMaster,
+                      j => j.GPVoter.ElectionTypeMasterId,
+                      el => el.ElectionTypeMasterId,
+                      (j, el) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, j.AssemblyMaster, j.FourthLevelH, ElectionTypeMaster = el })
+                .GroupJoin(_context.VoterType,
+                           j => j.GPVoter.VoterTypeMasterId,
+                           vt => vt.VoterTypeMasterId,
+                           (j, vt) => new { j, VoterType = vt.DefaultIfEmpty() }) // Perform a left join
+                .SelectMany(
+                    j => j.VoterType.DefaultIfEmpty(), // Flatten the result
+                    (j, vt) => new GPVoterList
+                    {
+                        GPVoterMasterId = j.j.GPVoter.GPVoterMasterId,
+                        StateMasterId = j.j.GPVoter.StateMasterId,
+                        DistrictMasterId = j.j.GPVoter.DistrictMasterId,
+                        AssemblyMasterId = j.j.GPVoter.AssemblyMasterId,
+                        GPVoterPdfPath = $"{baseUrl}{j.j.GPVoter.GPVoterPdfPath.Replace("\\", "/")}",
+                        StateName = j.j.StateMaster.StateName,
+                        DistrictName = j.j.DistrictMaster.DistrictName,
+                        AssemblyName = j.j.AssemblyMaster.AssemblyName,
+                        FourthLevelHMasterId = j.j.FourthLevelH.FourthLevelHMasterId,
+                        FourthLevelHName = j.j.FourthLevelH.HierarchyName,
+                        WardRange = j.j.GPVoter.WardRange,
+                        GPVoterStatus = j.j.GPVoter.GPVoterStatus,
+                        ElectionTypeMasterId = j.j.ElectionTypeMaster.ElectionTypeMasterId,
+                        ElectionTypeName = j.j.ElectionTypeMaster.ElectionType,
+                        VoterTypeMasterId = vt.VoterTypeMasterId != 0 ? vt.VoterTypeMasterId : 0, // If VoterTypeMasterId is not 0, return it, otherwise return 0
+                        VoterTypeName = vt.VoterTypeName ?? "null" // If VoterTypeName is null, return "Not Voter Type"
+                    }).OrderBy(d => d.FourthLevelHMasterId)
+                .ToListAsync();
+
+            return gpVoterList;
+        }
+        
+        public async Task<List<GPVoterList>> GetAllGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
+        {
+            var baseUrl = "https://lbpams.punjab.gov.in/lbpamsdoc/";
+
+            var gpVoterList = await _context.GPVoter
+                .Where(gv => gv.StateMasterId == stateMasterId &&
+                             gv.DistrictMasterId == districtMasterId &&
+                             gv.AssemblyMasterId == assemblyMasterId &&
+                             gv.ElectionTypeMasterId == electionTypeMasterId)
+                .Join(_context.StateMaster,
+                      gv => gv.StateMasterId,
+                      sm => sm.StateMasterId,
+                      (gv, sm) => new { GPVoter = gv, StateMaster = sm })
+                .Join(_context.DistrictMaster,
+                      j => j.GPVoter.DistrictMasterId,
+                      dm => dm.DistrictMasterId,
+                      (j, dm) => new { j.GPVoter, j.StateMaster, DistrictMaster = dm })
+                .Join(_context.AssemblyMaster,
+                      j => j.GPVoter.AssemblyMasterId,
+                      am => am.AssemblyMasterId,
+                      (j, am) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, AssemblyMaster = am })
+               .Join(_context.FourthLevelH , // Add condition here
               j => j.GPVoter.FourthLevelHMasterId,
               flh => flh.FourthLevelHMasterId,
               (j, flh) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, j.AssemblyMaster, FourthLevelH = flh })

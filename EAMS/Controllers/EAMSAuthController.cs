@@ -132,31 +132,31 @@ namespace EAMS.Controllers
         #region Jan Parichay Login
 
 
-        [HttpPost]
-        [Route("login")]
-        public async Task<IActionResult> JPLogin(LoginViewModel loginViewModel)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                    return BadRequest("Invalid payload");
-                var mappedData = _mapper.Map<Login>(loginViewModel);
+        //[HttpPost]
+        //[Route("login")]
+        //public async Task<IActionResult> JPLogin(LoginViewModel loginViewModel)
+        //{
+        //    try
+        //    {
+        //        if (!ModelState.IsValid)
+        //            return BadRequest("Invalid payload");
+        //        var mappedData = _mapper.Map<Login>(loginViewModel);
 
-                //var loginResult = await _authService.LoginWithTwoFactorCheckAsync(mappedData);
+        //        //var loginResult = await _authService.LoginWithTwoFactorCheckAsync(mappedData);
 
-                var loginResult = await _authService.LoginAsync(mappedData);
+        //        var loginResult = await _authService.LoginAsync(mappedData);
 
-                if (loginResult.IsSucceed == false)
-                    return BadRequest(loginResult);
-                return Ok(loginResult);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($" Login: {ex.Message}");
+        //        if (loginResult.IsSucceed == false)
+        //            return BadRequest(loginResult);
+        //        return Ok(loginResult);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError($" Login: {ex.Message}");
 
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
-        }
+        //        return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+        //    }
+        //}
 
         #endregion
 

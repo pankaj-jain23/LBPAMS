@@ -176,6 +176,10 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetAssemblies(stateId, districtId, electionTypeId);
         }
+        public async Task<List<CombinedMaster>> GetAllAssemblies(string stateId, string districtId, string electionTypeId)
+        {
+            return await _eamsRepository.GetAllAssemblies(stateId, districtId, electionTypeId);
+        }
         public async Task<List<CombinedMaster>> GetAssembliesByElectionType(string stateId, string districtId, string electionTypeId)
         {
             return await _eamsRepository.GetAssembliesByElectionType(stateId, districtId, electionTypeId);
@@ -1903,6 +1907,10 @@ namespace EAMS_BLL.Services
         public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
         {
             return await _eamsRepository.GetGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId);
+        }
+        public async Task<List<GPVoterList>> GetAllGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.GetAllGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId);
         }
         public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId, string userId)
         {

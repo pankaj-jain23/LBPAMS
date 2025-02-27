@@ -516,9 +516,45 @@ namespace EAMS.Controllers
 
         #region Assembliy Master 
         [HttpGet]
-        [Route("GetAssembliesListById")]
-        //[Authorize]
+        [Route("GetAssembliesListById")]        
         public async Task<IActionResult> GetAssembliesListById(string stateId, string districtId, string electionTypeId)
+        {
+            if (stateId != null && districtId != null)
+            {
+                var assemblyList = await _EAMSService.GetAssemblies(stateId, districtId, electionTypeId);  // Corrected to await the asynchronous method
+                if (assemblyList != null)
+                {
+                    var data = new
+                    {
+                        count = assemblyList.Count,
+                        data = assemblyList
+                    };
+                    return Ok(data);
+                }
+                else
+                {
+                    return NotFound("Data Not Found");
+                }
+            }
+            else
+            {
+                return BadRequest("State and District Master Id's cannot be null");
+            }
+
+
+        }
+
+
+        /// <summary>
+        /// in this api it will get all Assemblies if there status is false or true
+        /// </summary>
+        /// <param name="stateId"></param>
+        /// <param name="districtId"></param>
+        /// <param name="electionTypeId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("GetAllAssembliesListById")]
+        public async Task<IActionResult> GetAllAssembliesListById(string stateId, string districtId, string electionTypeId)
         {
             if (stateId != null && districtId != null)
             {

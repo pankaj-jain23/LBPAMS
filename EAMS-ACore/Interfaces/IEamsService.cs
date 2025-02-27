@@ -51,6 +51,7 @@ namespace EAMS_ACore.Interfaces
 
         #region Assembly Master
         Task<List<CombinedMaster>> GetAssemblies(string stateId, string districtMasterId, string electionId);
+        Task<List<CombinedMaster>> GetAllAssemblies(string stateId, string districtMasterId, string electionId);
         Task<List<CombinedMaster>> GetAssembliesByElectionType(string stateId, string districtMasterId, string electionTypeId);
         Task<Response> UpdateAssembliesById(AssemblyMaster assemblyMaster);
         Task<Response> UpdatePC(ParliamentConstituencyMaster pcMaster);
@@ -382,6 +383,7 @@ namespace EAMS_ACore.Interfaces
         Task<ServiceResponse> UpdateGPVoterDetails(GPVoter gpVoterPdf);
         Task<GPVoterList> GetGPVoterById(int gpVoterMasterId);
         Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId,int electionTypeMasterId);
+        Task<List<GPVoterList>> GetAllGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId,int electionTypeMasterId);
         Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId, string userId);
         Task<ServiceResponse> DeleteGPVoterById(int gpVoterMasterId);
         Task<List<VoterType>> GetVoterTypeListById();
