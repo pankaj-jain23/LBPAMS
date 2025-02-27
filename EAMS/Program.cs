@@ -22,6 +22,8 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Polly.Retry;
+using Polly;
 using Serilog;
 using StackExchange.Redis;
 using System.Text;
@@ -123,6 +125,16 @@ builder.Services.AddScoped<IUserConnectionService, UserConnectionService>();
 builder.Services.AddScoped<IUserConnectionServiceRepository, UserConnectionServiceRepository>();
 builder.Services.AddScoped<IRealTime, RealTimeService>();
 builder.Services.AddScoped<IExternal, ExternalService>();
+builder.Services.AddHttpClient<ExternalService>()
+    .SetHandlerLifetime(TimeSpan.FromMinutes(5));
+// Register Polly Retry Policy
+builder.Services.AddSingleton<AsyncRetryPolicy<HttpResponseMessage>>(sp =>
+{
+    return Policy<HttpResponseMessage>
+        .Handle<HttpRequestException>()
+        .OrResult(response => !response.IsSuccessStatusCode)
+        .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+});
 builder.Services.AddScoped<ICacheService, CacheService>();
 //builder.Services.AddHostedService<DatabaseListenerService>();
 

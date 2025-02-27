@@ -868,10 +868,7 @@ namespace EAMS.Controllers
         [HttpGet("GetAllGPVoterListById")]
         public async Task<IActionResult> GetAllGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
         {
-            var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
-            var userRole = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
-
-
+          
 
             // Determine whether to call the method with user ID or not
             var result =   await _eamsService.GetAllGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId);

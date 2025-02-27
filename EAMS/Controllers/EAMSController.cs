@@ -558,7 +558,7 @@ namespace EAMS.Controllers
         {
             if (stateId != null && districtId != null)
             {
-                var assemblyList = await _EAMSService.GetAssemblies(stateId, districtId, electionTypeId);  // Corrected to await the asynchronous method
+                var assemblyList = await _EAMSService.GetAllAssemblies(stateId, districtId, electionTypeId);  // Corrected to await the asynchronous method
                 if (assemblyList != null)
                 {
                     var data = new

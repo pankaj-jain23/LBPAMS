@@ -81,17 +81,14 @@ namespace EAMS_BLL.Services
             string placeholder = "{#var#}";
 
             // Get the SMS template from the repository
-            var getTemplate = await _notificationRepository.GetSMSTemplateById(smsTypeOTP);
-            string template = getTemplate.Message;
+            var getTemplate = await _notificationRepository.GetSMSTemplateById(smsTypeOTP); 
 
             // Replace the placeholder with the OTP
-            string finalsmsTemplateMsg = template.Replace(placeholder, otp.Trim());
+            string finalsmsTemplateMsg = getTemplate.Message.Replace(placeholder, otp.Trim());
 
-            // Call the SendSmsAsync method from ExternalService
-           var smsResponse = await _external.SendSmsAsync(userNameSMS, password, senderId, mobile, finalsmsTemplateMsg, entityId, getTemplate.TemplateId.ToString());
+            return await _external.SendSmsAsync(userNameSMS, password, senderId, mobile, finalsmsTemplateMsg, entityId, getTemplate.TemplateId.ToString());
 
-            // Return the service response
-            return smsResponse;
+             
         }
 
 
