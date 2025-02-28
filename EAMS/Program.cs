@@ -124,7 +124,9 @@ builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IUserConnectionService, UserConnectionService>();
 builder.Services.AddScoped<IUserConnectionServiceRepository, UserConnectionServiceRepository>();
 builder.Services.AddScoped<IRealTime, RealTimeService>();
-builder.Services.AddScoped<IExternal, ExternalService>();
+
+builder.Services.AddSingleton<IExternal, ExternalService>();
+
 builder.Services.AddHttpClient<ExternalService>()
     .SetHandlerLifetime(TimeSpan.FromMinutes(5));
 // Register Polly Retry Policy

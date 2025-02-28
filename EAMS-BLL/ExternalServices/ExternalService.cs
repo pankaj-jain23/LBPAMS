@@ -17,38 +17,19 @@ namespace EAMS_BLL.ExternalServices
 {
     public class ExternalService : IExternal
     {
-        private readonly IConfiguration _configuration;
-        private readonly IAuthRepository _authRepository;
-        private readonly IEamsService _EAMSService;
-        private readonly IEamsRepository _eamsRepository;
-        private readonly UserManager<UserRegistration> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly ILogger<AuthService> _logger;
+        private readonly IConfiguration _configuration; 
         private readonly HttpClient _httpClient;
         private readonly AsyncRetryPolicy<HttpResponseMessage> _retryPolicy;
 
         public ExternalService(
-            IConfiguration configuration,
-            IAuthRepository authRepository,
-            UserManager<UserRegistration> userManager,
-            RoleManager<IdentityRole> roleManager,
-            IEamsService eamsService,
-            IEamsRepository eamsRepository,
-            ILogger<AuthService> logger,
+            IConfiguration configuration,  
             HttpClient httpClient,
             AsyncRetryPolicy<HttpResponseMessage> retryPolicy)
         {
-            _configuration = configuration;
-            _authRepository = authRepository;
-            _userManager = userManager;
-            _roleManager = roleManager;
-            _EAMSService = eamsService;
-            _eamsRepository = eamsRepository;
-            _logger = logger;
+            _configuration = configuration; 
             _httpClient = httpClient;
             _retryPolicy = retryPolicy;
-
-            // Add necessary headers once
+             
             _httpClient.DefaultRequestHeaders.Add("SOAPAction", "http://tempuri.org/SendSMS");
         }
 
@@ -92,7 +73,7 @@ namespace EAMS_BLL.ExternalServices
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error sending SMS.");
+               
                 serviceResponse.IsSucceed = false;
                 serviceResponse.Message = $"Exception: {ex.Message}";
             }
