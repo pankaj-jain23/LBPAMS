@@ -228,11 +228,7 @@ app.MapHub<DashBoardHub>("/DashBoardHub", options =>
 app.UseStaticFiles();
 app.UseAuthorization();
 app.UseHttpsRedirection();
-//app.MapPost("/api/login", async (IAuthService authService, LoginRequest login) =>
-//{
-//    var result = await authService.LoginAsync(login);
-//    return result.Success ? Results.Ok(result) : Results.Unauthorized();
-//});
+
 app.MapControllers();
 
 app.Run();
