@@ -16238,18 +16238,19 @@ namespace EAMS_DAL.Repository
                                         && pd.DistrictMasterId == districtMasterIdInt
                                         && pd.AssemblyMasterId == assemblyMasterIdInt
                                         && pd.ElectionTypeMasterId == electionTypeMasterIdInt
-                                  group pd by new { pd.BoothMasterId, bm.BoothName, pd.SlotManagementId } into g
+                                  group pd by new { pd.BoothMasterId, bm.BoothName, pd.SlotManagementId ,bm.TotalVoters} into g
                                   select new
                                   {
                                       BoothMasterId = g.Key.BoothMasterId,
                                       BoothName = g.Key.BoothName,
                                       SlotManagementId = g.Key.SlotManagementId,
                                       TotalVotes = g.OrderByDescending(x => x.VotesPolledRecivedTime).FirstOrDefault().VotesPolled ?? 0,
+                                      TotalVoters = g.Key.TotalVoters ?? 0 // Fetch from BoothMaster
                                   }).ToListAsync();
 
             // Map poll data to all slots and calculate percentages
             var voterTurnOutReport = pollData
-                .GroupBy(pd => new { pd.BoothMasterId, pd.BoothName })
+                .GroupBy(pd => new { pd.BoothMasterId, pd.BoothName, pd.TotalVoters })
                 .Select(group => new BoothWiseVoterTurnOutSlotWise
                 {
                     Key = $"{group.Key.BoothMasterId}{stateId}{group.Key.BoothName}{electionTypeMasterId}",
@@ -16259,7 +16260,7 @@ namespace EAMS_DAL.Repository
                     SlotVotes = allSlots.Select(slot =>
                     {
                         var slotData = group.FirstOrDefault(pd => pd.SlotManagementId == slot.SlotManagementId);
-                        var totalVoters = group.Sum(pd => pd.TotalVotes); // Adjust for your logic if needed
+                        var totalVoters = group.Key.TotalVoters;
                         return slotData != null
                             ? $"{slotData.TotalVotes} ({(totalVoters > 0 ? (slotData.TotalVotes * 100.0 / totalVoters) : 0):F2}%) / {totalVoters}"
                             : "0 (0.00%)";
