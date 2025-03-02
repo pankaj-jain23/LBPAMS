@@ -1698,7 +1698,7 @@ namespace EAMS_DAL.Repository
                                 on dist.StateMasterId equals state.StateMasterId // key selector for StateMaster
                                 join elec in _context.ElectionTypeMaster
                                 on asemb.ElectionTypeMasterId equals elec.ElectionTypeMasterId
-                                where state.StateMasterId == Convert.ToInt32(stateId) 
+                                where state.StateMasterId == Convert.ToInt32(stateId)
                                 && asemb.ElectionTypeMasterId == Convert.ToInt32(electionTypeId) // condition for StateMasterId equal to 21
                                 orderby asemb.AssemblyMasterId
                                 select new CombinedMaster
@@ -1723,39 +1723,39 @@ namespace EAMS_DAL.Repository
                 return null;
             }
         }
-        
+
         public async Task<List<CombinedMaster>> GetAllAssemblies(string stateId, string districtId, string electionTypeId)
         {
             var isStateActive = _context.StateMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateId)).FirstOrDefault();
             var isDistrictActive = _context.DistrictMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateId) && d.DistrictMasterId == Convert.ToInt32(districtId)).FirstOrDefault();
-            
-                var innerJoin = from asemb in _context.AssemblyMaster.Where(d => d.DistrictMasterId == Convert.ToInt32(districtId)) // outer sequence
-                                join dist in _context.DistrictMaster // inner sequence 
-                                on asemb.DistrictMasterId equals dist.DistrictMasterId // key selector
-                                join state in _context.StateMaster // additional join for StateMaster
-                                on dist.StateMasterId equals state.StateMasterId // key selector for StateMaster
-                                join elec in _context.ElectionTypeMaster
-                                on asemb.ElectionTypeMasterId equals elec.ElectionTypeMasterId
-                                where state.StateMasterId == Convert.ToInt32(stateId) 
-                                && asemb.ElectionTypeMasterId == Convert.ToInt32(electionTypeId) // condition for StateMasterId equal to 21
-                                orderby asemb.AssemblyMasterId
-                                select new CombinedMaster
-                                { // result selector 
-                                    StateName = state.StateName,
-                                    DistrictId = dist.DistrictMasterId,
-                                    DistrictName = dist.DistrictName,
-                                    DistrictCode = dist.DistrictCode,
-                                    AssemblyId = asemb.AssemblyMasterId,
-                                    AssemblyName = asemb.AssemblyName,
-                                    SecondLanguage = asemb.SecondLanguage,
-                                    AssemblyCode = asemb.AssemblyCode,
-                                    IsStatus = asemb.AssemblyStatus,
-                                    ElectionTypeMasterId = asemb.ElectionTypeMasterId,
-                                    ElectionTypeName = elec.ElectionType
-                                };
 
-                return await innerJoin.ToListAsync();
-            
+            var innerJoin = from asemb in _context.AssemblyMaster.Where(d => d.DistrictMasterId == Convert.ToInt32(districtId)) // outer sequence
+                            join dist in _context.DistrictMaster // inner sequence 
+                            on asemb.DistrictMasterId equals dist.DistrictMasterId // key selector
+                            join state in _context.StateMaster // additional join for StateMaster
+                            on dist.StateMasterId equals state.StateMasterId // key selector for StateMaster
+                            join elec in _context.ElectionTypeMaster
+                            on asemb.ElectionTypeMasterId equals elec.ElectionTypeMasterId
+                            where state.StateMasterId == Convert.ToInt32(stateId)
+                            && asemb.ElectionTypeMasterId == Convert.ToInt32(electionTypeId) // condition for StateMasterId equal to 21
+                            orderby asemb.AssemblyMasterId
+                            select new CombinedMaster
+                            { // result selector 
+                                StateName = state.StateName,
+                                DistrictId = dist.DistrictMasterId,
+                                DistrictName = dist.DistrictName,
+                                DistrictCode = dist.DistrictCode,
+                                AssemblyId = asemb.AssemblyMasterId,
+                                AssemblyName = asemb.AssemblyName,
+                                SecondLanguage = asemb.SecondLanguage,
+                                AssemblyCode = asemb.AssemblyCode,
+                                IsStatus = asemb.AssemblyStatus,
+                                ElectionTypeMasterId = asemb.ElectionTypeMasterId,
+                                ElectionTypeName = elec.ElectionType
+                            };
+
+            return await innerJoin.ToListAsync();
+
         }
 
         public async Task<List<CombinedMaster>> GetAssembliesByElectionType(string stateId, string districtId, string electionTypeMasterId)
@@ -13062,7 +13062,7 @@ namespace EAMS_DAL.Repository
                     && e.AssemblyMasterId == assemblyMasterId
                     && e.FourthLevelHMasterId == fourthLevelMasterId
                     && e.ElectionTypeMasterId == electionTypeMasterId
-                    
+
                     );
                 totalUnOpposedCandidates = totalUnOpposedCandidates
                     .Where(e => e.DistrictMasterId == districtMasterId
@@ -15903,7 +15903,11 @@ namespace EAMS_DAL.Repository
                     DistrictMasterId = g.Key.DistrictMasterId,
                     DistrictName = g.Key.DistrictName,
                     TotalVotes = g.Sum(x => x.LatestPoll?.pl?.VotesPolled ?? 0),
-                    TotalVoters = g.Sum(x => x.TotalVoters),
+                    TotalVoters = g.Select(x => x.BoothMasterId).Distinct()
+               .Sum(boothId => _context.BoothMaster
+                   .Where(bt => bt.BoothMasterId == boothId)
+                   .Select(bt => bt.TotalVoters ?? 0)
+                   .FirstOrDefault()),
                     Percentage = g.Sum(x => x.LatestPoll?.pl?.VotesPolled ?? 0) * 100.0 /
                                  (g.Sum(x => x.TotalVoters) == 0 ? 1 : g.Sum(x => x.TotalVoters)),
                     SlotVotes = allSlots.Select(slot => new
@@ -16139,6 +16143,7 @@ namespace EAMS_DAL.Repository
                     SlotLabel = $"{s.StartTime:hh\\:mm tt} to {s.EndTime:hh\\:mm tt}",
                     s.SlotSequenceNumber
                 }).ToListAsync();
+       
 
 
             // Fetch data and group by assembly and time slots
@@ -16171,7 +16176,7 @@ namespace EAMS_DAL.Repository
                                              .FirstOrDefault(),
                                          TotalVoters = boothGroup.Select(x => x.bt).Distinct().Sum(bt => bt.TotalVoters ?? 0)
                                      }).ToListAsync();
-
+          
             // Process grouped data to calculate assembly-level sums
             var processedData = groupedData
                 .GroupBy(g => new { g.AssemblyMasterId, g.AssemblyName })
@@ -16180,7 +16185,12 @@ namespace EAMS_DAL.Repository
                     AssemblyMasterId = g.Key.AssemblyMasterId,
                     AssemblyName = g.Key.AssemblyName,
                     TotalVotes = g.Sum(x => x.LatestPoll?.pl?.VotesPolled ?? 0),
-                    TotalVoters = g.Sum(x => x.TotalVoters),
+                    TotalVoters = g.Select(x => x.BoothMasterId).Distinct()
+               .Sum(boothId => _context.BoothMaster
+                   .Where(bt => bt.BoothMasterId == boothId)
+                   .Select(bt => bt.TotalVoters ?? 0)
+                   .FirstOrDefault()),
+
                     Percentage = g.Sum(x => x.LatestPoll?.pl?.VotesPolled ?? 0) * 100.0 /
                                  (g.Sum(x => x.TotalVoters) == 0 ? 1 : g.Sum(x => x.TotalVoters)),
                     SlotVotes = allSlots.Select(slot => new
@@ -16238,7 +16248,7 @@ namespace EAMS_DAL.Repository
                                         && pd.DistrictMasterId == districtMasterIdInt
                                         && pd.AssemblyMasterId == assemblyMasterIdInt
                                         && pd.ElectionTypeMasterId == electionTypeMasterIdInt
-                                  group pd by new { pd.BoothMasterId, bm.BoothName, pd.SlotManagementId ,bm.TotalVoters} into g
+                                  group pd by new { pd.BoothMasterId, bm.BoothName, pd.SlotManagementId, bm.TotalVoters } into g
                                   select new
                                   {
                                       BoothMasterId = g.Key.BoothMasterId,
@@ -18373,11 +18383,11 @@ namespace EAMS_DAL.Repository
         #region KYC For "Municipal Corporation","Municipal Council" and "Nagar Panchayat" Public Details
 
         /// <summary>
-        
+
         /// This code ensures that a NOTTA candidate is inserted only once per FourthLevelHMasterId when KYC details are added for the first time after the election.
         ///If NOTTA already exists → Bypass insertion and return a success message.
         ///If NOTTA doesn't exist → Insert a new NOTTA candidate automatically.
-       
+
         /// </summary>
         /// <param name="kyc"></param>
         /// <returns></returns>
@@ -18425,7 +18435,7 @@ namespace EAMS_DAL.Repository
         //        };
         //        await _context.Kyc.AddAsync(nottaKyc);
         //    }
-            
+
 
         //    if (kyc.IsUnOppossed)
         //    {
@@ -19875,7 +19885,7 @@ namespace EAMS_DAL.Repository
 
             return gpVoterList;
         }
-        
+
         public async Task<List<GPVoterList>> GetAllGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
         {
             var baseUrl = "https://lbpams.punjab.gov.in/lbpamsdoc/";
@@ -19897,7 +19907,7 @@ namespace EAMS_DAL.Repository
                       j => j.GPVoter.AssemblyMasterId,
                       am => am.AssemblyMasterId,
                       (j, am) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, AssemblyMaster = am })
-               .Join(_context.FourthLevelH , // Add condition here
+               .Join(_context.FourthLevelH, // Add condition here
               j => j.GPVoter.FourthLevelHMasterId,
               flh => flh.FourthLevelHMasterId,
               (j, flh) => new { j.GPVoter, j.StateMaster, j.DistrictMaster, j.AssemblyMaster, FourthLevelH = flh })
