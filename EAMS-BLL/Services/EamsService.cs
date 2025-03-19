@@ -279,9 +279,9 @@ namespace EAMS_BLL.Services
         #endregion
 
         #region AROResult
-        public async Task<ServiceResponse> IsMobileNumberUnique(string mobileNumber)
+        public async Task<ServiceResponse> IsMobileNumberUnique(string mobileNumber, int stateMasterId)
         {
-            return await _eamsRepository.IsMobileNumberUnique(mobileNumber);
+            return await _eamsRepository.IsMobileNumberUnique(mobileNumber,stateMasterId);
         }
         public async Task<Response> AddAROResult(AROResultMaster aROResultMaster)
         {
@@ -2482,6 +2482,10 @@ namespace EAMS_BLL.Services
         public async Task<List<BoothResultList>> GetBoothResultListByFourthLevelId(int fourthlevelMasterId)
         {
             return await _eamsRepository.GetBoothResultListByFourthLevelId(fourthlevelMasterId);
+        }
+        public async Task<List<FourthLevelResultList>> GetFourthLevelResultListByAssemblyId(int assemblyMasterId)
+        {
+            return await _eamsRepository.GetFourthLevelResultListByAssemblyId(assemblyMasterId);
         }
 
         public async Task<ResultDeclarationBoothWardList> GetResultByWardId(int boothMasterId)

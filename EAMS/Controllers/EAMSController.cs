@@ -810,7 +810,7 @@ namespace EAMS.Controllers
             {
 
                 var mappedData = _mapper.Map<FieldOfficerMaster>(fieldOfficerViewModel);
-                var isUniqueMobile = await _EAMSService.IsMobileNumberUnique(fieldOfficerViewModel.FieldOfficerMobile);
+                var isUniqueMobile = await _EAMSService.IsMobileNumberUnique(fieldOfficerViewModel.FieldOfficerMobile,fieldOfficerViewModel.StateMasterId);
                 if (isUniqueMobile.IsSucceed == false)
                 {
                     return BadRequest(isUniqueMobile.Message);
@@ -971,7 +971,7 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetBoothListForResultDeclaration")]
         [Authorize]
-        public async Task<IActionResult> GetBoothListForResultDeclaration()
+        public async Task<IActionResult> GetBoothListForResultDeclaration() 
         {
             int foId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "FieldOfficerMasterId")?.Value);
             int stateMasterId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value);
@@ -5186,7 +5186,7 @@ namespace EAMS.Controllers
             {
 
                 var mappedData = _mapper.Map<AROResultMaster>(fieldOfficerViewModel);
-                var isUniqueMobile = await _EAMSService.IsMobileNumberUnique(fieldOfficerViewModel.AROMobile);
+                var isUniqueMobile = await _EAMSService.IsMobileNumberUnique(fieldOfficerViewModel.AROMobile,fieldOfficerViewModel.StateMasterId);
                 if (isUniqueMobile.IsSucceed == false)
                 {
                     return BadRequest(isUniqueMobile.Message);

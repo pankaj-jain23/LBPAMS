@@ -1092,6 +1092,22 @@ namespace EAMS.Controllers
             return Ok(result);
 
         }
+        [HttpGet("GetFourthLevelResultListByAssemblyId")]
+        //[Authorize]
+        public async Task<IActionResult> GetFourthLevelResultListByAssemblyId(int assemblyMasterId)
+        {
+            if (assemblyMasterId is 0)
+            {
+                return BadRequest("Assembly MasterId is Required");
+            }
+            var result = await _eamsService.GetFourthLevelResultListByAssemblyId(assemblyMasterId);
+            if (result is null)
+            {
+                return BadRequest();
+            }
+            return Ok(result);
+
+        }
         [HttpGet("GetResultByWardId")]
         //[Authorize]
         public async Task<IActionResult> GetResultByWardId(int wardMasterId)

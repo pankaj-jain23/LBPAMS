@@ -2820,12 +2820,12 @@ namespace EAMS_DAL.Repository
         #endregion
 
         #region AROResult
-        public async Task<ServiceResponse> IsMobileNumberUnique(string mobileNumber)
+        public async Task<ServiceResponse> IsMobileNumberUnique(string mobileNumber,int stateMasterId)
         {
 
             // Check if the mobile number exists in FieldOfficerMaster
             var existingFieldOfficerRecord = await _context.FieldOfficerMaster
-                .FirstOrDefaultAsync(d => d.FieldOfficerMobile == mobileNumber);
+                .FirstOrDefaultAsync(d => d.FieldOfficerMobile == mobileNumber&&d.StateMasterId==stateMasterId);
 
 
             // If the number exists in FieldOfficerMaster
@@ -2846,7 +2846,7 @@ namespace EAMS_DAL.Repository
             }
             // Check if the mobile number exists in AROResultMaster
             var existingARORecord = await _context.AROResultMaster
-                .FirstOrDefaultAsync(d => d.AROMobile == mobileNumber);
+                .FirstOrDefaultAsync(d => d.AROMobile == mobileNumber && d.StateMasterId == stateMasterId);
 
             if (existingARORecord is not null)
             {
@@ -20634,6 +20634,26 @@ namespace EAMS_DAL.Repository
                                         FourthLevelHMasterId = grouped.Select(g => g.booth.FourthLevelHMasterId).FirstOrDefault(),
                                         BoothMasterId = grouped.Key,
                                         BoothName = grouped.Select(g => g.booth.BoothName).FirstOrDefault(),
+                                    }).ToListAsync();
+
+            return resultList;
+        }
+        public async Task<List<FourthLevelResultList>> GetFourthLevelResultListByAssemblyId(int assemblyMasterId)
+        {
+            var resultList = await (from fl in _context.FourthLevelH
+                                    join resultDecl in _context.ResultDeclaration
+                                        on fl.FourthLevelHMasterId equals resultDecl.FourthLevelHMasterId
+                                    where fl.AssemblyMasterId == assemblyMasterId
+                                    group new { fl, resultDecl } by fl.FourthLevelHMasterId into grouped
+                                    select new FourthLevelResultList
+                                    {
+                                        ResultDeclarationMasterId = grouped.Select(g => g.resultDecl.ResultDeclarationMasterId).FirstOrDefault(),
+                                        StateMasterId = grouped.Select(g => g.fl.StateMasterId).FirstOrDefault(),
+                                        DistrictMasterId = grouped.Select(g => g.fl.DistrictMasterId).FirstOrDefault(),
+                                        AssemblyMasterId = grouped.Select(g => g.fl.AssemblyMasterId).FirstOrDefault(),                                       
+                                        ElectionTypeMasterId = grouped.Select(g => g.fl.ElectionTypeMasterId).FirstOrDefault(),
+                                        FourthLevelHMasterId = grouped.Key,
+                                        HierarchyName = grouped.Select(g => g.fl.HierarchyName).FirstOrDefault(),
                                     }).ToListAsync();
 
             return resultList;

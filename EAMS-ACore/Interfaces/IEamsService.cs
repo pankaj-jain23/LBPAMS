@@ -81,7 +81,7 @@ namespace EAMS_ACore.Interfaces
         #endregion
 
         #region AROResult
-        Task<ServiceResponse> IsMobileNumberUnique(string mobileNumber);
+        Task<ServiceResponse> IsMobileNumberUnique(string mobileNumber,int stateMasterId);
         Task<Response> AddAROResult(AROResultMaster aROResultMaster);
         Task<Response> UpdateAROResult(AROResultMaster aROResultMaster);
         Task<AROResultMasterList> GetAROResultById(int aroMasterId);
@@ -400,6 +400,7 @@ namespace EAMS_ACore.Interfaces
         Task<ResultDeclarationBoothWardList> GetResultHistoryByFourthLevelHMasterId(int fourthLevelHMasterId);
         Task<ResultDeclarationBoothWardList> GetResultByWardId(int wardMasterId);
         Task<List<BoothResultList>> GetBoothResultListByFourthLevelId(int fourthlevelMasterId);
+        Task<List<FourthLevelResultList>> GetFourthLevelResultListByAssemblyId(int assemblyMasterId);
         Task<List<BoothResultList>> GetWardResultListByFourthLevelId(int fourthlevelMasterId);
         Task<ServiceResponse> DeleteResultDeclarationById(int resultDeclarationMasterId);
         Task<List<ResultDeclarationList>> GetResultDeclarationsByElectionType(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId);

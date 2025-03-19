@@ -161,12 +161,12 @@ namespace EAMS_DAL.AuthRepository
         #endregion
 
         #region FindUserByName
-        public async Task<ServiceResponse> FindUserByName(UserRegistration userRegistration)
+        public async Task<AuthServiceResponse> FindUserByName(UserRegistration userRegistration)
         {
             var userExists = await _userManager.FindByNameAsync(userRegistration.UserName);
             if (userExists != null)
             {
-                return new ServiceResponse()
+                return new AuthServiceResponse()
                 {
                     IsSucceed = false,
                     Message = "User Already Exist"
@@ -174,7 +174,7 @@ namespace EAMS_DAL.AuthRepository
             }
             else
             {
-                return new ServiceResponse()
+                return new AuthServiceResponse()
                 {
                     IsSucceed = true,
                     Message = "User Not Exist"
@@ -257,7 +257,7 @@ namespace EAMS_DAL.AuthRepository
         #endregion
 
         #region CreateUser
-        public async Task<ServiceResponse> CreateUser(UserRegistration userRegistration, List<string> roleIds)
+        public async Task<AuthServiceResponse> CreateUser(UserRegistration userRegistration, List<string> roleIds)
         {
             try
             {
@@ -270,7 +270,7 @@ namespace EAMS_DAL.AuthRepository
                     var createUserResult = await _userManager.CreateAsync(userRegistration, userRegistration.PasswordHash);
                     if (!createUserResult.Succeeded)
                     {
-                        return new ServiceResponse()
+                        return new AuthServiceResponse()
                         {
                             IsSucceed = false,
                             Message = "User creation failed! Please check user details and try again.",
@@ -280,7 +280,7 @@ namespace EAMS_DAL.AuthRepository
                 }
                 else
                 {
-                    return new ServiceResponse()
+                    return new AuthServiceResponse()
                     {
                         IsSucceed = false,
                         Message = $"Failed to assign roles to user '{userRegistration.UserName}'.",
@@ -302,7 +302,7 @@ namespace EAMS_DAL.AuthRepository
                         if (!userRoleResult.Succeeded)
                         {
                             // Handle role assignment failure
-                            return new ServiceResponse()
+                            return new AuthServiceResponse()
                             {
                                 IsSucceed = false,
                                 Message = $"Failed to assign roles to user '{userRegistration.UserName}'.",
@@ -314,9 +314,10 @@ namespace EAMS_DAL.AuthRepository
                 }
 
 
-                return new ServiceResponse()
+                return new AuthServiceResponse()
                 {
                     IsSucceed = true,
+                    UserId = user.Id,
                     Message = $"User '{userRegistration.UserName}' created successfully!."
                 };
             }
@@ -324,7 +325,7 @@ namespace EAMS_DAL.AuthRepository
             {
 
 
-                return new ServiceResponse()
+                return new AuthServiceResponse()
                 {
                     IsSucceed = false,
                     Message = ex.Message,

@@ -90,7 +90,7 @@ namespace EAMS_ACore.IRepository
         #endregion
 
         #region AROResult
-        Task<ServiceResponse> IsMobileNumberUnique(string mobileNumber);
+        Task<ServiceResponse> IsMobileNumberUnique(string mobileNumber, int stateMasterId);
         Task<Response> AddAROResult(AROResultMaster aROResultMaster);
         Task<Response> UpdateAROResult(AROResultMaster aROResultMaster);
         Task<Response> UpdateAROValidate(AROResultMaster aROResultMaster);
@@ -459,6 +459,7 @@ namespace EAMS_ACore.IRepository
         Task<ResultDeclarationBoothWardList> GetResultByFourthLevelHMasterId(int fourthLevelHMasterId);
         Task<ResultDeclarationBoothWardList> GetResultHistoryByFourthLevelHMasterId(int fourthLevelHMasterId);
         Task<List<BoothResultList>> GetBoothResultListByFourthLevelId(int fourthlevelMasterId);
+        Task<List<FourthLevelResultList>> GetFourthLevelResultListByAssemblyId(int assemblyMasterId);
         Task<ResultDeclarationBoothWardList> GetResultByWardId(int wardMasterId);
         Task<List<BoothResultList>> GetWardResultListByFourthLevelId(int fourthlevelMasterId);
 

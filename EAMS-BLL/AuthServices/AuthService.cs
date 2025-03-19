@@ -319,7 +319,7 @@ namespace EAMS_BLL.AuthServices
 
 
         #region Register
-        public async Task<ServiceResponse> RegisterAsync(UserRegistration userRegistration, List<string> roleIds)
+        public async Task<AuthServiceResponse> RegisterAsync(UserRegistration userRegistration, List<string> roleIds)
         {
 
             var userExists = await _authRepository.FindUserByName(userRegistration);
@@ -333,7 +333,7 @@ namespace EAMS_BLL.AuthServices
                 var passwordValidationResult = ValidatePassword(userRegistration.PasswordHash);
                 if (!passwordValidationResult.IsValid)
                 {
-                    return new ServiceResponse
+                    return new AuthServiceResponse
                     {
                         IsSucceed = false,
                         Message = passwordValidationResult.ErrorMessage
@@ -1051,7 +1051,7 @@ namespace EAMS_BLL.AuthServices
         public async Task<ServiceResponse> ForgetPassword(ForgetPasswordModel forgetPasswordModel)
         {
             var timeNow = BharatDateTime();
-            var user = await _userManager.Users.FirstOrDefaultAsync(d => d.PhoneNumber == forgetPasswordModel.MobileNumber);
+            var user = await _userManager.Users.FirstOrDefaultAsync(d => d.PhoneNumber == forgetPasswordModel.MobileNumber&&d.UserName==forgetPasswordModel.UserName);
 
             // Check if OTP is provided and is greater than 5 characters
             if (!string.IsNullOrEmpty(forgetPasswordModel.OTP) && forgetPasswordModel.OTP.Length > 5)

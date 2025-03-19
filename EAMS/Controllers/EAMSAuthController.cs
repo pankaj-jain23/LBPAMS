@@ -45,7 +45,7 @@ namespace EAMS.Controllers
                 }
                 else
                 {
-                    return Ok(registerResult.Message);
+                    return Ok(registerResult);
                 }
 
             }
