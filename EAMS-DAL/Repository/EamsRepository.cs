@@ -3541,7 +3541,8 @@ namespace EAMS_DAL.Repository
                     return new Response { Status = RequestStatusEnum.BadRequest, Message = "Booth master data is null" };
                 //check full hierchythatids are in order or not
                 bool recordExistOfMasterIds = false;
-                if (boothMaster.ElectionTypeMasterId == 2)
+                //Panchayat Samiti
+                if (boothMaster.ElectionTypeMasterId == 3)
                 {
                     recordExistOfMasterIds = await _context.PSZonePanchayat.AnyAsync(d =>
                                         d.StateMasterId == boothMaster.StateMasterId &&

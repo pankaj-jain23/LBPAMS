@@ -99,8 +99,6 @@ namespace EAMS.Controllers
         #endregion
 
         #region Login
-
-
         [HttpPost]
         [Route("login")]
         public async Task<IActionResult> Login(LoginViewModel loginViewModel)

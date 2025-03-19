@@ -17,13 +17,12 @@ using EAMS_DAL.DBContext;
 using EAMS_DAL.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Polly.Retry;
 using Polly;
+using Polly.Retry;
 using Serilog;
 using StackExchange.Redis;
 using System.Text;
@@ -125,18 +124,15 @@ builder.Services.AddScoped<IUserConnectionService, UserConnectionService>();
 builder.Services.AddScoped<IUserConnectionServiceRepository, UserConnectionServiceRepository>();
 builder.Services.AddScoped<IRealTime, RealTimeService>();
 
-builder.Services.AddSingleton<IExternal, ExternalService>();
-
-builder.Services.AddHttpClient<ExternalService>()
-    .SetHandlerLifetime(TimeSpan.FromMinutes(5));
-// Register Polly Retry Policy
-builder.Services.AddSingleton<AsyncRetryPolicy<HttpResponseMessage>>(sp =>
+builder.Services.AddHttpClient<IExternal, ExternalService>(client =>
 {
-    return Policy<HttpResponseMessage>
-        .Handle<HttpRequestException>()
-        .OrResult(response => !response.IsSuccessStatusCode)
-        .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
-});
+    client.BaseAddress = new Uri("http://10.44.250.220/");
+    client.DefaultRequestHeaders.Add("SOAPAction", "http://tempuri.org/SendSMS");
+})
+    .SetHandlerLifetime(Timeout.InfiniteTimeSpan); // Prevents disposal
+
+builder.Services.AddSingleton<IExternal, ExternalService>(); // Makes ExternalService a Singleton
+
 builder.Services.AddScoped<ICacheService, CacheService>();
 //builder.Services.AddHostedService<DatabaseListenerService>();
 
@@ -209,11 +205,10 @@ builder.Services.Configure<GzipCompressionProviderOptions>(o =>
 var app = builder.Build();
 app.UseResponseCompression();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+
+app.UseSwagger();
+app.UseSwaggerUI();
+
 
 
 app.UseCors();

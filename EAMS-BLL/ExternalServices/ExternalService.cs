@@ -17,19 +17,21 @@ namespace EAMS_BLL.ExternalServices
 {
     public class ExternalService : IExternal
     {
-        private readonly IConfiguration _configuration; 
+        private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
-        private readonly AsyncRetryPolicy<HttpResponseMessage> _retryPolicy;
 
         public ExternalService(
-            IConfiguration configuration,  
-            HttpClient httpClient,
-            AsyncRetryPolicy<HttpResponseMessage> retryPolicy)
+            IConfiguration configuration,
+            HttpClient httpClient)
         {
-            _configuration = configuration; 
+            _configuration = configuration;
             _httpClient = httpClient;
-            _retryPolicy = retryPolicy;
-             
+            // Ensure BaseAddress is set correctly
+            if (_httpClient.BaseAddress == null)
+            {
+                _httpClient.BaseAddress = new Uri("http://10.44.250.220/");
+            }
+
             _httpClient.DefaultRequestHeaders.Add("SOAPAction", "http://tempuri.org/SendSMS");
         }
 
@@ -63,8 +65,7 @@ namespace EAMS_BLL.ExternalServices
 
             try
             {
-                var response = await _retryPolicy.ExecuteAsync(async () =>
-                    await _httpClient.PostAsync("http://10.44.250.220/SendSMSToAny.asmx", content));
+                var response = await _httpClient.PostAsync("SendSMSToAny.asmx", content);
 
                 serviceResponse.IsSucceed = response.IsSuccessStatusCode;
                 serviceResponse.Message = response.IsSuccessStatusCode
@@ -73,7 +74,6 @@ namespace EAMS_BLL.ExternalServices
             }
             catch (Exception ex)
             {
-               
                 serviceResponse.IsSucceed = false;
                 serviceResponse.Message = $"Exception: {ex.Message}";
             }
