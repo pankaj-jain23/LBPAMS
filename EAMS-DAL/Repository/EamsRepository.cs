@@ -16144,7 +16144,7 @@ namespace EAMS_DAL.Repository
                     SlotLabel = $"{s.StartTime:hh\\:mm tt} to {s.EndTime:hh\\:mm tt}",
                     s.SlotSequenceNumber
                 }).ToListAsync();
-       
+
 
 
             // Fetch data and group by assembly and time slots
@@ -16177,7 +16177,7 @@ namespace EAMS_DAL.Repository
                                              .FirstOrDefault(),
                                          TotalVoters = boothGroup.Select(x => x.bt).Distinct().Sum(bt => bt.TotalVoters ?? 0)
                                      }).ToListAsync();
-          
+
             // Process grouped data to calculate assembly-level sums
             var processedData = groupedData
                 .GroupBy(g => new { g.AssemblyMasterId, g.AssemblyName })
@@ -17842,6 +17842,43 @@ namespace EAMS_DAL.Repository
                     k.GPPanchayatWardsMasterId == kyc.GPPanchayatWardsMasterId // Panch condition
                 );
 
+                // Check if NOTTA candidate already exists
+                bool isNottaExists = await _context.Kyc.AnyAsync(k =>
+                    k.StateMasterId == kyc.StateMasterId &&
+                    k.DistrictMasterId == kyc.DistrictMasterId &&
+                    k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
+                    k.AssemblyMasterId == kyc.AssemblyMasterId &&
+                    k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
+                    k.CandidateName == "NOTTA" &&
+                    k.IsNOTA == true &&
+                    k.GPPanchayatWardsMasterId == (existingContestantSarpanch ? 0 : kyc.GPPanchayatWardsMasterId) // 0 for Sarpanch condition
+                );
+
+                // Create NOTTA entry
+                if (!isNottaExists && kyc.IsUnOppossed == false)
+                {
+                    var nottaKyc = new Kyc
+                    {
+                        StateMasterId = kyc.StateMasterId,
+                        DistrictMasterId = kyc.DistrictMasterId,
+                        ElectionTypeMasterId = kyc.ElectionTypeMasterId,
+                        AssemblyMasterId = kyc.AssemblyMasterId,
+                        FourthLevelHMasterId = kyc.FourthLevelHMasterId,
+                        PSZonePanchayatMasterId = 0,
+                        GPPanchayatWardsMasterId = 0,
+                        CandidateName = "NOTTA",
+                        FatherName = "",
+                        NominationPdfPath = "",
+                        Age = "0",
+                        Option2 = null,
+                        IsUnOppossed = false,
+                        AffidavitPdfPath = "",
+                        PartyName = "",
+                        IsNOTA = true
+                    };
+                    await _context.Kyc.AddAsync(nottaKyc);
+                }
+
                 // If a contestant (non-unopposed) Sarpanch exists, return error message
                 if (existingContestantSarpanch && kyc.GPPanchayatWardsMasterId == 0)
                 {
@@ -17982,6 +18019,49 @@ namespace EAMS_DAL.Repository
             if (existingPanch)
             {
                 return new ServiceResponse { IsSucceed = false, Message = "UnOpposed Panch already exists." };
+            }
+
+            // Check if NOTTA candidate already exists
+            bool isNottaExists = await _context.Kyc.AnyAsync(k =>
+                k.StateMasterId == kyc.StateMasterId &&
+                k.DistrictMasterId == kyc.DistrictMasterId &&
+                k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
+                k.AssemblyMasterId == kyc.AssemblyMasterId &&
+                k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
+                k.CandidateName == "NOTTA" &&
+                k.IsNOTA == true &&
+                k.GPPanchayatWardsMasterId == (existingSarpanch ? 0 : kyc.GPPanchayatWardsMasterId) // 0 for Sarpanch condition
+            );
+
+            // Create NOTTA entry
+            if (!isNottaExists && kyc.IsUnOppossed == false)
+            {
+                var nottaKyc = new Kyc
+                {
+                    StateMasterId = kyc.StateMasterId,
+                    DistrictMasterId = kyc.DistrictMasterId,
+                    ElectionTypeMasterId = kyc.ElectionTypeMasterId,
+                    AssemblyMasterId = kyc.AssemblyMasterId,
+                    FourthLevelHMasterId = kyc.FourthLevelHMasterId,
+                    PSZonePanchayatMasterId = 0,
+                    GPPanchayatWardsMasterId = 0,
+                    CandidateName = "NOTTA",
+                    FatherName = "",
+                    NominationPdfPath = "",
+                    Age = "0",
+                    Option2 = null,
+                    IsUnOppossed = false,
+                    AffidavitPdfPath = "",
+                    PartyName = "",
+                    IsNOTA = true
+                };
+                await _context.Kyc.AddAsync(nottaKyc);
+            }
+            else
+            {
+                var isDeleteNOTTACandidateForGP = await DeleteNOTTACandidateForGP(
+                    kyc.StateMasterId, kyc.DistrictMasterId, kyc.ElectionTypeMasterId,
+                    kyc.AssemblyMasterId, kyc.FourthLevelHMasterId, kyc.GPPanchayatWardsMasterId);
             }
 
             // Update properties of the existing Kyc entity
@@ -18378,6 +18458,44 @@ namespace EAMS_DAL.Repository
                 return new ServiceResponse { IsSucceed = true, Message = "Record Deleted successfully" };
             }
         }
+        public async Task<bool> IsCandidateResultDeclaredForAddGP(int stateMasterId, int? districtMasterId, int? electionTypeMasterId, int? assemblyMasterId, int fourthLevelHMasterId, int gPPanchayatWardsMasterId)
+        {
+            return await _context.ResultDeclaration.AnyAsync(r =>
+                                   r.StateMasterId == stateMasterId &&
+                                   r.DistrictMasterId == districtMasterId &&
+                                   r.ElectionTypeMasterId == electionTypeMasterId &&
+                                   r.AssemblyMasterId == assemblyMasterId &&
+                                   r.FourthLevelHMasterId == fourthLevelHMasterId &&
+                                   r.GPPanchayatWardsMasterId == gPPanchayatWardsMasterId
+                               );
+        }
+
+        public async Task<bool> IsCandidateResultDeclaredForUpdateGP(int kycMasterId)
+        {
+            return await _context.ResultDeclaration.AnyAsync(r => r.KycMasterId == kycMasterId);
+        }
+        public async Task<ServiceResponse> DeleteNOTTACandidateForGP(int stateMasterId, int? districtMasterId, int? electionTypeMasterId, int? assemblyMasterId, int fourthLevelHMasterId, int gPPanchayatWardsMasterId)
+        {
+            // Find the NOTA candidate record
+            var notaCandidate = await _context.Kyc.FirstOrDefaultAsync(r => r.StateMasterId == stateMasterId &&
+                                   r.DistrictMasterId == districtMasterId &&
+                                   r.ElectionTypeMasterId == electionTypeMasterId &&
+                                   r.AssemblyMasterId == assemblyMasterId &&
+                                   r.FourthLevelHMasterId == fourthLevelHMasterId &&
+                                   r.GPPanchayatWardsMasterId == gPPanchayatWardsMasterId);
+
+            // If NOTA candidate is not found, return an error message
+            if (notaCandidate == null)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "NOTA Candidate not found." };
+            }
+
+            // Remove the NOTA candidate from the database
+            _context.Kyc.Remove(notaCandidate);
+            await _context.SaveChangesAsync();
+
+            return new ServiceResponse { IsSucceed = true, Message = "NOTA Candidate deleted successfully." };
+        }
 
         #endregion
 
@@ -18392,105 +18510,6 @@ namespace EAMS_DAL.Repository
         /// </summary>
         /// <param name="kyc"></param>
         /// <returns></returns>
-        //public async Task<ServiceResponse> AddKYCDetailsForMCorpMCounAndNP(Kyc kyc)
-        //{
-        //    // Fetch the ward name (HierarchyName) from the FourthLevelH table
-        //    var wardName = await _context.FourthLevelH
-        //        .Where(h => h.FourthLevelHMasterId == kyc.FourthLevelHMasterId)
-        //        .Select(h => h.HierarchyName)
-        //        .FirstOrDefaultAsync();
-
-
-        //    // Check if NOTTA candidate already exists
-        //    bool isNottaExists = await _context.Kyc.AnyAsync(k =>
-        //        k.StateMasterId == kyc.StateMasterId &&
-        //        k.DistrictMasterId == kyc.DistrictMasterId &&
-        //        k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
-        //        k.AssemblyMasterId == kyc.AssemblyMasterId &&
-        //        k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
-        //        k.CandidateName == "NOTTA" &&
-        //        k.IsNOTA == true
-        //    );
-
-        //    // Create NOTTA entry
-        //    if (!isNottaExists)
-        //    {
-        //        var nottaKyc = new Kyc
-        //        {
-        //            StateMasterId = kyc.StateMasterId,
-        //            DistrictMasterId = kyc.DistrictMasterId,
-        //            ElectionTypeMasterId = kyc.ElectionTypeMasterId,
-        //            AssemblyMasterId = kyc.AssemblyMasterId,
-        //            FourthLevelHMasterId = kyc.FourthLevelHMasterId,
-        //            PSZonePanchayatMasterId = 0,
-        //            GPPanchayatWardsMasterId = 0,
-        //            CandidateName = "NOTTA",
-        //            FatherName = "",
-        //            NominationPdfPath = "",
-        //            Age = "0",
-        //            Option2 = null,
-        //            IsUnOppossed = false,
-        //            AffidavitPdfPath = "",
-        //            PartyName = "",
-        //            IsNOTA = true
-        //        };
-        //        await _context.Kyc.AddAsync(nottaKyc);
-        //    }
-
-
-        //    if (kyc.IsUnOppossed)
-        //    {
-        //        // Check if a non-unopposed candidate exists
-        //        bool existingContestant = await _context.Kyc.AnyAsync(k =>
-        //            k.StateMasterId == kyc.StateMasterId &&
-        //            k.DistrictMasterId == kyc.DistrictMasterId &&
-        //            k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
-        //            k.AssemblyMasterId == kyc.AssemblyMasterId &&
-        //            k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
-        //            k.IsUnOppossed == false // Check for non-unopposed candidate
-        //        );
-
-        //        if (existingContestant)
-        //        {
-        //            return new ServiceResponse
-        //            {
-        //                IsSucceed = false,
-        //                Message = $"Contesting Councillor already exists for the ward '{wardName ?? "Unknown"}'. Please delete that entry first and then add an unopposed candidate."
-        //            };
-        //        }
-        //    }
-
-        //    // Check if an unopposed Councillor exists
-        //    bool existingCouncillor = await _context.Kyc.AnyAsync(k =>
-        //        k.StateMasterId == kyc.StateMasterId &&
-        //        k.DistrictMasterId == kyc.DistrictMasterId &&
-        //        k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
-        //        k.AssemblyMasterId == kyc.AssemblyMasterId &&
-        //        k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
-        //        k.IsUnOppossed == true // Check for unopposed candidate
-
-        //    );
-
-        //    if (existingCouncillor)
-        //    {
-        //        return new ServiceResponse
-        //        {
-        //            IsSucceed = false,
-        //            Message = $"Unopposed Councillor already exists for the ward '{wardName ?? "Unknown"}'."
-        //        };
-        //    }
-
-        //    // Add the KYC details
-        //    await _context.Kyc.AddAsync(kyc);
-        //    await _context.SaveChangesAsync();
-
-        //    return new ServiceResponse
-        //    {
-        //        IsSucceed = true,
-        //        Message = $"Successfully added to the ward '{wardName ?? "Unknown"}'."
-        //    };
-        //}
-
         public async Task<ServiceResponse> AddKYCDetailsForMCorpMCounAndNP(Kyc kyc)
         {
             // Fetch the ward name (HierarchyName) from the FourthLevelH table
@@ -18498,6 +18517,44 @@ namespace EAMS_DAL.Repository
                 .Where(h => h.FourthLevelHMasterId == kyc.FourthLevelHMasterId)
                 .Select(h => h.HierarchyName)
                 .FirstOrDefaultAsync();
+
+
+            // Check if NOTTA candidate already exists
+            bool isNottaExists = await _context.Kyc.AnyAsync(k =>
+                k.StateMasterId == kyc.StateMasterId &&
+                k.DistrictMasterId == kyc.DistrictMasterId &&
+                k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
+                k.AssemblyMasterId == kyc.AssemblyMasterId &&
+                k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
+                k.CandidateName == "NOTTA" &&
+                k.IsNOTA == true
+            );
+
+            // Create NOTTA entry
+            if (!isNottaExists && kyc.IsUnOppossed == false)
+            {
+                var nottaKyc = new Kyc
+                {
+                    StateMasterId = kyc.StateMasterId,
+                    DistrictMasterId = kyc.DistrictMasterId,
+                    ElectionTypeMasterId = kyc.ElectionTypeMasterId,
+                    AssemblyMasterId = kyc.AssemblyMasterId,
+                    FourthLevelHMasterId = kyc.FourthLevelHMasterId,
+                    PSZonePanchayatMasterId = 0,
+                    GPPanchayatWardsMasterId = 0,
+                    CandidateName = "NOTTA",
+                    FatherName = "",
+                    NominationPdfPath = "",
+                    Age = "0",
+                    Option2 = null,
+                    IsUnOppossed = false,
+                    AffidavitPdfPath = "",
+                    PartyName = "",
+                    IsNOTA = true
+                };
+                await _context.Kyc.AddAsync(nottaKyc);
+            }
+
 
             if (kyc.IsUnOppossed)
             {
@@ -18551,6 +18608,67 @@ namespace EAMS_DAL.Repository
                 Message = $"Successfully added to the ward '{wardName ?? "Unknown"}'."
             };
         }
+
+        //public async Task<ServiceResponse> AddKYCDetailsForMCorpMCounAndNP(Kyc kyc)
+        //{
+        //    // Fetch the ward name (HierarchyName) from the FourthLevelH table
+        //    var wardName = await _context.FourthLevelH
+        //        .Where(h => h.FourthLevelHMasterId == kyc.FourthLevelHMasterId)
+        //        .Select(h => h.HierarchyName)
+        //        .FirstOrDefaultAsync();
+
+        //    if (kyc.IsUnOppossed)
+        //    {
+        //        // Check if a non-unopposed candidate exists
+        //        bool existingContestant = await _context.Kyc.AnyAsync(k =>
+        //            k.StateMasterId == kyc.StateMasterId &&
+        //            k.DistrictMasterId == kyc.DistrictMasterId &&
+        //            k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
+        //            k.AssemblyMasterId == kyc.AssemblyMasterId &&
+        //            k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
+        //            k.IsUnOppossed == false // Check for non-unopposed candidate
+        //        );
+
+        //        if (existingContestant)
+        //        {
+        //            return new ServiceResponse
+        //            {
+        //                IsSucceed = false,
+        //                Message = $"Contesting Councillor already exists for the ward '{wardName ?? "Unknown"}'. Please delete that entry first and then add an unopposed candidate."
+        //            };
+        //        }
+        //    }
+
+        //    // Check if an unopposed Councillor exists
+        //    bool existingCouncillor = await _context.Kyc.AnyAsync(k =>
+        //        k.StateMasterId == kyc.StateMasterId &&
+        //        k.DistrictMasterId == kyc.DistrictMasterId &&
+        //        k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
+        //        k.AssemblyMasterId == kyc.AssemblyMasterId &&
+        //        k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
+        //        k.IsUnOppossed == true // Check for unopposed candidate
+
+        //    );
+
+        //    if (existingCouncillor)
+        //    {
+        //        return new ServiceResponse
+        //        {
+        //            IsSucceed = false,
+        //            Message = $"Unopposed Councillor already exists for the ward '{wardName ?? "Unknown"}'."
+        //        };
+        //    }
+
+        //    // Add the KYC details
+        //    await _context.Kyc.AddAsync(kyc);
+        //    await _context.SaveChangesAsync();
+
+        //    return new ServiceResponse
+        //    {
+        //        IsSucceed = true,
+        //        Message = $"Successfully added to the ward '{wardName ?? "Unknown"}'."
+        //    };
+        //}
 
         public async Task<ServiceResponse> UpdateKycDetailsForMCorpMCounAndNP(Kyc kyc)
         {
