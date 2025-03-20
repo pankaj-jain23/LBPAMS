@@ -164,7 +164,7 @@ namespace EAMS_DAL.AuthRepository
         public async Task<AuthServiceResponse> FindUserByName(UserRegistration userRegistration)
         {
             var userExists = await _userManager.FindByNameAsync(userRegistration.UserName);
-          
+
             if (userExists != null&&userExists.PhoneNumber==userRegistration.PhoneNumber)
             {
                 return new AuthServiceResponse()
@@ -173,8 +173,19 @@ namespace EAMS_DAL.AuthRepository
                     Message = "User Already Exist"
                 };
             }
+          
             else
             {
+                var isUnique = await _context.Users.Where(u => u.PhoneNumber == userRegistration.PhoneNumber&&u.StateMasterId==userRegistration.StateMasterId).AnyAsync();
+                if (isUnique)
+                {
+                    return new AuthServiceResponse()
+                    {
+                        IsSucceed = false,
+                        Message = $"User with this number {userRegistration.PhoneNumber} is already Exist"
+                    };
+
+                }
                 return new AuthServiceResponse()
                 {
                     IsSucceed = true,
