@@ -128,9 +128,16 @@ builder.Services.AddHttpClient<IExternal, ExternalService>("SmsClient", client =
 {
     client.BaseAddress = new Uri("http://10.44.250.220/");
     client.DefaultRequestHeaders.Add("SOAPAction", "http://tempuri.org/SendSMS");
+    client.DefaultRequestHeaders.Add("Accept", "application/xml");
+}).ConfigurePrimaryHttpMessageHandler(() =>
+{
+    return new SocketsHttpHandler
+    {
+        PooledConnectionLifetime = TimeSpan.FromDays(1) // Reuse connections for 10 minutes
+    };
 });
 
-     
+
 builder.Services.AddSingleton<IExternal, ExternalService>(); // Makes ExternalService a Singleton
 
 builder.Services.AddScoped<ICacheService, CacheService>();

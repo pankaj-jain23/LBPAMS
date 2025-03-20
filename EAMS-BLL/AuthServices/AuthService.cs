@@ -3,6 +3,7 @@ using EAMS_ACore.AuthInterfaces;
 using EAMS_ACore.AuthModels;
 using EAMS_ACore.HelperModels;
 using EAMS_ACore.IAuthRepository;
+using EAMS_ACore.IExternal;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.IRepository;
 using EAMS_ACore.Models;
@@ -24,11 +25,13 @@ namespace EAMS_BLL.AuthServices
         private readonly IAuthRepository _authRepository;
         private readonly IEamsService _EAMSService;
         private readonly IEamsRepository _eamsRepository;
-        private readonly INotificationService _notificationService;
+        private readonly IExternal _external;
         private readonly UserManager<UserRegistration> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ILogger<AuthService> _logger;
-        public AuthService(IConfiguration configuration, IAuthRepository authRepository, UserManager<UserRegistration> userManager, RoleManager<IdentityRole> roleManager, IEamsService eamsService, IEamsRepository eamsRepository, INotificationService notificationService, ILogger<AuthService> logger)
+        public AuthService(IConfiguration configuration, IAuthRepository authRepository, UserManager<UserRegistration> userManager,
+            RoleManager<IdentityRole> roleManager, IEamsService eamsService,
+            IEamsRepository eamsRepository, IExternal external, ILogger<AuthService> logger)
         {
             _configuration = configuration;
             _authRepository = authRepository;
@@ -36,7 +39,7 @@ namespace EAMS_BLL.AuthServices
             _roleManager = roleManager;
             _EAMSService = eamsService;
             _eamsRepository = eamsRepository;
-            _notificationService = notificationService;
+            _external = external;
             _logger = logger;
         }
 
@@ -168,7 +171,7 @@ namespace EAMS_BLL.AuthServices
                 user.OTP = GenerateOTP();
                 user.OTPGeneratedTime = DateTime.UtcNow;
                 user.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 1, 0);
-                var isOtpSend = await _notificationService.SendOtp(user.PhoneNumber, user.OTP);
+                var isOtpSend = await _external.SendSmsAsync(user.PhoneNumber, user.OTP);
                 if (isOtpSend.IsSucceed == true)
                 {
                     var updateUserResult = await _authRepository.UpdateUser(user);
@@ -410,14 +413,14 @@ namespace EAMS_BLL.AuthServices
 
                     // Generate a new OTP and update Field Officer's record
                     foRecords.OTP = generatedOtp;
-                    foRecords.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 2, 0);
+                    foRecords.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 10, 0);
                     foRecords.OTPAttempts += 1;
 
                     var updateFO = await _eamsRepository.UpdateFieldOfficerValidate(foRecords);
                     if (updateFO.Status == RequestStatusEnum.OK)
                     {
                         // Send OTP via SMS
-                        var sendOtpResponse = await _notificationService.SendOtp(foRecords.FieldOfficerMobile, foRecords.OTP);
+                        var sendOtpResponse = await _external.SendSmsAsync(foRecords.FieldOfficerMobile, foRecords.OTP);
                         if (sendOtpResponse.IsSucceed)
                         {
                             return new Response { Status = RequestStatusEnum.OK, Message = $"OTP Sent to {foRecords.FieldOfficerMobile}" };
@@ -431,14 +434,14 @@ namespace EAMS_BLL.AuthServices
                 {
                     // Generate a new OTP and update ARO's record
                     aroRecords.OTP = generatedOtp;
-                    aroRecords.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 0, 60);
+                    aroRecords.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 10, 0);
                     aroRecords.OTPAttempts += 1;
 
                     var updateARO = await _eamsRepository.UpdateAROValidate(aroRecords);
                     if (updateARO.Status == RequestStatusEnum.OK)
                     {
                         // Send OTP via SMS
-                        var sendOtpResponse = await _notificationService.SendOtp(aroRecords.AROMobile, aroRecords.OTP);
+                        var sendOtpResponse = await _external.SendSmsAsync(aroRecords.AROMobile, aroRecords.OTP);
                         if (sendOtpResponse.IsSucceed)
                         {
                             return new Response { Status = RequestStatusEnum.OK, Message = $"OTP Sent to {aroRecords.AROMobile}" };
@@ -1085,7 +1088,7 @@ namespace EAMS_BLL.AuthServices
                 var otpExpireTime = BharatTimeDynamic(0, 0, 0, 3, 0);
 
                 // Send OTP
-                var isOtpSend = await _notificationService.SendOtp(forgetPasswordModel.MobileNumber, otp);
+                var isOtpSend = await _external.SendSmsAsync(forgetPasswordModel.MobileNumber, otp);
 
                 user.OTP = otp;
                 user.OTPExpireTime = otpExpireTime;
@@ -1195,7 +1198,7 @@ namespace EAMS_BLL.AuthServices
                 // Generate a new OTP and update the user record
                 var generatedOtp = GenerateOTP();
                 user.OTP = generatedOtp;
-                user.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 0, 60);
+                user.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 10, 0);
                 // var otpRecord = await _notificationService.SendOtp(mobileNumber, generatedOtp);
                 // Simulating OTP send and response
                 var otpRecord = new ServiceResponse
