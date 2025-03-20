@@ -1847,6 +1847,14 @@ namespace EAMS_BLL.Services
         }
         public async Task<ServiceResponse> DeleteKycById(int kycMasterId)
         {
+            // Check if the result is declared before deletion
+            bool isResultDeclared = await _eamsRepository.CheckResultDeclaredForDeleteKycDetail(kycMasterId);
+
+            if (isResultDeclared)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "Result declared, you can't delete this record." };
+            }
+
             return await _eamsRepository.DeleteKycById(kycMasterId);
         }
         #endregion

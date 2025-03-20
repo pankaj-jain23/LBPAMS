@@ -18483,6 +18483,63 @@ namespace EAMS_DAL.Repository
         public async Task<ServiceResponse> DeleteKycById(int kycMasterId)
         {
             var isExist = await _context.Kyc.Where(d => d.KycMasterId == kycMasterId).FirstOrDefaultAsync();
+            if (isExist.FourthLevelHMasterId != 0 && isExist.GPPanchayatWardsMasterId != 0)//GpWard Panch
+            {
+                var kycCount = await _context.Kyc.Where(d => d.GPPanchayatWardsMasterId == isExist.GPPanchayatWardsMasterId&&d.IsNOTA== false).CountAsync();
+                if (kycCount == 1)
+                {
+                    // Delete the NOTA record
+                    var notaRecord = await _context.Kyc
+                        .FirstOrDefaultAsync(d => d.GPPanchayatWardsMasterId == isExist.GPPanchayatWardsMasterId && d.IsNOTA == true);
+
+                    if (notaRecord != null)
+                    {
+                        _context.Kyc.Remove(notaRecord);
+                        await _context.SaveChangesAsync();
+                        //return new ServiceResponse { IsSucceed = true, Message = "NOTA record deleted successfully" };
+                    }
+
+                }
+
+            }
+
+            else if (isExist.FourthLevelHMasterId != 0 && isExist.GPPanchayatWardsMasterId == 0)
+            {
+                var kycCount = await _context.Kyc.Where(d => d.FourthLevelHMasterId == isExist.FourthLevelHMasterId && d.GPPanchayatWardsMasterId == 0 && d.IsNOTA == false).CountAsync();
+                if (kycCount == 1)
+                {
+                    // Delete the NOTA record
+                    var notaRecord = await _context.Kyc
+                        .FirstOrDefaultAsync(d => d.FourthLevelHMasterId == isExist.FourthLevelHMasterId && d.IsNOTA == true);
+
+                    if (notaRecord != null)
+                    {
+                        _context.Kyc.Remove(notaRecord);
+                        await _context.SaveChangesAsync();
+                        //return new ServiceResponse { IsSucceed = true, Message = "NOTA record deleted successfully" };
+                    }
+
+                }
+            }
+
+            else if (isExist.FourthLevelHMasterId != 0)
+            {
+                var kycCount = await _context.Kyc.Where(d => d.FourthLevelHMasterId == isExist.FourthLevelHMasterId && d.IsNOTA == false).CountAsync();
+                if (kycCount == 1)
+                {
+                    // Delete the NOTA record
+                    var notaRecord = await _context.Kyc
+                        .FirstOrDefaultAsync(d => d.FourthLevelHMasterId == isExist.FourthLevelHMasterId && d.IsNOTA == true);
+
+                    if (notaRecord != null)
+                    {
+                        _context.Kyc.Remove(notaRecord);
+                        await _context.SaveChangesAsync();
+                        //return new ServiceResponse { IsSucceed = true, Message = "NOTA record deleted successfully" };
+                    }
+
+                }
+            }
             if (isExist == null)
             {
                 return new ServiceResponse { IsSucceed = false, Message = "Record not Found" };
@@ -18494,6 +18551,13 @@ namespace EAMS_DAL.Repository
                 return new ServiceResponse { IsSucceed = true, Message = "Record Deleted successfully" };
             }
         }
+        // Method to check if the result is declared for the given KycMasterId
+        public async Task<bool> CheckResultDeclaredForDeleteKycDetail(int kycMasterId)
+        {
+            return await _context.ResultDeclaration
+                .AnyAsync(rd => rd.KycMasterId == kycMasterId);
+        }
+
         public async Task<bool> IsCandidateResultDeclaredForAddGP(int stateMasterId, int? districtMasterId, int? electionTypeMasterId, int? assemblyMasterId, int fourthLevelHMasterId, int gPPanchayatWardsMasterId)
         {
             return await _context.ResultDeclaration.AnyAsync(r =>

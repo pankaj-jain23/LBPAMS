@@ -385,6 +385,8 @@ namespace EAMS_ACore.IRepository
 
         Task<List<KycList>> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId, string userId);
         Task<ServiceResponse> DeleteKycById(int kycMasterId);
+        Task<bool> CheckResultDeclaredForDeleteKycDetail(int kycMasterId);
+
         Task<bool> IsCandidateResultDeclaredForAddGP(int stateMasterId, int? districtMasterId, int? electionTypeMasterId, int? assemblyMasterId, int fourthLevelHMasterId, int gPPanchayatWardsMasterId);
         Task<bool> IsCandidateResultDeclaredForUpdateGP(int kycMasterId);
         #endregion
