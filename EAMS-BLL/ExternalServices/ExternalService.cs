@@ -17,28 +17,14 @@ namespace EAMS_BLL.ExternalServices
 {
     public class ExternalService : IExternal
     {
-        private readonly IConfiguration _configuration;
+
         private readonly HttpClient _httpClient;
 
-        public ExternalService(
-            IConfiguration configuration,
-            HttpClient httpClient)
+        public ExternalService(IHttpClientFactory httpClientFactory)
         {
-            _configuration = configuration;
-            _httpClient = httpClient;
-            // Ensure BaseAddress is set correctly
-            if (_httpClient.BaseAddress == null)
-            {
-                _httpClient.BaseAddress = new Uri("http://10.44.250.220/");
-            }
-
-            _httpClient.DefaultRequestHeaders.Add("SOAPAction", "http://tempuri.org/SendSMS");
+            _httpClient = httpClientFactory.CreateClient("SmsClient");
         }
 
-        public Task<ServiceResponse> SendOTP()
-        {
-            throw new NotImplementedException();
-        }
 
         public async Task<ServiceResponse> SendSmsAsync(string userName, string password, string senderId, string mobileNo, string message, string entityId, string templateId)
         {

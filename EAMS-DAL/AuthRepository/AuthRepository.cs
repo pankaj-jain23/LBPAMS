@@ -164,7 +164,8 @@ namespace EAMS_DAL.AuthRepository
         public async Task<AuthServiceResponse> FindUserByName(UserRegistration userRegistration)
         {
             var userExists = await _userManager.FindByNameAsync(userRegistration.UserName);
-            if (userExists != null)
+          
+            if (userExists != null&&userExists.PhoneNumber==userRegistration.PhoneNumber)
             {
                 return new AuthServiceResponse()
                 {

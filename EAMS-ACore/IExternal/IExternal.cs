@@ -9,7 +9,7 @@ namespace EAMS_ACore.IExternal
 {
     public interface IExternal
     {
-        Task<ServiceResponse> SendOTP();
+      
         Task<ServiceResponse> SendSmsAsync(string uname, string password, string senderidstr, string mobileNo, string message, string entityidstr, string templateidstr);
     }
 }

@@ -5,6 +5,7 @@ using EAMS_ACore.Interfaces;
 using EAMS_ACore.IRepository;
 using EAMS_ACore.NotificationModels;
 using EAMS_ACore.ReportModels;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net;
@@ -20,15 +21,15 @@ namespace EAMS_BLL.Services
         private readonly FcmNotificationSetting _fcmNotificationSetting;
         private readonly ILogger<NotificationService> _logger;
         private readonly IExternal _external;
-
-        public NotificationService(IOptions<FcmNotificationSetting> settings, INotificationRepository notificationRepository, ILogger<NotificationService> logger, IExternal external
-)
+        private readonly IDistributedCache _cache;
+        public NotificationService(IOptions<FcmNotificationSetting> settings, INotificationRepository notificationRepository,
+        ILogger<NotificationService> logger, IExternal external, IDistributedCache cache)
         {
             _fcmNotificationSetting = settings.Value;
             _notificationRepository = notificationRepository;
             _logger = logger;
-            _external = external;   
-
+            _external = external;
+            _cache = cache;
         }
         private DateTime? BharatDateTime()
         {
@@ -71,28 +72,6 @@ namespace EAMS_BLL.Services
         {
             return await _notificationRepository.UpdateSMSTemplateById(sMSTemplate);
         }
-        public async Task<ServiceResponse> SendOtp(string mobile, string otp)
-        {
-            string userNameSMS = SMSEnum.UserName.GetStringValue();
-            string password = SMSEnum.Password.GetStringValue();
-            string senderId = SMSEnum.SenderId.GetStringValue();
-            string entityId = SMSEnum.EntityId.GetStringValue();
-            string smsTypeOTP = SMSEnum.OTP.GetStringValue();
-            string placeholder = "{#var#}";
-
-            // Get the SMS template from the repository
-            var getTemplate = await _notificationRepository.GetSMSTemplateById(smsTypeOTP); 
-
-            // Replace the placeholder with the OTP
-            string finalsmsTemplateMsg = getTemplate.Message.Replace(placeholder, otp.Trim());
-
-            return await _external.SendSmsAsync(userNameSMS, password, senderId, mobile, finalsmsTemplateMsg, entityId, getTemplate.TemplateId.ToString());
-
-             
-        }
-
-
-
         //public async Task<ServiceResponse> SendOtp(string mobile, string otp)
         //{
         //    string userNameSMS = SMSEnum.UserName.GetStringValue();
@@ -102,21 +81,42 @@ namespace EAMS_BLL.Services
         //    string smsTypeOTP = SMSEnum.OTP.GetStringValue();
         //    string placeholder = "{#var#}";
 
-        //    var getTemplate = await _notificationRepository.GetSMSTemplateById(smsTypeOTP);
-        //    string template = getTemplate.Message;
+        //    // Get the SMS template from the repository
+        //    var getTemplate = await _notificationRepository.GetSMSTemplateById(smsTypeOTP); 
 
-        //    string finalsmsTemplateMsg = template.Replace(placeholder, otp.Trim());
+        //    // Replace the placeholder with the OTP
+        //    string finalsmsTemplateMsg = getTemplate.Message.Replace(placeholder, otp.Trim());
 
-        //    var result = await SendSMSAsync(userNameSMS, password, senderId, mobile, finalsmsTemplateMsg, entityId, getTemplate.TemplateId.ToString());
+        //    return await _external.SendSmsAsync(userNameSMS, password, senderId, mobile, finalsmsTemplateMsg, entityId, getTemplate.TemplateId.ToString());
 
-        //    bool isSucceed = result.Contains(SMSEnum.MessageAccepted.GetStringValue());
-
-        //    return new ServiceResponse
-        //    {
-        //        IsSucceed = isSucceed,
-        //        Message = result
-        //    };
+             
         //}
+        public async Task<ServiceResponse> SendOtp(string mobile, string otp)
+        {
+            string userNameSMS = SMSEnum.UserName.GetStringValue();
+            string password = SMSEnum.Password.GetStringValue();
+            string senderId = SMSEnum.SenderId.GetStringValue();
+            string entityId = SMSEnum.EntityId.GetStringValue();
+            string smsTypeOTP = SMSEnum.OTP.GetStringValue();
+            string placeholder = "{#var#}";
+            string smsTemplateKey = "sms_template_" + SMSEnum.OTP.GetStringValue();
+            string getTemplateId ="";
+            var cachedTemplate = await _cache.GetStringAsync(smsTemplateKey);
+
+            if (cachedTemplate == null)
+            {
+                var getTemplate = await _notificationRepository.GetSMSTemplateById(SMSEnum.OTP.GetStringValue());
+                cachedTemplate = getTemplate.Message;
+                getTemplateId=getTemplate.TemplateId.ToString();
+                await _cache.SetStringAsync(smsTemplateKey, cachedTemplate, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30) });
+            }
+
+            string finalsmsTemplateMsg = cachedTemplate.Replace("{#var#}", otp.Trim());
+            return await _external.SendSmsAsync(userNameSMS, password, senderId, mobile, finalsmsTemplateMsg, entityId, getTemplateId);
+        }
+
+
+
         public async Task<ServiceResponse> SendSMSToSectorOfficers(SendSMSModel sendSMSModel)
         {
             SMSSentModel sMSSentModel = new SMSSentModel(); int sent = 0; int Notsent = 0;

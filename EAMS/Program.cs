@@ -124,13 +124,13 @@ builder.Services.AddScoped<IUserConnectionService, UserConnectionService>();
 builder.Services.AddScoped<IUserConnectionServiceRepository, UserConnectionServiceRepository>();
 builder.Services.AddScoped<IRealTime, RealTimeService>();
 
-builder.Services.AddHttpClient<IExternal, ExternalService>(client =>
+builder.Services.AddHttpClient<IExternal, ExternalService>("SmsClient", client =>
 {
     client.BaseAddress = new Uri("http://10.44.250.220/");
     client.DefaultRequestHeaders.Add("SOAPAction", "http://tempuri.org/SendSMS");
-})
-    .SetHandlerLifetime(Timeout.InfiniteTimeSpan); // Prevents disposal
+});
 
+     
 builder.Services.AddSingleton<IExternal, ExternalService>(); // Makes ExternalService a Singleton
 
 builder.Services.AddScoped<ICacheService, CacheService>();
@@ -202,6 +202,8 @@ builder.Services.Configure<GzipCompressionProviderOptions>(o =>
 {
     o.Level = System.IO.Compression.CompressionLevel.Fastest;
 });
+// If you're using MemoryCache (for in-memory caching):
+builder.Services.AddDistributedMemoryCache();
 var app = builder.Build();
 app.UseResponseCompression();
 
