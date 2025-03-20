@@ -20759,7 +20759,8 @@ namespace EAMS_DAL.Repository
                                                                 IsDraw = resultDecl.IsDraw,
                                                                 IsDrawLottery = resultDecl.IsDrawLottery,
                                                                 IsReCounting = resultDecl.IsReCounting,
-                                                                ResultDecStatus = resultDecl.ResultDecStatus
+                                                                ResultDecStatus = resultDecl.ResultDecStatus,
+                                                                IsNOTA = resultDecl.IsNOTA
                                                             }).ToList()
                                     }).FirstOrDefaultAsync();
 
