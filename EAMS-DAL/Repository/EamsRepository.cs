@@ -17894,18 +17894,18 @@ namespace EAMS_DAL.Repository
                 return new ServiceResponse { IsSucceed = false, Message = $"UnOpposed Panch already." };
             }
 
-            // Check if NOTTA candidate already exists
+            // Check if NOTA candidate already exists
             bool isNottaExists = await _context.Kyc.AnyAsync(k =>
                 k.StateMasterId == kyc.StateMasterId &&
                 k.DistrictMasterId == kyc.DistrictMasterId &&
                 k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
                 k.AssemblyMasterId == kyc.AssemblyMasterId &&
                 k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
-                k.CandidateName == "NOTTA" &&
+                k.CandidateName == "NOTA" &&
                 k.IsNOTA == true &&
                 k.GPPanchayatWardsMasterId == (kyc.GPPanchayatWardsMasterId) // 0 for Sarpanch condition
             );
-            // Create NOTTA entry
+            // Create NOTA entry
             if (!isNottaExists && kyc.IsUnOppossed == false)
             {
                 var nottaKyc = new Kyc
@@ -17917,7 +17917,7 @@ namespace EAMS_DAL.Repository
                     FourthLevelHMasterId = kyc.FourthLevelHMasterId,
                     PSZonePanchayatMasterId = 0,
                     GPPanchayatWardsMasterId = kyc.GPPanchayatWardsMasterId,
-                    CandidateName = "NOTTA",
+                    CandidateName = "NOTA",
                     FatherName = "",
                     NominationPdfPath = "",
                     Age = "0",
@@ -18063,19 +18063,19 @@ namespace EAMS_DAL.Repository
                 return new ServiceResponse { IsSucceed = false, Message = "UnOpposed Panch already exists." };
             }
 
-            // Check if NOTTA candidate already exists
+            // Check if NOTA candidate already exists
             bool isNottaExists = await _context.Kyc.AnyAsync(k =>
                 k.StateMasterId == kyc.StateMasterId &&
                 k.DistrictMasterId == kyc.DistrictMasterId &&
                 k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
                 k.AssemblyMasterId == kyc.AssemblyMasterId &&
                 k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
-                k.CandidateName == "NOTTA" &&
+                k.CandidateName == "NOTA" &&
                 k.IsNOTA == true &&
                 k.GPPanchayatWardsMasterId == (kyc.GPPanchayatWardsMasterId) // 0 for Sarpanch condition
             );
 
-            // Create NOTTA entry
+            // Create NOTA entry
             if (!isNottaExists && kyc.IsUnOppossed == false)
             {
                 var nottaKyc = new Kyc
@@ -18087,7 +18087,7 @@ namespace EAMS_DAL.Repository
                     FourthLevelHMasterId = kyc.FourthLevelHMasterId,
                     PSZonePanchayatMasterId = 0,
                     GPPanchayatWardsMasterId = kyc.GPPanchayatWardsMasterId,
-                    CandidateName = "NOTTA",
+                    CandidateName = "NOTA",
                     FatherName = "",
                     NominationPdfPath = "",
                     Age = "0",
@@ -18627,7 +18627,7 @@ namespace EAMS_DAL.Repository
                 k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
                 k.AssemblyMasterId == kyc.AssemblyMasterId &&
                 k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
-                k.CandidateName == "NOTTA" &&
+                k.CandidateName == "NOTA" &&
                 k.IsNOTA == true
             );
 
@@ -18643,7 +18643,7 @@ namespace EAMS_DAL.Repository
                     FourthLevelHMasterId = kyc.FourthLevelHMasterId,
                     PSZonePanchayatMasterId = 0,
                     GPPanchayatWardsMasterId = 0,
-                    CandidateName = "NOTTA",
+                    CandidateName = "NOTA",
                     FatherName = "",
                     NominationPdfPath = "",
                     Age = "0",
@@ -18777,7 +18777,7 @@ namespace EAMS_DAL.Repository
                 k.ElectionTypeMasterId == kyc.ElectionTypeMasterId &&
                 k.AssemblyMasterId == kyc.AssemblyMasterId &&
                 k.FourthLevelHMasterId == kyc.FourthLevelHMasterId &&
-                k.CandidateName == "NOTTA" &&
+                k.CandidateName == "NOTA" &&
                 k.IsNOTA == true
             );
 
@@ -18793,7 +18793,7 @@ namespace EAMS_DAL.Repository
                     FourthLevelHMasterId = kyc.FourthLevelHMasterId,
                     PSZonePanchayatMasterId = 0,
                     GPPanchayatWardsMasterId = 0,
-                    CandidateName = "NOTTA",
+                    CandidateName = "NOTA",
                     FatherName = "",
                     NominationPdfPath = "",
                     Age = "0",
@@ -20982,6 +20982,7 @@ namespace EAMS_DAL.Repository
                 IsDrawLottery = c.result?.IsDrawLottery ?? false, // Default to false if result is null
                 IsReCounting = c.result?.IsReCounting ?? false, // Default to false if result is null
                 VoteMargin = c.result?.VoteMargin ?? null,
+                IsNOTA= c.kycCandidate.IsNOTA
             }).ToList();
 
             return candidateList;
@@ -21100,7 +21101,8 @@ namespace EAMS_DAL.Repository
                                                           : false,
                                            VoteMargin = groupedResults.FirstOrDefault().result != null
                                                         ? groupedResults.FirstOrDefault().result.VoteMargin
-                                                        : null
+                                                        : null,
+
                                        }).ToListAsync();
 
             return candidateList;
