@@ -281,7 +281,7 @@ namespace EAMS_BLL.Services
         #region AROResult
         public async Task<ServiceResponse> IsMobileNumberUnique(string mobileNumber, int stateMasterId)
         {
-            return await _eamsRepository.IsMobileNumberUnique(mobileNumber,stateMasterId);
+            return await _eamsRepository.IsMobileNumberUnique(mobileNumber, stateMasterId);
         }
         public async Task<Response> AddAROResult(AROResultMaster aROResultMaster)
         {
@@ -2485,7 +2485,11 @@ namespace EAMS_BLL.Services
         }
         public async Task<ResultDeclarationBoothWardList> GetResultHistoryByFourthLevelHMasterId(int fourthLevelHMasterId)
         {
-            return await _eamsRepository.GetResultByFourthLevelHMasterId(fourthLevelHMasterId);
+            return await _eamsRepository.GetResultHistoryByFourthLevelHMasterId(fourthLevelHMasterId);
+        }
+        public async Task<ResultDeclarationBoothWardList> GetResultHistoryByGPPanchayatWardsMasterId(int gpPanchayatWardsMasterId)
+        {
+            return await _eamsRepository.GetResultHistoryByGPPanchayatWardsMasterId(gpPanchayatWardsMasterId);
         }
         public async Task<List<BoothResultList>> GetBoothResultListByFourthLevelId(int fourthlevelMasterId)
         {
@@ -2532,6 +2536,11 @@ namespace EAMS_BLL.Services
         public async Task<List<CombinedPanchayatMaster>> GetFourthLevelHExistInRDListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
             return await _eamsRepository.GetFourthLevelHExistInRDListById(stateMasterId, districtMasterId, assemblyMasterId);
+        }
+
+        public async Task<List<CombinedGPWardMaster>> GetGPWardExistInRDListByFourthLevelHMasterId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.GetGPWardExistInRDListByFourthLevelHMasterId(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, electionTypeMasterId);
         }
         public async Task<List<CombinedPanchayatMaster>> GetFourthLevelListByAROId(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId, string roId, string assginedType)
         {

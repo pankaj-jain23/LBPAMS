@@ -1076,6 +1076,23 @@ namespace EAMS.Controllers
 
         }
 
+        [HttpGet("GetResultHistoryByGPPanchayatWardsMasterId")]
+        //[Authorize]
+        public async Task<IActionResult> GetResultHistoryByGPPanchayatWardsMasterId(int gpPanchayatWardsMasterId)
+        {
+            if (gpPanchayatWardsMasterId is 0)
+            {
+                return BadRequest("Fourth Level H MasterId is Required");
+            }
+            var result = await _eamsService.GetResultHistoryByGPPanchayatWardsMasterId(gpPanchayatWardsMasterId);
+            if (result is null)
+            {
+                return BadRequest();
+            }
+            return Ok(result);
+
+        }
+
         [HttpGet("GetBoothResultListByFourthLevelId")]
         //[Authorize]
         public async Task<IActionResult> GetBoothResultListByFourthLevelId(int fourthLevelHMasterId)

@@ -2151,6 +2151,34 @@ namespace EAMS.Controllers
             }
         }
 
+        [HttpGet("GetGPWardExistInRDListByFourthLevelHMasterId")]
+        public async Task<IActionResult> GetGPWardExistInRDListByFourthLevelHMasterId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int electionTypeMasterId)
+        {
+            // Validate input parameters (ensure they are greater than 0)
+            if (stateMasterId > 0 && districtMasterId > 0 && assemblyMasterId > 0)
+            {
+                var gpWardList = await _EAMSService.GetGPWardExistInRDListByFourthLevelHMasterId(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, electionTypeMasterId);
+
+                if (gpWardList != null && gpWardList.Any()) // Check if data is not null and contains elements
+                {
+                    var response = new
+                    {
+                        count = gpWardList.Count,
+                        data = gpWardList
+                    };
+                    return Ok(response);
+                }
+                else
+                {
+                    return NotFound("No records found.");
+                }
+            }
+            else
+            {
+                return BadRequest("StateMasterId, DistrictMasterId, and AssemblyMasterId must be greater than 0.");
+            }
+        }
+
         [HttpPut]
         [Route("UpdateFourthLevelH")]
         [Authorize]
