@@ -18485,7 +18485,7 @@ namespace EAMS_DAL.Repository
             var isExist = await _context.Kyc.Where(d => d.KycMasterId == kycMasterId).FirstOrDefaultAsync();
             if (isExist.FourthLevelHMasterId != 0 && isExist.GPPanchayatWardsMasterId != 0)//GpWard Panch
             {
-                var kycCount = await _context.Kyc.Where(d => d.GPPanchayatWardsMasterId == isExist.GPPanchayatWardsMasterId&&d.IsNOTA== false).CountAsync();
+                var kycCount = await _context.Kyc.Where(d => d.GPPanchayatWardsMasterId == isExist.GPPanchayatWardsMasterId && d.IsNOTA == false).CountAsync();
                 if (kycCount == 1)
                 {
                     // Delete the NOTA record
@@ -20276,8 +20276,13 @@ namespace EAMS_DAL.Repository
             {
                 await AddGramPanchayatResultDeclarationAsync(resultDeclaration);
             }
-            // Check if any item in the list has ElectionTypeMasterId == 4, 5, or 6 (for Municipal Corporation, Municipal Council, and Nagar Panchayat)
-            else if (resultDeclaration.Any(r => r.ElectionTypeMasterId == 4 || r.ElectionTypeMasterId == 5 || r.ElectionTypeMasterId == 6))
+            // Check if all items in the list have ElectionTypeMasterId == 2 (for Zila Parishad)
+            else if (resultDeclaration.All(r => r.ElectionTypeMasterId == 2))
+            {
+                await AddZilaParishadResultDeclarationAsync(resultDeclaration);
+            }
+            // Check if any item in the list has ElectionTypeMasterId == 3, 4, 5, or 6 (for Panchayat Samiti Municipal Corporation, Municipal Council, and Nagar Panchayat)
+            else if (resultDeclaration.Any(r => r.ElectionTypeMasterId == 3 || r.ElectionTypeMasterId == 4 || r.ElectionTypeMasterId == 5 || r.ElectionTypeMasterId == 6))
             {
                 await AddMCorpMCounAndNPResultDeclarationAsync(resultDeclaration);
             }
@@ -20341,6 +20346,78 @@ namespace EAMS_DAL.Repository
                         ResultDecStatus = true, // Assuming you want to set this as active
                         BoothMasterId = resultCandidate.BoothMasterId
 
+                    };
+
+                    // Link the foreign key to the appropriate ResultDeclaration
+                    if (existingResult is null)
+                    {
+                        historyEntry.ResultDeclarationMasterId = resultCandidate.ResultDeclarationMasterId;
+                    }
+                    else
+                    {
+                        historyEntry.ResultDeclarationMasterId = existingResult.ResultDeclarationMasterId;
+                    }
+
+                    await _context.ResultDeclarationHistory.AddAsync(historyEntry);
+                }
+            }
+
+            // Save all changes to the database
+            await _context.SaveChangesAsync();
+        }
+        private async Task AddZilaParishadResultDeclarationAsync(List<ResultDeclaration> resultDeclaration)
+        {
+            foreach (var resultCandidate in resultDeclaration)
+            {
+                // Check if an existing record is present for the candidate
+                var existingResult = await _context.ResultDeclaration
+                    .FirstOrDefaultAsync(d => d.StateMasterId == resultCandidate.StateMasterId &&
+                                               d.DistrictMasterId == resultCandidate.DistrictMasterId &&
+                                               d.ElectionTypeMasterId == resultCandidate.ElectionTypeMasterId &&
+                                               d.AssemblyMasterId == resultCandidate.AssemblyMasterId &&
+                                               d.KycMasterId == resultCandidate.KycMasterId);
+
+                if (existingResult != null)
+                {
+                    // Update existing record with new details
+                    existingResult.VoteMargin = resultCandidate.VoteMargin;
+                    existingResult.IsWinner = resultCandidate.IsWinner;
+                    existingResult.IsResultDeclared = resultCandidate.IsResultDeclared;
+                    existingResult.IsDraw = resultCandidate.IsDraw;
+                    existingResult.IsDrawLottery = resultCandidate.IsDrawLottery;
+                    existingResult.IsReCounting = resultCandidate.IsReCounting;
+                    existingResult.ResultDecUpdatedAt = DateTime.UtcNow; // Update timestamp
+                }
+                else
+                {
+                    // Insert a new record if no existing record is found
+                    await _context.ResultDeclaration.AddAsync(resultCandidate);
+                    await _context.SaveChangesAsync(); // Save to generate IDs
+                }
+
+                // Add history entry if the candidate is not a winner
+                if (!resultCandidate.IsWinner)
+                {
+                    var historyEntry = new ResultDeclarationHistory
+                    {
+                        StateMasterId = resultCandidate.StateMasterId,
+                        DistrictMasterId = resultCandidate.DistrictMasterId,
+                        ElectionTypeMasterId = resultCandidate.ElectionTypeMasterId,
+                        AssemblyMasterId = resultCandidate.AssemblyMasterId,
+                        ResultDeclaredByMobile = resultCandidate.ResultDeclaredByMobile,
+                        ResultDeclaredByPortal = resultCandidate.ResultDeclaredByPortal,
+                        KycMasterId = resultCandidate.KycMasterId,
+                        VoteMargin = resultCandidate.VoteMargin,
+                        IsWinner = resultCandidate.IsWinner, // Pass IsWinner value
+                        IsResultDeclared = false, // Assuming non-winners have this set to false
+                        IsDraw = resultCandidate.IsDraw, // Pass IsDraw value
+                        IsDrawLottery = resultCandidate.IsDrawLottery, // Pass IsDrawLottery value
+                        IsReCounting = resultCandidate.IsReCounting, // Pass IsReCounting value
+                        ResultDecCreatedAt = DateTime.UtcNow, // Set creation time
+                        ResultDecUpdatedAt = DateTime.UtcNow, // Set update time
+                        ResultDecStatus = true, // Assuming you want to set this as active
+                        BoothMasterId = resultCandidate.BoothMasterId,
+                        GPPanchayatWardsMasterId = resultCandidate.GPPanchayatWardsMasterId,
                     };
 
                     // Link the foreign key to the appropriate ResultDeclaration
@@ -20683,6 +20760,7 @@ namespace EAMS_DAL.Repository
                                     join elec in _context.ElectionTypeMaster on gpPanchayatWards.ElectionTypeMasterId equals elec.ElectionTypeMasterId into elcJoin
                                     from elec in elcJoin.DefaultIfEmpty()
                                     where gpPanchayatWards.GPPanchayatWardsMasterId == gpPanchayatWardsMasterId
+                                    orderby gpPanchayatWards.GPPanchayatWardsCode
                                     select new ResultDeclarationBoothWardList
                                     {
                                         StateMasterId = state.StateMasterId,
@@ -21039,7 +21117,7 @@ namespace EAMS_DAL.Repository
                 IsDrawLottery = c.result?.IsDrawLottery ?? false, // Default to false if result is null
                 IsReCounting = c.result?.IsReCounting ?? false, // Default to false if result is null
                 VoteMargin = c.result?.VoteMargin ?? null,
-                IsNOTA= c.kycCandidate.IsNOTA
+                IsNOTA = c.kycCandidate.IsNOTA
             }).ToList();
 
             return candidateList;
@@ -21709,7 +21787,8 @@ namespace EAMS_DAL.Repository
             // Perform inner join with ResultDeclaration and group by FourthLevelHMasterId
             var combinedList = from ft in boothList
                                join results in _context.ResultDeclaration
-                                   on ft.FourthLevelHMasterId equals results.FourthLevelHMasterId
+                            on ft.FourthLevelHMasterId equals results.FourthLevelHMasterId
+                               where results.GPPanchayatWardsMasterId == 0
                                join asem in _context.AssemblyMaster.Where(a => a.AssemblyStatus == true)
                                    on ft.AssemblyMasterId equals asem.AssemblyMasterId
                                join dist in _context.DistrictMaster.Where(d => d.DistrictStatus == true)
@@ -21750,11 +21829,20 @@ namespace EAMS_DAL.Repository
             // Use AsNoTracking for better performance
             return await combinedList.AsNoTracking().ToListAsync();
         }
-
         public async Task<List<CombinedGPWardMaster>> GetGPWardExistInRDListByFourthLevelHMasterId(
-    int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int electionTypeMasterId)
+    int stateMasterId, int districtMasterId, int assemblyMasterId,
+    int fourthLevelHMasterId, int electionTypeMasterId)
         {
-            // Start the query for FourthLevelH with filters
+            // Filtered ResultDeclaration table based on given conditions
+            var resultDeclarationList = _context.ResultDeclaration
+                .Where(d => d.StateMasterId == stateMasterId
+                            && d.DistrictMasterId == districtMasterId
+                            && d.AssemblyMasterId == assemblyMasterId
+                            && d.FourthLevelHMasterId == fourthLevelHMasterId
+                            && d.ElectionTypeMasterId == electionTypeMasterId)
+                .AsQueryable();
+
+            // Fetch the filtered list of Panchayat Wards
             var boothList = _context.GPPanchayatWards
                 .Where(d => d.StateMasterId == stateMasterId
                             && d.DistrictMasterId == districtMasterId
@@ -21764,57 +21852,190 @@ namespace EAMS_DAL.Repository
                             && d.GPPanchayatWardsStatus == true)
                 .AsQueryable();
 
-            // Perform inner join with ResultDeclaration and group by FourthLevelHMasterId
-            var combinedList = from ft in boothList
-                               join results in _context.ResultDeclaration
-                                   on ft.GPPanchayatWardsMasterId equals results.GPPanchayatWardsMasterId
-
+            // Join tables and apply necessary filters
+            var combinedList = from gp in boothList
+                               join results in resultDeclarationList
+                                   on gp.GPPanchayatWardsMasterId equals results.GPPanchayatWardsMasterId
                                join fth in _context.FourthLevelH.Where(a => a.HierarchyStatus == true)
-                               on ft.FourthLevelHMasterId equals fth.FourthLevelHMasterId
-
+                                   on gp.FourthLevelHMasterId equals fth.FourthLevelHMasterId
                                join asem in _context.AssemblyMaster.Where(a => a.AssemblyStatus == true)
-                                   on ft.AssemblyMasterId equals asem.AssemblyMasterId
+                                   on gp.AssemblyMasterId equals asem.AssemblyMasterId
                                join dist in _context.DistrictMaster.Where(d => d.DistrictStatus == true)
                                    on asem.DistrictMasterId equals dist.DistrictMasterId
                                join state in _context.StateMaster.Where(s => s.StateStatus == true)
                                    on dist.StateMasterId equals state.StateMasterId
                                join elec in _context.ElectionTypeMaster.Where(e => e.ElectionStatus == true)
-                                   on ft.ElectionTypeMasterId equals elec.ElectionTypeMasterId
-                               group new { ft, fth, results, asem, dist, state, elec } by ft.FourthLevelHMasterId into grouped
+                                   on gp.ElectionTypeMasterId equals elec.ElectionTypeMasterId
+                               group new { gp, fth, results, asem, dist, state, elec }
+                               by gp.GPPanchayatWardsMasterId into grouped
                                orderby grouped.Key
                                select new CombinedGPWardMaster
                                {
                                    StateId = stateMasterId,
-                                   DistrictId = grouped.FirstOrDefault().dist.DistrictMasterId,
-                                   AssemblyId = grouped.FirstOrDefault().asem.AssemblyMasterId,
-                                   AssemblyName = grouped.FirstOrDefault().asem.AssemblyName,
-                                   AssemblyCode = grouped.FirstOrDefault().asem.AssemblyCode,
-                                   FourthLevelHMasterId = grouped.Key,
-                                   HierarchyName = grouped.FirstOrDefault().fth.HierarchyName,
-                                   HierarchyCode = grouped.FirstOrDefault().fth.HierarchyCode,
-                                   IsAssigned = grouped.FirstOrDefault().fth.IsAssignedRO,
-                                   GPPanchayatWardsMasterId = grouped.FirstOrDefault().ft.GPPanchayatWardsMasterId,
-                                   GPPanchayatWardsName = grouped.FirstOrDefault().ft.GPPanchayatWardsName,
-                                   GPPanchayatWardsCode = grouped.FirstOrDefault().ft.GPPanchayatWardsCode,
-                                   IsStatus = grouped.FirstOrDefault().ft.GPPanchayatWardsStatus,
-                                   ElectionTypeMasterId = grouped.FirstOrDefault().ft.ElectionTypeMasterId,
-                                   ElectionTypeName = grouped.FirstOrDefault().elec.ElectionType,
-                                   Male = grouped.FirstOrDefault().ft.Male,
-                                   Female = grouped.FirstOrDefault().ft.Female,
-                                   Transgender = grouped.FirstOrDefault().ft.Transgender,
-                                   TotalVoters = grouped.FirstOrDefault().ft.TotalVoters,
-                                   IsCC = grouped.FirstOrDefault().ft.IsCC,
-                                   IsNN = grouped.FirstOrDefault().ft.IsNN,
-                                   IsWinner = grouped.Any(r => r.results.IsWinner),
-                                   IsReCounting = grouped.Any(r => r.results.IsReCounting),
-                                   IsResultDeclared = grouped.Any(r => r.results.IsResultDeclared),
-                                   IsDraw = grouped.Any(r => r.results.IsDraw),
-                                   IsDrawLottery = grouped.Any(r => r.results.IsDrawLottery)
+                                   DistrictId = grouped.First().dist.DistrictMasterId,
+                                   AssemblyId = grouped.First().asem.AssemblyMasterId,
+                                   AssemblyName = grouped.First().asem.AssemblyName,
+                                   AssemblyCode = grouped.First().asem.AssemblyCode,
+                                   FourthLevelHMasterId = grouped.First().fth.FourthLevelHMasterId,
+                                   HierarchyName = grouped.First().fth.HierarchyName,
+                                   HierarchyCode = grouped.First().fth.HierarchyCode,
+                                   IsAssigned = grouped.First().fth.IsAssignedRO,
+                                   GPPanchayatWardsMasterId = grouped.Key,
+                                   GPPanchayatWardsName = grouped.First().gp.GPPanchayatWardsName,
+                                   GPPanchayatWardsCode = grouped.First().gp.GPPanchayatWardsCode,
+                                   IsStatus = grouped.First().gp.GPPanchayatWardsStatus,
+                                   ElectionTypeMasterId = grouped.First().gp.ElectionTypeMasterId,
+                                   ElectionTypeName = grouped.First().elec.ElectionType,
+                                   Male = grouped.Sum(x => x.gp.Male),  // Summing Male voters
+                                   Female = grouped.Sum(x => x.gp.Female), // Summing Female voters
+                                   Transgender = grouped.Sum(x => x.gp.Transgender), // Summing Transgender voters
+                                   TotalVoters = grouped.Sum(x => x.gp.TotalVoters), // Summing Total Voters
+                                   IsCC = grouped.First().gp.IsCC,
+                                   IsNN = grouped.First().gp.IsNN,
+                                   IsWinner = grouped.Any(x => x.results.IsWinner), // If any record has IsWinner = true
+                                   IsReCounting = grouped.Any(x => x.results.IsReCounting),
+                                   IsResultDeclared = grouped.Any(x => x.results.IsResultDeclared),
+                                   IsDraw = grouped.Any(x => x.results.IsDraw),
+                                   IsDrawLottery = grouped.Any(x => x.results.IsDrawLottery)
                                };
 
-            // Use AsNoTracking for better performance
-            return await combinedList.AsNoTracking().ToListAsync();
+            // Use AsNoTracking for performance boost
+            return await combinedList.OrderBy(x => x.GPPanchayatWardsCode).AsNoTracking().ToListAsync();
         }
+
+        //    public async Task<List<CombinedGPWardMaster>> GetGPWardExistInRDListByFourthLevelHMasterId(
+        //int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int electionTypeMasterId)
+        //    {
+        //        // Fetch the booth list with necessary filters
+        //        var boothList = _context.GPPanchayatWards
+        //            .Where(d => d.StateMasterId == stateMasterId
+        //                        && d.DistrictMasterId == districtMasterId
+        //                        && d.AssemblyMasterId == assemblyMasterId
+        //                        && d.FourthLevelHMasterId == fourthLevelHMasterId
+        //                        && d.ElectionTypeMasterId == electionTypeMasterId
+        //                        && d.GPPanchayatWardsStatus == true)
+        //            .AsQueryable();
+
+        //        // Perform inner join with ResultDeclaration and other tables, grouping by FourthLevelHMasterId
+        //        var combinedList = from gp in boothList
+        //                           join results in _context.ResultDeclaration
+        //                        on gp.FourthLevelHMasterId equals results.FourthLevelHMasterId
+        //                           where results.GPPanchayatWardsMasterId != 0
+
+        //                           join fth in _context.FourthLevelH.Where(a => a.HierarchyStatus == true)
+        //                               on gp.FourthLevelHMasterId equals fth.FourthLevelHMasterId
+
+        //                           join asem in _context.AssemblyMaster.Where(a => a.AssemblyStatus == true)
+        //                               on gp.AssemblyMasterId equals asem.AssemblyMasterId
+        //                           join dist in _context.DistrictMaster.Where(d => d.DistrictStatus == true)
+        //                               on asem.DistrictMasterId equals dist.DistrictMasterId
+        //                           join state in _context.StateMaster.Where(s => s.StateStatus == true)
+        //                               on dist.StateMasterId equals state.StateMasterId
+        //                           join elec in _context.ElectionTypeMaster.Where(e => e.ElectionStatus == true)
+        //                               on gp.ElectionTypeMasterId equals elec.ElectionTypeMasterId
+
+        //                           group new { gp, fth, results, asem, dist, state, elec } by gp.GPPanchayatWardsMasterId into grouped
+        //                           orderby grouped.Key
+        //                           select new CombinedGPWardMaster
+        //                           {
+        //                               StateId = stateMasterId,
+        //                               DistrictId = grouped.First().dist.DistrictMasterId,
+        //                               AssemblyId = grouped.First().asem.AssemblyMasterId,
+        //                               AssemblyName = grouped.First().asem.AssemblyName,
+        //                               AssemblyCode = grouped.First().asem.AssemblyCode,
+        //                               FourthLevelHMasterId = grouped.First().fth.FourthLevelHMasterId,
+        //                               HierarchyName = grouped.First().fth.HierarchyName,
+        //                               HierarchyCode = grouped.First().fth.HierarchyCode,
+        //                               IsAssigned = grouped.First().fth.IsAssignedRO,
+        //                               GPPanchayatWardsMasterId = grouped.Key,
+        //                               //GPPanchayatWardsMasterId = grouped.First().ft.GPPanchayatWardsMasterId,
+        //                               GPPanchayatWardsName = grouped.First().gp.GPPanchayatWardsName,
+        //                               GPPanchayatWardsCode = grouped.First().gp.GPPanchayatWardsCode,
+        //                               IsStatus = grouped.First().gp.GPPanchayatWardsStatus,
+        //                               ElectionTypeMasterId = grouped.First().gp.ElectionTypeMasterId,
+        //                               ElectionTypeName = grouped.First().elec.ElectionType,
+        //                               Male = grouped.Sum(x => x.gp.Male),  // Summing Male voters
+        //                               Female = grouped.Sum(x => x.gp.Female), // Summing Female voters
+        //                               Transgender = grouped.Sum(x => x.gp.Transgender), // Summing Transgender voters
+        //                               TotalVoters = grouped.Sum(x => x.gp.TotalVoters), // Summing Total Voters
+        //                               IsCC = grouped.First().gp.IsCC,
+        //                               IsNN = grouped.First().gp.IsNN,
+        //                               IsWinner = grouped.Any(x => x.results.IsWinner), // If any record has IsWinner = true
+        //                               IsReCounting = grouped.Any(x => x.results.IsReCounting),
+        //                               IsResultDeclared = grouped.Any(x => x.results.IsResultDeclared),
+        //                               IsDraw = grouped.Any(x => x.results.IsDraw),
+        //                               IsDrawLottery = grouped.Any(x => x.results.IsDrawLottery)
+        //                           };
+
+        //        // Use AsNoTracking for performance boost
+        //        return await combinedList.OrderBy(x => x.GPPanchayatWardsCode).AsNoTracking().ToListAsync();
+        //    }
+
+
+        //    public async Task<List<CombinedGPWardMaster>> GetGPWardExistInRDListByFourthLevelHMasterId(
+        //int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int electionTypeMasterId)
+        //    {
+        //        // Start the query for FourthLevelH with filters
+        //        var boothList = _context.GPPanchayatWards
+        //            .Where(d => d.StateMasterId == stateMasterId
+        //                        && d.DistrictMasterId == districtMasterId
+        //                        && d.AssemblyMasterId == assemblyMasterId
+        //                        && d.FourthLevelHMasterId == fourthLevelHMasterId
+        //                        && d.ElectionTypeMasterId == electionTypeMasterId
+        //                        && d.GPPanchayatWardsStatus == true)
+        //            .AsQueryable();
+
+        //        // Perform inner join with ResultDeclaration and group by FourthLevelHMasterId
+        //        var combinedList = from ft in boothList
+        //                           join results in _context.ResultDeclaration
+        //                               on ft.GPPanchayatWardsMasterId equals results.GPPanchayatWardsMasterId
+
+        //                           join fth in _context.FourthLevelH.Where(a => a.HierarchyStatus == true)
+        //                           on ft.FourthLevelHMasterId equals fth.FourthLevelHMasterId
+
+        //                           join asem in _context.AssemblyMaster.Where(a => a.AssemblyStatus == true)
+        //                               on ft.AssemblyMasterId equals asem.AssemblyMasterId
+        //                           join dist in _context.DistrictMaster.Where(d => d.DistrictStatus == true)
+        //                               on asem.DistrictMasterId equals dist.DistrictMasterId
+        //                           join state in _context.StateMaster.Where(s => s.StateStatus == true)
+        //                               on dist.StateMasterId equals state.StateMasterId
+        //                           join elec in _context.ElectionTypeMaster.Where(e => e.ElectionStatus == true)
+        //                               on ft.ElectionTypeMasterId equals elec.ElectionTypeMasterId
+        //                           group new { ft, fth, results, asem, dist, state, elec } by ft.FourthLevelHMasterId into grouped
+        //                           orderby grouped.Key
+        //                           select new CombinedGPWardMaster
+        //                           {
+        //                               StateId = stateMasterId,
+        //                               DistrictId = grouped.FirstOrDefault().dist.DistrictMasterId,
+        //                               AssemblyId = grouped.FirstOrDefault().asem.AssemblyMasterId,
+        //                               AssemblyName = grouped.FirstOrDefault().asem.AssemblyName,
+        //                               AssemblyCode = grouped.FirstOrDefault().asem.AssemblyCode,
+        //                               FourthLevelHMasterId = grouped.Key,
+        //                               HierarchyName = grouped.FirstOrDefault().fth.HierarchyName,
+        //                               HierarchyCode = grouped.FirstOrDefault().fth.HierarchyCode,
+        //                               IsAssigned = grouped.FirstOrDefault().fth.IsAssignedRO,
+        //                               GPPanchayatWardsMasterId = grouped.FirstOrDefault().ft.GPPanchayatWardsMasterId,
+        //                               GPPanchayatWardsName = grouped.FirstOrDefault().ft.GPPanchayatWardsName,
+        //                               GPPanchayatWardsCode = grouped.FirstOrDefault().ft.GPPanchayatWardsCode,
+        //                               IsStatus = grouped.FirstOrDefault().ft.GPPanchayatWardsStatus,
+        //                               ElectionTypeMasterId = grouped.FirstOrDefault().ft.ElectionTypeMasterId,
+        //                               ElectionTypeName = grouped.FirstOrDefault().elec.ElectionType,
+        //                               Male = grouped.FirstOrDefault().ft.Male,
+        //                               Female = grouped.FirstOrDefault().ft.Female,
+        //                               Transgender = grouped.FirstOrDefault().ft.Transgender,
+        //                               TotalVoters = grouped.FirstOrDefault().ft.TotalVoters,
+        //                               IsCC = grouped.FirstOrDefault().ft.IsCC,
+        //                               IsNN = grouped.FirstOrDefault().ft.IsNN,
+        //                               IsWinner = grouped.Any(r => r.results.IsWinner),
+        //                               IsReCounting = grouped.Any(r => r.results.IsReCounting),
+        //                               IsResultDeclared = grouped.Any(r => r.results.IsResultDeclared),
+        //                               IsDraw = grouped.Any(r => r.results.IsDraw),
+        //                               IsDrawLottery = grouped.Any(r => r.results.IsDrawLottery)
+        //                           };
+
+        //        // Use AsNoTracking for better performance
+        //        return await combinedList.OrderBy(x => x.GPPanchayatWardsCode).AsNoTracking().ToListAsync();
+        //    }
         public async Task<List<CombinedPanchayatMaster>> GetFourthLevelListByAROId(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId, string roId, string assignedType)
         {
             // Start the query for the boothList
