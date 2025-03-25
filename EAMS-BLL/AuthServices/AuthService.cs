@@ -170,7 +170,7 @@ namespace EAMS_BLL.AuthServices
                 // Generate new OTP and update user details
                 user.OTP = GenerateOTP();
                 user.OTPGeneratedTime = DateTime.UtcNow;
-                user.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 1, 0);
+                user.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 10, 0);
                 var isOtpSend = await _external.SendSmsAsync(user.PhoneNumber, user.OTP);
                 if (isOtpSend.IsSucceed == true)
                 {

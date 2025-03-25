@@ -21,8 +21,6 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Polly;
-using Polly.Retry;
 using Serilog;
 using StackExchange.Redis;
 using System.Text;
@@ -129,13 +127,18 @@ builder.Services.AddHttpClient<IExternal, ExternalService>("SmsClient", client =
     client.BaseAddress = new Uri("http://10.44.250.220/");
     client.DefaultRequestHeaders.Add("SOAPAction", "http://tempuri.org/SendSMS");
     client.DefaultRequestHeaders.Add("Accept", "application/xml");
+    client.DefaultRequestHeaders.ConnectionClose = false;
+
 }).ConfigurePrimaryHttpMessageHandler(() =>
 {
     return new SocketsHttpHandler
     {
-        PooledConnectionLifetime = TimeSpan.FromDays(1) // Reuse connections for 10 minutes
+        PooledConnectionLifetime = TimeSpan.FromHours(1),  // Shorter lifespan ensures fresh connections
+        PooledConnectionIdleTimeout = TimeSpan.FromMinutes(10)// Prevent stale connections
+
     };
 });
+
 
 
 builder.Services.AddSingleton<IExternal, ExternalService>(); // Makes ExternalService a Singleton
