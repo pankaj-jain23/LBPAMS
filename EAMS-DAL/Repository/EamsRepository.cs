@@ -19211,7 +19211,8 @@ namespace EAMS_DAL.Repository
                                               && p.DistrictMasterId == updatedPSZonePanchayat.DistrictMasterId
                                               && p.AssemblyMasterId == updatedPSZonePanchayat.AssemblyMasterId
                                               && p.ElectionTypeMasterId == updatedPSZonePanchayat.ElectionTypeMasterId
-                                              && p.FourthLevelHMasterId == updatedPSZonePanchayat.FourthLevelHMasterId);
+                                              && p.FourthLevelHMasterId == updatedPSZonePanchayat.FourthLevelHMasterId
+                                              && p.PSZonePanchayatMasterId != updatedPSZonePanchayat.PSZonePanchayatMasterId);
 
                 if (existingPanchayat != null)
                 {
