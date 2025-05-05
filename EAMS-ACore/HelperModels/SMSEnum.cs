@@ -30,7 +30,11 @@
         OTP,
 
         [StringValue("Message Accepted")]
-        MessageAccepted
+        MessageAccepted,
+        [StringValue("1407172864305172651")]
+        TemplateId,
+        [StringValue("OTP")]
+        SMSName,
     }
 
     public class StringValueAttribute : Attribute

@@ -12,7 +12,7 @@ namespace EAMS_ACore.Interfaces
         Task<ServiceResponse> UpdateSMSTemplateById(SMSTemplate sMSTemplate);
         Task<SMSTemplate> GetSMSTemplateById(string smsTemplateMasterId);
         Task<ServiceResponse> SendSMSToSectorOfficers(SendSMSModel sendsmsModel);
-        Task<ServiceResponse> SendOtp(string mobile, string otp);
+      
         Task<List<Notification>> GetNotification();
         Task<List<SMSTemplateModel>> GetSMSTemplate();
 

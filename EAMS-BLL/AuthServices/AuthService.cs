@@ -3,6 +3,7 @@ using EAMS_ACore.AuthInterfaces;
 using EAMS_ACore.AuthModels;
 using EAMS_ACore.HelperModels;
 using EAMS_ACore.IAuthRepository;
+using EAMS_ACore.IExternal;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.IRepository;
 using EAMS_ACore.Models;
@@ -24,11 +25,13 @@ namespace EAMS_BLL.AuthServices
         private readonly IAuthRepository _authRepository;
         private readonly IEamsService _EAMSService;
         private readonly IEamsRepository _eamsRepository;
-        private readonly INotificationService _notificationService;
+        private readonly IExternal _external;
         private readonly UserManager<UserRegistration> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ILogger<AuthService> _logger;
-        public AuthService(IConfiguration configuration, IAuthRepository authRepository, UserManager<UserRegistration> userManager, RoleManager<IdentityRole> roleManager, IEamsService eamsService, IEamsRepository eamsRepository, INotificationService notificationService, ILogger<AuthService> logger)
+        public AuthService(IConfiguration configuration, IAuthRepository authRepository, UserManager<UserRegistration> userManager,
+            RoleManager<IdentityRole> roleManager, IEamsService eamsService,
+            IEamsRepository eamsRepository, IExternal external, ILogger<AuthService> logger)
         {
             _configuration = configuration;
             _authRepository = authRepository;
@@ -36,7 +39,7 @@ namespace EAMS_BLL.AuthServices
             _roleManager = roleManager;
             _EAMSService = eamsService;
             _eamsRepository = eamsRepository;
-            _notificationService = notificationService;
+            _external = external;
             _logger = logger;
         }
 
@@ -77,7 +80,7 @@ namespace EAMS_BLL.AuthServices
                     Message = "User Name or Password is Invalid"
                 };
             }
-            if (user.LockoutEnabled)
+            if (!user.LockoutEnabled)
             {
                 return new Token()
                 {
@@ -92,6 +95,7 @@ namespace EAMS_BLL.AuthServices
                 return new Token()
                 {
                     IsSucceed = false,
+                    IsOtp=true,
                     Message = isDashBoardUserValidate.Message
 
                 };
@@ -166,8 +170,8 @@ namespace EAMS_BLL.AuthServices
                 // Generate new OTP and update user details
                 user.OTP = GenerateOTP();
                 user.OTPGeneratedTime = DateTime.UtcNow;
-                user.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 1, 0);
-                var isOtpSend = await _notificationService.SendOtp(user.PhoneNumber, user.OTP);
+                user.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 10, 0);
+                var isOtpSend = await _external.SendSmsAsync(user.PhoneNumber, user.OTP);
                 if (isOtpSend.IsSucceed == true)
                 {
                     var updateUserResult = await _authRepository.UpdateUser(user);
@@ -232,7 +236,7 @@ namespace EAMS_BLL.AuthServices
                     return new ServiceResponse()
                     {
                         IsSucceed = false,
-                        Message = "Password Expired Kindly Reset it or Try to Forget Password"
+                        Message = "Your user is expired. Use Forgot Password to reset it"
                     };
                 }
 
@@ -318,7 +322,7 @@ namespace EAMS_BLL.AuthServices
 
 
         #region Register
-        public async Task<ServiceResponse> RegisterAsync(UserRegistration userRegistration, List<string> roleIds)
+        public async Task<AuthServiceResponse> RegisterAsync(UserRegistration userRegistration, List<string> roleIds)
         {
 
             var userExists = await _authRepository.FindUserByName(userRegistration);
@@ -332,7 +336,7 @@ namespace EAMS_BLL.AuthServices
                 var passwordValidationResult = ValidatePassword(userRegistration.PasswordHash);
                 if (!passwordValidationResult.IsValid)
                 {
-                    return new ServiceResponse
+                    return new AuthServiceResponse
                     {
                         IsSucceed = false,
                         Message = passwordValidationResult.ErrorMessage
@@ -409,14 +413,14 @@ namespace EAMS_BLL.AuthServices
 
                     // Generate a new OTP and update Field Officer's record
                     foRecords.OTP = generatedOtp;
-                    foRecords.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 2, 0);
+                    foRecords.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 10, 0);
                     foRecords.OTPAttempts += 1;
 
                     var updateFO = await _eamsRepository.UpdateFieldOfficerValidate(foRecords);
                     if (updateFO.Status == RequestStatusEnum.OK)
                     {
                         // Send OTP via SMS
-                        var sendOtpResponse = await _notificationService.SendOtp(foRecords.FieldOfficerMobile, foRecords.OTP);
+                        var sendOtpResponse = await _external.SendSmsAsync(foRecords.FieldOfficerMobile, foRecords.OTP);
                         if (sendOtpResponse.IsSucceed)
                         {
                             return new Response { Status = RequestStatusEnum.OK, Message = $"OTP Sent to {foRecords.FieldOfficerMobile}" };
@@ -430,14 +434,14 @@ namespace EAMS_BLL.AuthServices
                 {
                     // Generate a new OTP and update ARO's record
                     aroRecords.OTP = generatedOtp;
-                    aroRecords.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 0, 60);
+                    aroRecords.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 10, 0);
                     aroRecords.OTPAttempts += 1;
 
                     var updateARO = await _eamsRepository.UpdateAROValidate(aroRecords);
                     if (updateARO.Status == RequestStatusEnum.OK)
                     {
                         // Send OTP via SMS
-                        var sendOtpResponse = await _notificationService.SendOtp(aroRecords.AROMobile, aroRecords.OTP);
+                        var sendOtpResponse = await _external.SendSmsAsync(aroRecords.AROMobile, aroRecords.OTP);
                         if (sendOtpResponse.IsSucceed)
                         {
                             return new Response { Status = RequestStatusEnum.OK, Message = $"OTP Sent to {aroRecords.AROMobile}" };
@@ -1050,7 +1054,7 @@ namespace EAMS_BLL.AuthServices
         public async Task<ServiceResponse> ForgetPassword(ForgetPasswordModel forgetPasswordModel)
         {
             var timeNow = BharatDateTime();
-            var user = await _userManager.Users.FirstOrDefaultAsync(d => d.PhoneNumber == forgetPasswordModel.MobileNumber);
+            var user = await _userManager.Users.FirstOrDefaultAsync(d => d.PhoneNumber == forgetPasswordModel.MobileNumber&&d.UserName==forgetPasswordModel.UserName);
 
             // Check if OTP is provided and is greater than 5 characters
             if (!string.IsNullOrEmpty(forgetPasswordModel.OTP) && forgetPasswordModel.OTP.Length > 5)
@@ -1084,7 +1088,7 @@ namespace EAMS_BLL.AuthServices
                 var otpExpireTime = BharatTimeDynamic(0, 0, 0, 3, 0);
 
                 // Send OTP
-                var isOtpSend = await _notificationService.SendOtp(forgetPasswordModel.MobileNumber, otp);
+                var isOtpSend = await _external.SendSmsAsync(forgetPasswordModel.MobileNumber, otp);
 
                 user.OTP = otp;
                 user.OTPExpireTime = otpExpireTime;
@@ -1171,6 +1175,10 @@ namespace EAMS_BLL.AuthServices
         {
             return await _authRepository.UpdateLockoutUser(updateLockoutUser);
         }
+        public async Task<int> UpdateLockoutUserInBulk(UpdateLockoutUserInBulk updateLockoutUser)
+        {
+            return await _authRepository.UpdateLockoutUserInBulk(updateLockoutUser);
+        }
 
         #endregion
 
@@ -1190,7 +1198,7 @@ namespace EAMS_BLL.AuthServices
                 // Generate a new OTP and update the user record
                 var generatedOtp = GenerateOTP();
                 user.OTP = generatedOtp;
-                user.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 0, 60);
+                user.OTPExpireTime = BharatTimeDynamic(0, 0, 0, 10, 0);
                 // var otpRecord = await _notificationService.SendOtp(mobileNumber, generatedOtp);
                 // Simulating OTP send and response
                 var otpRecord = new ServiceResponse

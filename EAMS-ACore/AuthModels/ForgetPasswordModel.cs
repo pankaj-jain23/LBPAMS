@@ -7,6 +7,7 @@ namespace EAMS_ACore.AuthModels
         [Required]
         [Phone]
         public string? MobileNumber { get; set; }
+        public string UserName{ get; set; }
 
         [DataType(DataType.Password)]
         public string? Password { get; set; }

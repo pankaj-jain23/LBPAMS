@@ -83,6 +83,13 @@ namespace EAMS.Helper
             CreateMap<UpdateLockoutUserViewModel, UpdateLockoutUser>()
            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
            .ForMember(dest => dest.LockoutEnabled, opt => opt.MapFrom(src => src.LockoutEnabled));
+
+            CreateMap<UpdateLockoutUserInBulkViewModel, UpdateLockoutUserInBulk>()
+          .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+          .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+          .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+          .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
+          .ForMember(dest => dest.LockoutEnabled, opt => opt.MapFrom(src => src.LockoutEnabled));
             #endregion
 
             #region NotificationViewModel NotificationModel

@@ -855,6 +855,44 @@ namespace EAMS.Controllers
 
             return Ok(data);
         }
+
+
+        /// <summary>
+        /// this will return all records of GP Voter if they have status false or true
+        /// </summary>
+        /// <param name="stateMasterId"></param>
+        /// <param name="districtMasterId"></param>
+        /// <param name="assemblyMasterId"></param>
+        /// <param name="electionTypeMasterId"></param>
+        /// <returns></returns>
+        [HttpGet("GetAllGPVoterListById")]
+        public async Task<IActionResult> GetAllGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
+        {
+          
+
+            // Determine whether to call the method with user ID or not
+            var result =   await _eamsService.GetAllGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId);
+
+
+
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            // Prepare the response data
+            var data = new
+            {
+                count = result.Count,
+                gpVoter = result,
+            };
+
+            return Ok(data);
+        }
+     
+        
+        
+        
         [HttpDelete("DeleteGPVoterById")]
         public async Task<IActionResult> DeleteGPVoterById(int gpVoterMasterId)
         {
@@ -1038,6 +1076,23 @@ namespace EAMS.Controllers
 
         }
 
+        [HttpGet("GetResultHistoryByGPPanchayatWardsMasterId")]
+        //[Authorize]
+        public async Task<IActionResult> GetResultHistoryByGPPanchayatWardsMasterId(int gpPanchayatWardsMasterId)
+        {
+            if (gpPanchayatWardsMasterId is 0)
+            {
+                return BadRequest("Fourth Level H MasterId is Required");
+            }
+            var result = await _eamsService.GetResultHistoryByGPPanchayatWardsMasterId(gpPanchayatWardsMasterId);
+            if (result is null)
+            {
+                return BadRequest();
+            }
+            return Ok(result);
+
+        }
+
         [HttpGet("GetBoothResultListByFourthLevelId")]
         //[Authorize]
         public async Task<IActionResult> GetBoothResultListByFourthLevelId(int fourthLevelHMasterId)
@@ -1047,6 +1102,22 @@ namespace EAMS.Controllers
                 return BadRequest("Booth MasterId is Required");
             }
             var result = await _eamsService.GetBoothResultListByFourthLevelId(fourthLevelHMasterId);
+            if (result is null)
+            {
+                return BadRequest();
+            }
+            return Ok(result);
+
+        }
+        [HttpGet("GetFourthLevelResultListByAssemblyId")]
+        //[Authorize]
+        public async Task<IActionResult> GetFourthLevelResultListByAssemblyId(int assemblyMasterId)
+        {
+            if (assemblyMasterId is 0)
+            {
+                return BadRequest("Assembly MasterId is Required");
+            }
+            var result = await _eamsService.GetFourthLevelResultListByAssemblyId(assemblyMasterId);
             if (result is null)
             {
                 return BadRequest();
