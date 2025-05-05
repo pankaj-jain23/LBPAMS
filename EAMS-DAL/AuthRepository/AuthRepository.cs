@@ -182,7 +182,7 @@ namespace EAMS_DAL.AuthRepository
                     return new AuthServiceResponse()
                     {
                         IsSucceed = false,
-                        Message = $"User with this number {userRegistration.PhoneNumber} is already Exist"
+                        Message = $"User with Mobile No. {userRegistration.PhoneNumber} is already Exist"
                     };
 
                 }

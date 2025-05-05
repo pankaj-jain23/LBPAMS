@@ -236,7 +236,7 @@ namespace EAMS_BLL.AuthServices
                     return new ServiceResponse()
                     {
                         IsSucceed = false,
-                        Message = "Password Expired Kindly Reset it or Try to Forget Password"
+                        Message = "Your user is expired. Use Forgot Password to reset it"
                     };
                 }
 
