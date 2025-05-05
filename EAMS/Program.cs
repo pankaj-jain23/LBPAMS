@@ -17,7 +17,7 @@ using EAMS_DAL.DBContext;
 using EAMS_DAL.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -121,7 +121,28 @@ builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IUserConnectionService, UserConnectionService>();
 builder.Services.AddScoped<IUserConnectionServiceRepository, UserConnectionServiceRepository>();
 builder.Services.AddScoped<IRealTime, RealTimeService>();
-builder.Services.AddScoped<IExternal, ExternalService>();
+
+builder.Services.AddHttpClient<IExternal, ExternalService>("SmsClient", client =>
+{
+    client.BaseAddress = new Uri("http://10.44.250.220/");
+    client.DefaultRequestHeaders.Add("SOAPAction", "http://tempuri.org/SendSMS");
+    client.DefaultRequestHeaders.Add("Accept", "application/xml");
+    client.DefaultRequestHeaders.ConnectionClose = false;
+
+}).ConfigurePrimaryHttpMessageHandler(() =>
+{
+    return new SocketsHttpHandler
+    {
+        PooledConnectionLifetime = TimeSpan.FromHours(1),  // Shorter lifespan ensures fresh connections
+        PooledConnectionIdleTimeout = TimeSpan.FromMinutes(10)// Prevent stale connections
+
+    };
+});
+
+
+
+builder.Services.AddSingleton<IExternal, ExternalService>(); // Makes ExternalService a Singleton
+
 builder.Services.AddScoped<ICacheService, CacheService>();
 //builder.Services.AddHostedService<DatabaseListenerService>();
 
@@ -177,13 +198,29 @@ var logger = new LoggerConfiguration()
 
 builder.Logging.AddSerilog(logger);
 
-var app = builder.Build();
- 
-if (app.Environment.IsDevelopment())
+builder.Services.AddResponseCompression(o =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    o.EnableForHttps = true;
+    o.Providers.Add<BrotliCompressionProvider>();
+    o.Providers.Add<GzipCompressionProvider>();
+});
+builder.Services.Configure<BrotliCompressionProviderOptions>(o =>
+{
+    o.Level = System.IO.Compression.CompressionLevel.Fastest;
+});
+builder.Services.Configure<GzipCompressionProviderOptions>(o =>
+{
+    o.Level = System.IO.Compression.CompressionLevel.Fastest;
+});
+// If you're using MemoryCache (for in-memory caching):
+builder.Services.AddDistributedMemoryCache();
+var app = builder.Build();
+app.UseResponseCompression();
+
+
+app.UseSwagger();
+app.UseSwaggerUI();
+
 
 
 app.UseCors();
@@ -198,11 +235,7 @@ app.MapHub<DashBoardHub>("/DashBoardHub", options =>
 app.UseStaticFiles();
 app.UseAuthorization();
 app.UseHttpsRedirection();
-//app.MapPost("/api/login", async (IAuthService authService, LoginRequest login) =>
-//{
-//    var result = await authService.LoginAsync(login);
-//    return result.Success ? Results.Ok(result) : Results.Unauthorized();
-//});
+
 app.MapControllers();
 
 app.Run();

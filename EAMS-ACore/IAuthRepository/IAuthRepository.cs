@@ -21,12 +21,12 @@ namespace EAMS_ACore.IAuthRepository
         Task<ServiceResponse> AddUpdateBLOMaster(BLOMaster bloMaster);
         Task<BLOMaster> GetBLOById(int bloId);
         Task<ServiceResponse> SectorOfficerMasterRecord(FieldOfficerMaster sectorOfficerMaster);
-        Task<ServiceResponse> FindUserByName(UserRegistration userRegistration);
+        Task<AuthServiceResponse> FindUserByName(UserRegistration userRegistration);
         Task<UserRegistration> FindUserByName(string userName);
         Task<List<UserRegistration>> FindUserListByName(string userName);
         Task<UserRegistration> CheckUserLogin(Login login);
         Task<UserRegistration> GetUserById(string userId);
-        Task<ServiceResponse> CreateUser(UserRegistration userRegistration, List<string> roleIds);
+        Task<AuthServiceResponse> CreateUser(UserRegistration userRegistration, List<string> roleIds);
         Task<ServiceResponse> SwitchDashboardUser(string userId, int electionTypeMasterId);
 
         Task<ServiceResponse> UpdateUser(UserRegistration userRegistration);
@@ -47,6 +47,7 @@ namespace EAMS_ACore.IAuthRepository
         Task<ServiceResponse> ResetPassword(ResetPasswordModel resetPasswordModel);
         Task<Dictionary<string, object>> GetUserList(GetUser getUser);
         Task<bool> UpdateLockoutUser(UpdateLockoutUser updateLockoutUser);
+        Task<int> UpdateLockoutUserInBulk(UpdateLockoutUserInBulk updateLockoutUserInBulk);
         Task<ElectionTypeMaster> GetElectionTypeById(int? electionTypeMasterId);
         Task<ServiceResponse> LoginWithTwoFactorCheckAsync(Login login);
 

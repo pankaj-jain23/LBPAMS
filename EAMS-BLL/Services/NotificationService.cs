@@ -1,5 +1,4 @@
-﻿using EAMS.Helper;
-using EAMS_ACore.HelperModels;
+﻿using EAMS_ACore.HelperModels;
 using EAMS_ACore.IExternal;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.IRepository;
@@ -8,10 +7,8 @@ using EAMS_ACore.ReportModels;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net;
-using System.Net.Http.Headers;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 namespace EAMS_BLL.Services
 {
     public class NotificationService : INotificationService
@@ -19,16 +16,15 @@ namespace EAMS_BLL.Services
         private readonly INotificationRepository _notificationRepository;
         private readonly FcmNotificationSetting _fcmNotificationSetting;
         private readonly ILogger<NotificationService> _logger;
-        private readonly IExternal _external;
-
-        public NotificationService(IOptions<FcmNotificationSetting> settings, INotificationRepository notificationRepository, ILogger<NotificationService> logger, IExternal external
-)
+        private readonly IExternal _external; 
+        public NotificationService(IOptions<FcmNotificationSetting> settings, INotificationRepository notificationRepository,
+        ILogger<NotificationService> logger, IExternal external )
         {
             _fcmNotificationSetting = settings.Value;
             _notificationRepository = notificationRepository;
             _logger = logger;
-            _external = external;   
-
+            _external = external;
+            
         }
         private DateTime? BharatDateTime()
         {
@@ -71,55 +67,11 @@ namespace EAMS_BLL.Services
         {
             return await _notificationRepository.UpdateSMSTemplateById(sMSTemplate);
         }
-        public async Task<ServiceResponse> SendOtp(string mobile, string otp)
-        {
-            string userNameSMS = SMSEnum.UserName.GetStringValue();
-            string password = SMSEnum.Password.GetStringValue();
-            string senderId = SMSEnum.SenderId.GetStringValue();
-            string entityId = SMSEnum.EntityId.GetStringValue();
-            string smsTypeOTP = SMSEnum.OTP.GetStringValue();
-            string placeholder = "{#var#}";
-
-            // Get the SMS template from the repository
-            var getTemplate = await _notificationRepository.GetSMSTemplateById(smsTypeOTP);
-            string template = getTemplate.Message;
-
-            // Replace the placeholder with the OTP
-            string finalsmsTemplateMsg = template.Replace(placeholder, otp.Trim());
-
-            // Call the SendSmsAsync method from ExternalService
-           var smsResponse = await _external.SendSmsAsync(userNameSMS, password, senderId, mobile, finalsmsTemplateMsg, entityId, getTemplate.TemplateId.ToString());
-
-            // Return the service response
-            return smsResponse;
-        }
+        
 
 
 
-        //public async Task<ServiceResponse> SendOtp(string mobile, string otp)
-        //{
-        //    string userNameSMS = SMSEnum.UserName.GetStringValue();
-        //    string password = SMSEnum.Password.GetStringValue();
-        //    string senderId = SMSEnum.SenderId.GetStringValue();
-        //    string entityId = SMSEnum.EntityId.GetStringValue();
-        //    string smsTypeOTP = SMSEnum.OTP.GetStringValue();
-        //    string placeholder = "{#var#}";
 
-        //    var getTemplate = await _notificationRepository.GetSMSTemplateById(smsTypeOTP);
-        //    string template = getTemplate.Message;
-
-        //    string finalsmsTemplateMsg = template.Replace(placeholder, otp.Trim());
-
-        //    var result = await SendSMSAsync(userNameSMS, password, senderId, mobile, finalsmsTemplateMsg, entityId, getTemplate.TemplateId.ToString());
-
-        //    bool isSucceed = result.Contains(SMSEnum.MessageAccepted.GetStringValue());
-
-        //    return new ServiceResponse
-        //    {
-        //        IsSucceed = isSucceed,
-        //        Message = result
-        //    };
-        //}
         public async Task<ServiceResponse> SendSMSToSectorOfficers(SendSMSModel sendSMSModel)
         {
             SMSSentModel sMSSentModel = new SMSSentModel(); int sent = 0; int Notsent = 0;

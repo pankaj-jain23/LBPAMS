@@ -2,6 +2,7 @@
 using EAMS.ViewModels;
 using EAMS.ViewModels.ReportViewModel;
 using EAMS_ACore.HelperModels;
+using EAMS_ACore.IExternal;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.NotificationModels;
 using EAMS_ACore.ReportModels;
@@ -16,14 +17,17 @@ namespace EAMS.Controllers
     public class NotificationController : ControllerBase
     {
         private readonly INotificationService _notificationService;
+        private readonly IExternal _external;
         private readonly IMapper _mapper;
         private readonly IHttpClientFactory _httpClientFactory;
 
-        public NotificationController(INotificationService notificationService, IMapper mapper, IHttpClientFactory httpClientFactory)
+        public NotificationController(INotificationService notificationService, IMapper mapper,
+            IHttpClientFactory httpClientFactory, IExternal external)
         {
             _notificationService = notificationService;
             _mapper = mapper;
             _httpClientFactory = httpClientFactory;
+            _external = external;
         }
 
         [Route("SendNotification")]
@@ -153,7 +157,7 @@ namespace EAMS.Controllers
         private async Task<IActionResult> SendOtp(string mobile, string otp)
         {
             //not in use
-            var result = await _notificationService.SendOtp(mobile, otp);
+            var result = await _external.SendSmsAsync(mobile, otp);
 
             return Ok(result);
         }

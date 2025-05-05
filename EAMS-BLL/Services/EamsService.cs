@@ -176,6 +176,10 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetAssemblies(stateId, districtId, electionTypeId);
         }
+        public async Task<List<CombinedMaster>> GetAllAssemblies(string stateId, string districtId, string electionTypeId)
+        {
+            return await _eamsRepository.GetAllAssemblies(stateId, districtId, electionTypeId);
+        }
         public async Task<List<CombinedMaster>> GetAssembliesByElectionType(string stateId, string districtId, string electionTypeId)
         {
             return await _eamsRepository.GetAssembliesByElectionType(stateId, districtId, electionTypeId);
@@ -275,9 +279,9 @@ namespace EAMS_BLL.Services
         #endregion
 
         #region AROResult
-      public  async Task<ServiceResponse> IsMobileNumberUnique(string mobileNumber)
+        public async Task<ServiceResponse> IsMobileNumberUnique(string mobileNumber, int stateMasterId)
         {
-            return await _eamsRepository.IsMobileNumberUnique( mobileNumber);
+            return await _eamsRepository.IsMobileNumberUnique(mobileNumber, stateMasterId);
         }
         public async Task<Response> AddAROResult(AROResultMaster aROResultMaster)
         {
@@ -460,9 +464,9 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.IsEventActivityValid(stateMasterId, electionTypeMasterId, eventMasterId);
         }
-        public async Task<bool> IsVTEventValidSlotDate(int stateMasterId, int electionTypeMasterId )
+        public async Task<bool> IsVTEventValidSlotDate(int stateMasterId, int electionTypeMasterId)
         {
-            return await _eamsRepository.IsVTEventValidSlotDate(stateMasterId,electionTypeMasterId );
+            return await _eamsRepository.IsVTEventValidSlotDate(stateMasterId, electionTypeMasterId);
         }
         public async Task<ServiceResponse> UpdateEventActivity(UpdateEventActivity updateEventActivity, string userType)
         {
@@ -826,7 +830,7 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetEventSlotListByEventAbbr(stateMasterId, electionTypeMasterId, eventAbbr);
         }
-         #endregion
+        #endregion
 
         #region UserList
         public async Task<List<UserList>> GetUserList(string userName, string type)
@@ -1091,7 +1095,7 @@ namespace EAMS_BLL.Services
 
         }
 
-       
+
         public async Task<PollInterruption> GetPollInterruption(string boothMasterId)
         {
             var res = await _eamsRepository.GetPollInterruptionData(boothMasterId);
@@ -1710,34 +1714,113 @@ namespace EAMS_BLL.Services
             {
                 return new ServiceResponse { IsSucceed = false, Message = "Age must be 21 or above." };
             }
-            if (kyc.ElectionTypeMasterId == 1)
+            var validationResponse = await ValidateCandidateResultDeclaration(kyc);
+            if (!validationResponse.IsSucceed)
             {
+                return validationResponse;
+            }
+
+            // Check if KycMasterId exists in ResultDeclaration table
+            return await AddKycDetailsByElectionType(kyc);
+        }
+
+        /// <summary>
+        /// Adds KYC details based on the ElectionTypeMasterId.
+        /// </summary>
+        /// <param name="kyc">The KYC details to be added.</param>
+        /// <returns>
+        /// A <see cref="ServiceResponse"/> indicating whether the addition was successful.
+        /// </returns>
+        private async Task<ServiceResponse> AddKycDetailsByElectionType(Kyc kyc)
+        {
+            if (kyc.ElectionTypeMasterId == 1 || kyc.ElectionTypeMasterId == 2 || kyc.ElectionTypeMasterId == 3)
+            {
+                // ElectionTypeMasterId == 1 For "Gram Panchayats"
                 return await _eamsRepository.AddKYCDetailsForGP(kyc);
             }
-            // ElectionTypeMasterId == 4 For "Municipal Corporation","Municipal Council" and "Nagar Panchayat"
             else if (kyc.ElectionTypeMasterId == 4 || kyc.ElectionTypeMasterId == 5 || kyc.ElectionTypeMasterId == 6)
             {
+                // ElectionTypeMasterId == 4, 5, 6 For "Municipal Corporation", "Municipal Council", and "Nagar Panchayat"
                 return await _eamsRepository.AddKYCDetailsForMCorpMCounAndNP(kyc);
             }
-            return null;
+
+            return new ServiceResponse { IsSucceed = false, Message = "Invalid ElectionTypeMasterId." };
         }
+        /// <summary>
+        /// Checks if the candidate's result has already been declared for the given KYC details.
+        /// </summary>
+        /// <param name="kyc">The KYC details to check.</param>
+        /// <returns>
+        /// A <see cref="Task{ServiceResponse}"/> indicating whether the candidate can be added.
+        /// </returns>
+        private async Task<ServiceResponse> ValidateCandidateResultDeclaration(Kyc kyc)
+        {
+            bool isCandidateResultDeclared = await _eamsRepository.IsCandidateResultDeclaredForAddGP(
+                kyc.StateMasterId, kyc.DistrictMasterId, kyc.ElectionTypeMasterId,
+                kyc.AssemblyMasterId, kyc.FourthLevelHMasterId, kyc.GPPanchayatWardsMasterId
+            );
+
+            if (isCandidateResultDeclared)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "Candidate cannot be added. Result has already been declared." };
+            }
+
+            return new ServiceResponse { IsSucceed = true };
+        }
+
         public async Task<ServiceResponse> UpdateKycDetails(Kyc kyc)
         {
             if (!int.TryParse(kyc.Age, out int age) || age < 21)
             {
                 return new ServiceResponse { IsSucceed = false, Message = "Age must be 21 or above." };
             }
-            // ElectionTypeMasterId == 1 For "Gram Panchayats"
-            if (kyc.ElectionTypeMasterId == 1)
+            var result = await IsCandidateResultDeclared(kyc);
+            if (!result.IsSucceed)
             {
+                return result; // Return immediately if the result is already declared.
+            }
+            // Check if KycMasterId exists in ResultDeclaration table
+            return await UpdateKycDetailsByElectionType(kyc);
+        }
+        /// <summary>
+        /// It will return True /false for  record existing for any election type
+        /// </summary>
+        /// <param name="kyc"></param>
+        /// <returns></returns>
+        public async Task<ServiceResponse> IsCandidateResultDeclared(Kyc kyc)
+        {
+            bool isCandidateResultDeclaredForUpdate = await _eamsRepository.IsCandidateResultDeclaredForUpdateGP(kyc.KycMasterId);
+            if (isCandidateResultDeclaredForUpdate)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "Candidate cannot be updated. Result has already been declared for this candidate." };
+            }
+            else
+            {
+                return new ServiceResponse { IsSucceed = true, Message = "Candidate can  updated" };
+
+            }
+        }
+        /// <summary>
+        /// Updates KYC details based on the ElectionTypeMasterId.
+        /// </summary>
+        /// <param name="kyc">The KYC details to be updated.</param>
+        /// <returns>
+        /// A <see cref="ServiceResponse"/> indicating whether the update was successful.
+        /// </returns>
+        private async Task<ServiceResponse> UpdateKycDetailsByElectionType(Kyc kyc)
+        {
+            if (kyc.ElectionTypeMasterId == 1 || kyc.ElectionTypeMasterId == 2 || kyc.ElectionTypeMasterId == 3)
+            {
+                // ElectionTypeMasterId == 1 For "Gram Panchayats"
                 return await _eamsRepository.UpdateKycDetailsForGP(kyc);
             }
-            // ElectionTypeMasterId == 4 For "Municipal Corporation","Municipal Council" and "Nagar Panchayat"
             else if (kyc.ElectionTypeMasterId == 4 || kyc.ElectionTypeMasterId == 5 || kyc.ElectionTypeMasterId == 6)
             {
+                // ElectionTypeMasterId == 4, 5, 6 For "Municipal Corporation", "Municipal Council", and "Nagar Panchayat"
                 return await _eamsRepository.UpdateKycDetailsForMCorpMCounAndNP(kyc);
             }
-            return null;
+
+            return new ServiceResponse { IsSucceed = false, Message = "Invalid ElectionTypeMasterId." };
         }
 
         public async Task<List<Kyc>> GetKYCDetails()
@@ -1764,6 +1847,14 @@ namespace EAMS_BLL.Services
         }
         public async Task<ServiceResponse> DeleteKycById(int kycMasterId)
         {
+            // Check if the result is declared before deletion
+            bool isResultDeclared = await _eamsRepository.CheckResultDeclaredForDeleteKycDetail(kycMasterId);
+
+            if (isResultDeclared)
+            {
+                return new ServiceResponse { IsSucceed = false, Message = "Result declared, you can't delete this record." };
+            }
+
             return await _eamsRepository.DeleteKycById(kycMasterId);
         }
         #endregion
@@ -1903,6 +1994,10 @@ namespace EAMS_BLL.Services
         public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
         {
             return await _eamsRepository.GetGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId);
+        }
+        public async Task<List<GPVoterList>> GetAllGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.GetAllGPVoterListById(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId);
         }
         public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId, string userId)
         {
@@ -2390,11 +2485,19 @@ namespace EAMS_BLL.Services
         }
         public async Task<ResultDeclarationBoothWardList> GetResultHistoryByFourthLevelHMasterId(int fourthLevelHMasterId)
         {
-            return await _eamsRepository.GetResultByFourthLevelHMasterId(fourthLevelHMasterId);
+            return await _eamsRepository.GetResultHistoryByFourthLevelHMasterId(fourthLevelHMasterId);
+        }
+        public async Task<ResultDeclarationBoothWardList> GetResultHistoryByGPPanchayatWardsMasterId(int gpPanchayatWardsMasterId)
+        {
+            return await _eamsRepository.GetResultHistoryByGPPanchayatWardsMasterId(gpPanchayatWardsMasterId);
         }
         public async Task<List<BoothResultList>> GetBoothResultListByFourthLevelId(int fourthlevelMasterId)
         {
             return await _eamsRepository.GetBoothResultListByFourthLevelId(fourthlevelMasterId);
+        }
+        public async Task<List<FourthLevelResultList>> GetFourthLevelResultListByAssemblyId(int assemblyMasterId)
+        {
+            return await _eamsRepository.GetFourthLevelResultListByAssemblyId(assemblyMasterId);
         }
 
         public async Task<ResultDeclarationBoothWardList> GetResultByWardId(int boothMasterId)
@@ -2433,6 +2536,11 @@ namespace EAMS_BLL.Services
         public async Task<List<CombinedPanchayatMaster>> GetFourthLevelHExistInRDListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
             return await _eamsRepository.GetFourthLevelHExistInRDListById(stateMasterId, districtMasterId, assemblyMasterId);
+        }
+
+        public async Task<List<CombinedGPWardMaster>> GetGPWardExistInRDListByFourthLevelHMasterId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int electionTypeMasterId)
+        {
+            return await _eamsRepository.GetGPWardExistInRDListByFourthLevelHMasterId(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, electionTypeMasterId);
         }
         public async Task<List<CombinedPanchayatMaster>> GetFourthLevelListByAROId(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId, string roId, string assginedType)
         {
@@ -2501,12 +2609,12 @@ namespace EAMS_BLL.Services
 
         public async Task<List<PartyWiseResult>> GetPartyWiseResultByStateId(int stateMasterId, int electionTypeMasterId)
         {
-            return await _eamsRepository.GetPartyWiseResultByStateId(stateMasterId,electionTypeMasterId);
+            return await _eamsRepository.GetPartyWiseResultByStateId(stateMasterId, electionTypeMasterId);
         }
 
         public async Task<List<DistrictConsolidateResultReport>> GetConsolidateResultReportByDistrictId(int stateMasterId, int districtMasterId, int electionTyepMasterId)
         {
-            return await _eamsRepository.GetConsolidateResultReportByDistrictId(stateMasterId, districtMasterId,   electionTyepMasterId);
+            return await _eamsRepository.GetConsolidateResultReportByDistrictId(stateMasterId, districtMasterId, electionTyepMasterId);
         }
         #endregion
     }

@@ -516,13 +516,49 @@ namespace EAMS.Controllers
 
         #region Assembliy Master 
         [HttpGet]
-        [Route("GetAssembliesListById")]
-        //[Authorize]
+        [Route("GetAssembliesListById")]        
         public async Task<IActionResult> GetAssembliesListById(string stateId, string districtId, string electionTypeId)
         {
             if (stateId != null && districtId != null)
             {
                 var assemblyList = await _EAMSService.GetAssemblies(stateId, districtId, electionTypeId);  // Corrected to await the asynchronous method
+                if (assemblyList != null)
+                {
+                    var data = new
+                    {
+                        count = assemblyList.Count,
+                        data = assemblyList
+                    };
+                    return Ok(data);
+                }
+                else
+                {
+                    return NotFound("Data Not Found");
+                }
+            }
+            else
+            {
+                return BadRequest("State and District Master Id's cannot be null");
+            }
+
+
+        }
+
+
+        /// <summary>
+        /// in this api it will get all Assemblies if there status is false or true
+        /// </summary>
+        /// <param name="stateId"></param>
+        /// <param name="districtId"></param>
+        /// <param name="electionTypeId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("GetAllAssembliesListById")]
+        public async Task<IActionResult> GetAllAssembliesListById(string stateId, string districtId, string electionTypeId)
+        {
+            if (stateId != null && districtId != null)
+            {
+                var assemblyList = await _EAMSService.GetAllAssemblies(stateId, districtId, electionTypeId);  // Corrected to await the asynchronous method
                 if (assemblyList != null)
                 {
                     var data = new
@@ -774,7 +810,7 @@ namespace EAMS.Controllers
             {
 
                 var mappedData = _mapper.Map<FieldOfficerMaster>(fieldOfficerViewModel);
-                var isUniqueMobile = await _EAMSService.IsMobileNumberUnique(fieldOfficerViewModel.FieldOfficerMobile);
+                var isUniqueMobile = await _EAMSService.IsMobileNumberUnique(fieldOfficerViewModel.FieldOfficerMobile,fieldOfficerViewModel.StateMasterId);
                 if (isUniqueMobile.IsSucceed == false)
                 {
                     return BadRequest(isUniqueMobile.Message);
@@ -935,7 +971,7 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetBoothListForResultDeclaration")]
         [Authorize]
-        public async Task<IActionResult> GetBoothListForResultDeclaration()
+        public async Task<IActionResult> GetBoothListForResultDeclaration() 
         {
             int foId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "FieldOfficerMasterId")?.Value);
             int stateMasterId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value);
@@ -2101,6 +2137,34 @@ namespace EAMS.Controllers
                     {
                         count = fourthLevelHList.Count,
                         data = fourthLevelHList
+                    };
+                    return Ok(response);
+                }
+                else
+                {
+                    return NotFound("No records found.");
+                }
+            }
+            else
+            {
+                return BadRequest("StateMasterId, DistrictMasterId, and AssemblyMasterId must be greater than 0.");
+            }
+        }
+
+        [HttpGet("GetGPWardExistInRDListByFourthLevelHMasterId")]
+        public async Task<IActionResult> GetGPWardExistInRDListByFourthLevelHMasterId(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId, int electionTypeMasterId)
+        {
+            // Validate input parameters (ensure they are greater than 0)
+            if (stateMasterId > 0 && districtMasterId > 0 && assemblyMasterId > 0)
+            {
+                var gpWardList = await _EAMSService.GetGPWardExistInRDListByFourthLevelHMasterId(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, electionTypeMasterId);
+
+                if (gpWardList != null && gpWardList.Any()) // Check if data is not null and contains elements
+                {
+                    var response = new
+                    {
+                        count = gpWardList.Count,
+                        data = gpWardList
                     };
                     return Ok(response);
                 }
@@ -5150,7 +5214,7 @@ namespace EAMS.Controllers
             {
 
                 var mappedData = _mapper.Map<AROResultMaster>(fieldOfficerViewModel);
-                var isUniqueMobile = await _EAMSService.IsMobileNumberUnique(fieldOfficerViewModel.AROMobile);
+                var isUniqueMobile = await _EAMSService.IsMobileNumberUnique(fieldOfficerViewModel.AROMobile,fieldOfficerViewModel.StateMasterId);
                 if (isUniqueMobile.IsSucceed == false)
                 {
                     return BadRequest(isUniqueMobile.Message);

@@ -45,7 +45,7 @@ namespace EAMS.Controllers
                 }
                 else
                 {
-                    return Ok(registerResult.Message);
+                    return Ok(registerResult);
                 }
 
             }
@@ -99,8 +99,6 @@ namespace EAMS.Controllers
         #endregion
 
         #region Login
-
-
         [HttpPost]
         [Route("login")]
         public async Task<IActionResult> Login(LoginViewModel loginViewModel)
@@ -116,7 +114,7 @@ namespace EAMS.Controllers
                 var loginResult = await _authService.LoginAsync(mappedData);
 
                 if (loginResult.IsSucceed == false)
-                    return BadRequest(loginResult.Message);
+                    return BadRequest(loginResult);
                 return Ok(loginResult);
             }
             catch (Exception ex)
@@ -128,6 +126,38 @@ namespace EAMS.Controllers
         }
 
         #endregion
+
+        #region Jan Parichay Login
+
+
+        //[HttpPost]
+        //[Route("login")]
+        //public async Task<IActionResult> JPLogin(LoginViewModel loginViewModel)
+        //{
+        //    try
+        //    {
+        //        if (!ModelState.IsValid)
+        //            return BadRequest("Invalid payload");
+        //        var mappedData = _mapper.Map<Login>(loginViewModel);
+
+        //        //var loginResult = await _authService.LoginWithTwoFactorCheckAsync(mappedData);
+
+        //        var loginResult = await _authService.LoginAsync(mappedData);
+
+        //        if (loginResult.IsSucceed == false)
+        //            return BadRequest(loginResult);
+        //        return Ok(loginResult);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError($" Login: {ex.Message}");
+
+        //        return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+        //    }
+        //}
+
+        #endregion
+
 
         #region AddDyanmicRole && Get Role
         [HttpPost]
@@ -435,7 +465,7 @@ namespace EAMS.Controllers
 
         }
 
-        [HttpPost]
+        [HttpPut]
         [Route("UpdateLockoutUser")]
         [Authorize]
         public async Task<IActionResult> UpdateLockoutUser(UpdateLockoutUserViewModel updateLockoutUserViewModel)
@@ -458,6 +488,32 @@ namespace EAMS.Controllers
                 return BadRequest(new { message = "Invalid input." });
             }
         }
+
+        [HttpPut]
+        [Route("UpdateLockoutUserInBulk")]
+        [Authorize]
+        public async Task<IActionResult> UpdateLockoutUserInBulk(UpdateLockoutUserInBulkViewModel updateLockoutUserInBulkViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                var mappedData = _mapper.Map<UpdateLockoutUserInBulk>(updateLockoutUserInBulkViewModel);
+                var result = await _authService.UpdateLockoutUserInBulk(mappedData);
+
+                if (result > 0)
+                {
+                    return Ok(new { message = $"Lockout User updated successfully for {result} users." });
+                }
+                else
+                {
+                    return NotFound(new { message = "No users found with the specified conditions." });
+                }
+            }
+            else
+            {
+                return BadRequest(new { message = "Invalid input." });
+            }
+        }
+
         #endregion
 
         #region Delete User
