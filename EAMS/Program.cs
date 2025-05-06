@@ -15,6 +15,7 @@ using EAMS_BLL.Services;
 using EAMS_DAL.AuthRepository;
 using EAMS_DAL.DBContext;
 using EAMS_DAL.Repository;
+using LBPAMS.Helper.BackGroundServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -29,9 +30,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-builder.Services.AddEndpointsApiExplorer();
-
-builder.Services.AddHttpClient();
+builder.Services.AddEndpointsApiExplorer(); 
 
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(MapperProfile)); // Add your profile class here
@@ -120,29 +119,7 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IUserConnectionService, UserConnectionService>();
 builder.Services.AddScoped<IUserConnectionServiceRepository, UserConnectionServiceRepository>();
-builder.Services.AddScoped<IRealTime, RealTimeService>();
-
-builder.Services.AddHttpClient<IExternal, ExternalService>("SmsClient", client =>
-{
-    client.BaseAddress = new Uri("http://10.44.250.220/");
-    client.DefaultRequestHeaders.Add("SOAPAction", "http://tempuri.org/SendSMS");
-    client.DefaultRequestHeaders.Add("Accept", "application/xml");
-    client.DefaultRequestHeaders.ConnectionClose = false;
-
-}).ConfigurePrimaryHttpMessageHandler(() =>
-{
-    return new SocketsHttpHandler
-    {
-        PooledConnectionLifetime = TimeSpan.FromHours(1),  // Shorter lifespan ensures fresh connections
-        PooledConnectionIdleTimeout = TimeSpan.FromMinutes(10)// Prevent stale connections
-
-    };
-});
-
-
-
-builder.Services.AddSingleton<IExternal, ExternalService>(); // Makes ExternalService a Singleton
-
+builder.Services.AddScoped<IRealTime, RealTimeService>(); 
 builder.Services.AddScoped<ICacheService, CacheService>();
 //builder.Services.AddHostedService<DatabaseListenerService>();
 
@@ -214,9 +191,33 @@ builder.Services.Configure<GzipCompressionProviderOptions>(o =>
 });
 // If you're using MemoryCache (for in-memory caching):
 builder.Services.AddDistributedMemoryCache();
-var app = builder.Build();
-app.UseResponseCompression();
+// Configure HttpClient with base address
+builder.Services.AddHttpClient("SmsClient", client =>
+{
+    client.BaseAddress = new Uri("http://10.44.250.220/");
+    client.DefaultRequestHeaders.Add("SOAPAction", "http://tempuri.org/SendSMS");
+    client.DefaultRequestHeaders.Add("Accept", "application/xml");
+})
+.ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+{
+    MaxConnectionsPerServer = int.MaxValue,
+    PooledConnectionLifetime = TimeSpan.FromMinutes(30),
+    PooledConnectionIdleTimeout = TimeSpan.FromMinutes(15),
+    KeepAlivePingDelay = TimeSpan.FromSeconds(30),
+    KeepAlivePingTimeout = TimeSpan.FromSeconds(10),
+    KeepAlivePingPolicy = HttpKeepAlivePingPolicy.Always
+});
 
+
+// Register your other services
+builder.Services.AddScoped<IExternal, ExternalService>();
+
+// Register the warmup service
+//builder.Services.AddHostedService<SmsClientWarmupService>();
+var app = builder.Build();
+ 
+
+app.UseResponseCompression(); 
 
 app.UseSwagger();
 app.UseSwaggerUI();

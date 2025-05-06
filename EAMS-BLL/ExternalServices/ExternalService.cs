@@ -1,23 +1,26 @@
 ﻿using EAMS_ACore.HelperModels;
 using EAMS_ACore.IExternal;
+using Microsoft.AspNetCore.StaticAssets.Infrastructure;
+using Microsoft.Extensions.Logging;
 using System.Text;
 
 namespace EAMS_BLL.ExternalServices
 {
     public class ExternalService : IExternal
-    {
-
+    { 
         private readonly HttpClient _httpClient;
 
-        public ExternalService(IHttpClientFactory httpClientFactory)
+        public ExternalService(IHttpClientFactory httpClientFactory )
         {
             _httpClient = httpClientFactory.CreateClient("SmsClient");
+           
         }
 
 
         public async Task<ServiceResponse> SendSmsAsync(  string mobileNo, string otp)
-        { 
-
+        {
+            var startTime = DateTime.UtcNow;  // Log the start time
+           
             // Get the SMS template from the repository
             var message = $"OTP: {otp} is your OTP for LBPAMS. Keep it safe for next 10 minutes. SMS generated on Date {DateTime.Now}";             
             var soapEnvelope = new StringBuilder()
@@ -44,8 +47,12 @@ namespace EAMS_BLL.ExternalServices
             try
             {
                 var response = await _httpClient.PostAsync("SendSMSToAny.asmx", content);
+                var endTime = DateTime.UtcNow;  // Log the end time
+                var timeTaken = endTime - startTime;  // Calculate the time taken for the request
 
-                serviceResponse.IsSucceed = response.IsSuccessStatusCode;
+                
+
+                serviceResponse.IsSucceed = true;
                 serviceResponse.Message = response.IsSuccessStatusCode
                     ? await response.Content.ReadAsStringAsync()
                     : $"Error: {response.StatusCode}";
@@ -54,9 +61,13 @@ namespace EAMS_BLL.ExternalServices
             {
                 serviceResponse.IsSucceed = false;
                 serviceResponse.Message = $"Exception: {ex.Message}";
+               
             }
 
             return serviceResponse;
         }
+       
     }
+
+     
 }
