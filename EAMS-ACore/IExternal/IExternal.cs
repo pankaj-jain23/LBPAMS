@@ -6,5 +6,6 @@ namespace EAMS_ACore.IExternal
     {
       
         Task<ServiceResponse> SendSmsAsync(  string mobileNo, string otp );
+        Task<ServiceResponse> SendBulkSMS(int stateMasterId,int districtMasterId);
     }
 }
