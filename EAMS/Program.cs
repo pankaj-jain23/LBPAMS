@@ -210,7 +210,7 @@ builder.Services.AddHttpClient("SmsClient", client =>
 
 
 // Register your other services
-builder.Services.AddScoped<IExternal, ExternalService>();
+builder.Services.AddSingleton<IExternal, ExternalService>();
 
 // Register the warmup service
 //builder.Services.AddHostedService<SmsClientWarmupService>();
