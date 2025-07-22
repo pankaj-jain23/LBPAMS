@@ -1071,6 +1071,8 @@ namespace EAMS_BLL.AuthServices
                         };
                     }
                     var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+                    user.PasswordExpireTime=DateTime.UtcNow.AddDays(15);
+                    user.IsPasswordExpire=false;
                     var result = await _userManager.ResetPasswordAsync(user, resetToken, forgetPasswordModel.Password);
 
                     return result.Succeeded

@@ -1,11 +1,9 @@
 ﻿using AutoMapper;
 using EAMS.AuthViewModels;
 using EAMS.ViewModels;
-using EAMS_ACore;
 using EAMS_ACore.AuthInterfaces;
 using EAMS_ACore.AuthModels;
 using EAMS_ACore.HelperModels;
-using EAMS_ACore.Models.ElectionType;
 using LBPAMS.AuthViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

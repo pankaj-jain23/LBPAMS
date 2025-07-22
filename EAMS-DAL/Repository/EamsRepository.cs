@@ -22251,7 +22251,10 @@ namespace EAMS_DAL.Repository
             return result;
         }
 
+        //public async Task<ServiceResponse> GetConsolidatedResultDeclarationReportForPanchAndSarpanch()
+        //{
 
+        //}
         public async Task<List<ConsolidatedUnOpposedPanchSarPanchAndNoKycCandidateReportList>> GetConsolidatedUnOppossedPanchResultDeclarationReport(ResultDeclaration resultDeclaration)
         {
             var query = from kyc in _context.Kyc

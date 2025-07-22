@@ -282,13 +282,14 @@ namespace EAMS_DAL.AuthRepository
                     var createUserResult = await _userManager.CreateAsync(userRegistration, userRegistration.PasswordHash);
                     if (!createUserResult.Succeeded)
                     {
+                        var errors = string.Join("; ", createUserResult.Errors.Select(e => e.Description));
                         return new AuthServiceResponse()
                         {
                             IsSucceed = false,
-                            Message = "User creation failed! Please check user details and try again.",
-                            // Log the error details for investigation
+                            Message = $"User creation failed: {errors}",
                         };
                     }
+
                 }
                 else
                 {

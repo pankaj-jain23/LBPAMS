@@ -1,4 +1,4 @@
-using EAMS.Helper;
+﻿using EAMS.Helper;
 using EAMS.Hubs;
 using EAMS.Middleware;
 using EAMS_ACore.AuthInterfaces;
@@ -60,7 +60,9 @@ builder.Services
 
 // Config Identity
 builder.Services.Configure<IdentityOptions>(options =>
-{
+{ // ✅ Configure allowed username characters
+    options.User.AllowedUserNameCharacters =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
     options.Password.RequiredLength = 8;
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
