@@ -81,6 +81,22 @@ namespace EAMS_ACore.ReportModels
             get;
             set;
         }
+        public string? WinnerBy
+        {
+            get;
+            set;
+        }
+        public bool IsWinner
+        {
+            get;
+            set;
+        }
+        public bool IsUnOpposed
+        {
+            get;
+            set;
+        }
+         
     }
     public class ConsolidateSarPanchResultDeclarationReportList
     {
@@ -120,7 +136,7 @@ namespace EAMS_ACore.ReportModels
             set;
         }
 
-       
+
 
         public int? ResultDeclarationMasterId
         {

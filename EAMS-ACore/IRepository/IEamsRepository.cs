@@ -278,6 +278,7 @@ namespace EAMS_ACore.IRepository
 
         #region Reports
         Task<List<ConsolidatePanchResultDeclarationReportList>> GetConsolidatedPanchResultDeclarationReport(ResultDeclaration resultDeclaration);
+        Task<List<ConsolidatePanchResultDeclarationReportList>> GetConsolidatedResultDeclarationReportForPanchAndSarpanch(ResultDeclaration resultDeclaration);
         Task<List<ConsolidatedUnOpposedPanchSarPanchAndNoKycCandidateReportList>> GetConsolidatedUnOppossedPanchResultDeclarationReport(ResultDeclaration resultDeclaration);
         Task<List<ConsolidatedUnOpposedPanchSarPanchAndNoKycCandidateReportList>> GetConsolidatedNoKycPanchResultDeclarationReport(ResultDeclaration resultDeclaration);
         Task<List<ConsolidateSarPanchResultDeclarationReportList>> GetConsolidatedSarPanchResultDeclarationReport(ResultDeclarationReportListModel resultDeclaration);

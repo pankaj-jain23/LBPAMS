@@ -1407,6 +1407,12 @@ namespace EAMS_BLL.Services
 
             return await _eamsRepository.GetConsolidatedPanchResultDeclarationReport(resultDeclaration);
         }
+
+        public async Task<List<ConsolidatePanchResultDeclarationReportList>> GetConsolidatedResultDeclarationReportForPanchAndSarpanch(ResultDeclaration resultDeclaration)
+        {
+
+            return await _eamsRepository.GetConsolidatedResultDeclarationReportForPanchAndSarpanch(resultDeclaration);
+        }
         public async Task<List<ConsolidatedUnOpposedPanchSarPanchAndNoKycCandidateReportList>> GetConsolidatedUnOppossedPanchResultDeclarationReport(ResultDeclaration resultDeclaration)
         {
 
