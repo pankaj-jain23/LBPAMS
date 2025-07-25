@@ -2150,7 +2150,7 @@ namespace EAMS_DAL.Repository
         #region FO Master
         public async Task<List<FieldOfficerMaster>> GetFieldOfficersListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
         {
-            var foList = await _context.FieldOfficerMaster.Where(d => d.StateMasterId == stateMasterId
+            var foList = await _context.FieldOfficerMaster.AsNoTracking().Where(d => d.StateMasterId == stateMasterId
             && d.DistrictMasterId == districtMasterId
             && d.AssemblyMasterId == assemblyMasterId
             && d.ElectionTypeMasterId == electionTypeMasterId).ToListAsync();
@@ -2452,15 +2452,15 @@ namespace EAMS_DAL.Repository
         public async Task<List<CombinedMaster>> GetBoothListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
         {
 
-            var boothlist = await (from bt in _context.BoothMaster.Where(d => d.StateMasterId == stateMasterId
+            var boothlist = await (from bt in _context.BoothMaster.AsNoTracking().Where(d => d.StateMasterId == stateMasterId
                             && d.DistrictMasterId == districtMasterId
                             && d.AssemblyMasterId == assemblyMasterId && d.AssignedTo == foId.ToString())
-                                   join fourthLevelH in _context.FourthLevelH on bt.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
-                                   join asem in _context.AssemblyMaster
+                                   join fourthLevelH in _context.FourthLevelH.AsNoTracking() on bt.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
+                                   join asem in _context.AssemblyMaster.AsNoTracking()
                                    on bt.AssemblyMasterId equals asem.AssemblyMasterId
-                                   join dist in _context.DistrictMaster
+                                   join dist in _context.DistrictMaster.AsNoTracking()
                                    on asem.DistrictMasterId equals dist.DistrictMasterId
-                                   join state in _context.StateMaster
+                                   join state in _context.StateMaster.AsNoTracking()
                                     on dist.StateMasterId equals state.StateMasterId
                                    orderby Convert.ToInt32(bt.BoothCode_No)
                                    select new CombinedMaster
@@ -2534,7 +2534,7 @@ namespace EAMS_DAL.Repository
 
                             };
 
-            var boothListResult = await boothlist.ToListAsync();
+            var boothListResult = await boothlist.AsNoTracking().ToListAsync();
 
             // Step 2: Fetch Election Info records in a batch instead of inside the loop
             var boothIds = boothListResult.Select(b => b.BoothMasterId).ToList();
@@ -3106,61 +3106,64 @@ namespace EAMS_DAL.Repository
         }
         public async Task<List<CombinedMaster>> GetBoothListById(string stateMasterId, string districtMasterId, string assemblyMasterId)
         {
-            var isStateActive = _context.StateMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId)).FirstOrDefault();
-            var isDistrictActive = _context.DistrictMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId)).FirstOrDefault();
-            var isAssemblyActive = _context.AssemblyMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId)).FirstOrDefault();
-            if (isStateActive.StateStatus && isDistrictActive.DistrictStatus && isAssemblyActive.AssemblyStatus)
-            {
-
-                var boothlist = from bt in _context.BoothMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateMasterId) && d.DistrictMasterId == Convert.ToInt32(districtMasterId) && d.AssemblyMasterId == Convert.ToInt32(assemblyMasterId)) // outer sequenc)
-                                join asem in _context.AssemblyMaster
-                                on bt.AssemblyMasterId equals asem.AssemblyMasterId
-                                join dist in _context.DistrictMaster
-                                on asem.DistrictMasterId equals dist.DistrictMasterId
-                                join state in _context.StateMaster
-                                 on dist.StateMasterId equals state.StateMasterId
-                                join elec in _context.ElectionTypeMaster
-                                on bt.ElectionTypeMasterId equals elec.ElectionTypeMasterId
-                                orderby Convert.ToInt32(bt.BoothCode_No)
-                                select new CombinedMaster
-                                {
-                                    StateId = Convert.ToInt32(stateMasterId),
-                                    DistrictId = dist.DistrictMasterId,
-                                    AssemblyId = asem.AssemblyMasterId,
-                                    AssemblyName = asem.AssemblyName,
-                                    AssemblyCode = asem.AssemblyCode,
-                                    BoothMasterId = bt.BoothMasterId,
-
-                                    //BoothName = bt.BoothName + "(" + bt.BoothCode_No + ")",
-                                    //BoothName = bt.BoothName + (bt.BoothNoAuxy != "0" ? $"({bt.BoothCode_No}-{bt.BoothNoAuxy})" : $"({bt.BoothCode_No})"),
-                                    BoothName = $"{bt.BoothName}{(bt.BoothNoAuxy != "0" ? $"-{bt.BoothNoAuxy}" : "")}({bt.BoothCode_No})",
-                                    SecondLanguage = bt.SecondLanguage,
-                                    BoothAuxy = bt.BoothNoAuxy,
-                                    BoothCode_No = bt.BoothCode_No,
-                                    IsAssigned = bt.IsAssigned,
-                                    IsStatus = bt.BoothStatus,
-                                    LocationMasterId = bt.LocationMasterId,
-                                    ElectionTypeMasterId = bt.ElectionTypeMasterId,
-                                    ElectionTypeName = elec.ElectionType,
-                                    Male = bt.Male,
-                                    Female = bt.Female,
-                                    Transgender = bt.Transgender,
-                                    TotalVoters = bt.TotalVoters
-
-                                };
-
-                return await boothlist.ToListAsync();
-
-                //// Convert string BoothCode_No to integers for sorting
-                //sortedBoothList = sortedBoothList.OrderBy(d => int.TryParse(d.BoothCode_No, out int code) ? code : int.MaxValue).ToList();
-
-
-            }
-            else
-            {
+            if (!int.TryParse(stateMasterId, out int stateId) ||
+                !int.TryParse(districtMasterId, out int districtId) ||
+                !int.TryParse(assemblyMasterId, out int assemblyId))
                 return null;
-            }
+
+            var isStateActive = await _context.StateMaster
+                .Where(s => s.StateMasterId == stateId)
+                .Select(s => s.StateStatus)
+                .FirstOrDefaultAsync();
+
+            var isDistrictActive = await _context.DistrictMaster
+                .Where(d => d.StateMasterId == stateId && d.DistrictMasterId == districtId)
+                .Select(d => d.DistrictStatus)
+                .FirstOrDefaultAsync();
+
+            var isAssemblyActive = await _context.AssemblyMaster
+                .Where(a => a.StateMasterId == stateId && a.DistrictMasterId == districtId && a.AssemblyMasterId == assemblyId)
+                .Select(a => a.AssemblyStatus)
+                .FirstOrDefaultAsync();
+
+            if (!isStateActive || !isDistrictActive || !isAssemblyActive)
+                return null;
+
+            var boothList = await (from bt in _context.BoothMaster
+                                   where bt.StateMasterId == stateId &&
+                                         bt.DistrictMasterId == districtId &&
+                                         bt.AssemblyMasterId == assemblyId
+                                   join asem in _context.AssemblyMaster on bt.AssemblyMasterId equals asem.AssemblyMasterId
+                                   join dist in _context.DistrictMaster on asem.DistrictMasterId equals dist.DistrictMasterId
+                                   join state in _context.StateMaster on dist.StateMasterId equals state.StateMasterId
+                                   join elec in _context.ElectionTypeMaster on bt.ElectionTypeMasterId equals elec.ElectionTypeMasterId
+                                   orderby Convert.ToInt32(bt.BoothCode_No)
+                                   select new CombinedMaster
+                                   {
+                                       StateId = stateId,
+                                       DistrictId = dist.DistrictMasterId,
+                                       AssemblyId = asem.AssemblyMasterId,
+                                       AssemblyName = asem.AssemblyName,
+                                       AssemblyCode = asem.AssemblyCode,
+                                       BoothMasterId = bt.BoothMasterId,
+                                       BoothName = $"{bt.BoothName}{(bt.BoothNoAuxy != "0" ? $"-{bt.BoothNoAuxy}" : "")}({bt.BoothCode_No})",
+                                       SecondLanguage = bt.SecondLanguage,
+                                       BoothAuxy = bt.BoothNoAuxy,
+                                       BoothCode_No = bt.BoothCode_No,
+                                       IsAssigned = bt.IsAssigned,
+                                       IsStatus = bt.BoothStatus,
+                                       LocationMasterId = bt.LocationMasterId,
+                                       ElectionTypeMasterId = bt.ElectionTypeMasterId,
+                                       ElectionTypeName = elec.ElectionType,
+                                       Male = bt.Male,
+                                       Female = bt.Female,
+                                       Transgender = bt.Transgender,
+                                       TotalVoters = bt.TotalVoters
+                                   }).AsNoTracking().ToListAsync();
+
+            return boothList;
         }
+
         public async Task<List<CombinedMaster>> GetBoothListByFourthLevelId(int stateMasterId,
             int districtMasterId,
             int assemblyMasterId,
@@ -3221,7 +3224,7 @@ namespace EAMS_DAL.Repository
                                        Female = bt.Female,
                                        Transgender = bt.Transgender,
                                        TotalVoters = bt.TotalVoters
-                                   })
+                                   }).AsNoTracking()
                               .ToListAsync();
 
 
@@ -3331,13 +3334,13 @@ namespace EAMS_DAL.Repository
                                 join state in _context.StateMaster on dist.StateMasterId equals state.StateMasterId
                                 join elecinfo in _context.ElectionInfoMaster on bt.BoothMasterId equals elecinfo.BoothMasterId
                                 where !_context.PollingStationMaster.Any(p => p.BoothMasterId == bt.BoothMasterId)
-                                   && bt.StateMasterId == Convert.ToInt32(stateMasterId)
-                                   && bt.DistrictMasterId == Convert.ToInt32(districtMasterId)
-                                   && bt.AssemblyMasterId == Convert.ToInt32(assemblyMasterId)
+                                   && bt.StateMasterId == stateId
+                                   && bt.DistrictMasterId == districtId
+                                   && bt.AssemblyMasterId == assemblyId
                                 orderby Convert.ToInt32(bt.BoothCode_No)
                                 select new CombinedMaster
                                 {
-                                    StateId = Convert.ToInt32(stateMasterId),
+                                    StateId = stateId,
                                     DistrictId = dist.DistrictMasterId,
                                     AssemblyId = asem.AssemblyMasterId,
                                     AssemblyName = asem.AssemblyName,
@@ -4769,7 +4772,7 @@ namespace EAMS_DAL.Repository
         public async Task<BoothDetailForVoterInQueue> GetBoothDetailForVoterInQueue(int boothMasterId)
         {
             // Fetch FinalVote from ElectionInfoMaster
-            var electionInfoMaster = await _context.ElectionInfoMaster
+            var electionInfoMaster = await _context.ElectionInfoMaster.AsNoTracking()
                 .Where(e => e.BoothMasterId == boothMasterId)
                 .Select(e => new
                 {
@@ -4784,10 +4787,10 @@ namespace EAMS_DAL.Repository
             {
                 return new BoothDetailForVoterInQueue() { Message = "Voter Queue is not Available" };
             }
-            var isVoterEvent = await _context.EventMaster.Where(d => d.StateMasterId == electionInfoMaster.StateMasterId
+            var isVoterEvent = await _context.EventMaster.AsNoTracking().Where(d => d.StateMasterId == electionInfoMaster.StateMasterId
             && d.ElectionTypeMasterId == electionInfoMaster.ElectionInfoMasterId && d.EventABBR == "VT").Select(d => d.Status).FirstOrDefaultAsync();
             // Fetch TotalVoters from BoothMaster
-            var boothRecord = await _context.BoothMaster
+            var boothRecord = await _context.BoothMaster.AsNoTracking()
                 .Where(d => d.BoothMasterId == boothMasterId)
                 .Select(b => new
                 {
@@ -4959,7 +4962,7 @@ namespace EAMS_DAL.Repository
         }
         private async Task<EventMaster> GetFirstSequenceEventById(int stateMasterId, int electionTypeMasterId)
         {
-            return await _context.EventMaster.Where(d => d.StateMasterId == stateMasterId
+            return await _context.EventMaster.AsNoTracking().Where(d => d.StateMasterId == stateMasterId
                                                          && d.ElectionTypeMasterId == electionTypeMasterId && d.Status == true).OrderBy(d => d.EventSequence)
                 .FirstOrDefaultAsync();
 
@@ -5063,7 +5066,7 @@ namespace EAMS_DAL.Repository
 
         public async Task<List<EventWiseBooth>> GetBoothListByEventId(string eventId, string soId)
         {
-            var soTotalBooths = _context.BoothMaster.Where(p => p.AssignedTo == soId).ToList();
+            var soTotalBooths = _context.BoothMaster.AsNoTracking().Where(p => p.AssignedTo == soId).ToList();
             List<EventWiseBooth> list = new List<EventWiseBooth>();
 
             foreach (var boothRecord in soTotalBooths)
@@ -5079,7 +5082,7 @@ namespace EAMS_DAL.Repository
                 {
                     boothName = boothRecord.BoothName + "-" + boothRecord.BoothNoAuxy;
                 }
-                var electioInfoRecord = _context.ElectionInfoMaster.FirstOrDefault(d =>
+                var electioInfoRecord = _context.ElectionInfoMaster.AsNoTracking().FirstOrDefault(d =>
                     d.BoothMasterId == boothRecord.BoothMasterId);
 
                 if (electioInfoRecord is not null)
@@ -5785,13 +5788,13 @@ namespace EAMS_DAL.Repository
         public async Task<List<TurnOutBoothListStatus>> GetBoothInfoinPollDetail(string soId, string eventid)
         {
             string color = ""; int SortColor = 0; bool UpdateStatus = false;
-            var soTotalBooths = await _context.BoothMaster.Where(p => p.AssignedTo == soId).ToListAsync();
+            var soTotalBooths = await _context.BoothMaster.AsNoTracking().Where(p => p.AssignedTo == soId).ToListAsync();
             List<TurnOutBoothListStatus> list = new List<TurnOutBoothListStatus>();
 
             foreach (var boothRecord in soTotalBooths)
             {
                 string boothName = "";
-                var electioInfoRecord = _context.ElectionInfoMaster.FirstOrDefault(d =>
+                var electioInfoRecord = _context.ElectionInfoMaster.AsNoTracking().FirstOrDefault(d =>
                     d.BoothMasterId == boothRecord.BoothMasterId);
 
                 if (electioInfoRecord is not null)
@@ -5800,13 +5803,13 @@ namespace EAMS_DAL.Repository
                     //if (electioInfoRecord.VoterInQueue == null)
                     if (electioInfoRecord.VoterInQueue == null && electioInfoRecord.IsVoterInQueue != true)
                     {
-                        var polldetail_byUser = await _context.PollDetails.Where(p => p.BoothMasterId == electioInfoRecord.BoothMasterId).OrderByDescending(p => p.VotesPolledRecivedTime).FirstOrDefaultAsync();
-                        var slotsListofTurnOut = await _context.SlotManagementMaster.Where(p => p.StateMasterId == electioInfoRecord.StateMasterId && p.EventMasterId == Convert.ToInt32(eventid)).OrderBy(p => p.SlotManagementId).ToListAsync();
+                        var polldetail_byUser = await _context.PollDetails.AsNoTracking().Where(p => p.BoothMasterId == electioInfoRecord.BoothMasterId).OrderByDescending(p => p.VotesPolledRecivedTime).FirstOrDefaultAsync();
+                        var slotsListofTurnOut = await _context.SlotManagementMaster.AsNoTracking().Where(p => p.StateMasterId == electioInfoRecord.StateMasterId && p.EventMasterId == Convert.ToInt32(eventid)).OrderBy(p => p.SlotManagementId).ToListAsync();
                         var SlotId = await GetSlot(slotsListofTurnOut); // get currentSlotId
                         if (SlotId != null && SlotId != 0) // means current lying in slot added in db
                         {
 
-                            var checkSlotEnterdCurrent = await _context.PollDetails.Where(p => p.BoothMasterId == electioInfoRecord.BoothMasterId && p.SlotManagementId == SlotId).FirstOrDefaultAsync();
+                            var checkSlotEnterdCurrent = await _context.PollDetails.AsNoTracking().Where(p => p.BoothMasterId == electioInfoRecord.BoothMasterId && p.SlotManagementId == SlotId).FirstOrDefaultAsync();
                             if (checkSlotEnterdCurrent == null)
                             {
                                 // means entry not done of that slot make color red
@@ -6016,7 +6019,7 @@ namespace EAMS_DAL.Repository
         }
         public async Task<bool> IsVTEventValidSlotDate(int stateMasterId, int electionTypeMasterId)
         {
-            var lastSlot = await _context.SlotManagementMaster.Where(d => d.StateMasterId == stateMasterId
+            var lastSlot = await _context.SlotManagementMaster.AsNoTracking().Where(d => d.StateMasterId == stateMasterId
                                                                   && d.ElectionTypeMasterId == electionTypeMasterId
                                                                   && d.IsLastSlot == true)
                                                                  .Select(d => d.StartDate)
@@ -6034,7 +6037,7 @@ namespace EAMS_DAL.Repository
             var getBoothEvents = await GetEventListForBooth(stateMasterId, electionTypeMasterId);
 
             // Step 2: Get the corresponding election info for the given booth
-            var getElectionInfoRecord = await _context.ElectionInfoMaster.FirstOrDefaultAsync(d => d.StateMasterId == stateMasterId
+            var getElectionInfoRecord = await _context.ElectionInfoMaster.AsNoTracking().FirstOrDefaultAsync(d => d.StateMasterId == stateMasterId
                 && d.ElectionTypeMasterId == electionTypeMasterId
                 && d.BoothMasterId == boothMasterId);
 
@@ -7513,7 +7516,7 @@ namespace EAMS_DAL.Repository
             }
 
             // Step 3: Fetch election info (not cached as it may be frequently updated)
-            var electionInfo = await _context.ElectionInfoMaster
+            var electionInfo = await _context.ElectionInfoMaster.AsNoTracking()
                                    .FirstOrDefaultAsync(d => d.BoothMasterId == boothMasterId
                                                           && d.StateMasterId == getBooth.StateMasterId
                                                           && d.ElectionTypeMasterId == getBooth.ElectionTypeMasterId);
@@ -7628,7 +7631,7 @@ namespace EAMS_DAL.Repository
         private async Task<SlotManagementMaster> GetLastSlot(int stateMasterId, int electionTypeMasterId)
         {
 
-            return await _context.SlotManagementMaster.Where(p => p.StateMasterId == stateMasterId
+            return await _context.SlotManagementMaster.AsNoTracking().Where(p => p.StateMasterId == stateMasterId
            && p.ElectionTypeMasterId == electionTypeMasterId && p.IsLastSlot == true).FirstOrDefaultAsync();
 
 
@@ -7786,13 +7789,13 @@ namespace EAMS_DAL.Repository
             EAMS_ACore.Models.Queue model;
             try
             {
-                var boothExists = await _context.BoothMaster.Where(p => p.BoothMasterId == Convert.ToInt32(boothMasterId)).FirstOrDefaultAsync();
+                var boothExists = await _context.BoothMaster.AsNoTracking().Where(p => p.BoothMasterId == Convert.ToInt32(boothMasterId)).FirstOrDefaultAsync();
                 //var electionInfoRecord = await _context.ElectionInfoMaster.Where(p => p.BoothMasterId == Convert.ToInt32(boothMasterId) && p.StateMasterId == boothExists.StateMasterId && p.DistrictMasterId == boothExists.DistrictMasterId).FirstOrDefaultAsync();
-                var polldetail = await _context.PollDetails.Where(p => p.BoothMasterId == Convert.ToInt32(boothMasterId) && p.StateMasterId == boothExists.StateMasterId && p.DistrictMasterId == boothExists.DistrictMasterId).OrderByDescending(p => p.VotesPolledRecivedTime).FirstOrDefaultAsync();
+                var polldetail = await _context.PollDetails.AsNoTracking().Where(p => p.BoothMasterId == Convert.ToInt32(boothMasterId) && p.StateMasterId == boothExists.StateMasterId && p.DistrictMasterId == boothExists.DistrictMasterId).OrderByDescending(p => p.VotesPolledRecivedTime).FirstOrDefaultAsync();
 
                 if (boothExists is not null)
                 {
-                    var electionInfoRecord = await _context.ElectionInfoMaster.Where(p => p.StateMasterId == boothExists.StateMasterId && p.DistrictMasterId == boothExists.DistrictMasterId && p.AssemblyMasterId == boothExists.AssemblyMasterId && p.BoothMasterId == Convert.ToInt32(boothMasterId)).FirstOrDefaultAsync();
+                    var electionInfoRecord = await _context.ElectionInfoMaster.AsNoTracking().Where(p => p.StateMasterId == boothExists.StateMasterId && p.DistrictMasterId == boothExists.DistrictMasterId && p.AssemblyMasterId == boothExists.AssemblyMasterId && p.BoothMasterId == Convert.ToInt32(boothMasterId)).FirstOrDefaultAsync();
                     if (electionInfoRecord is not null)
                     {
                         if (electionInfoRecord.VoterInQueue == null)
@@ -8127,7 +8130,7 @@ namespace EAMS_DAL.Repository
         {
 
             // Fetch from database if not available in cache
-            var getBooth = await _context.BoothMaster
+            var getBooth = await _context.BoothMaster.AsNoTracking()
                              .Where(d => d.BoothMasterId == boothMasterId)
                              .Select(d => new BoothMaster
                              {
@@ -8151,7 +8154,7 @@ namespace EAMS_DAL.Repository
 
 
             // Fetch from database if not available in cache
-            var currentEvent = await _context.EventMaster
+            var currentEvent = await _context.EventMaster.AsNoTracking()
                                 .FirstOrDefaultAsync(d => d.StateMasterId == getBooth.StateMasterId
                                                       && d.ElectionTypeMasterId == getBooth.ElectionTypeMasterId
                                                       && d.EventABBR == "FV");
@@ -8164,7 +8167,7 @@ namespace EAMS_DAL.Repository
             }
 
             // Step 3: Fetch election info (not cached as it may be frequently updated)
-            var electionInfo = await _context.ElectionInfoMaster
+            var electionInfo = await _context.ElectionInfoMaster.AsNoTracking()
                                    .FirstOrDefaultAsync(d => d.BoothMasterId == boothMasterId
                                                           && d.StateMasterId == getBooth.StateMasterId
                                                           && d.ElectionTypeMasterId == getBooth.ElectionTypeMasterId);
@@ -8944,10 +8947,10 @@ namespace EAMS_DAL.Repository
         public async Task<List<AssemblyEventActivityCount>> GetPendingAssemblyWiseEventListById(int stateMasterId, int? districtMasterId, int electionTypeMasterId)
         {
             // Get grouped event counts by district
-            var result = await (from assembly in _context.AssemblyMaster
-                                join booth in _context.BoothMaster
+            var result = await (from assembly in _context.AssemblyMaster.AsNoTracking()
+                                join booth in _context.BoothMaster.AsNoTracking()
                                      on assembly.AssemblyMasterId equals booth.AssemblyMasterId
-                                join election in _context.ElectionInfoMaster
+                                join election in _context.ElectionInfoMaster.AsNoTracking()
                                      on booth.BoothMasterId equals election.BoothMasterId into electionGroup
                                 from election in electionGroup.DefaultIfEmpty()
                                 where assembly.StateMasterId == stateMasterId &&
@@ -9004,7 +9007,7 @@ namespace EAMS_DAL.Repository
                                     VoterTurnOutValue = g.Sum(x => x.election != null && x.election.IsVoterTurnOut ? 0 : 1).ToString(),
                                     TotalSo = g.Sum(x => x.election != null ? x.election.NoOfPollingAgents ?? 0 : 0),// Sum of NoOfPollingAgents from BoothMaster
                                     Children = new List<object>() // Placeholder for children if needed
-                                }).OrderBy(d => d.Name).ToListAsync();
+                                }).OrderBy(d => d.Name).AsNoTracking().ToListAsync();
             return result;
         }
 
@@ -10171,7 +10174,7 @@ namespace EAMS_DAL.Repository
         public async Task<List<SlotManagementMaster>> GetEventSlotList(int stateMasterId, int electionTypeMasterId, int EventId)
         {
 
-            return await _context.SlotManagementMaster.Where(d => d.StateMasterId == stateMasterId
+            return await _context.SlotManagementMaster.AsNoTracking().Where(d => d.StateMasterId == stateMasterId
                                                                     && d.ElectionTypeMasterId == electionTypeMasterId
                                                                     && d.EventMasterId == EventId).ToListAsync();
 
@@ -10363,9 +10366,9 @@ namespace EAMS_DAL.Repository
 
         public async Task<List<PollInterruptionHistoryModel>> GetPollInterruptionHistoryById(string boothMasterId)
         {
-            var result = await (from pollInterruption in _context.PollInterruptionHistory
-                                join assemblyMaster in _context.AssemblyMaster on pollInterruption.AssemblyMasterId equals assemblyMaster.AssemblyMasterId
-                                join boothMaster in _context.BoothMaster on new { BoothMasterId = pollInterruption.BoothMasterId, AssemblyMasterId = assemblyMaster.AssemblyMasterId } equals new { BoothMasterId = boothMaster.BoothMasterId, AssemblyMasterId = boothMaster.AssemblyMasterId }
+            var result = await (from pollInterruption in _context.PollInterruptionHistory.AsNoTracking()
+                                join assemblyMaster in _context.AssemblyMaster.AsNoTracking() on pollInterruption.AssemblyMasterId equals assemblyMaster.AssemblyMasterId
+                                join boothMaster in _context.BoothMaster.AsNoTracking() on new { BoothMasterId = pollInterruption.BoothMasterId, AssemblyMasterId = assemblyMaster.AssemblyMasterId } equals new { BoothMasterId = boothMaster.BoothMasterId, AssemblyMasterId = boothMaster.AssemblyMasterId }
                                 where boothMaster.BoothMasterId == Convert.ToInt32(boothMasterId)
                                 orderby pollInterruption.CreatedAt descending
                                 select new
@@ -10661,10 +10664,10 @@ namespace EAMS_DAL.Repository
                 if (roles == "SO")
                 {
                     Claim soMasterid = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "SoId"); string soId = soMasterid.Value;
-                    result = from pi in _context.PollInterruptions
-                             join di in _context.DistrictMaster on pi.DistrictMasterId equals di.DistrictMasterId
-                             join am in _context.AssemblyMaster on pi.AssemblyMasterId equals am.AssemblyMasterId
-                             join bm in _context.BoothMaster on new { pi.BoothMasterId, am.AssemblyMasterId } equals new { bm.BoothMasterId, bm.AssemblyMasterId }
+                    result = from pi in _context.PollInterruptions.AsNoTracking()
+                             join di in _context.DistrictMaster.AsNoTracking() on pi.DistrictMasterId equals di.DistrictMasterId
+                             join am in _context.AssemblyMaster.AsNoTracking() on pi.AssemblyMasterId equals am.AssemblyMasterId
+                             join bm in _context.BoothMaster.AsNoTracking() on new { pi.BoothMasterId, am.AssemblyMasterId } equals new { bm.BoothMasterId, bm.AssemblyMasterId }
                              where bm.AssignedTo == soId
                              orderby pi.AssemblyMasterId, pi.BoothMasterId, pi.CreatedAt descending
                              select new PollInterruptionDashboard
@@ -12967,10 +12970,10 @@ namespace EAMS_DAL.Repository
             var activeEvents = await GetEventListForBooth(stateMasterId, electionTypeMasterId);
 
             // Build the base query for election info
-            IQueryable<ElectionInfoMaster> electionQuery = _context.ElectionInfoMaster
+            IQueryable<ElectionInfoMaster> electionQuery = _context.ElectionInfoMaster.AsNoTracking()
                 .Where(e => e.StateMasterId == stateMasterId && e.ElectionTypeMasterId == electionTypeMasterId);
 
-            IQueryable<BoothMaster> totalBooths = _context.BoothMaster
+            IQueryable<BoothMaster> totalBooths = _context.BoothMaster.AsNoTracking()
                 .Where(e => e.StateMasterId == stateMasterId
                 && e.ElectionTypeMasterId == electionTypeMasterId
                 && e.BoothStatus == true
@@ -12978,18 +12981,18 @@ namespace EAMS_DAL.Repository
                 );
 
 
-            IQueryable<FourthLevelH> totalFourthlevel = _context.FourthLevelH
+            IQueryable<FourthLevelH> totalFourthlevel = _context.FourthLevelH.AsNoTracking()
                 .Where(e => e.StateMasterId == stateMasterId
                 && e.ElectionTypeMasterId == electionTypeMasterId
                 && e.HierarchyStatus == true
                 && (e.AssignedToRO != null || e.AssignedToRO != null)
                 );
-            IQueryable<Kyc> totalUnOpposedCandidates = _context.Kyc
+            IQueryable<Kyc> totalUnOpposedCandidates = _context.Kyc.AsNoTracking()
                .Where(e => e.StateMasterId == stateMasterId
                && e.ElectionTypeMasterId == electionTypeMasterId
                && e.IsUnOppossed == true
                );
-            IQueryable<ResultDeclaration> totalWinnerCandidates = _context.ResultDeclaration
+            IQueryable<ResultDeclaration> totalWinnerCandidates = _context.ResultDeclaration.AsNoTracking()
               .Where(e => e.StateMasterId == stateMasterId
               && e.ElectionTypeMasterId == electionTypeMasterId
               && e.IsWinner == true
@@ -13079,9 +13082,16 @@ namespace EAMS_DAL.Repository
                     );
 
             }
+            var boothStats = await totalBooths
+                        .GroupBy(x => 1)
+                        .Select(g => new
+                        {
+                            Count = g.Count(),
+                            Voters = g.Sum(x => x.TotalVoters)
+                        }).FirstOrDefaultAsync();
+            var totalBoothsCount = boothStats.Count;
+            var totalVoters = boothStats.Voters;
 
-            var totalBoothsCount = await totalBooths.CountAsync();
-            var totalVoters = await totalBooths.SumAsync(d => d.TotalVoters);
 
             var totalFourthlevelCount = await totalFourthlevel.CountAsync();
             var totalCandidateUnOpposedKyc = await totalUnOpposedCandidates.CountAsync();
@@ -16715,7 +16725,7 @@ namespace EAMS_DAL.Repository
         #region BLOBoothMaster
         public async Task<List<BoothMaster>> GetBLOBoothById(string bloBoothMasterId)
         {
-            var boothList = await _context.BoothMaster.Where(d => d.AssignedToBLO == bloBoothMasterId).ToListAsync();
+            var boothList = await _context.BoothMaster.AsNoTracking().Where(d => d.AssignedToBLO == bloBoothMasterId).ToListAsync();
             if (boothList is not null)
             {
                 return boothList;
@@ -19198,7 +19208,7 @@ namespace EAMS_DAL.Repository
         Hierarchy1 = d.Hierarchy1,
         Hierarchy2 = d.Hierarchy2
 
-    })
+    }).AsNoTracking()
     .ToListAsync();
 
             return elecTypeData;
@@ -19246,17 +19256,22 @@ namespace EAMS_DAL.Repository
         }
         public async Task<List<FourthLevelH>> GetFourthLevelHListById(int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            var getFourthLevelH = await _context.FourthLevelH.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId
-                && d.AssemblyMasterId == assemblyMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.ElectionTypeMaster).OrderBy(d => d.HierarchyCode).ToListAsync();
-            if (getFourthLevelH != null)
-            {
-                return getFourthLevelH;
-            }
-            else
-            {
-                return null;
-            }
+            var fourthLevelList = await _context.FourthLevelH
+                .AsNoTracking()
+                .Where(d =>
+                    d.StateMasterId == stateMasterId &&
+                    d.DistrictMasterId == districtMasterId &&
+                    d.AssemblyMasterId == assemblyMasterId)
+                .Include(d => d.StateMaster)
+                .Include(d => d.DistrictMaster)
+                .Include(d => d.AssemblyMaster)
+                .Include(d => d.ElectionTypeMaster)
+                .OrderBy(d => d.HierarchyCode)
+                .ToListAsync();
+
+            return fourthLevelList;
         }
+
 
         public async Task<Response> UpdateFourthLevelH(FourthLevelH fourthLevelH)
         {
@@ -19718,7 +19733,7 @@ namespace EAMS_DAL.Repository
         }
         public async Task<List<GPPanchayatWards>> GetPanchayatWardforResultDeclaration(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelHMasterId)
         {
-            return await _context.GPPanchayatWards.Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.FourthLevelHMasterId == fourthLevelHMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).ToListAsync();
+            return await _context.GPPanchayatWards.AsNoTracking().Where(d => d.StateMasterId == stateMasterId && d.DistrictMasterId == districtMasterId && d.AssemblyMasterId == assemblyMasterId && d.FourthLevelHMasterId == fourthLevelHMasterId).Include(d => d.StateMaster).Include(d => d.DistrictMaster).Include(d => d.AssemblyMaster).Include(d => d.FourthLevelH).Include(d => d.ElectionTypeMaster).ToListAsync();
 
         }
         public async Task<List<GPPanchayatWards>> GetPanchListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int FourthLevelHMasterId, int gpPanchayatWardsMasterId)
@@ -21136,10 +21151,10 @@ namespace EAMS_DAL.Repository
         int gPPanchayatWardsMasterId)
         {
             // Grouping by KycMasterId to prevent multiple entries
-            var candidatesWithResults = await (from k in _context.Kyc
-                                               join gpPanchayatWards in _context.GPPanchayatWards
+            var candidatesWithResults = await (from k in _context.Kyc.AsNoTracking()
+                                               join gpPanchayatWards in _context.GPPanchayatWards.AsNoTracking()
                                                on k.GPPanchayatWardsMasterId equals gpPanchayatWards.GPPanchayatWardsMasterId
-                                               join r in _context.ResultDeclaration
+                                               join r in _context.ResultDeclaration.AsNoTracking()
                                                on k.KycMasterId equals r.KycMasterId into results
                                                from result in results.DefaultIfEmpty() // Left join
                                                where k.StateMasterId == stateMasterId &&
@@ -21239,7 +21254,7 @@ namespace EAMS_DAL.Repository
     int fourthLevelHMasterId)
         {
             // Check if there are any UnOpposed candidates
-            bool hasUnOpposedCandidates = await _context.Kyc
+            bool hasUnOpposedCandidates = await _context.Kyc.AsNoTracking()
                 .AnyAsync(k => k.StateMasterId == stateMasterId &&
                                k.DistrictMasterId == districtMasterId &&
                                k.ElectionTypeMasterId == electionTypeMasterId &&
@@ -21248,10 +21263,10 @@ namespace EAMS_DAL.Repository
                                k.GPPanchayatWardsMasterId == 0 &&
                                k.IsUnOppossed == true);
 
-            var candidateList = await (from k in _context.Kyc
-                                       join fourthLevelH in _context.FourthLevelH
+            var candidateList = await (from k in _context.Kyc.AsNoTracking()
+                                       join fourthLevelH in _context.FourthLevelH.AsNoTracking()
                                        on k.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
-                                       join r in _context.ResultDeclaration
+                                       join r in _context.ResultDeclaration.AsNoTracking()
                                        on k.KycMasterId equals r.KycMasterId into results
                                        from result in results.DefaultIfEmpty() // Left Join
                                        where k.StateMasterId == stateMasterId &&
@@ -21627,23 +21642,23 @@ namespace EAMS_DAL.Repository
 
         public async Task<List<CombinedPanchayatMaster>> GetUnassignedPanchayatListById(int stateMasterId, int districtMasterId, int assemblyMasterId, string assignedType)
         {
-            var boothList = from ft in _context.FourthLevelH
+            var boothList = from ft in _context.FourthLevelH.AsNoTracking()
                                  .Where(d => d.StateMasterId == stateMasterId
                                 && d.DistrictMasterId == districtMasterId
                                 && d.AssemblyMasterId == assemblyMasterId
                                 && d.HierarchyStatus == true
                                 && ((assignedType == "RO" && string.IsNullOrEmpty(d.AssignedToRO)) // Check for RO
                                     || (assignedType == "ARO" && string.IsNullOrEmpty(d.AssignedToARO)))) // Check for ARO
-                            join asem in _context.AssemblyMaster
+                            join asem in _context.AssemblyMaster.AsNoTracking()
                              .Where(a => a.AssemblyStatus == true) // AssemblyMaster status check
                          on ft.AssemblyMasterId equals asem.AssemblyMasterId
-                            join dist in _context.DistrictMaster
+                            join dist in _context.DistrictMaster.AsNoTracking()
                                 .Where(d => d.DistrictStatus == true) // DistrictMaster status check
                             on asem.DistrictMasterId equals dist.DistrictMasterId
-                            join state in _context.StateMaster
+                            join state in _context.StateMaster.AsNoTracking()
                                 .Where(s => s.StateStatus == true) // StateMaster status check
                             on dist.StateMasterId equals state.StateMasterId
-                            join elec in _context.ElectionTypeMaster
+                            join elec in _context.ElectionTypeMaster.AsNoTracking()
                                 .Where(e => e.ElectionStatus == true) // ElectionTypeMaster status check
                             on ft.ElectionTypeMasterId equals elec.ElectionTypeMasterId
                             orderby ft.HierarchyCode
@@ -21735,16 +21750,16 @@ namespace EAMS_DAL.Repository
 
             // Continue with joins and selection
             var combinedList = from ft in boothList
-                               join asem in _context.AssemblyMaster
+                               join asem in _context.AssemblyMaster.AsNoTracking()
                                    .Where(a => a.AssemblyStatus == true) // Filter AssemblyMaster by status
                                on ft.AssemblyMasterId equals asem.AssemblyMasterId
-                               join dist in _context.DistrictMaster
+                               join dist in _context.DistrictMaster.AsNoTracking()
                                    .Where(d => d.DistrictStatus == true) // Filter DistrictMaster by status
                                on asem.DistrictMasterId equals dist.DistrictMasterId
-                               join state in _context.StateMaster
+                               join state in _context.StateMaster.AsNoTracking()
                                    .Where(s => s.StateStatus == true) // Filter StateMaster by status
                                on dist.StateMasterId equals state.StateMasterId
-                               join elec in _context.ElectionTypeMaster
+                               join elec in _context.ElectionTypeMaster.AsNoTracking()
                                    .Where(e => e.ElectionStatus == true) // Filter ElectionTypeMaster by status
                                on ft.ElectionTypeMasterId equals elec.ElectionTypeMasterId
                                orderby ft.HierarchyCode
@@ -21775,7 +21790,7 @@ namespace EAMS_DAL.Repository
     int stateMasterId, int districtMasterId, int assemblyMasterId, string roId)
         {
             // Start the query for FourthLevelH with filters
-            var boothList = _context.FourthLevelH
+            var boothList = _context.FourthLevelH.AsNoTracking()
                 .Where(d => d.StateMasterId == stateMasterId
                             && d.DistrictMasterId == districtMasterId
                             && d.AssemblyMasterId == assemblyMasterId
@@ -21785,15 +21800,15 @@ namespace EAMS_DAL.Repository
 
             // Perform inner join with ResultDeclaration and group by FourthLevelHMasterId
             var combinedList = from ft in boothList
-                               join results in _context.ResultDeclaration
+                               join results in _context.ResultDeclaration.AsNoTracking()
                                    on ft.FourthLevelHMasterId equals results.FourthLevelHMasterId
-                               join asem in _context.AssemblyMaster.Where(a => a.AssemblyStatus == true)
+                               join asem in _context.AssemblyMaster.AsNoTracking().Where(a => a.AssemblyStatus == true)
                                    on ft.AssemblyMasterId equals asem.AssemblyMasterId
-                               join dist in _context.DistrictMaster.Where(d => d.DistrictStatus == true)
+                               join dist in _context.DistrictMaster.AsNoTracking().Where(d => d.DistrictStatus == true)
                                    on asem.DistrictMasterId equals dist.DistrictMasterId
-                               join state in _context.StateMaster.Where(s => s.StateStatus == true)
+                               join state in _context.StateMaster.AsNoTracking().Where(s => s.StateStatus == true)
                                    on dist.StateMasterId equals state.StateMasterId
-                               join elec in _context.ElectionTypeMaster.Where(e => e.ElectionStatus == true)
+                               join elec in _context.ElectionTypeMaster.AsNoTracking().Where(e => e.ElectionStatus == true)
                                    on ft.ElectionTypeMasterId equals elec.ElectionTypeMasterId
                                group new { ft, results, asem, dist, state, elec } by ft.FourthLevelHMasterId into grouped
                                orderby grouped.Key
@@ -21840,16 +21855,16 @@ namespace EAMS_DAL.Repository
 
             // Perform inner join with ResultDeclaration and group by FourthLevelHMasterId
             var combinedList = from ft in boothList
-                               join results in _context.ResultDeclaration
+                               join results in _context.ResultDeclaration.AsNoTracking()
                             on ft.FourthLevelHMasterId equals results.FourthLevelHMasterId
                                where results.GPPanchayatWardsMasterId == 0
-                               join asem in _context.AssemblyMaster.Where(a => a.AssemblyStatus == true)
+                               join asem in _context.AssemblyMaster.AsNoTracking().Where(a => a.AssemblyStatus == true)
                                    on ft.AssemblyMasterId equals asem.AssemblyMasterId
-                               join dist in _context.DistrictMaster.Where(d => d.DistrictStatus == true)
+                               join dist in _context.DistrictMaster.AsNoTracking().Where(d => d.DistrictStatus == true)
                                    on asem.DistrictMasterId equals dist.DistrictMasterId
-                               join state in _context.StateMaster.Where(s => s.StateStatus == true)
+                               join state in _context.StateMaster.AsNoTracking().Where(s => s.StateStatus == true)
                                    on dist.StateMasterId equals state.StateMasterId
-                               join elec in _context.ElectionTypeMaster.Where(e => e.ElectionStatus == true)
+                               join elec in _context.ElectionTypeMaster.AsNoTracking().Where(e => e.ElectionStatus == true)
                                    on ft.ElectionTypeMasterId equals elec.ElectionTypeMasterId
                                group new { ft, results, asem, dist, state, elec } by ft.FourthLevelHMasterId into grouped
                                orderby grouped.Key
@@ -21910,15 +21925,15 @@ namespace EAMS_DAL.Repository
             var combinedList = from gp in boothList
                                join results in resultDeclarationList
                                    on gp.GPPanchayatWardsMasterId equals results.GPPanchayatWardsMasterId
-                               join fth in _context.FourthLevelH.Where(a => a.HierarchyStatus == true)
+                               join fth in _context.FourthLevelH.AsNoTracking().Where(a => a.HierarchyStatus == true)
                                    on gp.FourthLevelHMasterId equals fth.FourthLevelHMasterId
-                               join asem in _context.AssemblyMaster.Where(a => a.AssemblyStatus == true)
+                               join asem in _context.AssemblyMaster.AsNoTracking().Where(a => a.AssemblyStatus == true)
                                    on gp.AssemblyMasterId equals asem.AssemblyMasterId
-                               join dist in _context.DistrictMaster.Where(d => d.DistrictStatus == true)
+                               join dist in _context.DistrictMaster.AsNoTracking().Where(d => d.DistrictStatus == true)
                                    on asem.DistrictMasterId equals dist.DistrictMasterId
-                               join state in _context.StateMaster.Where(s => s.StateStatus == true)
+                               join state in _context.StateMaster.AsNoTracking().Where(s => s.StateStatus == true)
                                    on dist.StateMasterId equals state.StateMasterId
-                               join elec in _context.ElectionTypeMaster.Where(e => e.ElectionStatus == true)
+                               join elec in _context.ElectionTypeMaster.AsNoTracking().Where(e => e.ElectionStatus == true)
                                    on gp.ElectionTypeMasterId equals elec.ElectionTypeMasterId
                                group new { gp, fth, results, asem, dist, state, elec }
                                by gp.GPPanchayatWardsMasterId into grouped
@@ -22103,16 +22118,16 @@ namespace EAMS_DAL.Repository
 
             // Continue with joins and selection
             var combinedList = from ft in boothList
-                               join asem in _context.AssemblyMaster
+                               join asem in _context.AssemblyMaster.AsNoTracking()
                                    .Where(a => a.AssemblyStatus == true) // Filter AssemblyMaster by status
                                on ft.AssemblyMasterId equals asem.AssemblyMasterId
-                               join dist in _context.DistrictMaster
+                               join dist in _context.DistrictMaster.AsNoTracking()
                                    .Where(d => d.DistrictStatus == true) // Filter DistrictMaster by status
                                on asem.DistrictMasterId equals dist.DistrictMasterId
-                               join state in _context.StateMaster
+                               join state in _context.StateMaster.AsNoTracking()
                                    .Where(s => s.StateStatus == true) // Filter StateMaster by status
                                on dist.StateMasterId equals state.StateMasterId
-                               join elec in _context.ElectionTypeMaster
+                               join elec in _context.ElectionTypeMaster.AsNoTracking()
                                    .Where(e => e.ElectionStatus == true) // Filter ElectionTypeMaster by status
                                on ft.ElectionTypeMasterId equals elec.ElectionTypeMasterId
                                orderby ft.HierarchyCode

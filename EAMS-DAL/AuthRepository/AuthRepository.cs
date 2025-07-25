@@ -619,7 +619,7 @@ namespace EAMS_DAL.AuthRepository
             var getElection = await GetElectionTypeById(userRecord.ElectionTypeMasterId);
 
             // Fetch the state only once
-            var state = await _context.StateMaster
+            var state = await _context.StateMaster.AsNoTracking()
                 .FirstOrDefaultAsync(d => d.StateMasterId == userRecord.StateMasterId);
 
             // Initialize common fields
@@ -637,14 +637,15 @@ namespace EAMS_DAL.AuthRepository
             };
 
             // Handle different roles
-            if (roles.Contains("SuperAdmin"))
+            if (rolesList.Contains("SuperAdmin"))
             {
                 return dashboardProfile;
             }
-            else if (roles.Contains("DistrictAdmin"))
+            else if (rolesList.Contains("DistrictAdmin"))
             {
-                var district = await _context.DistrictMaster
-                    .FirstOrDefaultAsync(d => d.StateMasterId == userRecord.StateMasterId && d.DistrictMasterId == userRecord.DistrictMasterId);
+                var district = await _context.DistrictMaster.AsNoTracking()
+                    .FirstOrDefaultAsync(d => d.StateMasterId == userRecord.StateMasterId
+                    && d.DistrictMasterId == userRecord.DistrictMasterId);
 
                 if (district != null)
                 {
@@ -652,9 +653,9 @@ namespace EAMS_DAL.AuthRepository
                     dashboardProfile.DistrictName = district.DistrictName;
                 }
             }
-            else if (roles.Contains("LocalBodiesAdmin") || roles.Contains("RO"))
+            else if (rolesList.Contains("LocalBodiesAdmin") || rolesList.Contains("RO"))
             {
-                var assembly = await _context.AssemblyMaster.Include(a => a.DistrictMaster).Where(a => a.StateMasterId == userRecord.StateMasterId &&
+                var assembly = await _context.AssemblyMaster.AsNoTracking().Include(a => a.DistrictMaster).Where(a => a.StateMasterId == userRecord.StateMasterId &&
                                                                            a.DistrictMasterId == userRecord.DistrictMasterId &&
                                                                            a.AssemblyMasterId == userRecord.AssemblyMasterId).FirstOrDefaultAsync();
 
@@ -666,11 +667,11 @@ namespace EAMS_DAL.AuthRepository
                     dashboardProfile.AssemblyName = assembly.AssemblyName;
                 }
             }
-            else if (roles.Contains("SubLocalBodiesAdmin"))
+            else if (rolesList.Contains("SubLocalBodiesAdmin"))
             {
-                var fourthLevelH = await _context.FourthLevelH
+                var fourthLevelH = await _context.FourthLevelH.AsNoTracking()
                     .Include(f => f.DistrictMaster)
-                    .Include(f => f.AssemblyMaster)
+                    .Include(f => f.AssemblyMaster) 
                     .FirstOrDefaultAsync(f => f.StateMasterId == userRecord.StateMasterId &&
                                          f.DistrictMasterId == userRecord.DistrictMasterId &&
                                          f.AssemblyMasterId == userRecord.AssemblyMasterId &&
