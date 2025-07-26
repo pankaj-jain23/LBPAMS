@@ -12987,6 +12987,12 @@ namespace EAMS_DAL.Repository
                 && e.HierarchyStatus == true
                 && (e.AssignedToRO != null || e.AssignedToRO != null)
                 );
+            IQueryable<GPPanchayatWards> totalGpWards = _context.GPPanchayatWards.AsNoTracking()
+              .Where(e => e.StateMasterId == stateMasterId
+              && e.ElectionTypeMasterId == electionTypeMasterId
+              && e.GPPanchayatWardsStatus == true
+
+              );
             IQueryable<Kyc> totalUnOpposedCandidates = _context.Kyc.AsNoTracking()
                .Where(e => e.StateMasterId == stateMasterId
                && e.ElectionTypeMasterId == electionTypeMasterId
@@ -13006,6 +13012,10 @@ namespace EAMS_DAL.Repository
                     && !String.IsNullOrWhiteSpace(e.AssignedTo)
                     );
                 totalFourthlevel = totalFourthlevel
+                   .Where(e => e.DistrictMasterId == districtMasterId && e.ElectionTypeMasterId == electionTypeMasterId
+
+                   );
+                totalGpWards = totalGpWards
                    .Where(e => e.DistrictMasterId == districtMasterId && e.ElectionTypeMasterId == electionTypeMasterId
 
                    );
@@ -13034,6 +13044,11 @@ namespace EAMS_DAL.Repository
                     && e.AssemblyMasterId == assemblyMasterId
                     && e.ElectionTypeMasterId == electionTypeMasterId
                     );
+                totalGpWards = totalGpWards
+                  .Where(e => e.DistrictMasterId == districtMasterId
+                  && e.AssemblyMasterId == assemblyMasterId
+                  && e.ElectionTypeMasterId == electionTypeMasterId
+                  );
                 totalUnOpposedCandidates = totalUnOpposedCandidates
                     .Where(e => e.DistrictMasterId == districtMasterId
                     && e.AssemblyMasterId == assemblyMasterId
@@ -13068,6 +13083,13 @@ namespace EAMS_DAL.Repository
                     && e.ElectionTypeMasterId == electionTypeMasterId
 
                     );
+                totalGpWards = totalGpWards
+                  .Where(e => e.DistrictMasterId == districtMasterId
+                  && e.AssemblyMasterId == assemblyMasterId
+                  && e.FourthLevelHMasterId == fourthLevelMasterId
+                  && e.ElectionTypeMasterId == electionTypeMasterId
+
+                  );
                 totalUnOpposedCandidates = totalUnOpposedCandidates
                     .Where(e => e.DistrictMasterId == districtMasterId
                     && e.AssemblyMasterId == assemblyMasterId
@@ -13094,9 +13116,18 @@ namespace EAMS_DAL.Repository
 
 
             var totalFourthlevelCount = await totalFourthlevel.CountAsync();
+            var totalGPWardCount = await totalGpWards.CountAsync();
             var totalCandidateUnOpposedKyc = await totalUnOpposedCandidates.CountAsync();
             var totalWinnerKyc = await totalWinnerCandidates.CountAsync();
 
+            var totalSarpanchWinner = await totalWinnerCandidates.Where(d => d.GPPanchayatWardsMasterId == 0
+                                                            || d.GPPanchayatWardsMasterId == null).CountAsync();
+            var totalPanchWinner = await totalWinnerCandidates.Where(d => d.GPPanchayatWardsMasterId != 0
+                                                            || d.GPPanchayatWardsMasterId != null).CountAsync();
+            var totalSarpanchUnOpposed= await totalUnOpposedCandidates.Where(d => d.GPPanchayatWardsMasterId == 0
+                                                            || d.GPPanchayatWardsMasterId == null).CountAsync();
+            var totalPanchUnOpposed = await totalUnOpposedCandidates.Where(d => d.GPPanchayatWardsMasterId != 0
+                                                            || d.GPPanchayatWardsMasterId != null).CountAsync();
             var dashboardCount = new DashBoardRealTimeCount
             {
                 Total = totalBoothsCount,
@@ -13174,8 +13205,13 @@ namespace EAMS_DAL.Repository
                     EventName = "Result Declaration",
                     EventAbbrName = "RD",
                     TotalFourthLevel = totalFourthlevelCount,
+                    TotalGpWards = totalGPWardCount,
                     TotalUnOpposedCandidate = totalCandidateUnOpposedKyc,
-                    TotalWinnerCandidate = totalWinnerKyc
+                    TotalWinnerCandidate = totalWinnerKyc,
+                    TotalSarPanchWinner=totalSarpanchWinner,
+                    TotalSarPanchUnOpposed=totalSarpanchUnOpposed,
+                    TotalPanchWinner=totalPanchWinner,
+                    TotalPanchUnOpposed=totalPanchUnOpposed
 
                 });
             }

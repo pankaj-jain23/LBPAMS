@@ -22,6 +22,11 @@
         public int? TotalWinnerCandidate {  get; set; }
         public int? TotalUnOpposedCandidate { get;set; }
         public int? TotalFourthLevel { get;set; }
+        public int? TotalGpWards { get;set; }
+        public int? TotalSarPanchWinner { get;set; }
+        public int? TotalPanchWinner { get;set; } 
+        public int? TotalSarPanchUnOpposed { get;set; }
+        public int? TotalPanchUnOpposed { get;set; } 
     }
 
     public class DahboardMastersId
