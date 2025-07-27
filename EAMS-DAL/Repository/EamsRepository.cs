@@ -13010,10 +13010,10 @@ namespace EAMS_DAL.Repository
             totalFourthlevelCount = await totalFourthlevel.CountAsync();
             int totalGPWardCount = await totalGpWards.CountAsync();
             int totalCandidateUnOpposedKyc = await totalUnOpposedCandidates.CountAsync();
-            int totalWinnerKyc = await totalWinnerCandidates.CountAsync();
-
+           
             int totalSarpanchWinner = await GetSarpanchWinnerCount(totalWinnerCandidates, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId);
             int totalPanchWinner = await GetPanchWinnerCount(totalWinnerCandidates, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId);
+            int totalWinnerKyc = totalSarpanchWinner+ totalPanchWinner;
 
             int totalSarpanchUnOpposed = await totalUnOpposedCandidates.CountAsync(d => d.GPPanchayatWardsMasterId == 0);
             int totalPanchUnOpposed = await totalUnOpposedCandidates.CountAsync(d => d.GPPanchayatWardsMasterId != 0);
