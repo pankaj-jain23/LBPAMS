@@ -27,6 +27,14 @@
         public int? TotalPanchWinner { get;set; } 
         public int? TotalSarPanchUnOpposed { get;set; }
         public int? TotalPanchUnOpposed { get;set; } 
+
+        public int? TotalSarpanchNoNomination { get; set; }
+        public int? TotalSarpanchCourtCases { get; set; }
+        public int? TotalSarpanchContesting { get; set; }
+
+        public int? TotalPanchNoNomination { get; set; }
+        public int? TotalPanchCourtCases { get; set; }
+        public int? TotalPanchContesting { get; set; }
     }
 
     public class DahboardMastersId

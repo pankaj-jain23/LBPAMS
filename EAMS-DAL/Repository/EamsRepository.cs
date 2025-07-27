@@ -17,6 +17,7 @@ using EAMS_ACore.Models.PublicModels;
 using EAMS_ACore.Models.QueueModel;
 using EAMS_ACore.Models.ResultModels;
 using EAMS_ACore.ReportModels;
+using EAMS_ACore.ServiceModels;
 using EAMS_ACore.SignalRModels;
 using EAMS_DAL.DBContext;
 using Microsoft.AspNetCore.Http;
@@ -12962,175 +12963,61 @@ namespace EAMS_DAL.Repository
         }
 
         public async Task<DashBoardRealTimeCount> GetEventActivityDashBoardCount(
-     string role,
-     int electionTypeMasterId,
-     int stateMasterId,
-     int? districtMasterId,
-     int? assemblyMasterId,
-     int? fourthLevelMasterId)
+       string role,
+       int electionTypeMasterId,
+       int stateMasterId,
+       int? districtMasterId,
+       int? assemblyMasterId,
+       int? fourthLevelMasterId)
         {
-            // Get the active events based on your criteria
             var activeEvents = await GetEventListForBooth(stateMasterId, electionTypeMasterId);
 
-            // Build the base query for election info
-            IQueryable<ElectionInfoMaster> electionQuery = _context.ElectionInfoMaster.AsNoTracking()
-                .Where(e => e.StateMasterId == stateMasterId && e.ElectionTypeMasterId == electionTypeMasterId);
+            var electionQuery = BuildElectionQuery(stateMasterId, electionTypeMasterId);
+            var totalBooths = BuildBoothQuery(stateMasterId, electionTypeMasterId);
+            var totalFourthlevel = BuildFourthLevelQuery(stateMasterId, electionTypeMasterId);
+            var totalGpWards = BuildGPWardQuery(stateMasterId, electionTypeMasterId);
+            var totalUnOpposedCandidates = BuildUnOpposedQuery(stateMasterId, electionTypeMasterId);
+            var totalWinnerCandidates = BuildWinnerQuery(stateMasterId, electionTypeMasterId);
+            
+            int totalSarpanchContesting = await GetSarpanchContestingCount(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId);
+            int totalPanchContesting = await GetPanchContestingCount(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId);
 
-            IQueryable<BoothMaster> totalBooths = _context.BoothMaster.AsNoTracking()
-                .Where(e => e.StateMasterId == stateMasterId
-                && e.ElectionTypeMasterId == electionTypeMasterId
-                && e.BoothStatus == true
-                  && !String.IsNullOrWhiteSpace(e.AssignedTo)
-                );
+            var filters = await ApplyRoleBasedFilters(role, electionTypeMasterId, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId,
+                electionQuery, totalBooths, totalFourthlevel, totalGpWards, totalUnOpposedCandidates, totalWinnerCandidates);
 
+            electionQuery = filters.ElectionQuery;
+            totalBooths = filters.Booths;
+            totalFourthlevel = filters.FourthLevel;
+            totalGpWards = filters.GpWards;
+            totalUnOpposedCandidates = filters.UnOpposed;
+            totalWinnerCandidates = filters.Winners;
 
-            IQueryable<FourthLevelH> totalFourthlevel = _context.FourthLevelH.AsNoTracking()
-                .Where(e => e.StateMasterId == stateMasterId
-                && e.ElectionTypeMasterId == electionTypeMasterId
-                && e.HierarchyStatus == true
-                && (e.AssignedToRO != null || e.AssignedToRO != null)
-                );
-            IQueryable<GPPanchayatWards> totalGpWards = _context.GPPanchayatWards.AsNoTracking()
-              .Where(e => e.StateMasterId == stateMasterId
-              && e.ElectionTypeMasterId == electionTypeMasterId
-              && e.GPPanchayatWardsStatus == true
+            int totalFourthlevelCount = 0;
+            int totalSarpanchCourtCase = await GetSarpanchCourtCaseCount(totalFourthlevel);
+            int totalSarpanchNoNomination = await GetSarpanchNoNominationCount(totalFourthlevel);
 
-              );
-            IQueryable<Kyc> totalUnOpposedCandidates = _context.Kyc.AsNoTracking()
-               .Where(e => e.StateMasterId == stateMasterId
-               && e.ElectionTypeMasterId == electionTypeMasterId
-               && e.IsUnOppossed == true
-               );
-            IQueryable<ResultDeclaration> totalWinnerCandidates = _context.ResultDeclaration.AsNoTracking()
-              .Where(e => e.StateMasterId == stateMasterId
-              && e.ElectionTypeMasterId == electionTypeMasterId
-              && e.IsWinner == true
-              );
-            if (role.Equals("DistrictAdmin", StringComparison.OrdinalIgnoreCase))
-            {
-                electionQuery = electionQuery
-                    .Where(e => e.DistrictMasterId == districtMasterId && e.ElectionTypeMasterId == electionTypeMasterId);
-                totalBooths = totalBooths
-                    .Where(e => e.DistrictMasterId == districtMasterId && e.ElectionTypeMasterId == electionTypeMasterId
-                    && !String.IsNullOrWhiteSpace(e.AssignedTo)
-                    );
-                totalFourthlevel = totalFourthlevel
-                   .Where(e => e.DistrictMasterId == districtMasterId && e.ElectionTypeMasterId == electionTypeMasterId
+            int totalPanchCourtCase = await GetPanchCourtCaseCount(totalGpWards);
+            int totalPanchNoNomination = await GetPanchNoNominationCount(totalGpWards);
 
-                   );
-                totalGpWards = totalGpWards
-                   .Where(e => e.DistrictMasterId == districtMasterId && e.ElectionTypeMasterId == electionTypeMasterId
-
-                   );
-                totalUnOpposedCandidates = totalUnOpposedCandidates
-                   .Where(e => e.DistrictMasterId == districtMasterId && e.ElectionTypeMasterId == electionTypeMasterId
-                   );
-                totalWinnerCandidates = totalWinnerCandidates
-                   .Where(e => e.DistrictMasterId == districtMasterId && e.ElectionTypeMasterId == electionTypeMasterId
-                   );
-
-            }
-            else if (role.Equals("LocalBodiesAdmin", StringComparison.OrdinalIgnoreCase) || role.Equals("RO", StringComparison.OrdinalIgnoreCase))
-            {
-                electionQuery = electionQuery
-                    .Where(e => e.DistrictMasterId == districtMasterId
-                    && e.AssemblyMasterId == assemblyMasterId
-                    && e.ElectionTypeMasterId == electionTypeMasterId);
-                totalBooths = totalBooths
-                    .Where(e => e.DistrictMasterId == districtMasterId
-                    && e.AssemblyMasterId == assemblyMasterId
-                    && e.ElectionTypeMasterId == electionTypeMasterId
-                    && !String.IsNullOrWhiteSpace(e.AssignedTo)
-                    );
-                totalFourthlevel = totalFourthlevel
-                    .Where(e => e.DistrictMasterId == districtMasterId
-                    && e.AssemblyMasterId == assemblyMasterId
-                    && e.ElectionTypeMasterId == electionTypeMasterId
-                    );
-                totalGpWards = totalGpWards
-                  .Where(e => e.DistrictMasterId == districtMasterId
-                  && e.AssemblyMasterId == assemblyMasterId
-                  && e.ElectionTypeMasterId == electionTypeMasterId
-                  );
-                totalUnOpposedCandidates = totalUnOpposedCandidates
-                    .Where(e => e.DistrictMasterId == districtMasterId
-                    && e.AssemblyMasterId == assemblyMasterId
-                    && e.ElectionTypeMasterId == electionTypeMasterId
-                    );
-                totalWinnerCandidates = totalWinnerCandidates
-                    .Where(e => e.DistrictMasterId == districtMasterId
-                    && e.AssemblyMasterId == assemblyMasterId
-                    && e.ElectionTypeMasterId == electionTypeMasterId
-                    );
-
-            }
-            else if (role.Equals("SubLocalBodiesAdmin", StringComparison.OrdinalIgnoreCase))
-            {
-                electionQuery = electionQuery
-                    .Where(e => e.DistrictMasterId == districtMasterId
-                    && e.AssemblyMasterId == assemblyMasterId
-                    && e.FourthLevelMasterId == fourthLevelMasterId
-                    && e.ElectionTypeMasterId == electionTypeMasterId
-                    );
-                totalBooths = totalBooths
-                    .Where(e => e.DistrictMasterId == districtMasterId
-                    && e.AssemblyMasterId == assemblyMasterId
-                    && e.FourthLevelHMasterId == fourthLevelMasterId
-                    && e.ElectionTypeMasterId == electionTypeMasterId
-                     && !String.IsNullOrWhiteSpace(e.AssignedTo)
-                    );
-                totalFourthlevel = totalFourthlevel
-                    .Where(e => e.DistrictMasterId == districtMasterId
-                    && e.AssemblyMasterId == assemblyMasterId
-                    && e.FourthLevelHMasterId == fourthLevelMasterId
-                    && e.ElectionTypeMasterId == electionTypeMasterId
-
-                    );
-                totalGpWards = totalGpWards
-                  .Where(e => e.DistrictMasterId == districtMasterId
-                  && e.AssemblyMasterId == assemblyMasterId
-                  && e.FourthLevelHMasterId == fourthLevelMasterId
-                  && e.ElectionTypeMasterId == electionTypeMasterId
-
-                  );
-                totalUnOpposedCandidates = totalUnOpposedCandidates
-                    .Where(e => e.DistrictMasterId == districtMasterId
-                    && e.AssemblyMasterId == assemblyMasterId
-                    && e.FourthLevelHMasterId == fourthLevelMasterId
-                    && e.ElectionTypeMasterId == electionTypeMasterId
-                    );
-                totalWinnerCandidates = totalWinnerCandidates
-                    .Where(e => e.DistrictMasterId == districtMasterId
-                    && e.AssemblyMasterId == assemblyMasterId
-                    && e.FourthLevelHMasterId == fourthLevelMasterId
-                    && e.ElectionTypeMasterId == electionTypeMasterId
-                    );
-
-            }
             var boothStats = await totalBooths
-                        .GroupBy(x => 1)
-                        .Select(g => new
-                        {
-                            Count = g.Count(),
-                            Voters = g.Sum(x => x.TotalVoters)
-                        }).FirstOrDefaultAsync();
-            var totalBoothsCount = boothStats.Count;
-            var totalVoters = boothStats.Voters;
+                .GroupBy(x => 1)
+                .Select(g => new { Count = g.Count(), Voters = g.Sum(x => x.TotalVoters) })
+                .FirstOrDefaultAsync();
 
+            int totalBoothsCount = boothStats?.Count ?? 0;
+            int totalVoters = boothStats?.Voters ?? 0;
 
-            var totalFourthlevelCount = await totalFourthlevel.CountAsync();
-            var totalGPWardCount = await totalGpWards.CountAsync();
-            var totalCandidateUnOpposedKyc = await totalUnOpposedCandidates.CountAsync();
-            var totalWinnerKyc = await totalWinnerCandidates.CountAsync();
+            totalFourthlevelCount = await totalFourthlevel.CountAsync();
+            int totalGPWardCount = await totalGpWards.CountAsync();
+            int totalCandidateUnOpposedKyc = await totalUnOpposedCandidates.CountAsync();
+            int totalWinnerKyc = await totalWinnerCandidates.CountAsync();
 
-            var totalSarpanchWinner = await totalWinnerCandidates.Where(d => d.GPPanchayatWardsMasterId == 0
-                                                            || d.GPPanchayatWardsMasterId == null).CountAsync();
-            var totalPanchWinner = await totalWinnerCandidates.Where(d => d.GPPanchayatWardsMasterId != 0
-                                                            || d.GPPanchayatWardsMasterId != null).CountAsync();
-            var totalSarpanchUnOpposed= await totalUnOpposedCandidates.Where(d => d.GPPanchayatWardsMasterId == 0
-                                                            || d.GPPanchayatWardsMasterId == null).CountAsync();
-            var totalPanchUnOpposed = await totalUnOpposedCandidates.Where(d => d.GPPanchayatWardsMasterId != 0
-                                                            || d.GPPanchayatWardsMasterId != null).CountAsync();
+            int totalSarpanchWinner = await GetSarpanchWinnerCount(totalWinnerCandidates, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId);
+            int totalPanchWinner = await GetPanchWinnerCount(totalWinnerCandidates, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId);
+
+            int totalSarpanchUnOpposed = await totalUnOpposedCandidates.CountAsync(d => d.GPPanchayatWardsMasterId == 0);
+            int totalPanchUnOpposed = await totalUnOpposedCandidates.CountAsync(d => d.GPPanchayatWardsMasterId != 0);
+
             var dashboardCount = new DashBoardRealTimeCount
             {
                 Total = totalBoothsCount,
@@ -13161,49 +13048,44 @@ namespace EAMS_DAL.Repository
                 })
                 .FirstOrDefaultAsync();
 
-
-
             if (electionInfos != null)
             {
-
                 var eventCounts = new Dictionary<string, int>
-                {
-                    { "PD", electionInfos.PartyDispatchedCount },
-                    { "PA", electionInfos.PartyArrivedCount },
-                    { "SP", electionInfos.SetupPollingCount },
-                    { "MP", electionInfos.MockPollCount },
-                    { "PS", electionInfos.PollStartedCount },
-                    { "VT", electionInfos.VoterTurnOutCount },
-                    { "VQ", electionInfos.VoterInQueueCount },
-                    { "FV", electionInfos.FinalVotesCount },
-                    { "PE", electionInfos.PollEndedCount },
-                    { "EO", electionInfos.EVMVVPATOffCount },
-                    { "PC", electionInfos.PartyDepartedCount },
-                    { "PR", electionInfos.PartyReachedAtCollectionCount },
-                    { "ED", electionInfos.EVMDepositedCount }
-                };
+        {
+            { "PD", electionInfos.PartyDispatchedCount },
+            { "PA", electionInfos.PartyArrivedCount },
+            { "SP", electionInfos.SetupPollingCount },
+            { "MP", electionInfos.MockPollCount },
+            { "PS", electionInfos.PollStartedCount },
+            { "VT", electionInfos.VoterTurnOutCount },
+            { "VQ", electionInfos.VoterInQueueCount },
+            { "FV", electionInfos.FinalVotesCount },
+            { "PE", electionInfos.PollEndedCount },
+            { "EO", electionInfos.EVMVVPATOffCount },
+            { "PC", electionInfos.PartyDepartedCount },
+            { "PR", electionInfos.PartyReachedAtCollectionCount },
+            { "ED", electionInfos.EVMDepositedCount }
+        };
 
                 var totalVotersCount = totalVoters;
-                var VotesInQueueCount = electionInfos.VoterInQueue;
+                var votesInQueueCount = electionInfos.VoterInQueue;
                 var votesPolledPercentage = totalVoters > 0 ? Math.Round((decimal)(electionInfos.VotesPolled * 100.0 / totalVoters), 1) : 0;
-                var finalVotesSum = electionInfos.FinalVote; // Assuming this is the correct source for final votes
                 var finalVotesPercentage = totalVoters > 0 ? Math.Round((decimal)(electionInfos.FinalVote * 100.0 / totalVoters), 1) : 0;
 
-                // Now you can use a single query to populate the dashboard count
-                dashboardCount.Events = activeEvents
-                                .Select(activeEvent => new EventCount
-                                {
-                                    EventName = activeEvent.EventName,
-                                    EventAbbrName = activeEvent.EventABBR,
-                                    Count = eventCounts.TryGetValue(activeEvent.EventABBR, out var count) ? count : 0,
-                                    VotesInQueueCount = VotesInQueueCount,
-                                    VotesPolledCount = electionInfos.VotesPolled,
-                                    TotalVotersCount = totalVotersCount,
-                                    VotesPolledPercentage = votesPolledPercentage,
-                                    FinalVotesCount = finalVotesSum,
-                                    FinalVotesPercentage = finalVotesPercentage
-                                }).ToList();
-                dashboardCount.Events.Add(new EventCount()
+                dashboardCount.Events = activeEvents.Select(activeEvent => new EventCount
+                {
+                    EventName = activeEvent.EventName,
+                    EventAbbrName = activeEvent.EventABBR,
+                    Count = eventCounts.TryGetValue(activeEvent.EventABBR, out var count) ? count : 0,
+                    VotesInQueueCount = votesInQueueCount,
+                    VotesPolledCount = electionInfos.VotesPolled,
+                    TotalVotersCount = totalVotersCount,
+                    VotesPolledPercentage = votesPolledPercentage,
+                    FinalVotesCount = electionInfos.FinalVote,
+                    FinalVotesPercentage = finalVotesPercentage
+                }).ToList();
+
+                dashboardCount.Events.Add(new EventCount
                 {
                     EventName = "Result Declaration",
                     EventAbbrName = "RD",
@@ -13211,15 +13093,254 @@ namespace EAMS_DAL.Repository
                     TotalGpWards = totalGPWardCount,
                     TotalUnOpposedCandidate = totalCandidateUnOpposedKyc,
                     TotalWinnerCandidate = totalWinnerKyc,
-                    TotalSarPanchWinner=totalSarpanchWinner,
-                    TotalSarPanchUnOpposed=totalSarpanchUnOpposed,
-                    TotalPanchWinner=totalPanchWinner,
-                    TotalPanchUnOpposed=totalPanchUnOpposed
-
+                    TotalSarPanchWinner = totalSarpanchWinner,
+                    TotalSarPanchUnOpposed = totalSarpanchUnOpposed,
+                    TotalPanchWinner = totalPanchWinner,
+                    TotalPanchUnOpposed = totalPanchUnOpposed,
+                    TotalSarpanchContesting = totalSarpanchContesting,
+                    TotalSarpanchCourtCases = totalSarpanchCourtCase,
+                    TotalSarpanchNoNomination = totalSarpanchNoNomination,
+                    TotalPanchContesting = totalPanchContesting,
+                    TotalPanchCourtCases = totalPanchCourtCase,
+                    TotalPanchNoNomination = totalPanchNoNomination
                 });
             }
 
             return dashboardCount;
+        }
+
+
+        private IQueryable<ElectionInfoMaster> BuildElectionQuery(int stateId, int typeId) =>
+            _context.ElectionInfoMaster.AsNoTracking().Where(e => e.StateMasterId == stateId && e.ElectionTypeMasterId == typeId);
+
+        private IQueryable<BoothMaster> BuildBoothQuery(int stateId, int typeId) =>
+            _context.BoothMaster.AsNoTracking().Where(e => e.StateMasterId == stateId && e.ElectionTypeMasterId == typeId && e.BoothStatus == true && !string.IsNullOrWhiteSpace(e.AssignedTo));
+
+        private IQueryable<FourthLevelH> BuildFourthLevelQuery(int stateId, int typeId) =>
+            _context.FourthLevelH.AsNoTracking().Where(e => e.StateMasterId == stateId && e.ElectionTypeMasterId == typeId && e.HierarchyStatus == true);
+
+        private IQueryable<GPPanchayatWards> BuildGPWardQuery(int stateId, int typeId) =>
+            _context.GPPanchayatWards.AsNoTracking().Where(e => e.StateMasterId == stateId && e.ElectionTypeMasterId == typeId && e.GPPanchayatWardsStatus == true);
+
+        private IQueryable<Kyc> BuildUnOpposedQuery(int stateId, int typeId) =>
+            _context.Kyc.AsNoTracking().Where(e => e.StateMasterId == stateId && e.ElectionTypeMasterId == typeId && e.IsUnOppossed);
+
+        private IQueryable<ResultDeclaration> BuildWinnerQuery(int stateId, int typeId) =>
+            _context.ResultDeclaration.AsNoTracking().Where(e => e.StateMasterId == stateId && e.ElectionTypeMasterId == typeId && e.IsWinner);
+        private async Task<int> GetSarpanchContestingCount(int stateId, int? districtId, int? assemblyId, int? fourthLevelId)
+        {
+            var query = _context.FourthLevelH.AsQueryable();
+
+            if (districtId.HasValue&&districtId.Value > 0)
+                query = query.Where(f => f.DistrictMasterId == districtId);
+            if (assemblyId.HasValue && assemblyId.Value > 0)
+                query = query.Where(f => f.AssemblyMasterId == assemblyId);
+            if (fourthLevelId.HasValue && fourthLevelId.Value > 0)
+                query = query.Where(f => f.FourthLevelHMasterId == fourthLevelId);
+
+            query = query.Where(f => f.StateMasterId == stateId);
+
+            return await query.CountAsync(f => _context.Kyc.Any(k => k.FourthLevelHMasterId == f.FourthLevelHMasterId && k.GPPanchayatWardsMasterId == 0));
+        }
+
+        private async Task<int> GetPanchContestingCount(int stateId, int? districtId, int? assemblyId, int? fourthLevelId)
+        {
+            var query = _context.GPPanchayatWards.AsQueryable();
+
+            if (districtId.HasValue && districtId.Value > 0)
+                query = query.Where(f => f.DistrictMasterId == districtId);
+            if (assemblyId.HasValue && assemblyId.Value > 0)
+                query = query.Where(f => f.AssemblyMasterId == assemblyId);
+            if (fourthLevelId.HasValue && fourthLevelId.Value > 0)
+                query = query.Where(f => f.FourthLevelHMasterId == fourthLevelId);
+
+            query = query.Where(f => f.StateMasterId == stateId);
+
+            return await query.CountAsync(f => _context.Kyc.Any(k => k.GPPanchayatWardsMasterId == f.GPPanchayatWardsMasterId && k.GPPanchayatWardsMasterId != 0));
+        }
+        private async Task<int> GetSarpanchWinnerCount(IQueryable<ResultDeclaration> winnerQuery, int stateId, int? districtId, int? assemblyId, int? fourthLevelId)
+        {
+            if (districtId.HasValue && districtId.Value > 0)
+            {
+                winnerQuery = winnerQuery.Where(w => w.DistrictMasterId == districtId);
+            }
+            else if (assemblyId.HasValue && assemblyId.Value > 0)
+            {
+                winnerQuery = winnerQuery.Where(w => w.DistrictMasterId == districtId && w.AssemblyMasterId == assemblyId);
+            }
+            else if (fourthLevelId.HasValue && fourthLevelId.Value > 0)
+            {
+                winnerQuery = winnerQuery.Where(w => w.DistrictMasterId == districtId && w.AssemblyMasterId == assemblyId && w.FourthLevelHMasterId == fourthLevelId);
+            }
+            else
+            {
+                winnerQuery = winnerQuery.Where(w => w.StateMasterId == stateId);
+            }
+
+            return await winnerQuery.CountAsync(d => d.GPPanchayatWardsMasterId == 0 || d.GPPanchayatWardsMasterId == null);
+        }
+
+        private async Task<int> GetPanchWinnerCount(IQueryable<ResultDeclaration> winnerQuery, int stateId, int? districtId, int? assemblyId, int? fourthLevelId)
+        {
+            if (districtId.HasValue && districtId.Value > 0)
+            {
+                winnerQuery = winnerQuery.Where(w => w.DistrictMasterId == districtId );
+            }
+            else if (assemblyId.HasValue && assemblyId.Value > 0)
+            {
+                winnerQuery = winnerQuery.Where(w => w.DistrictMasterId == districtId && w.AssemblyMasterId == assemblyId);
+            }
+            else if (fourthLevelId.HasValue && fourthLevelId.Value > 0)
+            {
+                winnerQuery = winnerQuery.Where(w => w.DistrictMasterId == districtId && w.AssemblyMasterId == assemblyId && w.FourthLevelHMasterId == fourthLevelId);
+            }
+            else 
+            {
+                winnerQuery = winnerQuery.Where(w => w.StateMasterId == stateId);
+            }
+            return await winnerQuery.CountAsync(d => d.GPPanchayatWardsMasterId != 0 || d.GPPanchayatWardsMasterId != null);
+        }
+
+        private async Task<int> GetSarpanchCourtCaseCount(IQueryable<FourthLevelH> query)
+        {
+            return await query.CountAsync(d => d.IsCC);
+        }
+
+        private async Task<int> GetSarpanchNoNominationCount(IQueryable<FourthLevelH> query)
+        {
+            return await query.CountAsync(d => d.IsNN);
+        }
+
+        private async Task<int> GetPanchCourtCaseCount(IQueryable<GPPanchayatWards> query)
+        {
+            return await query.CountAsync(d => d.IsCC);
+        }
+
+        private async Task<int> GetPanchNoNominationCount(IQueryable<GPPanchayatWards> query)
+        {
+            return await query.CountAsync(d => d.IsNN);
+        }
+
+        private async Task<RoleBasedFilterResult> ApplyRoleBasedFilters(
+     string role,
+     int electionTypeMasterId,
+     int stateId,
+     int? districtId,
+     int? assemblyId,
+     int? fourthLevelId,
+     IQueryable<ElectionInfoMaster> electionQuery,
+     IQueryable<BoothMaster> booths,
+     IQueryable<FourthLevelH> fourthLevel,
+     IQueryable<GPPanchayatWards> gpWards,
+     IQueryable<Kyc> unOpposed,
+     IQueryable<ResultDeclaration> winners)
+        {
+            int sarpanchContesting = 0;
+            int panchContesting = 0;
+            if (electionTypeMasterId >= 1 && electionTypeMasterId <= 3)
+            {
+                fourthLevel = _context.FourthLevelH.AsNoTracking()
+                                .Where(f =>
+                                    _context.Kyc.Any(k => k.FourthLevelHMasterId == f.FourthLevelHMasterId && k.GPPanchayatWardsMasterId == 0)
+                                );
+
+            }
+            if (role.Equals("DistrictAdmin", StringComparison.OrdinalIgnoreCase))
+            {
+                electionQuery = electionQuery.Where(e => e.DistrictMasterId == districtId);
+                booths = booths.Where(e => e.DistrictMasterId == districtId);
+                gpWards = gpWards.Where(e => e.DistrictMasterId == districtId);
+                unOpposed = unOpposed.Where(e => e.DistrictMasterId == districtId);
+                winners = winners.Where(e => e.DistrictMasterId == districtId);
+
+                if (electionTypeMasterId <= 3)
+                { 
+                    fourthLevel = _context.FourthLevelH.AsNoTracking()
+                            .Where(f =>f.DistrictMasterId == districtId &&
+                                _context.Kyc.Any(k => k.FourthLevelHMasterId == f.FourthLevelHMasterId && k.GPPanchayatWardsMasterId == 0)
+                            );
+                    sarpanchContesting = await _context.FourthLevelH
+                        .Where(f => f.StateMasterId == stateId && f.DistrictMasterId == districtId)
+                        .CountAsync(f => _context.Kyc.Any(k => k.FourthLevelHMasterId == f.FourthLevelHMasterId && k.GPPanchayatWardsMasterId == 0));
+
+                    panchContesting = await _context.GPPanchayatWards
+                        .Where(f => f.StateMasterId == stateId && f.DistrictMasterId == districtId)
+                        .CountAsync(f => _context.Kyc.Any(k => k.GPPanchayatWardsMasterId == f.GPPanchayatWardsMasterId));
+                }
+                else
+                {
+                    fourthLevel = fourthLevel.Where(f => f.DistrictMasterId == districtId);
+                }
+            }
+            else if (role.Equals("LocalBodiesAdmin", StringComparison.OrdinalIgnoreCase))
+            {
+                electionQuery = electionQuery.Where(e => e.DistrictMasterId == districtId && e.AssemblyMasterId == assemblyId);
+                booths = booths.Where(e => e.DistrictMasterId == districtId && e.AssemblyMasterId == assemblyId);
+                gpWards = gpWards.Where(e => e.DistrictMasterId == districtId && e.AssemblyMasterId == assemblyId);
+                unOpposed = unOpposed.Where(e => e.DistrictMasterId == districtId && e.AssemblyMasterId == assemblyId);
+                winners = winners.Where(e => e.DistrictMasterId == districtId && e.AssemblyMasterId == assemblyId);
+
+                if (electionTypeMasterId <= 3)
+                { 
+                    fourthLevel = _context.FourthLevelH.AsNoTracking()
+                           .Where(f => f.DistrictMasterId == districtId && f.AssemblyMasterId == assemblyId&&
+                               _context.Kyc.Any(k => k.FourthLevelHMasterId == f.FourthLevelHMasterId && k.GPPanchayatWardsMasterId == 0)
+                           );
+                    sarpanchContesting = await _context.FourthLevelH
+                        .Where(f => f.StateMasterId == stateId && f.DistrictMasterId == districtId && f.AssemblyMasterId == assemblyId)
+                        .CountAsync(f => _context.Kyc.Any(k => k.FourthLevelHMasterId == f.FourthLevelHMasterId && k.GPPanchayatWardsMasterId == 0));
+
+                    panchContesting = await _context.GPPanchayatWards
+                        .Where(f => f.StateMasterId == stateId && f.DistrictMasterId == districtId && f.AssemblyMasterId == assemblyId)
+                        .CountAsync(f => _context.Kyc.Any(k => k.GPPanchayatWardsMasterId == f.GPPanchayatWardsMasterId));
+                }
+                else
+                {
+                    fourthLevel = fourthLevel.Where(f => f.DistrictMasterId == districtId && f.AssemblyMasterId == assemblyId);
+                }
+            }
+            else if (role.Equals("SubLocalBodiesAdmin", StringComparison.OrdinalIgnoreCase))
+            {
+                electionQuery = electionQuery.Where(e => e.DistrictMasterId == districtId && e.AssemblyMasterId == assemblyId && e.FourthLevelMasterId == fourthLevelId);
+                booths = booths.Where(e => e.DistrictMasterId == districtId && e.AssemblyMasterId == assemblyId && e.FourthLevelHMasterId == fourthLevelId);
+                gpWards = gpWards.Where(e => e.DistrictMasterId == districtId && e.AssemblyMasterId == assemblyId && e.FourthLevelHMasterId == fourthLevelId);
+                unOpposed = unOpposed.Where(e => e.DistrictMasterId == districtId && e.AssemblyMasterId == assemblyId && e.FourthLevelHMasterId == fourthLevelId);
+                winners = winners.Where(e => e.DistrictMasterId == districtId && e.AssemblyMasterId == assemblyId && e.FourthLevelHMasterId == fourthLevelId);
+
+                if (electionTypeMasterId <= 3)
+                {
+            
+                    fourthLevel = _context.FourthLevelH.AsNoTracking()
+                         .Where(f => f.DistrictMasterId == districtId && f.AssemblyMasterId == assemblyId && f.FourthLevelHMasterId == fourthLevelId &&
+                             _context.Kyc.Any(k => k.FourthLevelHMasterId == f.FourthLevelHMasterId && k.GPPanchayatWardsMasterId == 0)
+                         );
+
+                    sarpanchContesting = await _context.FourthLevelH
+                        .Where(f => f.StateMasterId == stateId && f.DistrictMasterId == districtId && f.AssemblyMasterId == assemblyId && f.FourthLevelHMasterId == fourthLevelId)
+                        .CountAsync(f => _context.Kyc.Any(k => k.FourthLevelHMasterId == f.FourthLevelHMasterId && k.GPPanchayatWardsMasterId == 0));
+
+                    panchContesting = await _context.GPPanchayatWards
+                        .Where(f => f.StateMasterId == stateId && f.DistrictMasterId == districtId && f.AssemblyMasterId == assemblyId && f.FourthLevelHMasterId == fourthLevelId)
+                        .CountAsync(f => _context.Kyc.Any(k => k.GPPanchayatWardsMasterId == f.GPPanchayatWardsMasterId));
+                }
+                else
+                {
+                    fourthLevel = fourthLevel.Where(f => f.DistrictMasterId == districtId && f.AssemblyMasterId == assemblyId && f.FourthLevelHMasterId == fourthLevelId);
+                }
+            }
+          
+
+            return new RoleBasedFilterResult
+            {
+                ElectionQuery = electionQuery,
+                Booths = booths,
+                FourthLevel = fourthLevel,
+                GpWards = gpWards,
+                UnOpposed = unOpposed,
+                Winners = winners,
+                SarpanchContesting = sarpanchContesting,
+                PanchContesting = panchContesting
+            };
         }
 
         private bool IsSuperAdminOrECI(string roles)
