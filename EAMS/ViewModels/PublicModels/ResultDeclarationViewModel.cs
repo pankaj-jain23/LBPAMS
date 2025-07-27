@@ -22,6 +22,11 @@
             get;
             set;
         }
+        public int? CancelledVotes
+        {
+            get;
+            set;
+        }
         public bool IsReCounting { get; set; }
         public bool IsWinner { get; set; }
         public bool IsDraw { get; set; }
@@ -44,6 +49,11 @@
         public int FourthLevelHMasterId { get; set; }
         public int? GPPanchayatWardsMasterId { get; set; }
         public int? VoteMargin { get; set; } // Optional, since it could be null
+        public int? CancelledVotes
+        {
+            get;
+            set;
+        }
         public bool IsReCounting { get; set; }
         public bool IsWinner { get; set; }
         public bool IsDraw { get; set; }

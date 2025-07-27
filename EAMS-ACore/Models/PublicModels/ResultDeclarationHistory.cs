@@ -67,6 +67,11 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
+        public int? CancelledVotes
+        {
+            get;
+            set;
+        }
         public bool IsWinner { get; set; }
         public bool IsResultDeclared { get; set; }
         public string? ResultDeclaredByMobile

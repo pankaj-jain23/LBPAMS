@@ -41,6 +41,11 @@ namespace EAMS_ACore.Models
             get;
             set;
         }
+        public int? CancelledVotes
+        {
+            get;
+            set;
+        }
         public string? PartyName
         {
             get;

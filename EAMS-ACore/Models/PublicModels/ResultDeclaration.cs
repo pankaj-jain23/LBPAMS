@@ -59,6 +59,11 @@ namespace EAMS_ACore.Models.PublicModels
             get;
             set;
         }
+        public int? CancelledVotes
+        {
+            get;
+            set;
+        }
         public bool IsWinner { get; set; }
         public bool IsResultDeclared { get; set; }
         public string? ResultDeclaredByMobile
@@ -194,6 +199,11 @@ namespace EAMS_ACore.Models.PublicModels
             set;
         }
         public int? VoteMargin
+        {
+            get;
+            set;
+        }
+        public int? CancelledVotes
         {
             get;
             set;

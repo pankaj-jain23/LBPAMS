@@ -20362,6 +20362,7 @@ namespace EAMS_DAL.Repository
                 {
                     // Update existing record with new details
                     existingResult.VoteMargin = resultCandidate.VoteMargin;
+                    existingResult.CancelledVotes = resultCandidate.CancelledVotes;
                     existingResult.IsWinner = resultCandidate.IsWinner;
                     existingResult.IsResultDeclared = resultCandidate.IsResultDeclared;
                     existingResult.IsDraw = resultCandidate.IsDraw;
@@ -20391,6 +20392,7 @@ namespace EAMS_DAL.Repository
                         GPPanchayatWardsMasterId = resultCandidate.GPPanchayatWardsMasterId,
                         KycMasterId = resultCandidate.KycMasterId,
                         VoteMargin = resultCandidate.VoteMargin,
+                        CancelledVotes = resultCandidate.CancelledVotes,
                         IsWinner = resultCandidate.IsWinner, // Pass IsWinner value
                         IsResultDeclared = false, // Assuming non-winners have this set to false
                         IsDraw = resultCandidate.IsDraw, // Pass IsDraw value
@@ -20436,6 +20438,7 @@ namespace EAMS_DAL.Repository
                 {
                     // Update existing record with new details
                     existingResult.VoteMargin = resultCandidate.VoteMargin;
+                    existingResult.CancelledVotes = resultCandidate.CancelledVotes;
                     existingResult.IsWinner = resultCandidate.IsWinner;
                     existingResult.IsResultDeclared = resultCandidate.IsResultDeclared;
                     existingResult.IsDraw = resultCandidate.IsDraw;
@@ -20463,6 +20466,7 @@ namespace EAMS_DAL.Repository
                         ResultDeclaredByPortal = resultCandidate.ResultDeclaredByPortal,
                         KycMasterId = resultCandidate.KycMasterId,
                         VoteMargin = resultCandidate.VoteMargin,
+                        CancelledVotes = resultCandidate.CancelledVotes,
                         IsWinner = resultCandidate.IsWinner, // Pass IsWinner value
                         IsResultDeclared = false, // Assuming non-winners have this set to false
                         IsDraw = resultCandidate.IsDraw, // Pass IsDraw value
@@ -20509,6 +20513,7 @@ namespace EAMS_DAL.Repository
                 {
                     // Update existing record with new details
                     existingResult.VoteMargin = resultCandidate.VoteMargin;
+                    existingResult.CancelledVotes = resultCandidate.CancelledVotes;
                     existingResult.IsWinner = resultCandidate.IsWinner;
                     existingResult.IsResultDeclared = resultCandidate.IsResultDeclared;
                     existingResult.IsDraw = resultCandidate.IsDraw;
@@ -20537,6 +20542,7 @@ namespace EAMS_DAL.Repository
                         ResultDeclaredByPortal = resultCandidate.ResultDeclaredByPortal,
                         KycMasterId = resultCandidate.KycMasterId,
                         VoteMargin = resultCandidate.VoteMargin,
+                        CancelledVotes = resultCandidate.CancelledVotes,
                         IsWinner = resultCandidate.IsWinner, // Pass IsWinner value
                         IsResultDeclared = false, // Assuming non-winners have this set to false
                         IsDraw = resultCandidate.IsDraw, // Pass IsDraw value
@@ -20608,6 +20614,7 @@ namespace EAMS_DAL.Repository
                 {
                     // Update the existing record with the new data
                     existingResult.VoteMargin = resultCandidate.VoteMargin;
+                    existingResult.CancelledVotes = resultCandidate.CancelledVotes;
                     existingResult.IsWinner = resultCandidate.IsWinner;
                     existingResult.IsResultDeclared = resultCandidate.IsResultDeclared;
                     existingResult.IsDraw = resultCandidate.IsDraw;
@@ -20738,6 +20745,7 @@ namespace EAMS_DAL.Repository
                                                                 FatherName = kyc.FatherName,
                                                                 PartyName = kyc.PartyName,
                                                                 VoteMargin = resultDecl.VoteMargin,
+                                                                CancelledVotes = resultDecl.CancelledVotes,
                                                                 IsWinner = resultDecl.IsWinner,
                                                                 IsResultDeclared = resultDecl.IsResultDeclared,
                                                                 ResultDeclaredByMobile = resultDecl.ResultDeclaredByMobile,
@@ -20941,6 +20949,7 @@ namespace EAMS_DAL.Repository
                                                                 CandidateName = kyc.CandidateName,
                                                                 FatherName = kyc.FatherName,
                                                                 VoteMargin = resultDecl.VoteMargin,
+                                                                CancelledVotes = resultDecl.CancelledVotes,
                                                                 IsWinner = resultDecl.IsWinner,
                                                                 IsResultDeclared = resultDecl.IsResultDeclared,
                                                                 ResultDeclaredByMobile = resultDecl.ResultDeclaredByMobile,
@@ -21225,6 +21234,7 @@ namespace EAMS_DAL.Repository
                 IsDrawLottery = c.result?.IsDrawLottery ?? false, // Default to false if result is null
                 IsReCounting = c.result?.IsReCounting ?? false, // Default to false if result is null
                 VoteMargin = c.result?.VoteMargin ?? null,
+                CancelledVotes = c.result?.CancelledVotes ?? null,
                 IsNOTA = c.kycCandidate.IsNOTA
             }).OrderBy(c => c.IsNOTA).ToList();
 
@@ -21344,6 +21354,10 @@ namespace EAMS_DAL.Repository
                                                           : false,
                                            VoteMargin = groupedResults.FirstOrDefault().result != null
                                                         ? groupedResults.FirstOrDefault().result.VoteMargin
+                                                        : null,
+
+                                           CancelledVotes = groupedResults.FirstOrDefault().result != null
+                                                        ? groupedResults.FirstOrDefault().result.CancelledVotes
                                                         : null,
 
                                        }).OrderBy(c => c.IsNOTA).ToListAsync();
