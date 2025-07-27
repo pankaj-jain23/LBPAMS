@@ -13011,13 +13011,17 @@ namespace EAMS_DAL.Repository
             int totalGPWardCount = await totalGpWards.CountAsync();
             int totalCandidateUnOpposedKyc = await totalUnOpposedCandidates.CountAsync();
            
-            int totalSarpanchWinner = await GetSarpanchWinnerCount(totalWinnerCandidates, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId);
-            int totalPanchWinner = await GetPanchWinnerCount(totalWinnerCandidates, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId);
-            int totalWinnerKyc = totalSarpanchWinner+ totalPanchWinner;
+            //int totalSarpanchWinner = await GetSarpanchWinnerCount(totalWinnerCandidates, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId);
+            //int totalPanchWinner = await GetPanchWinnerCount(totalWinnerCandidates, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId);
+            
+            var totalSarpanchWinner = await filters.Winners.Where(d => d.GPPanchayatWardsMasterId == 0 || d.GPPanchayatWardsMasterId == null).CountAsync();
+            var totalPanchWinner = await filters.Winners.Where(d =>   d.GPPanchayatWardsMasterId != 0 && d.GPPanchayatWardsMasterId != null).CountAsync();
+             
+            int totalWinnerKyc = totalSarpanchWinner + totalPanchWinner;
 
             int totalSarpanchUnOpposed = await totalUnOpposedCandidates.CountAsync(d => d.GPPanchayatWardsMasterId == 0);
             int totalPanchUnOpposed = await totalUnOpposedCandidates.CountAsync(d => d.GPPanchayatWardsMasterId != 0);
-
+            
             var dashboardCount = new DashBoardRealTimeCount
             {
                 Total = totalBoothsCount,
