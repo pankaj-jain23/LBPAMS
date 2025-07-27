@@ -49,6 +49,7 @@ var redisConnectionString = builder.Configuration.GetConnectionString("RedisCach
 builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
 {
     var configuration = ConfigurationOptions.Parse(redisConnectionString, true);
+    configuration.AbortOnConnectFail = false; // 🔥 important
     return ConnectionMultiplexer.Connect(configuration);
 });
 
