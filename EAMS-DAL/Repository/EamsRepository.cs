@@ -1726,8 +1726,8 @@ namespace EAMS_DAL.Repository
 
         public async Task<List<CombinedMaster>> GetAllAssemblies(string stateId, string districtId, string electionTypeId)
         {
-            var isStateActive = _context.StateMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateId)).FirstOrDefault();
-            var isDistrictActive = _context.DistrictMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateId) && d.DistrictMasterId == Convert.ToInt32(districtId)).FirstOrDefault();
+            var isStateActive =await _context.StateMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateId)).FirstOrDefaultAsync();
+            var isDistrictActive =await _context.DistrictMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateId) && d.DistrictMasterId == Convert.ToInt32(districtId)).FirstOrDefaultAsync();
 
             var innerJoin = from asemb in _context.AssemblyMaster.Where(d => d.DistrictMasterId == Convert.ToInt32(districtId)) // outer sequence
                             join dist in _context.DistrictMaster // inner sequence 
@@ -7505,7 +7505,7 @@ namespace EAMS_DAL.Repository
                                                              EventABBR = d.EventABBR,
                                                              EventSequence = d.EventSequence
 
-                                                         }).FirstOrDefaultAsync();
+                                                         }).OrderByDescending(d => d.EventSequence).FirstOrDefaultAsync();
 
 
 
@@ -7628,11 +7628,14 @@ namespace EAMS_DAL.Repository
             }
             return voterTurnOutPolledDetailViewModel;
         }
+     
+        
         private async Task<SlotManagementMaster> GetLastSlot(int stateMasterId, int electionTypeMasterId)
         {
 
             return await _context.SlotManagementMaster.AsNoTracking().Where(p => p.StateMasterId == stateMasterId
-           && p.ElectionTypeMasterId == electionTypeMasterId && p.IsLastSlot == true).FirstOrDefaultAsync();
+           && p.ElectionTypeMasterId == electionTypeMasterId && p.IsLastSlot == true)
+                .FirstOrDefaultAsync();
 
 
         }
