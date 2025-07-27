@@ -22425,11 +22425,11 @@ namespace EAMS_DAL.Repository
         //}
         public async Task<List<ConsolidatePanchResultDeclarationReportList>> GetConsolidatedResultDeclarationReportForPanchAndSarpanch(ResultDeclaration resultDeclaration)
         {
-            var unOpposedList = await GetUnOpposedCandidatesAsync(resultDeclaration);
+            
             var declaredResultList = await GetDeclaredResultCandidatesAsync(resultDeclaration);
-
-            return unOpposedList
-                .Concat(declaredResultList.OrderBy(d => d.FourthLevelHName))
+            var unOpposedList = await GetUnOpposedCandidatesAsync(resultDeclaration);
+            return declaredResultList
+                .Concat(unOpposedList.OrderBy(d => d.FourthLevelHName))
                 .ToList();
         }
 
