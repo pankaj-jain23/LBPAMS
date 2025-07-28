@@ -22675,6 +22675,121 @@ namespace EAMS_DAL.Repository
 
             return result;
         }
+        //private async Task<List<ConsolidatePanchResultDeclarationReportList>> GetDeclaredResultCandidatesAsync(ResultDeclaration resultDeclaration)
+        //{
+        //    var query = from rd in _context.ResultDeclaration
+        //                where rd.IsWinner == true
+        //                join kyc in _context.Kyc on rd.KycMasterId equals kyc.KycMasterId into kycJoin
+        //                from kyc in kycJoin.DefaultIfEmpty()
+        //                join state in _context.StateMaster on rd.StateMasterId equals state.StateMasterId
+        //                join district in _context.DistrictMaster on rd.DistrictMasterId equals district.DistrictMasterId into districtJoin
+        //                from district in districtJoin.DefaultIfEmpty()
+        //                join assembly in _context.AssemblyMaster on rd.AssemblyMasterId equals assembly.AssemblyMasterId into assemblyJoin
+        //                from assembly in assemblyJoin.DefaultIfEmpty()
+        //                join fourthLevel in _context.FourthLevelH on rd.FourthLevelHMasterId equals fourthLevel.FourthLevelHMasterId into fourthLevelJoin
+        //                from fourthLevel in fourthLevelJoin.DefaultIfEmpty()
+        //                join gpPanchayatWards in _context.GPPanchayatWards on kyc.GPPanchayatWardsMasterId equals gpPanchayatWards.GPPanchayatWardsMasterId into gpPanchayatWardsJoin
+        //                from gpPanchayatWards in gpPanchayatWardsJoin.DefaultIfEmpty()
+        //                select new
+        //                {
+        //                    ResultDeclaration = rd,
+        //                    KycRecord = kyc,
+        //                    StateRecord = state,
+        //                    DistrictRecord = district,
+        //                    AssemblyRecord = assembly,
+        //                    FourthLevelRecord = fourthLevel,
+        //                    GPWard = gpPanchayatWards
+        //                };
+
+
+        //    // Filtering logic
+        //    string reportType = "State";
+
+        //    if (resultDeclaration.StateMasterId != 0 && resultDeclaration.DistrictMasterId != 0 && resultDeclaration.AssemblyMasterId == 0 && resultDeclaration.FourthLevelHMasterId == 0)
+        //    {
+        //        query = query.Where(d => d.ResultDeclaration.DistrictMasterId == resultDeclaration.DistrictMasterId);
+        //        reportType = "District";
+        //    }
+        //    else if (resultDeclaration.StateMasterId != 0 && resultDeclaration.DistrictMasterId != 0 && resultDeclaration.AssemblyMasterId != 0 && resultDeclaration.FourthLevelHMasterId == 0)
+        //    {
+        //        query = query.Where(d => d.ResultDeclaration.DistrictMasterId == resultDeclaration.DistrictMasterId
+        //                                  && d.ResultDeclaration.AssemblyMasterId == resultDeclaration.AssemblyMasterId);
+        //        reportType = "Local Bodies";
+        //    }
+        //    else if (resultDeclaration.StateMasterId != 0 && resultDeclaration.DistrictMasterId != 0 && resultDeclaration.AssemblyMasterId != 0 && resultDeclaration.FourthLevelHMasterId != 0)
+        //    {
+        //        query = query.Where(d => d.ResultDeclaration.DistrictMasterId == resultDeclaration.DistrictMasterId
+        //                                  && d.ResultDeclaration.AssemblyMasterId == resultDeclaration.AssemblyMasterId
+        //                                  && d.ResultDeclaration.FourthLevelHMasterId == resultDeclaration.FourthLevelHMasterId);
+        //        reportType = "Sub Local Bodies";
+        //    }
+
+        //    // Group by GPWard safely
+        //    var groupedVotes = await query
+        //        .GroupBy(x => x.FourthLevelRecord != null ? x.FourthLevelRecord.FourthLevelHMasterId : 0)
+        //        .Select(g => new
+        //        {
+        //            GPPanchayatWardsMasterId = g.Key,
+        //            TotalVotesForWard = g.Sum(x => Convert.ToInt32(x.ResultDeclaration.VoteMargin ?? 0)),
+        //            Candidates = g.ToList()
+        //        })
+        //        .ToListAsync();
+
+        //    // Prepare final list
+        //    var result = groupedVotes
+        //        .SelectMany(g => g.Candidates.Select(d => new ConsolidatePanchResultDeclarationReportList
+        //        {
+        //            Header = resultDeclaration.FourthLevelHMasterId != 0
+        //                ? $"{d.StateRecord?.StateName} ({d.StateRecord?.StateCode}) {d.DistrictRecord?.DistrictName} ({d.DistrictRecord?.DistrictCode}) {d.AssemblyRecord?.AssemblyName} ({d.AssemblyRecord?.AssemblyCode}) {d.FourthLevelRecord?.HierarchyName} ({d.FourthLevelRecord?.HierarchyCode})"
+        //                : resultDeclaration.AssemblyMasterId != 0
+        //                ? $"{d.StateRecord?.StateName} ({d.StateRecord?.StateCode}) {d.DistrictRecord?.DistrictName} ({d.DistrictRecord?.DistrictCode}) {d.AssemblyRecord?.AssemblyName} ({d.AssemblyRecord?.AssemblyCode})"
+        //                : resultDeclaration.DistrictMasterId != 0
+        //                ? $"{d.StateRecord?.StateName} ({d.StateRecord?.StateCode}) {d.DistrictRecord?.DistrictName} ({d.DistrictRecord?.DistrictCode})"
+        //                : $"{d.StateRecord?.StateName} ({d.StateRecord?.StateCode})",
+
+        //            Title = resultDeclaration.StateMasterId != 0 && resultDeclaration.DistrictMasterId == 0 &&
+        //                    resultDeclaration.AssemblyMasterId == 0 && resultDeclaration.FourthLevelHMasterId == 0
+        //                ? d.DistrictRecord?.DistrictName
+        //                : resultDeclaration.StateMasterId != 0 && resultDeclaration.DistrictMasterId != 0 &&
+        //                  resultDeclaration.AssemblyMasterId == 0 && resultDeclaration.FourthLevelHMasterId == 0
+        //                ? d.DistrictRecord?.DistrictName
+        //                : resultDeclaration.StateMasterId != 0 && resultDeclaration.DistrictMasterId != 0 &&
+        //                  resultDeclaration.AssemblyMasterId != 0 && resultDeclaration.FourthLevelHMasterId == 0
+        //                ? d.AssemblyRecord?.AssemblyName
+        //                : d.FourthLevelRecord?.HierarchyName,
+
+        //            Type = reportType,
+        //            Code = d.GPWard?.GPPanchayatWardsCode.ToString(),
+        //            Name = d.GPWard?.GPPanchayatWardsName,
+        //            GPPanchayatWardsType = d.GPWard?.GPPanchayatWardsCategory,
+        //            StateName = d.StateRecord?.StateName,
+        //            DistrictName = d.DistrictRecord?.DistrictName,
+        //            AssemblyName = d.AssemblyRecord?.AssemblyName,
+        //            FourthLevelHName = d.FourthLevelRecord?.HierarchyName,
+        //            GPPanchayatWardsName = d.GPWard?.GPPanchayatWardsName,
+        //            KycMasterId = d.KycRecord?.KycMasterId ?? 0,
+        //            ResultDeclarationMasterId = d.ResultDeclaration?.ResultDeclarationMasterId ?? 0,
+        //            CandidateName = d.KycRecord?.CandidateName,
+        //            CandidateFatherName = d.KycRecord?.FatherName,
+        //            IsUnOpposed = d.KycRecord?.IsUnOppossed ?? false,
+        //            IsWinner = d.ResultDeclaration?.IsWinner ?? false,
+        //            VotesGained = (d.ResultDeclaration?.VoteMargin ?? 0).ToString(),
+        //            CancelledVotes = (d.ResultDeclaration?.CancelledVotes ?? null),
+        //            WinnerBy = d.ResultDeclaration?.IsDrawLottery == true
+        //                ? "Won By Lottery"
+        //                : d.ResultDeclaration?.IsReCounting == true
+        //                ? "Recounting Winner"
+        //                : "Direct Won",
+
+        //            VotesGainedPercentage = g.TotalVotesForWard > 0 && d.ResultDeclaration?.VoteMargin != null
+        //                ? ((Convert.ToDouble(d.ResultDeclaration.VoteMargin) / g.TotalVotesForWard) * 100).ToString("0.00")
+        //                : "0.00"
+        //        }))
+        //        .ToList();
+
+        //    return result;
+        //}
+
         private async Task<List<ConsolidatePanchResultDeclarationReportList>> GetDeclaredResultCandidatesAsync(ResultDeclaration resultDeclaration)
         {
             var query = from rd in _context.ResultDeclaration
@@ -22701,8 +22816,6 @@ namespace EAMS_DAL.Repository
                             GPWard = gpPanchayatWards
                         };
 
-
-            // Filtering logic
             string reportType = "State";
 
             if (resultDeclaration.StateMasterId != 0 && resultDeclaration.DistrictMasterId != 0 && resultDeclaration.AssemblyMasterId == 0 && resultDeclaration.FourthLevelHMasterId == 0)
@@ -22724,71 +22837,78 @@ namespace EAMS_DAL.Repository
                 reportType = "Sub Local Bodies";
             }
 
-            // Group by GPWard safely
             var groupedVotes = await query
-                .GroupBy(x => x.FourthLevelRecord != null ? x.FourthLevelRecord.FourthLevelHMasterId : 0)
+                .GroupBy(x => resultDeclaration.ElectionTypeMasterId == resultDeclaration.ElectionTypeMasterId
+                    ? (object)(x.KycRecord.GPPanchayatWardsMasterId)
+                    : (object)(x.FourthLevelRecord.FourthLevelHMasterId))
                 .Select(g => new
                 {
-                    GPPanchayatWardsMasterId = g.Key,
+                    GroupId = g.Key,
                     TotalVotesForWard = g.Sum(x => Convert.ToInt32(x.ResultDeclaration.VoteMargin ?? 0)),
+                    TotalCancelledVotes = g.Sum(x => x.ResultDeclaration.CancelledVotes ?? 0),
                     Candidates = g.ToList()
                 })
                 .ToListAsync();
 
-            // Prepare final list
             var result = groupedVotes
-                .SelectMany(g => g.Candidates.Select(d => new ConsolidatePanchResultDeclarationReportList
+                .Select(g =>
                 {
-                    Header = resultDeclaration.FourthLevelHMasterId != 0
-                        ? $"{d.StateRecord?.StateName} ({d.StateRecord?.StateCode}) {d.DistrictRecord?.DistrictName} ({d.DistrictRecord?.DistrictCode}) {d.AssemblyRecord?.AssemblyName} ({d.AssemblyRecord?.AssemblyCode}) {d.FourthLevelRecord?.HierarchyName} ({d.FourthLevelRecord?.HierarchyCode})"
-                        : resultDeclaration.AssemblyMasterId != 0
-                        ? $"{d.StateRecord?.StateName} ({d.StateRecord?.StateCode}) {d.DistrictRecord?.DistrictName} ({d.DistrictRecord?.DistrictCode}) {d.AssemblyRecord?.AssemblyName} ({d.AssemblyRecord?.AssemblyCode})"
-                        : resultDeclaration.DistrictMasterId != 0
-                        ? $"{d.StateRecord?.StateName} ({d.StateRecord?.StateCode}) {d.DistrictRecord?.DistrictName} ({d.DistrictRecord?.DistrictCode})"
-                        : $"{d.StateRecord?.StateName} ({d.StateRecord?.StateCode})",
+                    var first = g.Candidates.FirstOrDefault();
+                    if (first == null) return null;
 
-                    Title = resultDeclaration.StateMasterId != 0 && resultDeclaration.DistrictMasterId == 0 &&
-                            resultDeclaration.AssemblyMasterId == 0 && resultDeclaration.FourthLevelHMasterId == 0
-                        ? d.DistrictRecord?.DistrictName
-                        : resultDeclaration.StateMasterId != 0 && resultDeclaration.DistrictMasterId != 0 &&
-                          resultDeclaration.AssemblyMasterId == 0 && resultDeclaration.FourthLevelHMasterId == 0
-                        ? d.DistrictRecord?.DistrictName
-                        : resultDeclaration.StateMasterId != 0 && resultDeclaration.DistrictMasterId != 0 &&
-                          resultDeclaration.AssemblyMasterId != 0 && resultDeclaration.FourthLevelHMasterId == 0
-                        ? d.AssemblyRecord?.AssemblyName
-                        : d.FourthLevelRecord?.HierarchyName,
+                    return new ConsolidatePanchResultDeclarationReportList
+                    {
+                        Header = resultDeclaration.FourthLevelHMasterId != 0
+                            ? $"{first.StateRecord?.StateName} ({first.StateRecord?.StateCode}) {first.DistrictRecord?.DistrictName} ({first.DistrictRecord?.DistrictCode}) {first.AssemblyRecord?.AssemblyName} ({first.AssemblyRecord?.AssemblyCode}) {first.FourthLevelRecord?.HierarchyName} ({first.FourthLevelRecord?.HierarchyCode})"
+                            : resultDeclaration.AssemblyMasterId != 0
+                            ? $"{first.StateRecord?.StateName} ({first.StateRecord?.StateCode}) {first.DistrictRecord?.DistrictName} ({first.DistrictRecord?.DistrictCode}) {first.AssemblyRecord?.AssemblyName} ({first.AssemblyRecord?.AssemblyCode})"
+                            : resultDeclaration.DistrictMasterId != 0
+                            ? $"{first.StateRecord?.StateName} ({first.StateRecord?.StateCode}) {first.DistrictRecord?.DistrictName} ({first.DistrictRecord?.DistrictCode})"
+                            : $"{first.StateRecord?.StateName} ({first.StateRecord?.StateCode})",
 
-                    Type = reportType,
-                    Code = d.GPWard?.GPPanchayatWardsCode.ToString(),
-                    Name = d.GPWard?.GPPanchayatWardsName,
-                    GPPanchayatWardsType = d.GPWard?.GPPanchayatWardsCategory,
-                    StateName = d.StateRecord?.StateName,
-                    DistrictName = d.DistrictRecord?.DistrictName,
-                    AssemblyName = d.AssemblyRecord?.AssemblyName,
-                    FourthLevelHName = d.FourthLevelRecord?.HierarchyName,
-                    GPPanchayatWardsName = d.GPWard?.GPPanchayatWardsName,
-                    KycMasterId = d.KycRecord?.KycMasterId ?? 0,
-                    ResultDeclarationMasterId = d.ResultDeclaration?.ResultDeclarationMasterId ?? 0,
-                    CandidateName = d.KycRecord?.CandidateName,
-                    CandidateFatherName = d.KycRecord?.FatherName,
-                    IsUnOpposed = d.KycRecord?.IsUnOppossed ?? false,
-                    IsWinner = d.ResultDeclaration?.IsWinner ?? false,
-                    VotesGained = (d.ResultDeclaration?.VoteMargin ?? 0).ToString(),
-                    WinnerBy = d.ResultDeclaration?.IsDrawLottery == true
-                        ? "Won By Lottery"
-                        : d.ResultDeclaration?.IsReCounting == true
-                        ? "Recounting Winner"
-                        : "Direct Won",
+                        Title = resultDeclaration.StateMasterId != 0 && resultDeclaration.DistrictMasterId == 0 &&
+                                resultDeclaration.AssemblyMasterId == 0 && resultDeclaration.FourthLevelHMasterId == 0
+                            ? first.DistrictRecord?.DistrictName
+                            : resultDeclaration.StateMasterId != 0 && resultDeclaration.DistrictMasterId != 0 &&
+                              resultDeclaration.AssemblyMasterId == 0 && resultDeclaration.FourthLevelHMasterId == 0
+                            ? first.DistrictRecord?.DistrictName
+                            : resultDeclaration.StateMasterId != 0 && resultDeclaration.DistrictMasterId != 0 &&
+                              resultDeclaration.AssemblyMasterId != 0 && resultDeclaration.FourthLevelHMasterId == 0
+                            ? first.AssemblyRecord?.AssemblyName
+                            : first.FourthLevelRecord?.HierarchyName,
 
-                    VotesGainedPercentage = g.TotalVotesForWard > 0 && d.ResultDeclaration?.VoteMargin != null
-                        ? ((Convert.ToDouble(d.ResultDeclaration.VoteMargin) / g.TotalVotesForWard) * 100).ToString("0.00")
-                        : "0.00"
-                }))
+                        Type = reportType,
+                        Code = first.GPWard?.GPPanchayatWardsCode.ToString(),
+                        Name = first.GPWard?.GPPanchayatWardsName,
+                        GPPanchayatWardsType = first.GPWard?.GPPanchayatWardsCategory,
+                        StateName = first.StateRecord?.StateName,
+                        DistrictName = first.DistrictRecord?.DistrictName,
+                        AssemblyName = first.AssemblyRecord?.AssemblyName,
+                        FourthLevelHName = first.FourthLevelRecord?.HierarchyName,
+                        GPPanchayatWardsName = first.GPWard?.GPPanchayatWardsName,
+                        KycMasterId = first.KycRecord?.KycMasterId ?? 0,
+                        ResultDeclarationMasterId = first.ResultDeclaration?.ResultDeclarationMasterId ?? 0,
+                        CandidateName = first.KycRecord?.CandidateName,
+                        CandidateFatherName = first.KycRecord?.FatherName,
+                        IsUnOpposed = first.KycRecord?.IsUnOppossed ?? false,
+                        IsWinner = first.ResultDeclaration?.IsWinner ?? false,
+                        VotesGained = (first.ResultDeclaration?.VoteMargin ?? 0).ToString(),
+                        CancelledVotes = g.TotalCancelledVotes,
+                        WinnerBy = first.ResultDeclaration?.IsDrawLottery == true
+                            ? "Won By Lottery"
+                            : first.ResultDeclaration?.IsReCounting == true
+                            ? "Recounting Winner"
+                            : "Direct Won",
+                        VotesGainedPercentage = g.TotalVotesForWard > 0 && first.ResultDeclaration?.VoteMargin != null
+                            ? ((Convert.ToDouble(first.ResultDeclaration.VoteMargin) / g.TotalVotesForWard) * 100).ToString("0.00")
+                            : "0.00"
+                    };
+                })
+                .Where(x => x != null)
                 .ToList();
 
             return result;
         }
-
 
         public async Task<List<ConsolidatedUnOpposedPanchSarPanchAndNoKycCandidateReportList>> GetConsolidatedUnOppossedPanchResultDeclarationReport(ResultDeclaration resultDeclaration)
         {

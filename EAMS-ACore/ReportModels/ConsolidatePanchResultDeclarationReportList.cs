@@ -76,6 +76,11 @@ namespace EAMS_ACore.ReportModels
             get;
             set;
         }
+        public int? CancelledVotes
+        {
+            get;
+            set;
+        }
         public string VotesGainedPercentage
         {
             get;
