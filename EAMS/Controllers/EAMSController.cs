@@ -514,7 +514,7 @@ namespace EAMS.Controllers
 
         #region Assembliy Master 
         [HttpGet]
-        [Route("GetAssembliesListById")]        
+        [Route("GetAssembliesListById")]
         public async Task<IActionResult> GetAssembliesListById(string stateId, string districtId, string electionTypeId)
         {
             if (stateId != null && districtId != null)
@@ -808,7 +808,7 @@ namespace EAMS.Controllers
             {
 
                 var mappedData = _mapper.Map<FieldOfficerMaster>(fieldOfficerViewModel);
-                var isUniqueMobile = await _EAMSService.IsMobileNumberUnique(fieldOfficerViewModel.FieldOfficerMobile,fieldOfficerViewModel.StateMasterId);
+                var isUniqueMobile = await _EAMSService.IsMobileNumberUnique(fieldOfficerViewModel.FieldOfficerMobile, fieldOfficerViewModel.StateMasterId);
                 if (isUniqueMobile.IsSucceed == false)
                 {
                     return BadRequest(isUniqueMobile.Message);
@@ -969,7 +969,7 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetBoothListForResultDeclaration")]
         [Authorize]
-        public async Task<IActionResult> GetBoothListForResultDeclaration() 
+        public async Task<IActionResult> GetBoothListForResultDeclaration()
         {
             int foId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "FieldOfficerMasterId")?.Value);
             int stateMasterId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value);
@@ -3725,9 +3725,9 @@ namespace EAMS.Controllers
         public async Task<IActionResult> AddPollInterruption(InterruptionViewModel interruptionViewModel)
         {
             if (ModelState.IsValid)
-            { 
-              
-                var mappedData = _mapper.Map<PollInterruption>(interruptionViewModel); 
+            {
+
+                var mappedData = _mapper.Map<PollInterruption>(interruptionViewModel);
                 var result = await _EAMSService.AddPollInterruption(mappedData);
 
                 switch (result.Status)
@@ -3751,7 +3751,7 @@ namespace EAMS.Controllers
             }
         }
 
-        
+
         [HttpGet]
         [Route("GetPollInterruptionbyId")]
         [Authorize]
@@ -5212,7 +5212,7 @@ namespace EAMS.Controllers
             {
 
                 var mappedData = _mapper.Map<AROResultMaster>(fieldOfficerViewModel);
-                var isUniqueMobile = await _EAMSService.IsMobileNumberUnique(fieldOfficerViewModel.AROMobile,fieldOfficerViewModel.StateMasterId);
+                var isUniqueMobile = await _EAMSService.IsMobileNumberUnique(fieldOfficerViewModel.AROMobile, fieldOfficerViewModel.StateMasterId);
                 if (isUniqueMobile.IsSucceed == false)
                 {
                     return BadRequest(isUniqueMobile.Message);
@@ -5543,5 +5543,145 @@ namespace EAMS.Controllers
         //}
 
 
+        #region ZP Panchayat Mapping
+        [HttpPost]
+        [Route("ZPPanchayatMapping")]
+        [Authorize]
+        public async Task<IActionResult> ZPPanchayatMapping(ZPPanchayatMappingViewModel mappingViewModel)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var errorMessage = ModelState.Values.SelectMany(d => d.Errors)
+                                                         .Select(d => d.ErrorMessage)
+                                                         .FirstOrDefault();
+                    return BadRequest(errorMessage);
+                }
+
+
+                var fourthLevels = mappingViewModel.FourthLevelHMasterId.Select(fLevelMasterId => new PanchayatMapping
+                {
+                    FourthLevelHMasterId = fLevelMasterId,
+                    StateMasterId = mappingViewModel.StateMasterId,
+                    DistrictMasterId = mappingViewModel.DistrictMasterId,
+                    AssemblyMasterId = mappingViewModel.AssemblyMasterId,
+                    ElectionTypeMasterId = mappingViewModel.ElectionTypeMasterId,
+                    Status = true,
+                    Type = "ZP",
+
+
+                }).ToList();
+
+                var result = await _EAMSService.ZPPanchayatMapping(fourthLevels);
+                return HandleResult(result);
+
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"BoothMapping: {ex.Message}");
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
+
+        [HttpPost]
+        [Route("ReleaseZPPanchayat")]
+        [Authorize]
+        public async Task<IActionResult> ReleaseZPPanchayat(ZPPanchayatMappingViewModel mappingViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+
+                    var fourthLevels = mappingViewModel.FourthLevelHMasterId.Select(fLevelMasterId => new PanchayatMapping
+                    {
+                        FourthLevelHMasterId = fLevelMasterId,
+                        StateMasterId = mappingViewModel.StateMasterId,
+                        DistrictMasterId = mappingViewModel.DistrictMasterId,
+                        AssemblyMasterId = mappingViewModel.AssemblyMasterId,
+                        ElectionTypeMasterId = mappingViewModel.ElectionTypeMasterId,
+                        Status = true,
+                        Type = "ZP",
+
+
+                    }).ToList();
+                    var boothReleaseResponse = await _EAMSService.ReleaseZPPanchayat(fourthLevels);
+
+                    return HandleResult(boothReleaseResponse);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return BadRequest(ex.Message);
+                }
+
+            }
+
+
+            else
+            {
+                return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
+            }
+        }
+
+        [HttpPost]
+        [Route("GetZPPanchayatMappingList")]
+        [Authorize]
+        public async Task<IActionResult> GetZPPanchayatMappingList([FromBody] RqZPPanchayatMappingViewModel request)
+        {
+             
+
+           
+                var list = await _EAMSService.GetZPPanchayatMappings(
+                    request.StateMasterId,
+                    request.DistrictMasterId,
+                    request.AssemblyMasterId,
+                    request.ElectionTypeMasterId
+                );
+
+                if (list == null || !list.Any())
+                {
+                   return NotFound();
+                }
+
+                return Ok(new  
+                {
+                    Status = RequestStatusEnum.OK,
+                    Message = "Panchayat mapping list fetched successfully",
+                    Data = list
+                });
+             
+        }
+       
+        [HttpPost]
+        [Route("GetZPPanchayatUnMappedList")]
+        [Authorize]
+        public async Task<IActionResult> GetZPPanchayatUnMappedList([FromBody] RqZPPanchayatMappingViewModel request)
+        {
+
+
+
+            var list = await _EAMSService.GetZPPanchayatUnMapped(
+                request.StateMasterId,
+                request.DistrictMasterId,
+                request.AssemblyMasterId,
+                request.ElectionTypeMasterId
+            );
+
+            if (list == null || !list.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(new
+            {
+                Count=list.Count,   
+                Data = list
+            });
+
+        }
+        #endregion
     }
 }

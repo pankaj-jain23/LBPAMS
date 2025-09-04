@@ -30,8 +30,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer(); 
-
-builder.Services.AddSwaggerGen();
+ 
 builder.Services.AddAutoMapper(typeof(MapperProfile)); // Add your profile class here
 builder.Services.AddDbContextPool<EamsContext>(options =>
 {
@@ -128,6 +127,7 @@ builder.Services.AddScoped<ICacheService, CacheService>();
 builder.Services.AddSwaggerGen(opt =>
 {
     opt.SwaggerDoc("v1", new OpenApiInfo { Title = "LBPAMS-API", Version = "v1" });
+    
     opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,

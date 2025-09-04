@@ -448,5 +448,12 @@ namespace EAMS_ACore.Interfaces
         Task<List<PartyWiseResult>> GetPartyWiseResultByStateId(int stateMasterId, int electionTypeMasterId);
         Task<List<DistrictConsolidateResultReport>> GetConsolidateResultReportByDistrictId(int stateMasterId, int districtMasterId, int electionTyepMasterId);
         #endregion
+
+        #region PS and ZP PanchaytaMapping
+        Task<Response> ZPPanchayatMapping(List<PanchayatMapping> mappings);
+        Task<Response> ReleaseZPPanchayat(List<PanchayatMapping> mappings);
+        Task<List<PanchayatMapping>> GetZPPanchayatMappings(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId);
+        Task<List<FourthLevelH>> GetZPPanchayatUnMapped(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId);
+        #endregion
     }
 }
