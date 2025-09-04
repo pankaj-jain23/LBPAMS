@@ -20,19 +20,13 @@ using EAMS_ACore.ReportModels;
 using EAMS_ACore.ServiceModels;
 using EAMS_ACore.SignalRModels;
 using EAMS_DAL.DBContext;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using System.Data;
 using System.Globalization;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 using System.Security.Claims;
-using System.Text.RegularExpressions;
 
 
 namespace EAMS_DAL.Repository

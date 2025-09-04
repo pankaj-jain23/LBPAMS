@@ -32,6 +32,7 @@ public partial class EamsContext : IdentityDbContext<UserRegistration>
     public virtual DbSet<AssemblyMaster> AssemblyMaster { get; set; }
     public virtual DbSet<FourthLevelH> FourthLevelH { get; set; }
     public virtual DbSet<PSZonePanchayat> PSZonePanchayat { get; set; }
+    public virtual DbSet<PanchayatMapping> PanchayatMappings { get; set; }
     public virtual DbSet<GPPanchayatWards> GPPanchayatWards { get; set; }
     public virtual DbSet<BoothMaster> BoothMaster { get; set; }
     public virtual DbSet<ParliamentConstituencyMaster> ParliamentConstituencyMaster { get; set; }

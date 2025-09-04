@@ -15,7 +15,6 @@ using EAMS_BLL.Services;
 using EAMS_DAL.AuthRepository;
 using EAMS_DAL.DBContext;
 using EAMS_DAL.Repository;
-using LBPAMS.Helper.BackGroundServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.ResponseCompression;
