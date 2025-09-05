@@ -1721,8 +1721,8 @@ namespace EAMS_DAL.Repository
 
         public async Task<List<CombinedMaster>> GetAllAssemblies(string stateId, string districtId, string electionTypeId)
         {
-            var isStateActive =await _context.StateMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateId)).FirstOrDefaultAsync();
-            var isDistrictActive =await _context.DistrictMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateId) && d.DistrictMasterId == Convert.ToInt32(districtId)).FirstOrDefaultAsync();
+            var isStateActive = await _context.StateMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateId)).FirstOrDefaultAsync();
+            var isDistrictActive = await _context.DistrictMaster.Where(d => d.StateMasterId == Convert.ToInt32(stateId) && d.DistrictMasterId == Convert.ToInt32(districtId)).FirstOrDefaultAsync();
 
             var innerJoin = from asemb in _context.AssemblyMaster.Where(d => d.DistrictMasterId == Convert.ToInt32(districtId)) // outer sequence
                             join dist in _context.DistrictMaster // inner sequence 
@@ -7623,8 +7623,8 @@ namespace EAMS_DAL.Repository
             }
             return voterTurnOutPolledDetailViewModel;
         }
-     
-        
+
+
         private async Task<SlotManagementMaster> GetLastSlot(int stateMasterId, int electionTypeMasterId)
         {
 
@@ -12972,7 +12972,7 @@ namespace EAMS_DAL.Repository
             var totalGpWards = BuildGPWardQuery(stateMasterId, electionTypeMasterId);
             var totalUnOpposedCandidates = BuildUnOpposedQuery(stateMasterId, electionTypeMasterId);
             var totalWinnerCandidates = BuildWinnerQuery(stateMasterId, electionTypeMasterId);
-            
+
             int totalSarpanchContesting = await GetSarpanchContestingCount(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId);
             int totalPanchContesting = await GetPanchContestingCount(stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId);
 
@@ -13004,18 +13004,18 @@ namespace EAMS_DAL.Repository
             totalFourthlevelCount = await totalFourthlevel.CountAsync();
             int totalGPWardCount = await totalGpWards.CountAsync();
             int totalCandidateUnOpposedKyc = await totalUnOpposedCandidates.CountAsync();
-           
+
             //int totalSarpanchWinner = await GetSarpanchWinnerCount(totalWinnerCandidates, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId);
             //int totalPanchWinner = await GetPanchWinnerCount(totalWinnerCandidates, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelMasterId);
-            
+
             var totalSarpanchWinner = await filters.Winners.Where(d => d.GPPanchayatWardsMasterId == 0 || d.GPPanchayatWardsMasterId == null).CountAsync();
-            var totalPanchWinner = await filters.Winners.Where(d =>   d.GPPanchayatWardsMasterId != 0 && d.GPPanchayatWardsMasterId != null).CountAsync();
-             
+            var totalPanchWinner = await filters.Winners.Where(d => d.GPPanchayatWardsMasterId != 0 && d.GPPanchayatWardsMasterId != null).CountAsync();
+
             int totalWinnerKyc = totalSarpanchWinner + totalPanchWinner;
 
             int totalSarpanchUnOpposed = await totalUnOpposedCandidates.CountAsync(d => d.GPPanchayatWardsMasterId == 0);
             int totalPanchUnOpposed = await totalUnOpposedCandidates.CountAsync(d => d.GPPanchayatWardsMasterId != 0);
-            
+
             var dashboardCount = new DashBoardRealTimeCount
             {
                 Total = totalBoothsCount,
@@ -13129,7 +13129,7 @@ namespace EAMS_DAL.Repository
         {
             var query = _context.FourthLevelH.AsQueryable();
 
-            if (districtId.HasValue&&districtId.Value > 0)
+            if (districtId.HasValue && districtId.Value > 0)
                 query = query.Where(f => f.DistrictMasterId == districtId);
             if (assemblyId.HasValue && assemblyId.Value > 0)
                 query = query.Where(f => f.AssemblyMasterId == assemblyId);
@@ -13182,7 +13182,7 @@ namespace EAMS_DAL.Repository
         {
             if (districtId.HasValue && districtId.Value > 0)
             {
-                winnerQuery = winnerQuery.Where(w => w.DistrictMasterId == districtId );
+                winnerQuery = winnerQuery.Where(w => w.DistrictMasterId == districtId);
             }
             else if (assemblyId.HasValue && assemblyId.Value > 0)
             {
@@ -13192,7 +13192,7 @@ namespace EAMS_DAL.Repository
             {
                 winnerQuery = winnerQuery.Where(w => w.DistrictMasterId == districtId && w.AssemblyMasterId == assemblyId && w.FourthLevelHMasterId == fourthLevelId);
             }
-            else 
+            else
             {
                 winnerQuery = winnerQuery.Where(w => w.StateMasterId == stateId);
             }
@@ -13252,9 +13252,9 @@ namespace EAMS_DAL.Repository
                 winners = winners.Where(e => e.DistrictMasterId == districtId);
 
                 if (electionTypeMasterId <= 3)
-                { 
+                {
                     fourthLevel = _context.FourthLevelH.AsNoTracking()
-                            .Where(f =>f.DistrictMasterId == districtId &&
+                            .Where(f => f.DistrictMasterId == districtId &&
                                 _context.Kyc.Any(k => k.FourthLevelHMasterId == f.FourthLevelHMasterId && k.GPPanchayatWardsMasterId == 0)
                             );
                     sarpanchContesting = await _context.FourthLevelH
@@ -13279,9 +13279,9 @@ namespace EAMS_DAL.Repository
                 winners = winners.Where(e => e.DistrictMasterId == districtId && e.AssemblyMasterId == assemblyId);
 
                 if (electionTypeMasterId <= 3)
-                { 
+                {
                     fourthLevel = _context.FourthLevelH.AsNoTracking()
-                           .Where(f => f.DistrictMasterId == districtId && f.AssemblyMasterId == assemblyId&&
+                           .Where(f => f.DistrictMasterId == districtId && f.AssemblyMasterId == assemblyId &&
                                _context.Kyc.Any(k => k.FourthLevelHMasterId == f.FourthLevelHMasterId && k.GPPanchayatWardsMasterId == 0)
                            );
                     sarpanchContesting = await _context.FourthLevelH
@@ -13307,7 +13307,7 @@ namespace EAMS_DAL.Repository
 
                 if (electionTypeMasterId <= 3)
                 {
-            
+
                     fourthLevel = _context.FourthLevelH.AsNoTracking()
                          .Where(f => f.DistrictMasterId == districtId && f.AssemblyMasterId == assemblyId && f.FourthLevelHMasterId == fourthLevelId &&
                              _context.Kyc.Any(k => k.FourthLevelHMasterId == f.FourthLevelHMasterId && k.GPPanchayatWardsMasterId == 0)
@@ -13326,7 +13326,7 @@ namespace EAMS_DAL.Repository
                     fourthLevel = fourthLevel.Where(f => f.DistrictMasterId == districtId && f.AssemblyMasterId == assemblyId && f.FourthLevelHMasterId == fourthLevelId);
                 }
             }
-          
+
 
             return new RoleBasedFilterResult
             {
@@ -22558,7 +22558,7 @@ namespace EAMS_DAL.Repository
         //}
         public async Task<List<ConsolidatePanchResultDeclarationReportList>> GetConsolidatedResultDeclarationReportForPanchAndSarpanch(ResultDeclaration resultDeclaration)
         {
-            
+
             var declaredResultList = await GetDeclaredResultCandidatesAsync(resultDeclaration);
             var unOpposedList = await GetUnOpposedCandidatesAsync(resultDeclaration);
             return declaredResultList
@@ -24282,7 +24282,7 @@ namespace EAMS_DAL.Repository
         //        Message="dopn"
         //    };
         //}
-      
+
         #region Result Declartion DashBoard
         //public async Task<List<ResultList>> GetResultByStateId(int stateMasterId, int electionTypeMasterId)
         //{
@@ -24677,7 +24677,7 @@ namespace EAMS_DAL.Repository
         #region PS and ZP PanchaytaMapping
         public async Task<Response> ZPAndPSPanchayatMapping(List<PanchayatMapping> mappings)
         {
-           await _context.PanchayatMappings.AddRangeAsync(mappings);
+            await _context.PanchayatMappings.AddRangeAsync(mappings);
 
             await _context.SaveChangesAsync();
 
@@ -24703,15 +24703,41 @@ namespace EAMS_DAL.Repository
 
         }
 
-        public async Task<List<PanchayatMapping>>GetZPPanchayatMappings(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
+        public async Task<List<PanchyatMappingResponseList>> GetZPPanchayatMappings(
+     int stateMasterId,
+     int districtMasterId,
+     int assemblyMasterId,
+     int electionTypeMasterId)
         {
-            return await _context.PanchayatMappings
-                .Where(p => p.StateMasterId == stateMasterId
-                            && p.DistrictMasterId == districtMasterId
-                            && p.AssemblyMasterId == assemblyMasterId
-                            && p.ElectionTypeMasterId == electionTypeMasterId)
-                .ToListAsync();
+            var result = await (
+                from f in _context.FourthLevelH
+                join p in _context.PanchayatMappings
+                    on f.FourthLevelHMasterId equals p.FourthLevelHMasterId
+                where f.StateMasterId == stateMasterId
+                      && f.DistrictMasterId == districtMasterId
+                      && f.AssemblyMasterId == assemblyMasterId
+                      && f.ElectionTypeMasterId == electionTypeMasterId
+                select new PanchyatMappingResponseList
+                {
+                    Id = p.Id,
+                    FourthLevelHMasterId = f.FourthLevelHMasterId,
+                    HierarchyName = f.HierarchyName,
+                    HierarchyCode = f.HierarchyCode,
+                    HierarchyType = f.HierarchyType,
+
+                    Type = p.Type,
+                    ElectionTypeMasterId = p.ElectionTypeMasterId,
+                    StateMasterId = p.StateMasterId,
+                    DistrictMasterId = p.DistrictMasterId,
+                    AssemblyMasterId = p.AssemblyMasterId,
+                    PSZonePanchayatMasterId = p.PSZonePanchayatMasterId,
+                    Status = p.Status
+                }
+            ).ToListAsync();
+
+            return result;
         }
+
 
         public async Task<List<FourthLevelH>> GetZPPanchayatUnMapped(
      int stateMasterId,

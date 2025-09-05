@@ -13,6 +13,7 @@ using EAMS_ACore.Models.PublicModels;
 using EAMS_ACore.Models.QueueModel;
 using EAMS_ACore.Models.ResultModels;
 using EAMS_ACore.ReportModels;
+using EAMS_ACore.ServiceModels;
 using EAMS_ACore.SignalRModels;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -520,7 +521,7 @@ namespace EAMS_ACore.IRepository
         #region PS and ZP PanchaytaMapping
         Task<Response> ZPAndPSPanchayatMapping(List<PanchayatMapping> mappings);
         Task<Response> ReleaseZPPanchayat(List<PanchayatMapping> mappings);
-        Task<List<PanchayatMapping>> GetZPPanchayatMappings(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId);
+        Task<List<PanchyatMappingResponseList>> GetZPPanchayatMappings(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId);
         Task<List<FourthLevelH>> GetZPPanchayatUnMapped(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId);
         #endregion
     }

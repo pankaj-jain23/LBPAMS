@@ -11,7 +11,8 @@ namespace EAMS_ACore.Models
             set;
         }
 
-
+     
+         
         public string?  Type
         {
             get;

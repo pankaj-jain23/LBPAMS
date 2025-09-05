@@ -18,6 +18,7 @@ using EAMS_ACore.Models.PublicModels;
 using EAMS_ACore.Models.QueueModel;
 using EAMS_ACore.Models.ResultModels;
 using EAMS_ACore.ReportModels;
+using EAMS_ACore.ServiceModels;
 using EAMS_ACore.SignalRModels;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
@@ -2634,7 +2635,7 @@ namespace EAMS_BLL.Services
             return await _eamsRepository.ReleaseZPPanchayat(mappings);
         }
 
-        public async Task<List<PanchayatMapping>> GetZPPanchayatMappings(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
+        public async Task<List<PanchyatMappingResponseList>> GetZPPanchayatMappings(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
         {
             return await _eamsRepository.GetZPPanchayatMappings(stateMasterId,districtMasterId,assemblyMasterId,electionTypeMasterId);
         }

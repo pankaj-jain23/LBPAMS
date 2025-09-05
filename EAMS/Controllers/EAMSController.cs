@@ -5648,8 +5648,7 @@ namespace EAMS.Controllers
 
                 return Ok(new  
                 {
-                    Status = RequestStatusEnum.OK,
-                    Message = "Panchayat mapping list fetched successfully",
+                    Count = list.Count,
                     Data = list
                 });
              
