@@ -24713,10 +24713,10 @@ namespace EAMS_DAL.Repository
                 from f in _context.FourthLevelH
                 join p in _context.PanchayatMappings
                     on f.FourthLevelHMasterId equals p.FourthLevelHMasterId
-                where f.StateMasterId == stateMasterId
-                      && f.DistrictMasterId == districtMasterId
-                      && f.AssemblyMasterId == assemblyMasterId
-                      && f.ElectionTypeMasterId == electionTypeMasterId
+                where p.StateMasterId == stateMasterId
+                      && p.DistrictMasterId == districtMasterId
+                      && p.AssemblyMasterId == assemblyMasterId
+                      && p.ElectionTypeMasterId == electionTypeMasterId
                 select new PanchyatMappingResponseList
                 {
                     Id = p.Id,
@@ -24785,10 +24785,11 @@ namespace EAMS_DAL.Repository
                 from f in _context.FourthLevelH
                 join p in _context.PanchayatMappings
                     on f.FourthLevelHMasterId equals p.PSZonePanchayatMasterId
-                where f.StateMasterId == stateMasterId
-                      && f.DistrictMasterId == districtMasterId
-                      && f.AssemblyMasterId == assemblyMasterId
-                      && f.ElectionTypeMasterId == electionTypeMasterId
+                where p.StateMasterId == stateMasterId
+                      && p.DistrictMasterId == districtMasterId
+                      && p.AssemblyMasterId == assemblyMasterId
+                      &&p.FourthLevelHMasterId== fourthlevelMasterId
+                      && p.ElectionTypeMasterId == electionTypeMasterId
                 select new PanchyatMappingResponseList
                 {
                     Id = p.Id,
