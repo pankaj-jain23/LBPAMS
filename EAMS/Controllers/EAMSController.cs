@@ -5682,5 +5682,152 @@ namespace EAMS.Controllers
 
         }
         #endregion
+
+        #region PS Panchayat Mapping
+        [HttpPost]
+        [Route("PSPanchayatMapping")]
+        [Authorize]
+        public async Task<IActionResult> PSPanchayatMapping(PSPanchayatMappingViewModel mappingViewModel)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var errorMessage = ModelState.Values.SelectMany(d => d.Errors)
+                                                         .Select(d => d.ErrorMessage)
+                                                         .FirstOrDefault();
+                    return BadRequest(errorMessage);
+                }
+
+
+                var panchayatMappings = mappingViewModel.PSZonePanchayatMasterId.Select(psZonePanchayatMasterId => new PanchayatMapping
+                {
+                    FourthLevelHMasterId = mappingViewModel.FourthLevelHMasterId,
+                    StateMasterId = mappingViewModel.StateMasterId,
+                    DistrictMasterId = mappingViewModel.DistrictMasterId,
+                    AssemblyMasterId = mappingViewModel.AssemblyMasterId,
+                    ElectionTypeMasterId = mappingViewModel.ElectionTypeMasterId,
+                    PSZonePanchayatMasterId= psZonePanchayatMasterId,
+                    Status = true,
+                    Type = "PS",
+
+
+                }).ToList();
+
+                var result = await _EAMSService.PSPanchayatMapping(panchayatMappings);
+                return HandleResult(result);
+
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"BoothMapping: {ex.Message}");
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
+
+
+        [HttpPost]
+        [Route("ReleasePSPanchayat")]
+        [Authorize]
+        public async Task<IActionResult> ReleasePSPanchayat(PSPanchayatMappingViewModel mappingViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+
+                    var panchayatMappings = mappingViewModel.PSZonePanchayatMasterId.Select(psZonePanchayatMasterId => new PanchayatMapping
+                    {
+                        FourthLevelHMasterId = mappingViewModel.FourthLevelHMasterId,
+                        StateMasterId = mappingViewModel.StateMasterId,
+                        DistrictMasterId = mappingViewModel.DistrictMasterId,
+                        AssemblyMasterId = mappingViewModel.AssemblyMasterId,
+                        ElectionTypeMasterId = mappingViewModel.ElectionTypeMasterId,
+                        PSZonePanchayatMasterId = psZonePanchayatMasterId,
+                        Status = true,
+                        Type = "PS",
+
+
+                    }).ToList();
+                    var boothReleaseResponse = await _EAMSService.ReleasePSPanchayat(panchayatMappings);
+
+                    return HandleResult(boothReleaseResponse);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return BadRequest(ex.Message);
+                }
+
+            }
+
+
+            else
+            {
+                return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
+            }
+        }
+
+
+        [HttpPost]
+        [Route("GetPSPanchayatMappingList")]
+        [Authorize]
+        public async Task<IActionResult> GetPSPanchayatMappingList([FromBody] RqPSPanchayatMappingViewModel request)
+        {
+
+
+
+            var list = await _EAMSService.GetPSPanchayatMappings(
+                request.StateMasterId,
+                request.DistrictMasterId,
+                request.AssemblyMasterId,
+                request.FourthLevelHMasterId,
+                request.ElectionTypeMasterId
+            );
+
+            if (list == null || !list.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(new
+            {
+                Count = list.Count,
+                Data = list
+            });
+
+        }
+
+        [HttpPost]
+        [Route("GetPSPanchayatUnMappedList")]
+        [Authorize]
+        public async Task<IActionResult> GetPSPanchayatUnMappedList([FromBody] RqZPPanchayatMappingViewModel request)
+        {
+
+
+
+            var list = await _EAMSService.GetPSPanchayatUnMapped(
+                request.StateMasterId,
+                request.DistrictMasterId,
+                request.AssemblyMasterId,
+                     
+                request.ElectionTypeMasterId
+            );
+
+            if (list == null || !list.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(new
+            {
+                Count = list.Count,
+                Data = list
+            });
+
+        }
+        #endregion
+
     }
 }

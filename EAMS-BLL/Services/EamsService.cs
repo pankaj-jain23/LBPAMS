@@ -2644,6 +2644,28 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetZPPanchayatUnMapped(stateMasterId,districtMasterId,assemblyMasterId,electionTypeMasterId);
         }
+
+        public async Task<Response> PSPanchayatMapping(List<PanchayatMapping> mappings)
+        {
+            return await _eamsRepository.ZPAndPSPanchayatMapping(mappings);
+        }
+
+        public async Task<Response> ReleasePSPanchayat(List<PanchayatMapping> mappings)
+        {
+            return await _eamsRepository.ReleasePSPanchayat(mappings);
+        }
+
+        public async Task<List<PanchyatMappingResponseList>> GetPSPanchayatMappings(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthlevelMasterId, int electionTypeMasterId)
+        {
+          return await _eamsRepository.GetPSPanchayatMappings(stateMasterId, districtMasterId, assemblyMasterId, fourthlevelMasterId, electionTypeMasterId);
+        }
+
+        public async Task<List<FourthLevelH>> GetPSPanchayatUnMapped(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
+        {
+           return await _eamsRepository.GetPSPanchayatUnMapped(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId);
+        }
+
+
         #endregion
     }
 }

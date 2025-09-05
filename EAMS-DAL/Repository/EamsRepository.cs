@@ -24761,6 +24761,71 @@ namespace EAMS_DAL.Repository
             return unmappedList;
         }
 
+        public async Task<Response> ReleasePSPanchayat(List<PanchayatMapping> mappings)
+        {
+            var psZoneIds = mappings.Select(m => m.PSZonePanchayatMasterId).ToList();
+
+            // Fetch records from DB that match these IDs
+            var existingRecords = await _context.PanchayatMappings
+                .Where(p => psZoneIds.Contains(p.PSZonePanchayatMasterId))
+                .ToListAsync();
+
+            if (existingRecords.Any())
+            {
+                // Remove them from DB
+                _context.PanchayatMappings.RemoveRange(existingRecords);
+                await _context.SaveChangesAsync();
+            }
+            return new Response { Status = RequestStatusEnum.OK, Message = $"Panchayat '{existingRecords.Count}' unassigned successfully!" };
+        }
+
+        public async Task<List<PanchyatMappingResponseList>> GetPSPanchayatMappings(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthlevelMasterId, int electionTypeMasterId)
+        {
+            var result = await (
+                from f in _context.FourthLevelH
+                join p in _context.PanchayatMappings
+                    on f.FourthLevelHMasterId equals p.PSZonePanchayatMasterId
+                where f.StateMasterId == stateMasterId
+                      && f.DistrictMasterId == districtMasterId
+                      && f.AssemblyMasterId == assemblyMasterId
+                      && f.ElectionTypeMasterId == electionTypeMasterId
+                select new PanchyatMappingResponseList
+                {
+                    Id = p.Id,
+                    FourthLevelHMasterId = f.FourthLevelHMasterId,
+                    HierarchyName = f.HierarchyName,
+                    HierarchyCode = f.HierarchyCode,
+                    HierarchyType = f.HierarchyType,
+
+                    Type = p.Type,
+                    ElectionTypeMasterId = p.ElectionTypeMasterId,
+                    StateMasterId = p.StateMasterId,
+                    DistrictMasterId = p.DistrictMasterId,
+                    AssemblyMasterId = p.AssemblyMasterId,
+                    PSZonePanchayatMasterId = p.PSZonePanchayatMasterId,
+                    Status = p.Status
+                }
+            ).ToListAsync();
+            return result;
+        }
+
+        public async Task<List<FourthLevelH>> GetPSPanchayatUnMapped(int stateMasterId, int districtMasterId, int assemblyMasterId,  int electionTypeMasterId)
+        {
+            var unmappedList = await (
+               from f in _context.FourthLevelH
+               join p in _context.PanchayatMappings
+                   on f.FourthLevelHMasterId equals p.PSZonePanchayatMasterId into gj
+               from mapped in gj.DefaultIfEmpty() // LEFT JOIN
+               where f.StateMasterId == stateMasterId
+                     && f.DistrictMasterId == districtMasterId
+                     && f.AssemblyMasterId == assemblyMasterId
+                     && f.ElectionTypeMasterId == electionTypeMasterId
+                     && mapped == null // only keep those NOT mapped
+               select f
+           ).ToListAsync();
+            return unmappedList;
+        }
+
         #endregion
 
 

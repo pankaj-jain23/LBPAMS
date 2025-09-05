@@ -523,6 +523,12 @@ namespace EAMS_ACore.IRepository
         Task<Response> ReleaseZPPanchayat(List<PanchayatMapping> mappings);
         Task<List<PanchyatMappingResponseList>> GetZPPanchayatMappings(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId);
         Task<List<FourthLevelH>> GetZPPanchayatUnMapped(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId);
+
+
+        Task<Response> ReleasePSPanchayat(List<PanchayatMapping> mappings);
+        Task<List<PanchyatMappingResponseList>> GetPSPanchayatMappings(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthlevelMasterId, int electionTypeMasterId);
+        Task<List<FourthLevelH>> GetPSPanchayatUnMapped(int stateMasterId, int districtMasterId, int assemblyMasterId,  int electionTypeMasterId);
+
         #endregion
     }
 }
