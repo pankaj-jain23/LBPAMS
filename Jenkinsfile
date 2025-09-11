@@ -24,7 +24,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                    echo "Copying only source code to Server1..."
+                    echo "Copying source code to Server1..."
                     rsync -av -e "ssh -i ${SSH_KEY}" --exclude='*.tar' --exclude='.git' ${WORKSPACE_DIR}/ ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/
 
                     echo "Building Docker image on ${SERVER1}..."
@@ -36,9 +36,6 @@ pipeline {
 
                     echo "Copying Docker tar from Server1 to Server2..."
                     scp -i ${SSH_KEY} ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar ${SSH_USER}@${SERVER2}:/tmp/
-
-                    echo "Loading Docker image on Server2..."
-                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "docker load -i /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar"
                     """
                 }
             }
@@ -72,39 +69,34 @@ pipeline {
             }
         }
 
-       stage('Deploy to Kubernetes') {
-    steps {
-        script {
-            sh """
-            echo "Deploying on Server1..."
-            # Remove old Docker image
-            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "docker rmi -f ${IMAGE_NAME}:${IMAGE_TAG} || true"
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    sh """
+                    echo "Deploying on Server1..."
+                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} '
+                        # Import Docker image into containerd
+                        ctr -n k8s.io images import ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar
+                        # Apply Kubernetes manifest
+                        kubectl apply -f ${KUBE_YAML}
+                        # Delete existing pods to force new ones to use the imported image
+                        kubectl delete pods -l app=lbpams-prod --ignore-not-found
+                    '
 
-            # Copy Kubernetes YAML and apply
-            scp -i ${SSH_KEY} ${KUBE_YAML} ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/
-            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "
-                docker load -i ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar &&
-                kubectl apply -f ${WORKSPACE_DIR}/LBPAMS_Kubernetes.yaml &&
-                kubectl rollout restart deployment lbpams-prod
-            "
+                    echo "Deploying on Server2..."
+                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} '
+                        ctr -n k8s.io images import /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar
+                        kubectl apply -f /tmp/LBPAMS_Kubernetes.yaml
+                        kubectl delete pods -l app=lbpams-prod --ignore-not-found
+                    '
 
-            echo "Deploying on Server2..."
-            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "docker rmi -f ${IMAGE_NAME}:${IMAGE_TAG} || true"
-            scp -i ${SSH_KEY} ${KUBE_YAML} ${SSH_USER}@${SERVER2}:/tmp/
-            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "
-                docker load -i /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar &&
-                kubectl apply -f /tmp/LBPAMS_Kubernetes.yaml &&
-                kubectl rollout restart deployment lbpams-prod
-            "
-
-            echo "Cleaning up Docker tar files on both servers..."
-            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "rm -f ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar"
-            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "rm -f /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar"
-            """
+                    echo "Cleaning up Docker tar files on both servers..."
+                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "rm -f ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar"
+                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "rm -f /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar"
+                    """
+                }
+            }
         }
-    }
-}
-
     }
 
     post {
