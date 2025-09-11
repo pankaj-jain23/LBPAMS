@@ -9,7 +9,7 @@ pipeline {
         SSH_KEY = "/var/lib/jenkins/.ssh/id_ed25519_lbpams"
         WORKSPACE_DIR = "/var/lib/jenkins/workspace/LPAMS-API-PIPELINE"
     }
-    
+
     stages {
         stage('Checkout') {
             steps {
@@ -23,8 +23,8 @@ pipeline {
             steps {
                 script {
                     sh """
-                    echo "Copying workspace to Server1..."
-                    scp -r -i ${SSH_KEY} ${WORKSPACE_DIR}/* ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/
+                    echo "Copying only source code to Server1..."
+                    rsync -av --exclude='*.tar' --exclude='.git' ${WORKSPACE_DIR}/ ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/
 
                     echo "Building Docker image on ${SERVER1}..."
                     ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} '
@@ -88,6 +88,10 @@ pipeline {
                     echo "Deploying on Server2..."
                     scp -i ${SSH_KEY} /tmp/temp.yaml ${SSH_USER}@${SERVER2}:/tmp/
                     ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "kubectl apply -f /tmp/temp.yaml"
+
+                    echo "Cleaning up Docker tar files on both servers..."
+                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "rm -f ${WORKSPACE_DIR}/${IMAGE_NAME}_${BUILD_NUMBER}.tar /tmp/temp.yaml"
+                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "rm -f /tmp/${IMAGE_NAME}_${BUILD_NUMBER}.tar /tmp/temp.yaml"
                     """
                 }
             }
@@ -96,12 +100,8 @@ pipeline {
 
     post {
         always {
-            echo "Cleaning up temporary files..."
-            sh """
-            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "rm -f ${WORKSPACE_DIR}/temp.yaml ${WORKSPACE_DIR}/${IMAGE_NAME}_${BUILD_NUMBER}.tar"
-            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "rm -f /tmp/temp.yaml /tmp/${IMAGE_NAME}_${BUILD_NUMBER}.tar"
-            rm -f /tmp/${IMAGE_NAME}_${BUILD_NUMBER}.tar
-            """
+            echo "Cleaning up local temporary Docker tar..."
+            sh "rm -f /tmp/${IMAGE_NAME}_${BUILD_NUMBER}.tar /tmp/temp.yaml"
         }
     }
 }
