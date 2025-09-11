@@ -6,7 +6,8 @@ pipeline {
         SERVER1 = "10.44.237.116"
         SERVER2 = "10.44.237.117"
         SSH_USER = "root"
-        SSH_KEY = "~/.ssh/id_ed25519_lbpams" // Path to your Jenkins SSH private key
+        SSH_KEY = "/var/lib/jenkins/.ssh/id_ed25519_lbpams"
+        WORKSPACE_DIR = "/var/lib/jenkins/workspace/LPAMS-API-PIPELINE"
     }
     
     stages {
@@ -18,10 +19,13 @@ pipeline {
             }
         }
 
-   stage('Build Docker Image on Server1') {
+        stage('Build Docker Image on Server1') {
             steps {
                 script {
                     sh """
+                    echo "Copying workspace to Server1..."
+                    scp -r -i ${SSH_KEY} ${WORKSPACE_DIR}/* ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/
+
                     echo "Building Docker image on ${SERVER1}..."
                     ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} '
                         cd ${WORKSPACE_DIR}
@@ -41,6 +45,7 @@ pipeline {
                 }
             }
         }
+
         stage('Approval Required') {
             steps {
                 script {
@@ -72,21 +77,17 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    echo "Updating Kubernetes YAML with current build number..."
                     sh """
-                    # Replace placeholder with build number
-                    sed 's/{{BUILD_NUMBER}}/${BUILD_NUMBER}/g' ${KUBE_YAML} > temp.yaml
+                    echo "Updating Kubernetes YAML with current build number..."
+                    sed 's/{{BUILD_NUMBER}}/${BUILD_NUMBER}/g' ${WORKSPACE_DIR}/${KUBE_YAML} > /tmp/temp.yaml
 
-                    # Apply deployment on Server1
-                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} '
-                        kubectl apply -f /var/lib/jenkins/workspace/LPAMS-API-PIPELINE/temp.yaml
-                    '
+                    echo "Deploying on Server1..."
+                    scp -i ${SSH_KEY} /tmp/temp.yaml ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/
+                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "kubectl apply -f ${WORKSPACE_DIR}/temp.yaml"
 
-                    # Apply deployment on Server2
-                    scp -i ${SSH_KEY} temp.yaml ${SSH_USER}@${SERVER2}:/tmp/
-                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} '
-                        kubectl apply -f /tmp/temp.yaml
-                    '
+                    echo "Deploying on Server2..."
+                    scp -i ${SSH_KEY} /tmp/temp.yaml ${SSH_USER}@${SERVER2}:/tmp/
+                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "kubectl apply -f /tmp/temp.yaml"
                     """
                 }
             }
@@ -97,8 +98,9 @@ pipeline {
         always {
             echo "Cleaning up temporary files..."
             sh """
-            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} 'rm -f /var/lib/jenkins/workspace/LPAMS-API-PIPELINE/temp.yaml /var/lib/jenkins/workspace/LPAMS-API-PIPELINE/${IMAGE_NAME}_${BUILD_NUMBER}.tar'
-            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} 'rm -f /tmp/temp.yaml /tmp/${IMAGE_NAME}_${BUILD_NUMBER}.tar'
+            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "rm -f ${WORKSPACE_DIR}/temp.yaml ${WORKSPACE_DIR}/${IMAGE_NAME}_${BUILD_NUMBER}.tar"
+            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "rm -f /tmp/temp.yaml /tmp/${IMAGE_NAME}_${BUILD_NUMBER}.tar"
+            rm -f /tmp/${IMAGE_NAME}_${BUILD_NUMBER}.tar
             """
         }
     }
