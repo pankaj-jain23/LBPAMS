@@ -86,7 +86,8 @@ pipeline {
                     echo "Deploying on Server2..."
                     ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} '
                         ctr -n k8s.io images import /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar
-                        kubectl apply -f /tmp/LBPAMS_Kubernetes.yaml
+                         # Apply Kubernetes manifest
+                        kubectl apply -f ${KUBE_YAML}
                         kubectl delete pods -l app=lbpams-prod --ignore-not-found
                     '
 
