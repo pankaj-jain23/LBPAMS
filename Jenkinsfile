@@ -6,7 +6,7 @@ pipeline {
         SERVER1 = "10.44.237.116"
         SERVER2 = "10.44.237.117"
         SSH_USER = "root"
-        SSH_PASS = "eOffice@321"
+        SSH_KEY = "~/.ssh/id_ed25519_lbpams" // Path to your Jenkins SSH private key
     }
     
     stages {
@@ -23,17 +23,17 @@ pipeline {
                 script {
                     sh """
                     echo "Building Docker image on ${SERVER1}..."
-                    sshpass -p '${SSH_PASS}' ssh ${SSH_USER}@${SERVER1} '
+                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} '
                         cd /var/lib/jenkins/workspace/LPAMS-API-PIPELINE
                         docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} .
                         docker save ${IMAGE_NAME}:${BUILD_NUMBER} -o ${IMAGE_NAME}_${BUILD_NUMBER}.tar
                     '
 
                     echo "Copying image to ${SERVER2}..."
-                    sshpass -p '${SSH_PASS}' scp ${SSH_USER}@${SERVER1}:/var/lib/jenkins/workspace/LPAMS-API-PIPELINE/${IMAGE_NAME}_${BUILD_NUMBER}.tar /tmp/
+                    scp -i ${SSH_KEY} ${SSH_USER}@${SERVER1}:/var/lib/jenkins/workspace/LPAMS-API-PIPELINE/${IMAGE_NAME}_${BUILD_NUMBER}.tar /tmp/
 
                     echo "Loading Docker image on ${SERVER2}..."
-                    sshpass -p '${SSH_PASS}' ssh ${SSH_USER}@${SERVER2} '
+                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} '
                         docker load -i /tmp/${IMAGE_NAME}_${BUILD_NUMBER}.tar
                     '
                     """
@@ -78,13 +78,13 @@ pipeline {
                     sed 's/{{BUILD_NUMBER}}/${BUILD_NUMBER}/g' ${KUBE_YAML} > temp.yaml
 
                     # Apply deployment on Server1
-                    sshpass -p '${SSH_PASS}' ssh ${SSH_USER}@${SERVER1} '
+                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} '
                         kubectl apply -f /var/lib/jenkins/workspace/LPAMS-API-PIPELINE/temp.yaml
                     '
 
                     # Apply deployment on Server2
-                    sshpass -p '${SSH_PASS}' scp temp.yaml ${SSH_USER}@${SERVER2}:/tmp/
-                    sshpass -p '${SSH_PASS}' ssh ${SSH_USER}@${SERVER2} '
+                    scp -i ${SSH_KEY} temp.yaml ${SSH_USER}@${SERVER2}:/tmp/
+                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} '
                         kubectl apply -f /tmp/temp.yaml
                     '
                     """
@@ -97,8 +97,8 @@ pipeline {
         always {
             echo "Cleaning up temporary files..."
             sh """
-            sshpass -p '${SSH_PASS}' ssh ${SSH_USER}@${SERVER1} 'rm -f /var/lib/jenkins/workspace/LPAMS-API-PIPELINE/temp.yaml /var/lib/jenkins/workspace/LPAMS-API-PIPELINE/${IMAGE_NAME}_${BUILD_NUMBER}.tar'
-            sshpass -p '${SSH_PASS}' ssh ${SSH_USER}@${SERVER2} 'rm -f /tmp/temp.yaml /tmp/${IMAGE_NAME}_${BUILD_NUMBER}.tar'
+            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} 'rm -f /var/lib/jenkins/workspace/LPAMS-API-PIPELINE/temp.yaml /var/lib/jenkins/workspace/LPAMS-API-PIPELINE/${IMAGE_NAME}_${BUILD_NUMBER}.tar'
+            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} 'rm -f /tmp/temp.yaml /tmp/${IMAGE_NAME}_${BUILD_NUMBER}.tar'
             """
         }
     }
