@@ -18,29 +18,26 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image on Server1') {
-            steps {
-                script {
-                    sh """
-                    echo "Building Docker image on ${SERVER1}..."
-                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} '
-                        cd /var/lib/jenkins/workspace/LPAMS-API-PIPELINE
-                        docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} .
-                        docker save ${IMAGE_NAME}:${BUILD_NUMBER} -o ${IMAGE_NAME}_${BUILD_NUMBER}.tar
-                    '
+     stage('Build Docker Image on Server1') {
+    steps {
+        script {
+            sh """
+            echo "Building Docker image on ${SERVER1}..."
+            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} '
+                cd /var/lib/jenkins/workspace/LPAMS-API-PIPELINE
+                docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} .
+                docker save ${IMAGE_NAME}:${BUILD_NUMBER} -o ${IMAGE_NAME}_${BUILD_NUMBER}.tar
+            '
 
-                    echo "Copying image to ${SERVER2}..."
-                    scp -i ${SSH_KEY} ${SSH_USER}@${SERVER1}:/var/lib/jenkins/workspace/LPAMS-API-PIPELINE/${IMAGE_NAME}_${BUILD_NUMBER}.tar /tmp/
+            echo "Copying image directly to ${SERVER2}..."
+            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "scp /var/lib/jenkins/workspace/LPAMS-API-PIPELINE/${IMAGE_NAME}_${BUILD_NUMBER}.tar ${SSH_USER}@${SERVER2}:/tmp/"
 
-                    echo "Loading Docker image on ${SERVER2}..."
-                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} '
-                        docker load -i /tmp/${IMAGE_NAME}_${BUILD_NUMBER}.tar
-                    '
-                    """
-                }
-            }
+            echo "Loading Docker image on ${SERVER2}..."
+            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "docker load -i /tmp/${IMAGE_NAME}_${BUILD_NUMBER}.tar"
+            """
         }
-
+    }
+}
         stage('Approval Required') {
             steps {
                 script {
