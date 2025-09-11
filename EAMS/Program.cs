@@ -220,7 +220,8 @@ var app = builder.Build();
  
 
 app.UseResponseCompression(); 
-
+ 
+app.UseStaticFiles();
 app.UseSwagger();
 app.UseSwaggerUI();
 
