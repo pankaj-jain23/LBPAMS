@@ -3,7 +3,7 @@ pipeline {
    environment {
     IMAGE_NAME = "lbpamsprod"
     IMAGE_TAG = "1"
-    KUBE_YAML = "Kubernates-deployments/LBPAMS_Kubernetes.yaml" // updated path
+    KUBE_YAML = "/Kubernates-deployments/LBPAMS_Kubernetes.yaml" 
     SERVER1 = "10.44.237.116"
     SERVER2 = "10.44.237.117"
     SSH_USER = "root"
@@ -77,13 +77,13 @@ pipeline {
     steps {
         script {
             sh """
-            echo "Deploying on Server1..."
-            scp -i ${SSH_KEY} ${WORKSPACE_DIR}/${KUBE_YAML} ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/
-            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "kubectl apply -f ${WORKSPACE_DIR}/LBPAMS_Kubernetes.yaml"
+           echo "Deploying on Server1..."
+scp -i ${SSH_KEY} ${KUBE_YAML} ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/
+ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "kubectl apply -f ${WORKSPACE_DIR}/LBPAMS_Kubernetes.yaml"
 
-            echo "Deploying on Server2..."
-            scp -i ${SSH_KEY} ${WORKSPACE_DIR}/${KUBE_YAML} ${SSH_USER}@${SERVER2}:/tmp/
-            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "kubectl apply -f /tmp/LBPAMS_Kubernetes.yaml"
+echo "Deploying on Server2..."
+scp -i ${SSH_KEY} ${KUBE_YAML} ${SSH_USER}@${SERVER2}:/tmp/
+ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "kubectl apply -f /tmp/LBPAMS_Kubernetes.yaml"
 
             echo "Cleaning up Docker tar files on both servers..."
             ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "rm -f ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar"
