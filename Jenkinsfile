@@ -20,29 +20,29 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image on Server1') {
-            steps {
-                script {
-                    sh """
-                    echo "Copying only source code to Server1..."
-                    rsync -av --exclude='*.tar' --exclude='.git' ${WORKSPACE_DIR}/ ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/
+      stage('Build Docker Image on Server1') {
+    steps {
+        script {
+            sh """
+            echo "Copying only source code to Server1..."
+            rsync -av -e "ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no" --exclude='*.tar' --exclude='.git' ${WORKSPACE_DIR}/ ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/
 
-                    echo "Building Docker image on ${SERVER1}..."
-                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} '
-                        cd ${WORKSPACE_DIR}
-                        docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
-                        docker save ${IMAGE_NAME}:${IMAGE_TAG} -o ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar
-                    '
+            echo "Building Docker image on ${SERVER1}..."
+            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} '
+                cd ${WORKSPACE_DIR}
+                docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                docker save ${IMAGE_NAME}:${IMAGE_TAG} -o ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar
+            '
 
-                    echo "Copying Docker tar from Server1 to Server2..."
-                    scp -i ${SSH_KEY} ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar ${SSH_USER}@${SERVER2}:/tmp/
+            echo "Copying Docker tar from Server1 to Server2..."
+            scp -i ${SSH_KEY} ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar ${SSH_USER}@${SERVER2}:/tmp/
 
-                    echo "Loading Docker image on Server2..."
-                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "docker load -i /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar"
-                    """
-                }
-            }
+            echo "Loading Docker image on Server2..."
+            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "docker load -i /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar"
+            """
         }
+    }
+}
 
         stage('Approval Required') {
             steps {
