@@ -72,25 +72,39 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
-            steps {
-                script {
-                    sh """
-                    echo "Deploying on Server1..."
-                    scp -i ${SSH_KEY} ${KUBE_YAML} ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/
-                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "kubectl apply -f ${WORKSPACE_DIR}/LBPAMS_Kubernetes.yaml && kubectl rollout restart deployment lbpams-prod"
+       stage('Deploy to Kubernetes') {
+    steps {
+        script {
+            sh """
+            echo "Deploying on Server1..."
+            # Remove old Docker image
+            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "docker rmi -f ${IMAGE_NAME}:${IMAGE_TAG} || true"
 
-                    echo "Deploying on Server2..."
-                    scp -i ${SSH_KEY} ${KUBE_YAML} ${SSH_USER}@${SERVER2}:/tmp/
-                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "kubectl apply -f /tmp/LBPAMS_Kubernetes.yaml && kubectl rollout restart deployment lbpams-prod"
+            # Copy Kubernetes YAML and apply
+            scp -i ${SSH_KEY} ${KUBE_YAML} ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/
+            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "
+                docker load -i ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar &&
+                kubectl apply -f ${WORKSPACE_DIR}/LBPAMS_Kubernetes.yaml &&
+                kubectl rollout restart deployment lbpams-prod
+            "
 
-                    echo "Cleaning up Docker tar files on both servers..."
-                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "rm -f ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar"
-                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "rm -f /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar"
-                    """
-                }
-            }
+            echo "Deploying on Server2..."
+            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "docker rmi -f ${IMAGE_NAME}:${IMAGE_TAG} || true"
+            scp -i ${SSH_KEY} ${KUBE_YAML} ${SSH_USER}@${SERVER2}:/tmp/
+            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "
+                docker load -i /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar &&
+                kubectl apply -f /tmp/LBPAMS_Kubernetes.yaml &&
+                kubectl rollout restart deployment lbpams-prod
+            "
+
+            echo "Cleaning up Docker tar files on both servers..."
+            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "rm -f ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar"
+            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "rm -f /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar"
+            """
         }
+    }
+}
+
     }
 
     post {
