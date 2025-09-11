@@ -3,7 +3,7 @@ pipeline {
     environment {
         IMAGE_NAME = "lbpamsprod"
         IMAGE_TAG = "1"                              // Fixed tag
-        KUBE_YAML = "/Kubernates-deployments/LBPAMS_Kubernetes.yaml"  // Correct path
+        KUBE_YAML = "/Kubernates-deployments/LBPAMS_Kubernetes.yaml"
         SERVER1 = "10.44.237.116"
         SERVER2 = "10.44.237.117"
         SSH_USER = "root"
@@ -25,7 +25,7 @@ pipeline {
                 script {
                     sh """
                     echo "Copying only source code to Server1..."
-                    rsync -av --exclude='*.tar' --exclude='.git' ${WORKSPACE_DIR}/ ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/
+                    rsync -av -e "ssh -i ${SSH_KEY}" --exclude='*.tar' --exclude='.git' ${WORKSPACE_DIR}/ ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/
 
                     echo "Building Docker image on ${SERVER1}..."
                     ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} '
@@ -78,21 +78,15 @@ pipeline {
                     sh """
                     echo "Deploying on Server1..."
                     scp -i ${SSH_KEY} ${KUBE_YAML} ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/
-                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "
-                        kubectl apply -f ${WORKSPACE_DIR}/LBPAMS_Kubernetes.yaml
-                        kubectl rollout restart deployment lbpams-prod
-                    "
+                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "kubectl apply -f ${WORKSPACE_DIR}/LBPAMS_Kubernetes.yaml && kubectl rollout restart deployment lbpams-prod"
 
                     echo "Deploying on Server2..."
                     scp -i ${SSH_KEY} ${KUBE_YAML} ${SSH_USER}@${SERVER2}:/tmp/
-                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "
-                        kubectl apply -f /tmp/LBPAMS_Kubernetes.yaml
-                        kubectl rollout restart deployment lbpams-prod
-                    "
+                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "kubectl apply -f /tmp/LBPAMS_Kubernetes.yaml && kubectl rollout restart deployment lbpams-prod"
 
                     echo "Cleaning up Docker tar files on both servers..."
-                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "rm -f ${WORKSPACE_DIR}/lbpamsprod_1.tar"
-                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "rm -f /tmp/lbpamsprod_1.tar"
+                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "rm -f ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar"
+                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "rm -f /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar"
                     """
                 }
             }
@@ -102,7 +96,7 @@ pipeline {
     post {
         always {
             echo "Cleaning up local temporary Docker tar..."
-            sh "rm -f /tmp/lbpamsprod_1.tar"
+            sh "rm -f /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar"
         }
     }
 }
