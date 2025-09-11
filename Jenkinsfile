@@ -2,6 +2,7 @@ pipeline {
     agent any
     environment {
         IMAGE_NAME = "lbpamsprod"
+        IMAGE_TAG = "1"                              // Fixed tag
         KUBE_YAML = "LBPAMS_Kubernetes.yaml"
         SERVER1 = "10.44.237.116"
         SERVER2 = "10.44.237.117"
@@ -29,18 +30,15 @@ pipeline {
                     echo "Building Docker image on ${SERVER1}..."
                     ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} '
                         cd ${WORKSPACE_DIR}
-                        docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} .
-                        docker save ${IMAGE_NAME}:${BUILD_NUMBER} -o ${WORKSPACE_DIR}/${IMAGE_NAME}_${BUILD_NUMBER}.tar
+                        docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                        docker save ${IMAGE_NAME}:${IMAGE_TAG} -o ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar
                     '
 
-                    echo "Copying image from Server1 to Jenkins..."
-                    scp -i ${SSH_KEY} ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/${IMAGE_NAME}_${BUILD_NUMBER}.tar /tmp/
-
-                    echo "Copying image from Jenkins to Server2..."
-                    scp -i ${SSH_KEY} /tmp/${IMAGE_NAME}_${BUILD_NUMBER}.tar ${SSH_USER}@${SERVER2}:/tmp/
+                    echo "Copying Docker tar from Server1 to Server2..."
+                    scp -i ${SSH_KEY} ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar ${SSH_USER}@${SERVER2}:/tmp/
 
                     echo "Loading Docker image on Server2..."
-                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "docker load -i /tmp/${IMAGE_NAME}_${BUILD_NUMBER}.tar"
+                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "docker load -i /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar"
                     """
                 }
             }
@@ -78,20 +76,17 @@ pipeline {
             steps {
                 script {
                     sh """
-                    echo "Updating Kubernetes YAML with current build number..."
-                    sed 's/{{BUILD_NUMBER}}/${BUILD_NUMBER}/g' ${WORKSPACE_DIR}/${KUBE_YAML} > /tmp/temp.yaml
-
                     echo "Deploying on Server1..."
-                    scp -i ${SSH_KEY} /tmp/temp.yaml ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/
-                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "kubectl apply -f ${WORKSPACE_DIR}/temp.yaml"
+                    scp -i ${SSH_KEY} ${WORKSPACE_DIR}/${KUBE_YAML} ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/
+                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "kubectl apply -f ${WORKSPACE_DIR}/${KUBE_YAML}"
 
                     echo "Deploying on Server2..."
-                    scp -i ${SSH_KEY} /tmp/temp.yaml ${SSH_USER}@${SERVER2}:/tmp/
-                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "kubectl apply -f /tmp/temp.yaml"
+                    scp -i ${SSH_KEY} ${WORKSPACE_DIR}/${KUBE_YAML} ${SSH_USER}@${SERVER2}:/tmp/
+                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "kubectl apply -f /tmp/${KUBE_YAML}"
 
                     echo "Cleaning up Docker tar files on both servers..."
-                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "rm -f ${WORKSPACE_DIR}/${IMAGE_NAME}_${BUILD_NUMBER}.tar /tmp/temp.yaml"
-                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "rm -f /tmp/${IMAGE_NAME}_${BUILD_NUMBER}.tar /tmp/temp.yaml"
+                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "rm -f ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar"
+                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "rm -f /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar"
                     """
                 }
             }
@@ -100,8 +95,8 @@ pipeline {
 
     post {
         always {
-            echo "Cleaning up local temporary Docker tar..."
-            sh "rm -f /tmp/${IMAGE_NAME}_${BUILD_NUMBER}.tar /tmp/temp.yaml"
+            echo "Cleaning up local temporary Docker tar and temp files..."
+            sh "rm -f /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar /tmp/temp.yaml"
         }
     }
 }
