@@ -9,11 +9,11 @@
 
   <ItemGroup>
     <PackageReference Include="Polly" Version="8.6.3" />
-    <PackageReference Include="StackExchange.Redis" Version="2.9.11" />
+    <PackageReference Include="StackExchange.Redis" Version="2.9.17" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
     <PackageReference Include="System.Net.Security" Version="4.3.2" />
     <PackageReference Include="System.Security.Cryptography.Cng" Version="5.0.0" />
-    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="9.0.8" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="9.0.9" />
   </ItemGroup>
 
   <ItemGroup>

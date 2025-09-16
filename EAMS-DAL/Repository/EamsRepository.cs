@@ -10,6 +10,7 @@ using EAMS_ACore.Models.BLOModels;
 using EAMS_ACore.Models.CommonModels;
 using EAMS_ACore.Models.ElectionType;
 using EAMS_ACore.Models.EventActivityModels;
+using EAMS_ACore.Models.FOPanchayatZPAndPSMapping;
 using EAMS_ACore.Models.Polling_Personal_Randomisation_Models;
 using EAMS_ACore.Models.Polling_Personal_Randomization_Models;
 using EAMS_ACore.Models.PollingStationFormModels;
@@ -2152,6 +2153,14 @@ namespace EAMS_DAL.Repository
             return foList;
         }
 
+        public async Task<List<FieldOfficerMaster>> GetFieldOfficersListById(int stateMasterId, int districtMasterId,  int electionTypeMasterId)
+        {
+            return await _context.FieldOfficerMaster.AsNoTracking().Where(d => d.StateMasterId == stateMasterId
+            && d.DistrictMasterId == districtMasterId 
+            && d.ElectionTypeMasterId == electionTypeMasterId).ToListAsync();
+            
+        }
+
         public async Task<FieldOfficerProfile> GetSectorOfficerProfile2(string soId)
         {
             //var sectorOfficerProfile = await (from so in _context.SectorOfficerMaster
@@ -2485,6 +2494,101 @@ namespace EAMS_DAL.Repository
 
             return boothlist;
         }
+
+
+        #region PSZP Mappings
+        /// <summary>
+        /// It will return booth list for particular foid only for ZP/PS Mapping
+        /// </summary>
+        public async Task<List<CombinedMaster>> GetPSZPBoothListByFoId(int foId)
+        {
+            var boothlist = await (from mapping in _context.ZpPsFOMappings.AsNoTracking()
+                                   join bt in _context.BoothMaster.AsNoTracking()
+                                        on mapping.BoothMasterId equals bt.BoothMasterId
+                                   join fourthLevelH in _context.FourthLevelH.AsNoTracking()
+                                        on bt.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId into flh
+                                   from fourthLevelH in flh.DefaultIfEmpty()
+                                   join asem in _context.AssemblyMaster.AsNoTracking()
+                                        on bt.AssemblyMasterId equals asem.AssemblyMasterId
+                                   join dist in _context.DistrictMaster.AsNoTracking()
+                                        on bt.DistrictMasterId equals dist.DistrictMasterId
+                                   join state in _context.StateMaster.AsNoTracking()
+                                        on bt.StateMasterId equals state.StateMasterId
+                                   where mapping.FieldOfficerMasterId == foId
+                                   orderby Convert.ToInt32(bt.BoothCode_No)
+                                   select new CombinedMaster
+                                   {
+                                       StateId = bt.StateMasterId,
+                                       StateName = state.StateName,
+                                       DistrictId = dist.DistrictMasterId,
+                                       DistrictName = dist.DistrictName,
+                                       DistrictCode = dist.DistrictCode,
+                                       AssemblyId = asem.AssemblyMasterId,
+                                       AssemblyName = asem.AssemblyName,
+                                       AssemblyCode = asem.AssemblyCode,
+                                       FourthLevelHMasterId = fourthLevelH.FourthLevelHMasterId,
+                                       FourthLevelHName = fourthLevelH.HierarchyName,
+                                       BoothMasterId = bt.BoothMasterId,
+                                       BoothName = $"{bt.BoothName} ({bt.BoothCode_No})",
+                                       BoothAuxy = (bt.BoothNoAuxy == "0") ? string.Empty : bt.BoothNoAuxy,
+                                       IsStatus = bt.BoothStatus,
+                                       BoothCode_No = bt.BoothCode_No,
+                                       IsAssigned = bt.IsAssigned,
+                                       FieldOfficerMasterId = foId,
+                                       IsBoothInterrupted = bt.IsBoothInterrupted
+                                   }).ToListAsync();
+
+            return boothlist;
+        }
+ 
+        /// <summary>
+        /// It will return booth list which are not mapped in ZpPsFOMapping
+        /// </summary>
+        public async Task<List<CombinedMaster>> GetUnAssginedPSZPBoothList(int stateId, int districtId, int assemblyId)
+        {
+            var boothlist = await (from bt in _context.BoothMaster.AsNoTracking()
+                                   join fourthLevelH in _context.FourthLevelH.AsNoTracking()
+                                        on bt.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId into flh
+                                   from fourthLevelH in flh.DefaultIfEmpty()
+                                   join asem in _context.AssemblyMaster.AsNoTracking()
+                                        on bt.AssemblyMasterId equals asem.AssemblyMasterId
+                                   join dist in _context.DistrictMaster.AsNoTracking()
+                                        on bt.DistrictMasterId equals dist.DistrictMasterId
+                                   join state in _context.StateMaster.AsNoTracking()
+                                        on bt.StateMasterId equals state.StateMasterId
+                                   where bt.StateMasterId == stateId
+                                         && bt.DistrictMasterId == districtId
+                                         && bt.AssemblyMasterId == assemblyId
+                                         && !_context.ZpPsFOMappings
+                                             .Any(m => m.BoothMasterId == bt.BoothMasterId)
+                                   orderby Convert.ToInt32(bt.BoothCode_No)
+                                   select new CombinedMaster
+                                   {
+                                       StateId = bt.StateMasterId,
+                                       StateName = state.StateName,
+                                       DistrictId = dist.DistrictMasterId,
+                                       DistrictName = dist.DistrictName,
+                                       DistrictCode = dist.DistrictCode,
+                                       AssemblyId = asem.AssemblyMasterId,
+                                       AssemblyName = asem.AssemblyName,
+                                       AssemblyCode = asem.AssemblyCode,
+                                       FourthLevelHMasterId = fourthLevelH.FourthLevelHMasterId,
+                                       FourthLevelHName = fourthLevelH.HierarchyName,
+                                       BoothMasterId = bt.BoothMasterId,
+                                       BoothName = $"{bt.BoothName} ({bt.BoothCode_No})",
+                                       BoothAuxy = (bt.BoothNoAuxy == "0") ? string.Empty : bt.BoothNoAuxy,
+                                       IsStatus = bt.BoothStatus,
+                                       BoothCode_No = bt.BoothCode_No,
+                                       IsAssigned = bt.IsAssigned,
+                                       
+                                       IsBoothInterrupted = bt.IsBoothInterrupted
+                                   }).ToListAsync();
+
+            return boothlist;
+        }
+
+
+        #endregion
         /// </summary>
         /// <summary this api for Mobile App>
 
@@ -24826,6 +24930,50 @@ namespace EAMS_DAL.Repository
            ).ToListAsync();
             return unmappedList;
         }
+
+        public async Task<Response> PSZPBoothMap(List<int> boothIds, int assignedTo, int electionTypeMasterId, string assginedBy)
+        {
+            foreach (var boothId in boothIds)
+            {
+                var exists = await _context.ZpPsFOMappings
+                                           .AnyAsync(m => m.BoothMasterId == boothId && m.FieldOfficerMasterId == assignedTo);
+
+                if (!exists)
+                {
+                    _context.ZpPsFOMappings.Add(new ZpPsFOMapping
+                    {
+                        BoothMasterId = boothId,
+                        FieldOfficerMasterId = assignedTo,
+                        ElectionTypeMasterId= electionTypeMasterId,
+                        PanchayatMappingId = 0, // assuming ElectionType is mapped here
+                        AssignedBy =assginedBy, // or from user context
+                    });
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            return new Response { Status = RequestStatusEnum.OK, Message = "Booths mapped successfully" };
+        }
+
+
+        public async Task<Response> PSZPBoothUnMap(List<int> boothIds, int assignedTo, int electionTypeMasterId, string assginedBy)
+        {
+            var mappings = await _context.ZpPsFOMappings
+                                         .Where(m => boothIds.Contains(m.BoothMasterId)
+                                                  && m.FieldOfficerMasterId == assignedTo)
+                                         .ToListAsync();
+
+            if (mappings.Any())
+            {
+                _context.ZpPsFOMappings.RemoveRange(mappings);
+                await _context.SaveChangesAsync();
+                return new Response { Status = RequestStatusEnum.OK, Message = "Booths unmapped successfully" };
+            }
+
+            return new Response { Status = RequestStatusEnum.NotFound, Message = "No booth mapping found to unmap" };
+        }
+
 
         #endregion
 

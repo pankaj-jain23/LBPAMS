@@ -70,6 +70,14 @@ namespace EAMS_ACore.IRepository
 
         #region SO Master
         Task<List<FieldOfficerMaster>> GetFieldOfficersListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId);
+        /// <summary>
+        /// it will return the list of field officers based on state,district and election type
+        /// </summary>
+        /// <param name="stateMasterId"></param>
+        /// <param name="districtMasterId"></param>
+        /// <param name="electionTypeMasterId"></param>
+        /// <returns></returns>
+        Task<List<FieldOfficerMaster>> GetFieldOfficersListById(int stateMasterId, int districtMasterId, int electionTypeMasterId);
 
 
         Task<FieldOfficerProfile> GetFieldOfficerProfile(string foId);
@@ -82,10 +90,18 @@ namespace EAMS_ACore.IRepository
         Task<Response> UpdateBLOOfficer(BLOMaster bLOMaster);
         /// <summary this api for Portal>
         Task<List<CombinedMaster>> GetBoothListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId);
+
+
         /// </summary>
         /// <summary this api for Portal>
         Task<List<CombinedMaster>> GetBoothListForFo(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId);
         Task<List<CombinedMaster>> GetBoothListForResultDeclaration(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId);
+
+        Task<List<CombinedMaster>> GetPSZPBoothListByFoId(int foId);
+        Task<List<CombinedMaster>> GetUnAssginedPSZPBoothList(int stateId, int districtId, int assemblyId);
+
+        Task<Response> PSZPBoothMap(List<int> boothIds, int assginedTo,int electionTypeMasterId,string assginedBy);
+        Task<Response> PSZPBoothUnMap(List<int> boothIds, int assginedTo, int electionTypeMasterId, string assginedBy);
         /// </summary>
         Task<FieldOfficerMasterList> GetFieldOfficerById(int FieldOfficerMasterId);
         #endregion
@@ -527,7 +543,7 @@ namespace EAMS_ACore.IRepository
 
         Task<Response> ReleasePSPanchayat(List<PanchayatMapping> mappings);
         Task<List<PanchyatMappingResponseList>> GetPSPanchayatMappings(int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthlevelMasterId, int electionTypeMasterId);
-        Task<List<FourthLevelH>> GetPSPanchayatUnMapped(int stateMasterId, int districtMasterId, int assemblyMasterId,  int electionTypeMasterId);
+        Task<List<FourthLevelH>> GetPSPanchayatUnMapped(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId);
 
         #endregion
     }

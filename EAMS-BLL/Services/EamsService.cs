@@ -21,6 +21,7 @@ using EAMS_ACore.ReportModels;
 using EAMS_ACore.ServiceModels;
 using EAMS_ACore.SignalRModels;
 using Microsoft.EntityFrameworkCore;
+using Polly;
 using System.Globalization;
 using System.Security.Claims;
 
@@ -216,6 +217,17 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetFieldOfficersListById(stateMasterId, districtMasterId, assemblyMasterId, electionTypeMasterId);
         }
+        /// <summary>
+        /// it will return the list of field officers based on state,district and election type
+        /// </summary>
+        /// <param name="stateMasterId"></param>
+        /// <param name="districtMasterId"></param>
+        /// <param name="electionTypeMasterId"></param>
+        /// <returns></returns>
+        public async Task<List<FieldOfficerMaster>> GetFieldOfficersListById(int stateMasterId, int districtMasterId,   int electionTypeMasterId)
+        {
+            return await _eamsRepository.GetFieldOfficersListById(stateMasterId, districtMasterId,   electionTypeMasterId);
+        }
 
         public async Task<List<CombinedMaster>> AppNotDownload(string stateMasterId)
         {
@@ -276,6 +288,23 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.GetFieldOfficerById(FieldOfficerMasterId);
         }
+
+        /// <summary>
+        /// It will return booth list for particular foid only for ZP/PS Mapping
+        /// </summary>
+        public async Task<List<CombinedMaster>> GetPSZPBoothListByFoId(int foId)
+        {
+           return await _eamsRepository.GetPSZPBoothListByFoId(foId);
+        }
+
+        /// <summary>
+        /// It will return booth list which are not mapped in ZpPsFOMapping
+        /// </summary>
+        public async Task<List<CombinedMaster>> GetUnAssginedPSZPBoothList(int stateId, int districtId, int assemblyId)
+        {
+            return await _eamsRepository.GetUnAssginedPSZPBoothList(stateId, districtId, assemblyId);
+        }
+
 
         #endregion
 
@@ -342,6 +371,20 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.BoothMapping(boothMaster);
         }
+        public async Task<Response> PSZPBoothMapUnMap(List<int> boothIds, int assignedTo, int electionTypeMasterId, bool isMap,string assginedBy)
+        {
+            if (isMap)
+            {
+                // ✅ Do Mapping
+                return await _eamsRepository.PSZPBoothMap(boothIds, assignedTo, electionTypeMasterId,assginedBy);
+            }
+            else
+            {
+                // ✅ Do UnMapping
+                return await _eamsRepository.PSZPBoothUnMap(boothIds, assignedTo, electionTypeMasterId,assginedBy);
+            }
+        }
+
         public async Task<Response> ReleaseBooth(BoothMaster boothMaster)
         {
             return await _eamsRepository.ReleaseBooth(boothMaster);

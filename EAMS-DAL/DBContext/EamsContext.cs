@@ -5,6 +5,7 @@ using EAMS_ACore.Models;
 using EAMS_ACore.Models.BLOModels;
 using EAMS_ACore.Models.CountingDayModels;
 using EAMS_ACore.Models.ElectionType;
+using EAMS_ACore.Models.FOPanchayatZPAndPSMapping;
 using EAMS_ACore.Models.Polling_Personal_Randomisation_Models;
 using EAMS_ACore.Models.Polling_Personal_Randomization_Models;
 using EAMS_ACore.Models.PollingStationFormModels;
@@ -35,6 +36,7 @@ public partial class EamsContext : IdentityDbContext<UserRegistration>
     public virtual DbSet<PanchayatMapping> PanchayatMappings { get; set; }
     public virtual DbSet<GPPanchayatWards> GPPanchayatWards { get; set; }
     public virtual DbSet<BoothMaster> BoothMaster { get; set; }
+    public virtual DbSet<ZpPsFOMapping> ZpPsFOMappings { get; set; }
     public virtual DbSet<ParliamentConstituencyMaster> ParliamentConstituencyMaster { get; set; }
 
     public virtual DbSet<FieldOfficerMaster> FieldOfficerMaster { get; set; }

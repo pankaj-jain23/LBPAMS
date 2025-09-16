@@ -23,4 +23,15 @@ namespace EAMS.ViewModels
         [Required(ErrorMessage = "Election Type Master Id is required")]
         public int ElectionTypeMasterId { get; set; }
     }
+
+    public class PSZPMapUnMapBoothViewModel
+    {
+      
+        [Required(ErrorMessage = "Booth Master Id is required")]
+        public List<int> BoothMasterId { get; set; } 
+        public int AssignedTo { get; set; }
+        public int ElectionTypeMasterId { get; set; }
+
+    }
+
 }

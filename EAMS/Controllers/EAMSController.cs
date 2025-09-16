@@ -740,6 +740,28 @@ namespace EAMS.Controllers
         }
 
         [HttpGet]
+        [Route("GetFieldOfficersListByDistrictId")]
+        [Authorize]
+        public async Task<IActionResult> GetFieldOfficersListByDistrictId(int stateMasterId, int districtMasterId, int electionTypeMasterId)
+        {
+            var foList = await _EAMSService.GetFieldOfficersListById(stateMasterId, districtMasterId, electionTypeMasterId);  // Corrected to await the asynchronous method
+            if (foList != null)
+            {
+                var data = new
+                {
+                    count = foList.Count,
+                    data = foList
+                };
+                return Ok(data);
+            }
+            else
+            {
+                return NotFound("No Record Found");
+            }
+
+        }
+
+        [HttpGet]
         [Route("GetFieldOfficerProfile")]
         [Authorize]
         public async Task<IActionResult> GetFieldOfficerProfile()
@@ -884,7 +906,23 @@ namespace EAMS.Controllers
             };
             return Ok(data);
         }
-
+        [HttpGet]
+        [Route("GetZPAndPsBoothListByFoId")]
+        public async Task<IActionResult> GetZPAndPsBoothListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
+        {
+            var boothList = await _EAMSService.GetPSZPBoothListByFoId(foId);  // Corrected to await the asynchronous method
+            var mappedData = _mapper.Map<List<FieldOfficerBoothViewModel>>(boothList);
+            var getUnassignedBoothList = await _EAMSService.GetUnAssginedPSZPBoothList(stateMasterId, districtMasterId, assemblyMasterId);  // Corrected to await the asynchronous method
+            var unAssignedMappedData = _mapper.Map<List<CombinedMasterViewModel>>(getUnassignedBoothList);
+            var data = new
+            {
+                AssignedCount = mappedData.Count,
+                UnAssignedCount = unAssignedMappedData.Count,
+                Assigned = mappedData,
+                Unassigned = unAssignedMappedData
+            };
+            return Ok(data);
+        }
         [HttpGet]
         [Route("GetBoothEventListByFoId")]
         public async Task<IActionResult> GetBoothEventListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
@@ -1387,6 +1425,8 @@ namespace EAMS.Controllers
                 return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
             }
         }
+
+
 
         [HttpGet]
         [Route("GetBoothById")]
@@ -5631,29 +5671,29 @@ namespace EAMS.Controllers
         [Authorize]
         public async Task<IActionResult> GetZPPanchayatMappingList([FromBody] RqZPPanchayatMappingViewModel request)
         {
-             
 
-           
-                var list = await _EAMSService.GetZPPanchayatMappings(
-                    request.StateMasterId,
-                    request.DistrictMasterId,
-                    request.AssemblyMasterId,
-                    request.ElectionTypeMasterId
-                );
 
-                if (list == null || !list.Any())
-                {
-                   return NotFound();
-                }
 
-                return Ok(new  
-                {
-                    Count = list.Count,
-                    Data = list
-                });
-             
+            var list = await _EAMSService.GetZPPanchayatMappings(
+                request.StateMasterId,
+                request.DistrictMasterId,
+                request.AssemblyMasterId,
+                request.ElectionTypeMasterId
+            );
+
+            if (list == null || !list.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(new
+            {
+                Count = list.Count,
+                Data = list
+            });
+
         }
-       
+
         [HttpPost]
         [Route("GetZPPanchayatUnMappedList")]
         [Authorize]
@@ -5676,7 +5716,7 @@ namespace EAMS.Controllers
 
             return Ok(new
             {
-                Count=list.Count,   
+                Count = list.Count,
                 Data = list
             });
 
@@ -5707,7 +5747,7 @@ namespace EAMS.Controllers
                     DistrictMasterId = mappingViewModel.DistrictMasterId,
                     AssemblyMasterId = mappingViewModel.AssemblyMasterId,
                     ElectionTypeMasterId = mappingViewModel.ElectionTypeMasterId,
-                    PSZonePanchayatMasterId= psZonePanchayatMasterId,
+                    PSZonePanchayatMasterId = psZonePanchayatMasterId,
                     Status = true,
                     Type = "PS",
 
@@ -5811,7 +5851,7 @@ namespace EAMS.Controllers
                 request.StateMasterId,
                 request.DistrictMasterId,
                 request.AssemblyMasterId,
-                     
+
                 request.ElectionTypeMasterId
             );
 
@@ -5827,6 +5867,95 @@ namespace EAMS.Controllers
             });
 
         }
+
+
+
+        [HttpPost]
+        [Route("PSZPBoothMap")]
+        [Authorize]
+        public async Task<IActionResult> PSZPBoothMap(PSZPMapUnMapBoothViewModel boothMappingViewModel)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var userId = User.FindFirst("UserId")?.Value;
+                    var result = await _EAMSService.PSZPBoothMapUnMap(
+                        boothMappingViewModel.BoothMasterId,
+                        boothMappingViewModel.AssignedTo,
+                        boothMappingViewModel.ElectionTypeMasterId,
+                        true // BoothMapping
+                        , userId
+                    );
+
+                    switch (result.Status)
+                    {
+                        case RequestStatusEnum.OK:
+                            return Ok(result.Message);
+                        case RequestStatusEnum.BadRequest:
+                            return BadRequest(result.Message);
+                        case RequestStatusEnum.NotFound:
+                            return NotFound(result.Message);
+                        default:
+                            return StatusCode(500, "Internal Server Error");
+                    }
+                }
+                else
+                {
+                    return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"PSZPBoothMap: {ex.Message}");
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
+
+
+        [HttpPost]
+        [Route("PSZPBoothUnMap")]
+        [Authorize]
+        public async Task<IActionResult> PSZPBoothUnMap(PSZPMapUnMapBoothViewModel boothMappingViewModel)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var userId = User.FindFirst("UserId")?.Value;
+                    var result = await _EAMSService.PSZPBoothMapUnMap(
+                        boothMappingViewModel.BoothMasterId,
+                        boothMappingViewModel.AssignedTo,
+                        boothMappingViewModel.ElectionTypeMasterId,
+                        false // ✅ UnMapping
+                        , userId
+                    );
+
+                    switch (result.Status)
+                    {
+                        case RequestStatusEnum.OK:
+                            return Ok(result.Message);
+                        case RequestStatusEnum.BadRequest:
+                            return BadRequest(result.Message);
+                        case RequestStatusEnum.NotFound:
+                            return NotFound(result.Message);
+                        default:
+                            return StatusCode(500, "Internal Server Error");
+                    }
+                }
+                else
+                {
+                    return BadRequest(ModelState.Values.SelectMany(d => d.Errors.Select(d => d.ErrorMessage)).FirstOrDefault());
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"PSZPBoothUnMap: {ex.Message}");
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
+
+
         #endregion
 
     }
