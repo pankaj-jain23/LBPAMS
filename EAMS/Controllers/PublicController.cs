@@ -1,18 +1,11 @@
 ﻿using AutoMapper;
-using EAMS.ViewModels;
 using EAMS.ViewModels.PublicModels;
-using EAMS.ViewModels.ReportViewModel;
-using EAMS_ACore;
 using EAMS_ACore.HelperModels;
 using EAMS_ACore.Interfaces;
 using EAMS_ACore.Models.PublicModels;
-using EAMS_ACore.ReportModels;
-using EAMS_BLL.Services;
 using LBPAMS.ViewModels.PublicModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.Design;
 
 namespace EAMS.Controllers
 {
@@ -23,12 +16,14 @@ namespace EAMS.Controllers
         private readonly IMapper _mapper;
         private readonly ILogger<PublicController> _logger;
         private readonly IEamsService _eamsService;
+        private readonly IConfiguration _configuration;
 
-        public PublicController(IMapper mapper, ILogger<PublicController> logger, IEamsService eamsService)
+        public PublicController(IMapper mapper, ILogger<PublicController> logger, IEamsService eamsService, IConfiguration configuration)
         {
             _mapper = mapper;
             _logger = logger;
             _eamsService = eamsService;
+            _configuration = configuration;
         }
 
         #region KYC
@@ -281,10 +276,10 @@ namespace EAMS.Controllers
         [HttpGet("GetKYCDetails")]
         public async Task<IActionResult> GetKYCDetails()
         {
-            var kycList = await _eamsService.GetKYCDetails();
-
-            var request = HttpContext.Request;
-            var baseUrl = $"{request.Scheme}://{request.Host}/LBPAMSDOC/kyc";
+            var kycList = await _eamsService.GetKYCDetails(); 
+            var fileURL = _configuration["FileServerUrl"];
+            var kycURL = _configuration["DocsPath:kyc"];
+            var baseUrl = $"{fileURL}/{kycURL}";
             var kycResponses = kycList.Select(kyc => new KycResponseViewModel
             {
                 KycMasterId = kyc.KycMasterId,
@@ -517,9 +512,9 @@ namespace EAMS.Controllers
         public async Task<IActionResult> GetUnOpposedDetails()
         {
             var list = await _eamsService.GetUnOpposedDetails();
-
-            var request = HttpContext.Request;
-            var baseUrl = $"{request.Scheme}://{request.Host}/LBPAMSDOC/unopposed";
+            var fileURL = _configuration["FileServerUrl"];
+            var docPath = _configuration["DocsPath:unopposed"];
+            var baseUrl = $"{fileURL}/{docPath}"; 
 
             var kycResponses = list.Select(unOpposed => new UnOpposedResponseViewModel
             {

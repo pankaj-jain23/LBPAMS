@@ -2596,8 +2596,7 @@ namespace EAMS_DAL.Repository
         public async Task<List<CombinedMaster>> GetBoothListForFo(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
         {
             // Step 1: Get booth list with joins
-            var boothlist = from bt in _context.BoothMaster
-                                .AsNoTracking()
+            var boothlist = from bt in _context.BoothMaster 
                                 .Where(d => d.StateMasterId == stateMasterId &&
                                             d.DistrictMasterId == districtMasterId &&
                                             d.AssemblyMasterId == assemblyMasterId &&
@@ -2637,6 +2636,7 @@ namespace EAMS_DAL.Repository
 
             // Step 2: Fetch Election Info records in a batch instead of inside the loop
             var boothIds = boothListResult.Select(b => b.BoothMasterId).ToList();
+
             var electionInfoRecords = await _context.ElectionInfoMaster
                 .AsNoTracking()
                 .Where(e => boothIds.Contains(e.BoothMasterId) &&
@@ -2700,6 +2700,9 @@ namespace EAMS_DAL.Repository
 
             return boothListResult;
         }
+      
+        
+        
         //public async Task<List<CombinedMaster>> GetBoothListForResultDeclaration(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
         //{
         //    // Step 1: Get the list of BoothMaster with necessary joins
@@ -18406,8 +18409,8 @@ namespace EAMS_DAL.Repository
         }
         public async Task<List<KycList>> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            var baseUrl = "https://lbpams.punjab.gov.in/LBPAMSDOC/";
-
+            //var baseUrl = "https://lbpams.punjab.gov.in/LBPAMSDOC/";
+            var fileURL = _configuration["FileServerUrl"];
             // Query with necessary conditions and optimized joins
             var kycList = await (from k in _context.Kyc
                                  join state in _context.StateMaster on k.StateMasterId equals state.StateMasterId
@@ -18449,8 +18452,8 @@ namespace EAMS_DAL.Repository
                                          ElectionTypeMasterId = k.ElectionTypeMasterId,
                                          Age = k.Age,
                                          PartyName = k.PartyName,
-                                         NominationPdfPath = k.NominationPdfPath != null ? $"{baseUrl}{k.NominationPdfPath}" : null,
-                                         AffidavitPdfPath = k.AffidavitPdfPath != null ? $"{baseUrl}{k.AffidavitPdfPath}" : null,
+                                         NominationPdfPath = k.NominationPdfPath != null ? $"{fileURL}{k.NominationPdfPath}" : null,
+                                         AffidavitPdfPath = k.AffidavitPdfPath != null ? $"{fileURL}{k.AffidavitPdfPath}" : null,
                                      },
                                      HierarchyCode = fl != null ? fl.HierarchyCode : 0 // Add this to the select for ordering
                                  })
@@ -18464,8 +18467,8 @@ namespace EAMS_DAL.Repository
 
         public async Task<List<KycList>> GetKYCDetailByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId, string userId)
         {
-            var baseUrl = "https://lbpams.punjab.gov.in/LBPAMSDOC/";
-
+            //var baseUrl = "https://lbpams.punjab.gov.in/LBPAMSDOC/";
+            var fileURL = _configuration["FileServerUrl"];
             // Execute the query with the necessary where conditions
             var kycList = await (from k in _context.Kyc
                                  join state in _context.StateMaster on k.StateMasterId equals state.StateMasterId
@@ -18510,9 +18513,9 @@ namespace EAMS_DAL.Repository
                                          IsUnOppossed = k.IsUnOppossed,
                                          Age = k.Age,
                                          PartyName = k.PartyName,
-                                         NominationPdfPath = $"{baseUrl}{k.NominationPdfPath}"
+                                         NominationPdfPath = $"{fileURL}{k.NominationPdfPath}"
                                          ,
-                                         AffidavitPdfPath = $"{baseUrl}{k.AffidavitPdfPath}",
+                                         AffidavitPdfPath = $"{fileURL}{k.AffidavitPdfPath}",
                                      },
                                      HierarchyCode = fl != null ? fl.HierarchyCode : 0 // Include HierarchyCode for sorting
                                  })
@@ -18525,8 +18528,8 @@ namespace EAMS_DAL.Repository
 
         public async Task<List<KycList>> GetKYCDetailByFourthAndWardId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId, int fourthLevelMasterId, int? wardMasterId)
         {
-            var baseUrl = "https://lbpams.punjab.gov.in/LBPAMSDOC/";
-
+            //var baseUrl = "https://lbpams.punjab.gov.in/LBPAMSDOC/";
+            var fileURL = _configuration["FileServerUrl"];
             // Base query
             var kycList = await (from k in _context.Kyc
                                  join state in _context.StateMaster on k.StateMasterId equals state.StateMasterId
@@ -18571,9 +18574,9 @@ namespace EAMS_DAL.Repository
                                      ElectionTypeMasterId = k.ElectionTypeMasterId,
                                      Age = k.Age,
                                      PartyName = k.PartyName,
-                                     NominationPdfPath = $"{baseUrl}{k.NominationPdfPath}"
+                                     NominationPdfPath = $"{fileURL}{k.NominationPdfPath}"
                                      ,
-                                     AffidavitPdfPath = $"{baseUrl}{k.AffidavitPdfPath}",
+                                     AffidavitPdfPath = $"{fileURL}{k.AffidavitPdfPath}",
                                  }).ToListAsync();
 
             return kycList;
@@ -18587,7 +18590,8 @@ namespace EAMS_DAL.Repository
             {
                 return null; // or throw an exception, or handle the case appropriately
             }
-            var baseUrl = "https://lbpams.punjab.gov.in/LBPAMSDOC/";
+            //var baseUrl = "https://lbpams.punjab.gov.in/LBPAMSDOC/";
+            var fileURL = _configuration["FileServerUrl"];
             //PS Zone Panchayat
             if (kyc.PSZonePanchayatMasterId != 0)
             {
@@ -18624,8 +18628,8 @@ namespace EAMS_DAL.Repository
                     IsUnOppossed = kyc.IsUnOppossed,
                     Age = kyc.Age,
                     PartyName = kyc.PartyName,
-                    NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}",
-                    AffidavitPdfPath = $"{baseUrl}{kyc.AffidavitPdfPath}"
+                    NominationPdfPath = $"{fileURL}{kyc.NominationPdfPath}",
+                    AffidavitPdfPath = $"{fileURL}{kyc.AffidavitPdfPath}"
                 };
 
                 return result;
@@ -18666,9 +18670,9 @@ namespace EAMS_DAL.Repository
                     IsUnOppossed = kyc.IsUnOppossed,
                     Age = kyc.Age,
                     PartyName = kyc.PartyName,
-                    NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}"
+                    NominationPdfPath = $"{fileURL}{kyc.NominationPdfPath}"
                     ,
-                    AffidavitPdfPath = $"{baseUrl}{kyc.AffidavitPdfPath}"
+                    AffidavitPdfPath = $"{fileURL}{kyc.AffidavitPdfPath}"
                 };
 
                 return result;
@@ -18707,8 +18711,8 @@ namespace EAMS_DAL.Repository
                     IsUnOppossed = kyc.IsUnOppossed,
                     Age = kyc.Age,
                     PartyName = kyc.PartyName,
-                    NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}",
-                    AffidavitPdfPath = $"{baseUrl}{kyc.AffidavitPdfPath}"
+                    NominationPdfPath = $"{fileURL}{kyc.NominationPdfPath}",
+                    AffidavitPdfPath = $"{fileURL}{kyc.AffidavitPdfPath}"
                 };
 
                 return result;
@@ -18744,8 +18748,8 @@ namespace EAMS_DAL.Repository
                     IsUnOppossed = kyc.IsUnOppossed,
                     Age = kyc.Age,
                     PartyName = kyc.PartyName,
-                    NominationPdfPath = $"{baseUrl}{kyc.NominationPdfPath}",
-                    AffidavitPdfPath = $"{baseUrl}{kyc.AffidavitPdfPath}"
+                    NominationPdfPath = $"{fileURL}{kyc.NominationPdfPath}",
+                    AffidavitPdfPath = $"{fileURL}{kyc.AffidavitPdfPath}"
                 };
 
                 return result;
@@ -19207,8 +19211,8 @@ namespace EAMS_DAL.Repository
         }
         public async Task<List<UnOpposedList>> GetUnOpposedDetailsByAssemblyId(int electionType, int stateMasterId, int districtMasterId, int assemblyMasterId)
         {
-            var baseUrl = "https://lbpams.punjab.gov.in/LBPAMSDOC/";
-
+            //var baseUrl = "https://lbpams.punjab.gov.in/LBPAMSDOC/";
+            var fileURL = _configuration["FileServerUrl"];
             // Execute the initial query that can be translated to SQL
             var unOpposedList = from un in _context.UnOpposed
                                 join state in _context.StateMaster on un.StateMasterId equals state.StateMasterId
@@ -19243,7 +19247,7 @@ namespace EAMS_DAL.Repository
                                     CandidateType = un.GPPanchayatWardsMasterId == 0 ? "Sarpanch" : "Panch",
                                     CandidateName = un.CandidateName,
                                     FatherName = un.FatherName,
-                                    NominationPdfPath = $"{baseUrl}{un.NominationPdfPath}",
+                                    NominationPdfPath = $"{fileURL}{un.NominationPdfPath}",
 
                                 };
 
@@ -19296,7 +19300,8 @@ namespace EAMS_DAL.Repository
             {
                 return null; // or throw an exception, or handle the case appropriately
             }
-            var baseUrl = "https://lbpams.punjab.gov.in/LBPAMSDOC/";
+            //var baseUrl = "https://lbpams.punjab.gov.in/LBPAMSDOC/";
+            var fileURL = _configuration["FileServerUrl"];
             if (unOpposed.PSZonePanchayatMasterId != 0)
             {
                 var panchayat = await _context.PSZonePanchayat
@@ -19329,7 +19334,7 @@ namespace EAMS_DAL.Repository
                     PSZonePanchayatName = panchayat.PSZonePanchayatName,
                     CandidateName = unOpposed.CandidateName,
                     FatherName = unOpposed.FatherName,
-                    NominationPdfPath = $"{baseUrl}{unOpposed.NominationPdfPath}",
+                    NominationPdfPath = $"{fileURL}{unOpposed.NominationPdfPath}",
                 };
 
                 return result;
@@ -19366,7 +19371,7 @@ namespace EAMS_DAL.Repository
                     GPPanchayatWardsName = gpWards.GPPanchayatWardsName,
                     CandidateName = unOpposed.CandidateName,
                     FatherName = unOpposed.FatherName,
-                    NominationPdfPath = $"{baseUrl}{unOpposed.NominationPdfPath}",
+                    NominationPdfPath = $"{fileURL}{unOpposed.NominationPdfPath}",
                 };
 
                 return result;
@@ -19402,7 +19407,7 @@ namespace EAMS_DAL.Repository
                     FourthLevelHName = fourthLevel.HierarchyName,
                     CandidateName = unOpposed.CandidateName,
                     FatherName = unOpposed.FatherName,
-                    NominationPdfPath = $"{baseUrl}{unOpposed.NominationPdfPath}",
+                    NominationPdfPath = $"{fileURL}{unOpposed.NominationPdfPath}",
                 };
 
                 return result;
@@ -19434,7 +19439,7 @@ namespace EAMS_DAL.Repository
 
                     CandidateName = unOpposed.CandidateName,
                     FatherName = unOpposed.FatherName,
-                    NominationPdfPath = $"{baseUrl}{unOpposed.NominationPdfPath}",
+                    NominationPdfPath = $"{fileURL}{unOpposed.NominationPdfPath}",
                 };
 
                 return result;
@@ -20283,10 +20288,10 @@ namespace EAMS_DAL.Repository
 
         public async Task<GPVoterList> GetGPVoterById(int gpVoterMasterId)
         {
-            var baseUrl = "https://lbpams.punjab.gov.in/lbpamsdoc/";
-
+            //var baseUrl = "https://lbpams.punjab.gov.in/lbpamsdoc/";
+            var fileURL = _configuration["FileServerUrl"];
             // Fetch the GPVoter details with necessary joins
-            var gpVoterDetail = await _context.GPVoter
+            var gpVoterDetail = await _context.GPVoter.AsNoTracking()
                 .Where(gv => gv.GPVoterMasterId == gpVoterMasterId)
                 .Join(_context.ElectionTypeMaster,
                       gv => gv.ElectionTypeMasterId,
@@ -20320,7 +20325,7 @@ namespace EAMS_DAL.Repository
                         StateMasterId = j.j.GPVoter.StateMasterId,
                         DistrictMasterId = j.j.GPVoter.DistrictMasterId,
                         AssemblyMasterId = j.j.GPVoter.AssemblyMasterId,
-                        GPVoterPdfPath = $"{baseUrl}{j.j.GPVoter.GPVoterPdfPath.Replace("\\", "/")}",
+                        GPVoterPdfPath = $"{fileURL}{j.j.GPVoter.GPVoterPdfPath.Replace("\\", "/")}",
                         StateName = j.j.StateMaster.StateName,
                         DistrictName = j.j.DistrictMaster.DistrictName,
                         AssemblyName = j.j.AssemblyMaster.AssemblyName,
@@ -20343,9 +20348,9 @@ namespace EAMS_DAL.Repository
 
         public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
         {
-            var baseUrl = "https://lbpams.punjab.gov.in/lbpamsdoc/";
-
-            var gpVoterList = await _context.GPVoter
+            //var baseUrl = "https://lbpams.punjab.gov.in/lbpamsdoc/";
+            var fileURL = _configuration["FileServerUrl"];
+            var gpVoterList = await _context.GPVoter.AsNoTracking()
                 .Where(gv => gv.StateMasterId == stateMasterId &&
                              gv.DistrictMasterId == districtMasterId &&
                              gv.AssemblyMasterId == assemblyMasterId &&
@@ -20382,7 +20387,7 @@ namespace EAMS_DAL.Repository
                         StateMasterId = j.j.GPVoter.StateMasterId,
                         DistrictMasterId = j.j.GPVoter.DistrictMasterId,
                         AssemblyMasterId = j.j.GPVoter.AssemblyMasterId,
-                        GPVoterPdfPath = $"{baseUrl}{j.j.GPVoter.GPVoterPdfPath.Replace("\\", "/")}",
+                        GPVoterPdfPath = $"{fileURL}{j.j.GPVoter.GPVoterPdfPath.Replace("\\", "/")}",
                         StateName = j.j.StateMaster.StateName,
                         DistrictName = j.j.DistrictMaster.DistrictName,
                         AssemblyName = j.j.AssemblyMaster.AssemblyName,
@@ -20402,9 +20407,9 @@ namespace EAMS_DAL.Repository
 
         public async Task<List<GPVoterList>> GetAllGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
         {
-            var baseUrl = "https://lbpams.punjab.gov.in/lbpamsdoc/";
-
-            var gpVoterList = await _context.GPVoter
+           // var baseUrl = "https://lbpams.punjab.gov.in/lbpamsdoc/";
+            var fileURL = _configuration["FileServerUrl"];
+            var gpVoterList = await _context.GPVoter.AsNoTracking()
                 .Where(gv => gv.StateMasterId == stateMasterId &&
                              gv.DistrictMasterId == districtMasterId &&
                              gv.AssemblyMasterId == assemblyMasterId &&
@@ -20441,7 +20446,7 @@ namespace EAMS_DAL.Repository
                         StateMasterId = j.j.GPVoter.StateMasterId,
                         DistrictMasterId = j.j.GPVoter.DistrictMasterId,
                         AssemblyMasterId = j.j.GPVoter.AssemblyMasterId,
-                        GPVoterPdfPath = $"{baseUrl}{j.j.GPVoter.GPVoterPdfPath.Replace("\\", "/")}",
+                        GPVoterPdfPath = $"{fileURL}{j.j.GPVoter.GPVoterPdfPath.Replace("\\", "/")}",
                         StateName = j.j.StateMaster.StateName,
                         DistrictName = j.j.DistrictMaster.DistrictName,
                         AssemblyName = j.j.AssemblyMaster.AssemblyName,
@@ -20461,9 +20466,9 @@ namespace EAMS_DAL.Repository
 
         public async Task<List<GPVoterList>> GetGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId, string userId)
         {
-            var baseUrl = "https://lbpams.punjab.gov.in/lbpamsdoc/";
-
-            var gpVoterList = await _context.GPVoter
+            //var baseUrl = "https://lbpams.punjab.gov.in/lbpamsdoc/";
+            var fileURL = _configuration["FileServerUrl"];
+            var gpVoterList = await _context.GPVoter.AsNoTracking()
                 .Where(gv => gv.StateMasterId == stateMasterId &&
                              gv.DistrictMasterId == districtMasterId &&
                              gv.AssemblyMasterId == assemblyMasterId &&
@@ -20500,7 +20505,7 @@ namespace EAMS_DAL.Repository
                         StateMasterId = j.j.GPVoter.StateMasterId,
                         DistrictMasterId = j.j.GPVoter.DistrictMasterId,
                         AssemblyMasterId = j.j.GPVoter.AssemblyMasterId,
-                        GPVoterPdfPath = $"{baseUrl}{j.j.GPVoter.GPVoterPdfPath.Replace("\\", "/")}",
+                        GPVoterPdfPath = $"{fileURL}{j.j.GPVoter.GPVoterPdfPath.Replace("\\", "/")}",
                         StateName = j.j.StateMaster.StateName,
                         DistrictName = j.j.DistrictMaster.DistrictName,
                         AssemblyName = j.j.AssemblyMaster.AssemblyName,
