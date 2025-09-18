@@ -925,9 +925,9 @@ namespace EAMS.Controllers
         }
         [HttpGet]
         [Route("GetBoothEventListByFoId")]
-        public async Task<IActionResult> GetBoothEventListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
+        public async Task<IActionResult> GetBoothEventListByFoId(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId, CancellationToken cancellationToken)
         {
-            var boothList = await _EAMSService.GetBoothListForFo(stateMasterId, districtMasterId, assemblyMasterId, foId);
+            var boothList = await _EAMSService.GetBoothListForFo(stateMasterId, districtMasterId, assemblyMasterId, foId, cancellationToken);
 
             var mappedData = _mapper.Map<List<FieldOfficerBoothViewModel>>(boothList);
             var data = new
@@ -964,14 +964,14 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetBoothListForFo")]
         [Authorize]
-        public async Task<IActionResult> GetBoothListForFo()
+        public async Task<IActionResult> GetBoothListForFo(CancellationToken cancellationToken)
         {
             int foId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "FieldOfficerMasterId")?.Value);
             int stateMasterId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value);
             int districtMasterId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value);
             int assemblyMasterId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId")?.Value);
 
-            var boothList = await _EAMSService.GetBoothListForFo(stateMasterId, districtMasterId, assemblyMasterId, foId);
+            var boothList = await _EAMSService.GetBoothListForFo(stateMasterId, districtMasterId, assemblyMasterId, foId, cancellationToken);
 
             var mappedData = _mapper.Map<List<FieldOfficerBoothViewModel>>(boothList);
             var data = new
@@ -986,14 +986,14 @@ namespace EAMS.Controllers
         [HttpGet]
         [Route("GetBoothListForFoPortal")]
         [Authorize]
-        public async Task<IActionResult> GetBoothListForFoPortal(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
+        public async Task<IActionResult> GetBoothListForFoPortal(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId, CancellationToken cancellationToken)
         {
             //int foId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "FieldOfficerMasterId")?.Value);
             //int stateMasterId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "StateMasterId")?.Value);
             //int districtMasterId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "DistrictMasterId")?.Value);
             //int assemblyMasterId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "AssemblyMasterId")?.Value);
 
-            var boothList = await _EAMSService.GetBoothListForFo(stateMasterId, districtMasterId, assemblyMasterId, foId);
+            var boothList = await _EAMSService.GetBoothListForFo(stateMasterId, districtMasterId, assemblyMasterId, foId, cancellationToken);
 
             var mappedData = _mapper.Map<List<FieldOfficerBoothViewModel>>(boothList);
             var data = new

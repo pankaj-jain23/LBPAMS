@@ -274,9 +274,9 @@ namespace EAMS_BLL.Services
         }
         /// </summary>
         /// <summary this api for Mpbile App>
-        public async Task<List<CombinedMaster>> GetBoothListForFo(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
+        public async Task<List<CombinedMaster>> GetBoothListForFo(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId, CancellationToken cancellationToken)
         {
-            return await _eamsRepository.GetBoothListForFo(stateMasterId, districtMasterId, assemblyMasterId, foId);
+            return await _eamsRepository.GetBoothListForFo(stateMasterId, districtMasterId, assemblyMasterId, foId,   cancellationToken);
         }
 
         public async Task<List<CombinedMaster>> GetBoothListForResultDeclaration(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)

@@ -20,6 +20,7 @@ using EAMS_ACore.Models.ResultModels;
 using EAMS_ACore.ReportModels;
 using EAMS_ACore.ServiceModels;
 using EAMS_ACore.SignalRModels;
+using EAMS_DAL.DALHelper;
 using EAMS_DAL.DBContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -28,6 +29,7 @@ using Npgsql;
 using System.Data;
 using System.Globalization;
 using System.Security.Claims;
+using System.Text.Json;
 
 
 namespace EAMS_DAL.Repository
@@ -40,14 +42,16 @@ namespace EAMS_DAL.Repository
         private readonly ILogger<EamsRepository> _logger;
         private readonly IConfiguration _configuration;
         private readonly ICacheService _cacheService;
+        private readonly PostgresDbHelper _dbHelper;
         public EamsRepository(EamsContext context, IAuthRepository authRepository, ILogger<EamsRepository> logger,
-            IConfiguration configuration, ICacheService cacheService)
+            IConfiguration configuration, ICacheService cacheService,PostgresDbHelper postgresDbHelper)
         {
             _context = context;
             _authRepository = authRepository;
             _logger = logger;
             _configuration = configuration;
             _cacheService = cacheService;
+            _dbHelper = postgresDbHelper;
         }
 
 
@@ -2153,12 +2157,12 @@ namespace EAMS_DAL.Repository
             return foList;
         }
 
-        public async Task<List<FieldOfficerMaster>> GetFieldOfficersListById(int stateMasterId, int districtMasterId,  int electionTypeMasterId)
+        public async Task<List<FieldOfficerMaster>> GetFieldOfficersListById(int stateMasterId, int districtMasterId, int electionTypeMasterId)
         {
             return await _context.FieldOfficerMaster.AsNoTracking().Where(d => d.StateMasterId == stateMasterId
-            && d.DistrictMasterId == districtMasterId 
+            && d.DistrictMasterId == districtMasterId
             && d.ElectionTypeMasterId == electionTypeMasterId).ToListAsync();
-            
+
         }
 
         public async Task<FieldOfficerProfile> GetSectorOfficerProfile2(string soId)
@@ -2540,7 +2544,7 @@ namespace EAMS_DAL.Repository
 
             return boothlist;
         }
- 
+
         /// <summary>
         /// It will return booth list which are not mapped in ZpPsFOMapping
         /// </summary>
@@ -2580,7 +2584,7 @@ namespace EAMS_DAL.Repository
                                        IsStatus = bt.BoothStatus,
                                        BoothCode_No = bt.BoothCode_No,
                                        IsAssigned = bt.IsAssigned,
-                                       
+
                                        IsBoothInterrupted = bt.IsBoothInterrupted
                                    }).ToListAsync();
 
@@ -2591,118 +2595,185 @@ namespace EAMS_DAL.Repository
         #endregion
         /// </summary>
         /// <summary this api for Mobile App>
-
-
-        public async Task<List<CombinedMaster>> GetBoothListForFo(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
+        public async Task<List<CombinedMaster>> GetBoothListForFo(
+     int stateMasterId,
+     int districtMasterId,
+     int assemblyMasterId,
+     int foId,
+     CancellationToken cancellationToken)
         {
-            // Step 1: Get booth list with joins
-            var boothlist = from bt in _context.BoothMaster 
-                                .Where(d => d.StateMasterId == stateMasterId &&
-                                            d.DistrictMasterId == districtMasterId &&
-                                            d.AssemblyMasterId == assemblyMasterId &&
-                                            d.AssignedTo == foId.ToString())
-                            join fourthLevelH in _context.FourthLevelH.AsNoTracking() on bt.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
-                            join asem in _context.AssemblyMaster.AsNoTracking() on bt.AssemblyMasterId equals asem.AssemblyMasterId
-                            join dist in _context.DistrictMaster.AsNoTracking() on asem.DistrictMasterId equals dist.DistrictMasterId
-                            join state in _context.StateMaster.AsNoTracking() on dist.StateMasterId equals state.StateMasterId
-                            orderby Convert.ToInt32(bt.BoothCode_No)
-                            select new CombinedMaster
-                            {
-                                StateId = stateMasterId,
-                                StateName = state.StateName,
-                                DistrictId = dist.DistrictMasterId,
-                                DistrictName = dist.DistrictName,
-                                DistrictCode = dist.DistrictCode,
-                                AssemblyId = asem.AssemblyMasterId,
-                                AssemblyName = asem.AssemblyName,
-                                AssemblyCode = asem.AssemblyCode,
-                                FourthLevelHMasterId = fourthLevelH.FourthLevelHMasterId,
-                                FourthLevelHName = fourthLevelH.HierarchyName,
-                                BoothMasterId = bt.BoothMasterId,
-                                BoothName = bt.BoothNoAuxy == null || bt.BoothNoAuxy == "0" ? $"{bt.BoothName}" : $"{bt.BoothName}-({bt.BoothNoAuxy})",
+            var combinedMasters = new List<CombinedMaster>();
+             
+            await using var conn = await _dbHelper.GetOpenConnectionAsync(cancellationToken); 
 
-                                BoothAuxy = bt.BoothNoAuxy == "0" ? string.Empty : bt.BoothNoAuxy,
-                                IsStatus = bt.BoothStatus,
-                                BoothCode_No = bt.BoothCode_No,
-                                IsAssigned = bt.IsAssigned,
-                                FieldOfficerMasterId = foId,
-                                ElectionTypeMasterId = bt.ElectionTypeMasterId,
-                                IsBoothInterrupted = bt.IsBoothInterrupted,
-                                IsVTInterrupted = bt.IsVTInterrupted
+            var query = "SELECT get_booth_event_list_for_fo(@stateId, @districtId, @assemblyId, @foId)";
+            await using var cmd = new NpgsqlCommand(query, conn);
+      
+            cmd.Parameters.AddWithValue("stateId", stateMasterId);
+            cmd.Parameters.AddWithValue("districtId", districtMasterId);
+            cmd.Parameters.AddWithValue("assemblyId", assemblyMasterId);
+            cmd.Parameters.AddWithValue("foId", foId);
+        
+            var jsonResult = await cmd.ExecuteScalarAsync(cancellationToken);
 
-                            };
-
-            var boothListResult = await boothlist.AsNoTracking().ToListAsync();
-
-            // Step 2: Fetch Election Info records in a batch instead of inside the loop
-            var boothIds = boothListResult.Select(b => b.BoothMasterId).ToList();
-
-            var electionInfoRecords = await _context.ElectionInfoMaster
-                .AsNoTracking()
-                .Where(e => boothIds.Contains(e.BoothMasterId) &&
-                            e.StateMasterId == stateMasterId)
-                .ToListAsync();
-
-            // Step 3: Fetch first event from cache or database before the loop
-
-            var getFirstEvent = await GetFirstSequenceEventById(stateMasterId, boothListResult.FirstOrDefault()?.ElectionTypeMasterId ?? 0);
-
-
-            // Step 4: Update each booth's event data
-            // Convert electionInfoRecords to a dictionary for faster lookups by BoothMasterId and ElectionTypeMasterId
-            var electionInfoDict = electionInfoRecords.ToDictionary(e => (e.BoothMasterId, e.ElectionTypeMasterId));
-
-            foreach (var booth in boothListResult)
+            if (jsonResult is string jsonString)
             {
-                // Try to find matching electionInfo in the dictionary
-                if (electionInfoDict.TryGetValue((booth.BoothMasterId, booth.ElectionTypeMasterId), out var electionInfo))
+                var jsonDoc = JsonDocument.Parse(jsonString);
+                var root = jsonDoc.RootElement;
+
+                // If your JSON is a simple array of objects:
+                if (root.TryGetProperty("data", out var boothsArray))
                 {
-                    var updateEventActivity = new UpdateEventActivity
+                    foreach (var item in boothsArray.EnumerateArray())
                     {
-                        StateMasterId = booth.StateId,
-                        DistrictMasterId = booth.DistrictId,
-                        AssemblyMasterId = booth.AssemblyId,
-                        ElectionTypeMasterId = booth.ElectionTypeMasterId,
-                        EventMasterId = electionInfo.EventMasterId,
-                        EventSequence = electionInfo.EventSequence,
-                        EventABBR = electionInfo.EventABBR,
-                        EventStatus = electionInfo.EventStatus
-                    };
+                        var combinedMaster = new CombinedMaster
+                        {
+                            StateId = item.GetProperty("StateMasterId").GetInt32(),
+                            StateName = item.GetProperty("StateName").GetString(),
+                            DistrictId = item.GetProperty("DistrictMasterId").GetInt32(),
+                            DistrictName = item.GetProperty("DistrictName").GetString(),
+                            DistrictCode = item.GetProperty("DistrictCode").GetString(),
+                            AssemblyId = item.GetProperty("AssemblyMasterId").GetInt32(),
+                            AssemblyName = item.GetProperty("AssemblyName").GetString(),
+                            AssemblyCode = item.GetProperty("AssemblyCode").GetInt32(),
+                            BoothCode_No = item.GetProperty("BoothCode_No").GetString(),
+                            BoothMasterId = item.GetProperty("BoothMasterId").GetInt32(),
+                            BoothName = item.GetProperty("BoothName").GetString(),
+                            BoothAuxy = item.TryGetProperty("BoothNoAuxy", out var ba) && ba.ValueKind != JsonValueKind.Null ? ba.GetString() : null,
+                            IsAssigned = item.GetProperty("IsAssigned").GetBoolean(),
+                            EventMasterId = item.GetProperty("EventMasterId").GetInt32(),
+                            EventName = item.GetProperty("EventName").GetString(),
+                            EventABBR = item.GetProperty("EventABBR").GetString(),
+                            EventSequence = item.GetProperty("EventSequence").GetInt32(),
+                            EventStatus = item.GetProperty("EventStatus").GetBoolean(),
+                            IsBoothInterrupted = item.GetProperty("IsBoothInterrupted").GetBoolean(),
+                            IsVTInterrupted = item.GetProperty("IsVTInterrupted").GetBoolean(),
+                            ElectionTypeMasterId = item.GetProperty("ElectionTypeMasterId").GetInt32(),
+                            FourthLevelHMasterId = item.GetProperty("FourthLevelHMasterId").GetInt32(),
+                            FourthLevelHName = item.GetProperty("FourthLevelHName").GetString()
+                        };
 
-                    if (electionInfo.EventStatus == true)
-                    {
-                        var eventInfo = await GetNextEvent(updateEventActivity);
-                        booth.EventMasterId = eventInfo.EventMasterId;
-                        booth.EventSequence = eventInfo.EventSequence;
-                        booth.EventABBR = eventInfo.EventABBR;
-                        booth.EventName = eventInfo.EventName;
-                        booth.EventStatus = eventInfo.EventABBR == "ED" && electionInfo.IsEVMDeposited == true ? true : false;
-
-                    }
-                    else
-                    {
-                        // Set booth event info from electionInfo if status is not true
-                        booth.EventMasterId = electionInfo.EventMasterId;
-                        booth.EventSequence = electionInfo.EventSequence;
-                        booth.EventABBR = electionInfo.EventABBR;
-                        booth.EventName = electionInfo.EventName;
+                        combinedMasters.Add(combinedMaster);
                     }
                 }
-                else
-                {
-                    // Assign values from getFirstEvent if no matching electionInfo is found
-                    booth.EventMasterId = getFirstEvent.EventMasterId;
-                    booth.EventSequence = getFirstEvent.EventSequence;
-                    booth.EventABBR = getFirstEvent.EventABBR;
-                    booth.EventName = getFirstEvent.EventName;
-                }
+
             }
 
-            return boothListResult;
+            return combinedMasters;
         }
-      
-        
-        
+
+
+
+        //public async Task<List<CombinedMaster>> GetBoothListForFo(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
+        //{
+        //    // Step 1: Get booth list with joins
+        //    var boothlist = from bt in _context.BoothMaster 
+        //                        .Where(d => d.StateMasterId == stateMasterId &&
+        //                                    d.DistrictMasterId == districtMasterId &&
+        //                                    d.AssemblyMasterId == assemblyMasterId &&
+        //                                    d.AssignedTo == foId.ToString())
+        //                    join fourthLevelH in _context.FourthLevelH.AsNoTracking() on bt.FourthLevelHMasterId equals fourthLevelH.FourthLevelHMasterId
+        //                    join asem in _context.AssemblyMaster.AsNoTracking() on bt.AssemblyMasterId equals asem.AssemblyMasterId
+        //                    join dist in _context.DistrictMaster.AsNoTracking() on asem.DistrictMasterId equals dist.DistrictMasterId
+        //                    join state in _context.StateMaster.AsNoTracking() on dist.StateMasterId equals state.StateMasterId
+        //                    orderby Convert.ToInt32(bt.BoothCode_No)
+        //                    select new CombinedMaster
+        //                    {
+        //                        StateId = stateMasterId,
+        //                        StateName = state.StateName,
+        //                        DistrictId = dist.DistrictMasterId,
+        //                        DistrictName = dist.DistrictName,
+        //                        DistrictCode = dist.DistrictCode,
+        //                        AssemblyId = asem.AssemblyMasterId,
+        //                        AssemblyName = asem.AssemblyName,
+        //                        AssemblyCode = asem.AssemblyCode,
+        //                        FourthLevelHMasterId = fourthLevelH.FourthLevelHMasterId,
+        //                        FourthLevelHName = fourthLevelH.HierarchyName,
+        //                        BoothMasterId = bt.BoothMasterId,
+        //                        BoothName = bt.BoothNoAuxy == null || bt.BoothNoAuxy == "0" ? $"{bt.BoothName}" : $"{bt.BoothName}-({bt.BoothNoAuxy})",
+
+        //                        BoothAuxy = bt.BoothNoAuxy == "0" ? string.Empty : bt.BoothNoAuxy,
+        //                        IsStatus = bt.BoothStatus,
+        //                        BoothCode_No = bt.BoothCode_No,
+        //                        IsAssigned = bt.IsAssigned,
+        //                        FieldOfficerMasterId = foId,
+        //                        ElectionTypeMasterId = bt.ElectionTypeMasterId,
+        //                        IsBoothInterrupted = bt.IsBoothInterrupted,
+        //                        IsVTInterrupted = bt.IsVTInterrupted
+
+        //                    };
+
+        //    var boothListResult = await boothlist.AsNoTracking().ToListAsync();
+
+        //    // Step 2: Fetch Election Info records in a batch instead of inside the loop
+        //    var boothIds = boothListResult.Select(b => b.BoothMasterId).ToList();
+
+        //    var electionInfoRecords = await _context.ElectionInfoMaster
+        //        .AsNoTracking()
+        //        .Where(e => boothIds.Contains(e.BoothMasterId) &&
+        //                    e.StateMasterId == stateMasterId)
+        //        .ToListAsync();
+
+        //    // Step 3: Fetch first event from cache or database before the loop
+
+        //    var getFirstEvent = await GetFirstSequenceEventById(stateMasterId, boothListResult.FirstOrDefault()?.ElectionTypeMasterId ?? 0);
+
+
+        //    // Step 4: Update each booth's event data
+        //    // Convert electionInfoRecords to a dictionary for faster lookups by BoothMasterId and ElectionTypeMasterId
+        //    var electionInfoDict = electionInfoRecords.ToDictionary(e => (e.BoothMasterId, e.ElectionTypeMasterId));
+
+        //    foreach (var booth in boothListResult)
+        //    {
+        //        // Try to find matching electionInfo in the dictionary
+        //        if (electionInfoDict.TryGetValue((booth.BoothMasterId, booth.ElectionTypeMasterId), out var electionInfo))
+        //        {
+        //            var updateEventActivity = new UpdateEventActivity
+        //            {
+        //                StateMasterId = booth.StateId,
+        //                DistrictMasterId = booth.DistrictId,
+        //                AssemblyMasterId = booth.AssemblyId,
+        //                ElectionTypeMasterId = booth.ElectionTypeMasterId,
+        //                EventMasterId = electionInfo.EventMasterId,
+        //                EventSequence = electionInfo.EventSequence,
+        //                EventABBR = electionInfo.EventABBR,
+        //                EventStatus = electionInfo.EventStatus
+        //            };
+
+        //            if (electionInfo.EventStatus == true)
+        //            {
+        //                var eventInfo = await GetNextEvent(updateEventActivity);
+        //                booth.EventMasterId = eventInfo.EventMasterId;
+        //                booth.EventSequence = eventInfo.EventSequence;
+        //                booth.EventABBR = eventInfo.EventABBR;
+        //                booth.EventName = eventInfo.EventName;
+        //                booth.EventStatus = eventInfo.EventABBR == "ED" && electionInfo.IsEVMDeposited == true ? true : false;
+
+        //            }
+        //            else
+        //            {
+        //                // Set booth event info from electionInfo if status is not true
+        //                booth.EventMasterId = electionInfo.EventMasterId;
+        //                booth.EventSequence = electionInfo.EventSequence;
+        //                booth.EventABBR = electionInfo.EventABBR;
+        //                booth.EventName = electionInfo.EventName;
+        //            }
+        //        }
+        //        else
+        //        {
+        //            // Assign values from getFirstEvent if no matching electionInfo is found
+        //            booth.EventMasterId = getFirstEvent.EventMasterId;
+        //            booth.EventSequence = getFirstEvent.EventSequence;
+        //            booth.EventABBR = getFirstEvent.EventABBR;
+        //            booth.EventName = getFirstEvent.EventName;
+        //        }
+        //    }
+
+        //    return boothListResult;
+        //}
+
+
+
         //public async Task<List<CombinedMaster>> GetBoothListForResultDeclaration(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
         //{
         //    // Step 1: Get the list of BoothMaster with necessary joins
@@ -20407,7 +20478,7 @@ namespace EAMS_DAL.Repository
 
         public async Task<List<GPVoterList>> GetAllGPVoterListById(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
         {
-           // var baseUrl = "https://lbpams.punjab.gov.in/lbpamsdoc/";
+            // var baseUrl = "https://lbpams.punjab.gov.in/lbpamsdoc/";
             var fileURL = _configuration["FileServerUrl"];
             var gpVoterList = await _context.GPVoter.AsNoTracking()
                 .Where(gv => gv.StateMasterId == stateMasterId &&
@@ -24897,7 +24968,7 @@ namespace EAMS_DAL.Repository
                 where p.StateMasterId == stateMasterId
                       && p.DistrictMasterId == districtMasterId
                       && p.AssemblyMasterId == assemblyMasterId
-                      &&p.FourthLevelHMasterId== fourthlevelMasterId
+                      && p.FourthLevelHMasterId == fourthlevelMasterId
                       && p.ElectionTypeMasterId == electionTypeMasterId
                 select new PanchyatMappingResponseList
                 {
@@ -24919,7 +24990,7 @@ namespace EAMS_DAL.Repository
             return result;
         }
 
-        public async Task<List<FourthLevelH>> GetPSPanchayatUnMapped(int stateMasterId, int districtMasterId, int assemblyMasterId,  int electionTypeMasterId)
+        public async Task<List<FourthLevelH>> GetPSPanchayatUnMapped(int stateMasterId, int districtMasterId, int assemblyMasterId, int electionTypeMasterId)
         {
             var unmappedList = await (
                from f in _context.FourthLevelH
@@ -24949,9 +25020,9 @@ namespace EAMS_DAL.Repository
                     {
                         BoothMasterId = boothId,
                         FieldOfficerMasterId = assignedTo,
-                        ElectionTypeMasterId= electionTypeMasterId,
+                        ElectionTypeMasterId = electionTypeMasterId,
                         PanchayatMappingId = 0, // assuming ElectionType is mapped here
-                        AssignedBy =assginedBy, // or from user context
+                        AssignedBy = assginedBy, // or from user context
                     });
                 }
             }

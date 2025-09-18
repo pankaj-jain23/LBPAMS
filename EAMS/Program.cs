@@ -13,6 +13,7 @@ using EAMS_BLL.ExternalServices;
 using EAMS_BLL.RealTimeServices;
 using EAMS_BLL.Services;
 using EAMS_DAL.AuthRepository;
+using EAMS_DAL.DALHelper;
 using EAMS_DAL.DBContext;
 using EAMS_DAL.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -122,6 +123,7 @@ builder.Services.AddScoped<IUserConnectionService, UserConnectionService>();
 builder.Services.AddScoped<IUserConnectionServiceRepository, UserConnectionServiceRepository>();
 builder.Services.AddScoped<IRealTime, RealTimeService>(); 
 builder.Services.AddScoped<ICacheService, CacheService>();
+builder.Services.AddScoped<PostgresDbHelper>();
 //builder.Services.AddHostedService<DatabaseListenerService>();
 
 builder.Services.AddSwaggerGen(opt =>

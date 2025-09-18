@@ -94,7 +94,7 @@ namespace EAMS_ACore.IRepository
 
         /// </summary>
         /// <summary this api for Portal>
-        Task<List<CombinedMaster>> GetBoothListForFo(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId);
+        Task<List<CombinedMaster>> GetBoothListForFo(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId, CancellationToken cancellationToken);
         Task<List<CombinedMaster>> GetBoothListForResultDeclaration(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId);
 
         Task<List<CombinedMaster>> GetPSZPBoothListByFoId(int foId);
