@@ -4,8 +4,8 @@ pipeline {
         IMAGE_NAME = "lbpamsprod"
         IMAGE_TAG = "1"                              // Fixed tag
         KUBE_YAML = "/Kubernates-deployments/LBPAMS_Kubernetes.yaml"
-        SERVER1 = "10.44.237.116"
-        SERVER2 = "10.44.237.117"
+        SERVER1 = "10.43.250.211"
+        SERVER2 = "10.43.250.212"
         SSH_USER = "root"
         SSH_KEY = "/var/lib/jenkins/.ssh/id_ed25519_lbpams"
         WORKSPACE_DIR = "/var/lib/jenkins/workspace/LPAMS-API-PIPELINE"
