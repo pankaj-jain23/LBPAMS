@@ -89,41 +89,42 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Running tests...'
-                // Add your .NET test commands here
             }
         }
 
-       stage('Deploy to Kubernetes') {
-    steps {
-        script {
-            sh """
-            echo "Deploying on Server1..."
-            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} '
-                ctr -n k8s.io images import ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar
-                kubectl apply -f ${KUBE_YAML}
-                kubectl rollout restart deployment ${APP_LABEL}
-            '
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    sh """
+                    echo "Deploying on Server1..."
+                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} '
+                        ctr -n k8s.io images import ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar
+                        kubectl apply -f ${KUBE_YAML}
+                        kubectl rollout restart deployment ${APP_LABEL} -n default
+                    '
 
-           echo "Deploying on Server2..."
-ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} '
-    # Save tar in /tmp
-    ctr -n k8s.io images import /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar
-    # Re-tag for Kubernetes
-    ctr -n k8s.io images tag docker.io/library/${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:${IMAGE_TAG}
-    # Apply deployment and restart pods
-    kubectl apply -f ${KUBE_YAML}
-    kubectl rollout restart deployment ${APP_LABEL}
-'
+                    echo "Deploying on Server2..."
+                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} '
+                        # Ensure tar file is in /tmp
+                        if [ -f /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar ]; then
+                            ctr -n k8s.io images import /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar
+                        fi
 
+                        # Tag exactly for Kubernetes
+                        ctr -n k8s.io images tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:${IMAGE_TAG}
 
-            echo "Cleaning up Docker tar files on both servers..."
-            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "rm -f ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar"
-            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "rm -f /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar"
-            """
+                        # Apply deployment and restart pods
+                        kubectl apply -f ${KUBE_YAML} -n default
+                        kubectl rollout restart deployment ${APP_LABEL} -n default
+                    '
+
+                    echo "Cleaning up Docker tar files on both servers..."
+                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "rm -f ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar"
+                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "rm -f /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar"
+                    """
+                }
+            }
         }
-    }
-}
-
     }
 
     post {
