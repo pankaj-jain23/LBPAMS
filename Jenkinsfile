@@ -104,14 +104,17 @@ pipeline {
                 kubectl rollout restart deployment ${APP_LABEL}
             '
 
-            echo "Deploying on Server2..."
-            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} '
-                ctr -n k8s.io images import /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar
-                # Re-tag image so Kubernetes finds it
-                ctr -n k8s.io images tag docker.io/library/${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:${IMAGE_TAG}
-                kubectl apply -f ${KUBE_YAML}
-                kubectl rollout restart deployment ${APP_LABEL}
-            '
+           echo "Deploying on Server2..."
+ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} '
+    # Save tar in /tmp
+    ctr -n k8s.io images import /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar
+    # Re-tag for Kubernetes
+    ctr -n k8s.io images tag docker.io/library/${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:${IMAGE_TAG}
+    # Apply deployment and restart pods
+    kubectl apply -f ${KUBE_YAML}
+    kubectl rollout restart deployment ${APP_LABEL}
+'
+
 
             echo "Cleaning up Docker tar files on both servers..."
             ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "rm -f ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar"
