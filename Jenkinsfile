@@ -1,17 +1,39 @@
 pipeline {
     agent any
+
+    parameters {
+        choice(name: 'DEPLOY_ENV', choices: ['staging', 'production'], description: 'Select the deployment environment')
+    }
+
     environment {
-        IMAGE_NAME = "lbpamsprod"
-        IMAGE_TAG = "1"                              // Fixed tag
-        KUBE_YAML = "/Kubernates-deployments/LBPAMS_Kubernetes.yaml"
-        SERVER1 = "10.43.250.211"
-        SERVER2 = "10.43.250.212"
         SSH_USER = "root"
         SSH_KEY = "/var/lib/jenkins/.ssh/id_ed25519_lbpams"
         WORKSPACE_DIR = "/var/lib/jenkins/workspace/LPAMS-API-PIPELINE"
     }
 
     stages {
+        stage('Set Environment Variables') {
+            steps {
+                script {
+                    if (params.DEPLOY_ENV == 'production') {
+                        env.IMAGE_NAME = "lbpamsprod"
+                        env.IMAGE_TAG = "1"
+                        env.KUBE_YAML = "/Kubernates-deployments/LBPAMS_Kubernetes.yaml"
+                        env.SERVER1 = "10.43.250.211"
+                        env.SERVER2 = "10.43.250.212"
+                        env.APP_ENV = "Production"
+                    } else {
+                        env.IMAGE_NAME = "lbpamsstag"
+                        env.IMAGE_TAG = "1"
+                        env.KUBE_YAML = "/Kubernates-deployments/LBPAMS_kubernates_stag.yaml"
+                        env.SERVER1 = "10.43.250.211"
+                        env.SERVER2 = "10.43.250.212"
+                        env.APP_ENV = "Staging"
+                    }
+                }
+            }
+        }
+
         stage('Checkout') {
             steps {
                 git branch: 'uptomaster',
@@ -30,7 +52,7 @@ pipeline {
                     echo "Building Docker image on ${SERVER1}..."
                     ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no ${SSH_USER}@${SERVER1} '
                         cd ${WORKSPACE_DIR}
-                        docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                        docker build --build-arg ENVIRONMENT=${APP_ENV} -t ${IMAGE_NAME}:${IMAGE_TAG} .
                         docker save ${IMAGE_NAME}:${IMAGE_TAG} -o ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar
                     '
 
@@ -40,20 +62,21 @@ pipeline {
                 }
             }
         }
+
         stage('Approval Required') {
             steps {
                 script {
                     emailext(
                         subject: "Approval Needed for Build #${env.BUILD_NUMBER}",
                         body: """Hello Approver,<br><br>
-                                Build #${env.BUILD_NUMBER} is waiting for your approval in Jenkins.<br>
+                                Build #${env.BUILD_NUMBER} (${params.DEPLOY_ENV}) is waiting for your approval in Jenkins.<br>
                                 Please <a href="${env.BUILD_URL}">click here</a> to approve/reject.<br><br>
                                 Regards,<br>Jenkins""",
                         to: "lbpams-ap1"
                     )
 
                     input(
-                        message: 'Build approval required by approver',
+                        message: "Deploy to ${params.DEPLOY_ENV}? Approval required.",
                         ok: 'Approve',
                         submitter: 'lbpams-ap1'
                     )
@@ -64,7 +87,7 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Running tests...'
-                // Add your test commands here
+                // Add your .NET test commands here
             }
         }
 
@@ -74,20 +97,16 @@ pipeline {
                     sh """
                     echo "Deploying on Server1..."
                     ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} '
-                        # Import Docker image into containerd
                         ctr -n k8s.io images import ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar
-                        # Apply Kubernetes manifest
                         kubectl apply -f ${KUBE_YAML}
-                        # Delete existing pods to force new ones to use the imported image
-                        kubectl delete pods -l app=lbpams-prod --ignore-not-found
+                        kubectl delete pods -l app=${IMAGE_NAME} --ignore-not-found
                     '
 
                     echo "Deploying on Server2..."
                     ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} '
                         ctr -n k8s.io images import /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar
-                         # Apply Kubernetes manifest
                         kubectl apply -f ${KUBE_YAML}
-                        kubectl delete pods -l app=lbpams-prod --ignore-not-found
+                        kubectl delete pods -l app=${IMAGE_NAME} --ignore-not-found
                     '
 
                     echo "Cleaning up Docker tar files on both servers..."
