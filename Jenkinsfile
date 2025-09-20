@@ -110,9 +110,6 @@ pipeline {
                             ctr -n k8s.io images import /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar
                         fi
 
-                        # Tag exactly for Kubernetes
-                        ctr -n k8s.io images tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:${IMAGE_TAG}
-
                         # Apply deployment and restart pods
                         kubectl apply -f ${KUBE_YAML} -n default
                         kubectl rollout restart deployment ${APP_LABEL} -n default
