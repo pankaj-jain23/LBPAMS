@@ -93,31 +93,34 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
-            steps {
-                script {
-                    sh """
-                    echo "Deploying on Server1..."
-                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} '
-                        ctr -n k8s.io images import ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar
-                        kubectl apply -f ${KUBE_YAML}
-                        kubectl rollout restart deployment ${APP_LABEL}
-                    '
+       stage('Deploy to Kubernetes') {
+    steps {
+        script {
+            sh """
+            echo "Deploying on Server1..."
+            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} '
+                ctr -n k8s.io images import ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar
+                kubectl apply -f ${KUBE_YAML}
+                kubectl rollout restart deployment ${APP_LABEL}
+            '
 
-                    echo "Deploying on Server2..."
-                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} '
-                        ctr -n k8s.io images import /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar
-                        kubectl apply -f ${KUBE_YAML}
-                        kubectl rollout restart deployment ${APP_LABEL}
-                    '
+            echo "Deploying on Server2..."
+            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} '
+                ctr -n k8s.io images import /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar
+                # Re-tag image so Kubernetes finds it
+                ctr -n k8s.io images tag docker.io/library/${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:${IMAGE_TAG}
+                kubectl apply -f ${KUBE_YAML}
+                kubectl rollout restart deployment ${APP_LABEL}
+            '
 
-                    echo "Cleaning up Docker tar files on both servers..."
-                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "rm -f ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar"
-                    ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "rm -f /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar"
-                    """
-                }
-            }
+            echo "Cleaning up Docker tar files on both servers..."
+            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} "rm -f ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar"
+            ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} "rm -f /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar"
+            """
         }
+    }
+}
+
     }
 
     post {
