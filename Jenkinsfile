@@ -22,6 +22,7 @@ pipeline {
                         env.SERVER1 = "10.43.250.211"
                         env.SERVER2 = "10.43.250.212"
                         env.APP_ENV = "Production"
+                        env.APP_LABEL = "lbpams-prod"
                     } else {
                         env.IMAGE_NAME = "lbpamsstag"
                         env.IMAGE_TAG = "1"
@@ -29,6 +30,7 @@ pipeline {
                         env.SERVER1 = "10.43.250.211"
                         env.SERVER2 = "10.43.250.212"
                         env.APP_ENV = "Staging"
+                        env.APP_LABEL = "lbpams-stag"
                     }
                 }
             }
@@ -99,14 +101,14 @@ pipeline {
                     ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER1} '
                         ctr -n k8s.io images import ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar
                         kubectl apply -f ${KUBE_YAML}
-                        kubectl delete pods -l app=${IMAGE_NAME} --ignore-not-found
+                        kubectl rollout restart deployment ${APP_LABEL}
                     '
 
                     echo "Deploying on Server2..."
                     ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} '
                         ctr -n k8s.io images import /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar
                         kubectl apply -f ${KUBE_YAML}
-                        kubectl delete pods -l app=${IMAGE_NAME} --ignore-not-found
+                        kubectl rollout restart deployment ${APP_LABEL}
                     '
 
                     echo "Cleaning up Docker tar files on both servers..."
