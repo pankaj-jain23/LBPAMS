@@ -224,10 +224,31 @@ var app = builder.Build();
 app.UseResponseCompression(); 
  
 app.UseStaticFiles();
-app.UseSwagger();
-app.UseSwaggerUI();
+if (app.Environment.IsDevelopment()||app.Environment.IsStaging())
+{
+    var pathBase = builder.Configuration["AppSettings:PathBase"];
+    if (!string.IsNullOrEmpty(pathBase))
+    {
+        app.UsePathBase(pathBase);
+    }
+
+    app.UseSwagger(c =>
+    {
+        c.PreSerializeFilters.Add((swaggerDoc, httpReq) =>
+        {
+            swaggerDoc.Servers = new List<OpenApiServer>
+        {
+            new OpenApiServer { Url = $"{httpReq.Scheme}://{httpReq.Host.Value}{pathBase}" }
+        };
+        });
+    });
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint($"{pathBase}/swagger/v1/swagger.json", "LBPAMS-API v1");
+    });
 
 
+}
 
 app.UseCors();
 app.UseWebSockets();
