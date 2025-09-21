@@ -241,7 +241,7 @@ app.MapHub<DashBoardHub>("/DashBoardHub", options =>
 app.UseStaticFiles();
 app.UseAuthorization();
 app.UseHttpsRedirection();
-
+app.MapGet("/health", () => Results.Ok("Healthy"));
 app.MapControllers();
 
 app.Run();
