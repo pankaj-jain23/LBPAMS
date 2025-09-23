@@ -65,26 +65,25 @@ pipeline {
             }
         }
 
-        stage('Approval Required') {
-            steps {
-                script {
-                    emailext(
-                        subject: "Approval Needed for Build #${env.BUILD_NUMBER}",
-                        body: """Hello Approver,<br><br>
-                                Build #${env.BUILD_NUMBER} (${params.DEPLOY_ENV}) is waiting for your approval in Jenkins.<br>
-                                Please <a href="${env.BUILD_URL}">click here</a> to approve/reject.<br><br>
-                                Regards,<br>Jenkins""",
-                        to: "lbpams-ap1"
-                    )
+      stage('Approval Required') {
+    steps {
+        script {
+            def approvers = ['lbpams-ap1','lbpams-ap2','lbpams-ap3']
 
-                    input(
-                        message: "Deploy to ${params.DEPLOY_ENV}? Approval required.",
-                        ok: 'Approve',
-                        submitter: 'lbpams-ap1'
-                    )
-                }
+            // Extra safety: error if someone else tries to approve
+            if (!approvers.contains(env.JENKINS_USER_ID)) {
+                error "You are not authorized to approve this build."
             }
+
+            input(
+                message: "Deploy to ${params.DEPLOY_ENV}? Approval required.",
+                ok: 'Approve',
+                submitter: approvers.join(',')
+            )
         }
+    }
+}
+
 
         stage('Test') {
             steps {
