@@ -2595,7 +2595,7 @@ namespace EAMS_DAL.Repository
         #endregion
         /// </summary>
         /// <summary this api for Mobile App>
-        public async Task<List<CombinedMaster>> GetBoothListForFo(
+        public async Task<List<CombinedMaster>?> GetBoothListForFo(
      int stateMasterId,
      int districtMasterId,
      int assemblyMasterId,
@@ -2603,66 +2603,69 @@ namespace EAMS_DAL.Repository
      CancellationToken cancellationToken)
         {
             var combinedMasters = new List<CombinedMaster>();
-             
-            await using var conn = await _dbHelper.GetOpenConnectionAsync(cancellationToken); 
+
+            await using var conn = await _dbHelper.GetOpenConnectionAsync(cancellationToken);
 
             var query = "SELECT get_booth_event_list_for_fo(@stateId, @districtId, @assemblyId, @foId)";
             await using var cmd = new NpgsqlCommand(query, conn);
-      
+
             cmd.Parameters.AddWithValue("stateId", stateMasterId);
             cmd.Parameters.AddWithValue("districtId", districtMasterId);
             cmd.Parameters.AddWithValue("assemblyId", assemblyMasterId);
             cmd.Parameters.AddWithValue("foId", foId);
-        
+
             var jsonResult = await cmd.ExecuteScalarAsync(cancellationToken);
 
-            if (jsonResult is string jsonString)
+            if (jsonResult is not string jsonString || string.IsNullOrWhiteSpace(jsonString))
             {
-                var jsonDoc = JsonDocument.Parse(jsonString);
-                var root = jsonDoc.RootElement;
+                return null; // function returned null or empty
+            }
 
-                // If your JSON is a simple array of objects:
-                if (root.TryGetProperty("data", out var boothsArray))
+            var jsonDoc = JsonDocument.Parse(jsonString);
+            var root = jsonDoc.RootElement;
+
+            if (!root.TryGetProperty("data", out var boothsArray) || boothsArray.ValueKind != JsonValueKind.Array)
+            {
+                return null; // data property missing or not an array
+            }
+
+            foreach (var item in boothsArray.EnumerateArray())
+            {
+                var combinedMaster = new CombinedMaster
                 {
-                    foreach (var item in boothsArray.EnumerateArray())
-                    {
-                        var combinedMaster = new CombinedMaster
-                        {
-                            StateId = item.GetProperty("StateMasterId").GetInt32(),
-                            StateName = item.GetProperty("StateName").GetString(),
-                            DistrictId = item.GetProperty("DistrictMasterId").GetInt32(),
-                            DistrictName = item.GetProperty("DistrictName").GetString(),
-                            DistrictCode = item.GetProperty("DistrictCode").GetString(),
-                            AssemblyId = item.GetProperty("AssemblyMasterId").GetInt32(),
-                            AssemblyName = item.GetProperty("AssemblyName").GetString(),
-                            AssemblyCode = item.GetProperty("AssemblyCode").GetInt32(),
-                            BoothCode_No = item.GetProperty("BoothCode_No").GetString(),
-                            BoothMasterId = item.GetProperty("BoothMasterId").GetInt32(),
-                            BoothName = item.GetProperty("BoothName").GetString(),
-                            BoothAuxy = item.TryGetProperty("BoothNoAuxy", out var ba) && ba.ValueKind != JsonValueKind.Null ? ba.GetString() : null,
-                            IsAssigned = item.GetProperty("IsAssigned").GetBoolean(),
-                            EventMasterId = item.GetProperty("EventMasterId").GetInt32(),
-                            EventName = item.GetProperty("EventName").GetString(),
-                            EventABBR = item.GetProperty("EventABBR").GetString(),
-                            EventSequence = item.GetProperty("EventSequence").GetInt32(),
-                            EventStatus = item.GetProperty("EventStatus").GetBoolean(),
-                            IsBoothInterrupted = item.GetProperty("IsBoothInterrupted").GetBoolean(),
-                            IsVTInterrupted = item.GetProperty("IsVTInterrupted").GetBoolean(),
-                            ElectionTypeMasterId = item.GetProperty("ElectionTypeMasterId").GetInt32(),
-                            FourthLevelHMasterId = item.GetProperty("FourthLevelHMasterId").GetInt32(),
-                            FourthLevelHName = item.GetProperty("FourthLevelHName").GetString()
-                        };
+                    StateId = item.TryGetProperty("StateMasterId", out var sId) && sId.ValueKind == JsonValueKind.Number ? sId.GetInt32() : 0,
+                    StateName = item.TryGetProperty("StateName", out var sName) && sName.ValueKind == JsonValueKind.String ? sName.GetString() : null,
+                    DistrictId = item.TryGetProperty("DistrictMasterId", out var dId) && dId.ValueKind == JsonValueKind.Number ? dId.GetInt32() : 0,
+                    DistrictName = item.TryGetProperty("DistrictName", out var dName) && dName.ValueKind == JsonValueKind.String ? dName.GetString() : null,
+                    DistrictCode = item.TryGetProperty("DistrictCode", out var dCode) && dCode.ValueKind == JsonValueKind.String ? dCode.GetString() : null,
+                    AssemblyId = item.TryGetProperty("AssemblyMasterId", out var aId) && aId.ValueKind == JsonValueKind.Number ? aId.GetInt32() : 0,
+                    AssemblyName = item.TryGetProperty("AssemblyName", out var aName) && aName.ValueKind == JsonValueKind.String ? aName.GetString() : null,
+                    AssemblyCode = item.TryGetProperty("AssemblyCode", out var aCode) && aCode.ValueKind == JsonValueKind.Number ? aCode.GetInt32() : 0,
+                    BoothCode_No = item.TryGetProperty("BoothCode_No", out var bCode) && bCode.ValueKind == JsonValueKind.String ? bCode.GetString() : null,
+                    BoothMasterId = item.TryGetProperty("BoothMasterId", out var bId) && bId.ValueKind == JsonValueKind.Number ? bId.GetInt32() : 0,
+                    BoothName = item.TryGetProperty("BoothName", out var bName) && bName.ValueKind == JsonValueKind.String ? bName.GetString() : null,
+                    BoothAuxy = item.TryGetProperty("BoothNoAuxy", out var ba) && ba.ValueKind == JsonValueKind.String ? ba.GetString() : null,
+                    IsAssigned = item.TryGetProperty("IsAssigned", out var isAssigned) && isAssigned.ValueKind == JsonValueKind.True || isAssigned.ValueKind == JsonValueKind.False ? isAssigned.GetBoolean() : false,
 
-                        combinedMasters.Add(combinedMaster);
-                    }
-                }
+                    EventMasterId = item.TryGetProperty("EventMasterId", out var evId) && evId.ValueKind == JsonValueKind.Number ? evId.GetInt32() : 0,
+                    EventName = item.TryGetProperty("EventName", out var evName) && evName.ValueKind == JsonValueKind.String ? evName.GetString() : null,
+                    EventABBR = item.TryGetProperty("EventABBR", out var evABBR) && evABBR.ValueKind == JsonValueKind.String ? evABBR.GetString() : null,
+                    EventSequence = item.TryGetProperty("EventSequence", out var evSeq) && evSeq.ValueKind == JsonValueKind.Number ? evSeq.GetInt32() : 0,
+                    EventStatus = item.TryGetProperty("EventStatus", out var evStatus) && evStatus.ValueKind == JsonValueKind.True || evStatus.ValueKind == JsonValueKind.False ? evStatus.GetBoolean() : false,
 
+                    IsBoothInterrupted = item.TryGetProperty("IsBoothInterrupted", out var bi) && bi.ValueKind == JsonValueKind.True || bi.ValueKind == JsonValueKind.False ? bi.GetBoolean() : false,
+                    IsVTInterrupted = item.TryGetProperty("IsVTInterrupted", out var vti) && vti.ValueKind == JsonValueKind.True || vti.ValueKind == JsonValueKind.False ? vti.GetBoolean() : false,
+
+                    ElectionTypeMasterId = item.TryGetProperty("ElectionTypeMasterId", out var etId) && etId.ValueKind == JsonValueKind.Number ? etId.GetInt32() : 0,
+                    FourthLevelHMasterId = item.TryGetProperty("FourthLevelHMasterId", out var flhm) && flhm.ValueKind == JsonValueKind.Number ? flhm.GetInt32() : 0,
+                    FourthLevelHName = item.TryGetProperty("FourthLevelHName", out var flhn) && flhn.ValueKind == JsonValueKind.String ? flhn.GetString() : null
+                };
+
+                combinedMasters.Add(combinedMaster);
             }
 
             return combinedMasters;
         }
-
-
 
         //public async Task<List<CombinedMaster>> GetBoothListForFo(int stateMasterId, int districtMasterId, int assemblyMasterId, int foId)
         //{
