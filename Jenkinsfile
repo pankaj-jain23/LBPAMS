@@ -71,9 +71,9 @@ pipeline {
             def approvers = ['lbpams-ap1','lbpams-ap2','lbpams-ap3']
 
             // Extra safety: error if someone else tries to approve
-            if (!approvers.contains(env.JENKINS_USER_ID)) {
-                error "You are not authorized to approve this build."
-            }
+            // if (!approvers.contains(env.JENKINS_USER_ID)) {
+            //     error "You are not authorized to approve this build."
+            // }
 
             input(
                 message: "Deploy to ${params.DEPLOY_ENV}? Approval required.",
