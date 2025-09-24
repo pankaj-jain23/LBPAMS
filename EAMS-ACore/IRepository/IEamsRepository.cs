@@ -494,7 +494,19 @@ namespace EAMS_ACore.IRepository
         Task<List<ResultDeclarationList>> GetResultDeclarationsByElectionType(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId);
 
         #endregion
+        #region Result Declaration for ZP And Ps Zone
+        Task<ServiceResponse> AddResultDeclarationTableConfiguration(ResultDeclarationTableConfiguration resultDeclarationTableConfiguration, string createdBy, CancellationToken cancellationToken);
+        Task<ServiceResponse> UpdateResultDeclarationTableConfiguration(ResultDeclarationTableConfiguration resultDeclarationTableConfiguration, string updatedBy, CancellationToken cancellationToken);
+        Task<ServiceResponse> DeleteResultDeclarationTableConfiguration(Guid rdTableConfigId, string deletedBy, CancellationToken cancellationToken);
 
+            Task<ResultDeclarationForZPAndPsZoneViewModel> GetResultDeclarationForZPAndPsZone(
+        int electionType,
+        int stateMasterId,
+        int? districtMasterId,
+        int? assemblyMasterId,
+        int? fourthLevelHMasterId,
+        CancellationToken cancellationToken);
+        #endregion
         #region PanchaytaMapping
         Task<Response> PanchayatMapping(List<FourthLevelH> fourthLevels);
         Task<Response> ReleasePanchayat(FourthLevelH fourthLevels);

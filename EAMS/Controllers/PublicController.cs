@@ -18,13 +18,18 @@ namespace EAMS.Controllers
         private readonly IEamsService _eamsService;
         private readonly IConfiguration _configuration;
 
-        public PublicController(IMapper mapper, ILogger<PublicController> logger, IEamsService eamsService, IConfiguration configuration)
+        public PublicController(
+            IMapper mapper,
+            ILogger<PublicController> logger,
+            IEamsService eamsService,
+            IConfiguration configuration)
         {
             _mapper = mapper;
             _logger = logger;
             _eamsService = eamsService;
             _configuration = configuration;
         }
+
 
         #region KYC
         [HttpPost("AddKYCDetails")]
@@ -1437,6 +1442,108 @@ namespace EAMS.Controllers
             }
         }
         #endregion
+        #region Result Declaration for ZP And Ps Zone
+        [HttpPost("AddResultDeclarationTableConfiguration")]
+        [Authorize]
+        public async Task<IActionResult> AddResultDeclarationTableConfiguration(
+     [FromForm] AddResultDeclarationTableConfigurationViewModel addResultDeclarationTableConfigurationViewModel,
+     CancellationToken cancellationToken)
+        {
+            if (cancellationToken.IsCancellationRequested)
+                return StatusCode(499, "Request was canceled by the client.");
 
+            if (addResultDeclarationTableConfigurationViewModel == null)
+                return BadRequest("Configuration details are missing.");
+
+            // Get the user ID from token
+            var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("User Id not found in token.");
+
+            // Map the DTO to the entity
+            var mappedData = _mapper.Map<ResultDeclarationTableConfiguration>(addResultDeclarationTableConfigurationViewModel);
+
+            var result = await _eamsService.AddResultDeclarationTableConfiguration(mappedData, userId, cancellationToken);
+
+            if (!result.IsSucceed)
+                return BadRequest(result.Message);
+
+            return Ok(result.Message);
+        }
+
+        [HttpPut("UpdateResultDeclarationTableConfiguration")]
+        [Authorize]
+        public async Task<IActionResult> UpdateResultDeclarationTableConfiguration(
+    [FromForm] UpdateResultDeclarationTableConfigurationViewModel updateResultDeclarationTableConfigurationViewModel,
+    CancellationToken cancellationToken)
+        {
+            if (cancellationToken.IsCancellationRequested)
+                return StatusCode(499, "Request was canceled by the client.");
+
+            if (updateResultDeclarationTableConfigurationViewModel == null)
+                return BadRequest("Configuration details are missing.");
+
+            var userId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("User Id not found in token.");
+
+            var mappedData = _mapper.Map<ResultDeclarationTableConfiguration>(updateResultDeclarationTableConfigurationViewModel);
+
+            var result = await _eamsService.UpdateResultDeclarationTableConfiguration(mappedData, userId, cancellationToken);
+
+            if (!result.IsSucceed)
+                return BadRequest(result.Message);
+
+            return Ok(result.Message);
+        }
+
+        [HttpDelete("DeleteResultDeclarationTableConfiguration")]
+        [Authorize]
+        public async Task<IActionResult> DeleteResultDeclarationTableConfiguration(
+    Guid rdTableConfigId,
+    CancellationToken cancellationToken)
+        {
+            if (cancellationToken.IsCancellationRequested)
+                return StatusCode(499, "Request was canceled by the client.");
+
+            if (rdTableConfigId == Guid.Empty)
+                return BadRequest("Invalid Table Configuration Id.");
+
+            var userId = User.Claims.FirstOrDefault(c => c.Type == "Id")?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("User Id not found in token.");
+
+            var result = await _eamsService.DeleteResultDeclarationTableConfiguration(rdTableConfigId, userId, cancellationToken);
+
+            if (!result.IsSucceed)
+                return BadRequest(result.Message);
+
+            return Ok(result.Message);
+        }
+        [HttpGet("GetResultDeclarationForZPAndPsZone")]
+        [Authorize]
+        public async Task<IActionResult> GetResultDeclarationForZPAndPsZone(
+     int electionType,
+     int stateMasterId,
+     int? districtMasterId,
+     int? assemblyMasterId,
+     int? fourthLevelHMasterId,
+     CancellationToken cancellationToken)
+        {
+            if (cancellationToken.IsCancellationRequested)
+                return StatusCode(499, "Request was canceled by the client.");
+
+            var result = await _eamsService.GetResultDeclarationForZPAndPsZone(
+                electionType, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, cancellationToken);
+
+            if (result == null)
+                return NotFound("No result found.");
+
+            return Ok(result);
+        }
+
+
+        #endregion
     }
 }

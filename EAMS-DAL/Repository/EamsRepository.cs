@@ -21798,6 +21798,242 @@ namespace EAMS_DAL.Repository
         #endregion
 
 
+        #region Result Declaration for ZP And Ps Zone
+        public async Task<ServiceResponse> AddResultDeclarationTableConfiguration(
+    ResultDeclarationTableConfiguration resultDeclarationTableConfiguration,
+    string createdBy,
+    CancellationToken cancellationToken)
+        {
+            if (resultDeclarationTableConfiguration == null)
+                return new ServiceResponse { IsSucceed = false, Message = "Invalid data" };
+
+            // Set creation date
+            resultDeclarationTableConfiguration.CreatedAt = DateTime.UtcNow;
+
+            // Add main table configuration
+            await _context.ResultDeclarationTableConfigurations.AddAsync(resultDeclarationTableConfiguration, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            // Add RoundFormation rows
+            if (resultDeclarationTableConfiguration.NoOfRound.HasValue && resultDeclarationTableConfiguration.NoOfRound > 0)
+            {
+                var rounds = new List<ResultDeclarationRoundFormation>();
+
+                for (int i = 1; i <= resultDeclarationTableConfiguration.NoOfRound.Value; i++)
+                {
+                    rounds.Add(new ResultDeclarationRoundFormation
+                    {
+                        RDTableConfigId = resultDeclarationTableConfiguration.RDTableConfigId,
+                        RoundNumber = i,
+                        RoundName = $"Round {i}",
+                        IsFinalized = resultDeclarationTableConfiguration.IsFinalized,
+                        IsLocked = resultDeclarationTableConfiguration.IsLocked,
+                        CreatedAt = DateTime.UtcNow,
+                        CreatedBy = createdBy
+                    });
+                }
+
+                await _context.ResultDeclarationRoundFormations.AddRangeAsync(rounds, cancellationToken);
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+
+            return new ServiceResponse
+            {
+                IsSucceed = true,
+                Message = "Table Configuration and Round Formation added successfully."
+            };
+        }
+
+        public async Task<ServiceResponse> UpdateResultDeclarationTableConfiguration(
+    ResultDeclarationTableConfiguration updatedConfig,
+    string updatedBy,
+    CancellationToken cancellationToken)
+        {
+            // Fetch existing table configuration
+            var existingConfig = await _context.ResultDeclarationTableConfigurations
+                .FirstOrDefaultAsync(x => x.RDTableConfigId == updatedConfig.RDTableConfigId, cancellationToken);
+
+            if (existingConfig == null)
+                return new ServiceResponse { IsSucceed = false, Message = "Table configuration not found." };
+
+            // Update fields
+            existingConfig.StateMasterId = updatedConfig.StateMasterId;
+            existingConfig.DistrictMasterId = updatedConfig.DistrictMasterId;
+            existingConfig.AssemblyMasterId = updatedConfig.AssemblyMasterId;
+            existingConfig.FourthLevelHMasterId = updatedConfig.FourthLevelHMasterId;
+            existingConfig.ElectionTypeMasterId = updatedConfig.ElectionTypeMasterId;
+            existingConfig.NoOfBooth = updatedConfig.NoOfBooth;
+            existingConfig.NoOfRound = updatedConfig.NoOfRound;
+            existingConfig.NoOfTable = updatedConfig.NoOfTable;
+            existingConfig.IsFinalized = updatedConfig.IsFinalized;
+            existingConfig.IsLocked = updatedConfig.IsLocked;
+            existingConfig.UpdatedAt = DateTime.UtcNow;
+
+            // Delete existing rounds
+            var existingRounds = _context.ResultDeclarationRoundFormations
+                .Where(r => r.RDTableConfigId == updatedConfig.RDTableConfigId);
+
+            _context.ResultDeclarationRoundFormations.RemoveRange(existingRounds);
+
+            // Add new rounds based on updated NoOfRound
+            if (updatedConfig.NoOfRound.HasValue && updatedConfig.NoOfRound > 0)
+            {
+                var rounds = new List<ResultDeclarationRoundFormation>();
+                for (int i = 1; i <= updatedConfig.NoOfRound.Value; i++)
+                {
+                    rounds.Add(new ResultDeclarationRoundFormation
+                    {
+                        RDTableConfigId = existingConfig.RDTableConfigId,
+                        RoundNumber = i,
+                        RoundName = $"Round {i}",
+                        IsFinalized = updatedConfig.IsFinalized,
+                        IsLocked = updatedConfig.IsLocked,
+                        UpdatedAt = DateTime.UtcNow,
+                        UpdatedBy = updatedBy
+                    });
+                }
+                await _context.ResultDeclarationRoundFormations.AddRangeAsync(rounds, cancellationToken);
+            }
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return new ServiceResponse
+            {
+                IsSucceed = true,
+                Message = "Table Configuration and Round Formation updated successfully."
+            };
+        }
+
+
+        public async Task<ServiceResponse> DeleteResultDeclarationTableConfiguration(
+    Guid rdTableConfigId,
+    string deletedBy,
+    CancellationToken cancellationToken)
+        {
+            // Fetch the main configuration
+            var config = await _context.ResultDeclarationTableConfigurations
+                .FirstOrDefaultAsync(x => x.RDTableConfigId == rdTableConfigId, cancellationToken);
+
+            if (config == null)
+                return new ServiceResponse { IsSucceed = false, Message = "Table configuration not found." };
+
+            // Mark the main configuration as deleted
+            config.IsDeleted = true;
+            config.DeletedAt = DateTime.UtcNow;
+
+            // Fetch all related rounds
+            var rounds = _context.ResultDeclarationRoundFormations
+                .Where(r => r.RDTableConfigId == rdTableConfigId);
+
+            // Mark all rounds as deleted
+            foreach (var round in rounds)
+            {
+                round.IsDeleted = true;
+                round.DeletedAt = DateTime.UtcNow;
+                round.DeletedBy = deletedBy;
+            }
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return new ServiceResponse
+            {
+                IsSucceed = true,
+                Message = "Table Configuration and related Round Formations marked as deleted successfully."
+            };
+        }
+        public async Task<ResultDeclarationForZPAndPsZoneViewModel> GetResultDeclarationForZPAndPsZone(
+    int electionType,
+    int stateMasterId,
+    int? districtMasterId,
+    int? assemblyMasterId,
+    int? fourthLevelHMasterId,
+    CancellationToken cancellationToken)
+        {
+            // Table configuration
+            var tableConfigQuery = _context.ResultDeclarationTableConfigurations
+                .Where(x => x.ElectionTypeMasterId == electionType && !x.IsDeleted && x.StateMasterId == stateMasterId);
+
+            if (districtMasterId.HasValue)
+                tableConfigQuery = tableConfigQuery.Where(x => x.DistrictMasterId == districtMasterId.Value);
+
+            if (electionType == 2 && assemblyMasterId.HasValue) // Zila Parishad
+                tableConfigQuery = tableConfigQuery.Where(x => x.AssemblyMasterId == assemblyMasterId.Value);
+
+            if (electionType == 3 && fourthLevelHMasterId.HasValue) // Panchayat Samiti
+                tableConfigQuery = tableConfigQuery.Where(x => x.FourthLevelHMasterId == fourthLevelHMasterId.Value);
+
+            var tableConfig = await tableConfigQuery.FirstOrDefaultAsync(cancellationToken);
+            if (tableConfig == null) return null;
+
+            // Rounds
+            var rounds = await _context.ResultDeclarationRoundFormations
+                .Where(r => r.RDTableConfigId == tableConfig.RDTableConfigId && !r.IsDeleted)
+                .OrderBy(r => r.RoundNumber)
+                .ToListAsync(cancellationToken);
+
+            var roundConfiguration = rounds.Select(r => new RoundConfigurationViewModel
+            {
+                RoundNo = r.RoundNumber ?? 0,
+                IsLocked = r.IsLocked,
+                IsFinalize = r.IsFinalized
+            }).ToList();
+
+            // Candidates
+            IQueryable<Kyc> kycQuery = _context.Kyc.Where(k => k.StateMasterId == stateMasterId);
+
+            if (districtMasterId.HasValue) kycQuery = kycQuery.Where(k => k.DistrictMasterId == districtMasterId.Value);
+            if (electionType == 2 && assemblyMasterId.HasValue) kycQuery = kycQuery.Where(k => k.AssemblyMasterId == assemblyMasterId.Value);
+            if (electionType == 3 && fourthLevelHMasterId.HasValue) kycQuery = kycQuery.Where(k => k.FourthLevelHMasterId == fourthLevelHMasterId.Value);
+
+            var candidates = await kycQuery.ToListAsync(cancellationToken);
+
+            // Candidate results directly from ResultDeclarationRoundWise
+            var candidateResults = new List<CandidateResultViewModel>();
+            foreach (var candidate in candidates)
+            {
+                var roundResults = new List<CandidateRoundResultViewModel>();
+
+                foreach (var round in rounds)
+                {
+                    var roundWise = await _context.ResultDeclarationRoundWises
+                        .Where(rw => rw.KycMasterId == candidate.KycMasterId && rw.RDRoundFormationId == round.RDRoundFormationId)
+                        .FirstOrDefaultAsync(cancellationToken);
+
+                    roundResults.Add(new CandidateRoundResultViewModel
+                    {
+                        RoundNo = round.RoundNumber ?? 0,
+                        TotalVotes = roundWise?.TotalVotes ?? 0,
+                        TotalCummilative = roundWise?.TotalCommulativeVotes ?? 0
+                    });
+                }
+
+                candidateResults.Add(new CandidateResultViewModel
+                {
+                    Id = candidate.KycMasterId,
+                    Name = candidate.CandidateName,
+                    RoundResult = roundResults
+                });
+            }
+
+            return new ResultDeclarationForZPAndPsZoneViewModel
+            {
+                ElectionType = electionType,
+                StateMasterId = stateMasterId.ToString(),
+                DistrictMasterId = districtMasterId?.ToString(),
+                AssemblyMasterId = assemblyMasterId?.ToString(),
+                FourthLevelHMasterId = fourthLevelHMasterId?.ToString(),
+                TotalRounds = tableConfig.NoOfRound ?? 0,
+                TotalBooths = tableConfig.NoOfBooth ?? 0,
+                TotalTable = tableConfig.NoOfTable ?? 0,
+                RoundConfiguration = roundConfiguration,
+                Candidates = candidateResults
+            };
+        }
+
+
+        #endregion
+
+
 
         #region Common DateTime Methods
 

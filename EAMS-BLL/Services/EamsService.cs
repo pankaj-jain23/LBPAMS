@@ -2561,6 +2561,35 @@ namespace EAMS_BLL.Services
         }
         #endregion
 
+        #region Result Declaration for ZP And Ps Zone
+        public async Task<ServiceResponse> AddResultDeclarationTableConfiguration(ResultDeclarationTableConfiguration resultDeclarationTableConfiguration, string createdBy, CancellationToken cancellationToken)
+        {
+            return await _eamsRepository.AddResultDeclarationTableConfiguration(resultDeclarationTableConfiguration, createdBy, cancellationToken);
+        }
+
+        public async Task<ServiceResponse> UpdateResultDeclarationTableConfiguration(ResultDeclarationTableConfiguration resultDeclarationTableConfiguration, string updatedBy, CancellationToken cancellationToken)
+        {
+            return await _eamsRepository.UpdateResultDeclarationTableConfiguration(resultDeclarationTableConfiguration, updatedBy, cancellationToken);
+        }
+        public async Task<ServiceResponse> DeleteResultDeclarationTableConfiguration(Guid rdTableConfigId, string deletedBy, CancellationToken cancellationToken)
+        {
+            return await _eamsRepository.DeleteResultDeclarationTableConfiguration(rdTableConfigId, deletedBy, cancellationToken);
+        }
+        public async Task<ResultDeclarationForZPAndPsZoneViewModel> GetResultDeclarationForZPAndPsZone(
+    int electionType,
+    int stateMasterId,
+    int? districtMasterId,
+    int? assemblyMasterId,
+    int? fourthLevelHMasterId,
+    CancellationToken cancellationToken)
+{
+    return await _eamsRepository.GetResultDeclarationForZPAndPsZone(
+        electionType, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, cancellationToken);
+}
+
+
+        #endregion
+
         #region PancahyatMapping
         public async Task<Response> PanchayatMapping(List<FourthLevelH> fourthLevels)
         {

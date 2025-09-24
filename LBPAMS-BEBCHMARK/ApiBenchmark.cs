@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration; // ✅ correct IConfiguration namespace
 
 namespace LBPAMS_BEBCHMARK
 {
@@ -38,6 +39,7 @@ namespace LBPAMS_BEBCHMARK
             var mockLogger = new Mock<ILogger<EAMSController>>();
             var mockPublicLogger = new Mock<ILogger<PublicController>>();
             var mockCacheService = new Mock<ICacheService>();
+            var mockConfiguration = new Mock<IConfiguration>(); // ✅ added
 
             // Register the mocks with the service collection
             serviceCollection.AddSingleton(mockEamsService.Object);
@@ -45,6 +47,7 @@ namespace LBPAMS_BEBCHMARK
             serviceCollection.AddSingleton(mockLogger.Object);
             serviceCollection.AddSingleton(mockPublicLogger.Object);
             serviceCollection.AddSingleton(mockCacheService.Object);
+            serviceCollection.AddSingleton(mockConfiguration.Object); // ✅ added
 
             // Build the service provider
             _serviceProvider = serviceCollection.BuildServiceProvider();
@@ -56,20 +59,21 @@ namespace LBPAMS_BEBCHMARK
                 _serviceProvider.GetRequiredService<ILogger<EAMSController>>(),
                 _serviceProvider.GetRequiredService<ICacheService>()
             );
+
             _publicController = new PublicController(
                 _serviceProvider.GetRequiredService<IMapper>(),
                 _serviceProvider.GetRequiredService<ILogger<PublicController>>(),
-                _serviceProvider.GetRequiredService<IEamsService>()
+                _serviceProvider.GetRequiredService<IEamsService>(),
+                _serviceProvider.GetRequiredService<IConfiguration>() // ✅ added
             );
         }
 
         [Benchmark]
-        public async Task GetBoothListForFoBenchmark()
+        public async Task GetBoothListForFoBenchmark(CancellationToken cancellationToken)
         {
-            var result = await _eamsController.GetBoothListForFo();
+            var result = await _eamsController.GetBoothListForFo(cancellationToken);
             var okResult = result as OkObjectResult;
-            // Optionally check the data
-            var data = okResult?.Value; // Check if the returned data is as expected
+            var data = okResult?.Value;
         }
 
         [Benchmark]
@@ -77,18 +81,15 @@ namespace LBPAMS_BEBCHMARK
         {
             var result = await _publicController.GetKYCDetails();
             var okResult = result as OkObjectResult;
-            // Optionally check the data
-            var data = okResult?.Value; // Check if the returned data is as expected
+            var data = okResult?.Value;
         }
 
         [Benchmark]
         public async Task TestStateList()
         {
-            // Call the controller method you want to benchmark
-            var result = await _eamsController.StateList(); // Use await for async methods
+            var result = await _eamsController.StateList();
             var okResult = result as OkObjectResult;
-            // Optionally check the data
-            var data = okResult?.Value; // Check if the returned data is as expected
+            var data = okResult?.Value;
         }
     }
 }

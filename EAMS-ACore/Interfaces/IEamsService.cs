@@ -422,10 +422,26 @@ namespace EAMS_ACore.Interfaces
         Task<List<FourthLevelResultList>> GetFourthLevelResultListByAssemblyId(int assemblyMasterId);
         Task<List<BoothResultList>> GetWardResultListByFourthLevelId(int fourthlevelMasterId);
         Task<ServiceResponse> DeleteResultDeclarationById(int resultDeclarationMasterId);
+
+
         Task<List<ResultDeclarationList>> GetResultDeclarationsByElectionType(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gpPanchayatWardsMasterId);
         Task<List<CandidateListForResultDeclaration>> GetSarpanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId);
         Task<List<CandidateListForResultDeclaration>> GetPanchListById(int stateMasterId, int districtMasterId, int electionTypeMasterId, int assemblyMasterId, int fourthLevelHMasterId, int gPPanchayatWardsMasterId);
 
+        #endregion
+
+        #region Result Declaration for ZP And Ps Zone
+        Task<ServiceResponse> AddResultDeclarationTableConfiguration(ResultDeclarationTableConfiguration resultDeclarationTableConfiguration, string createdBy, CancellationToken cancellationToken);
+        Task<ServiceResponse> UpdateResultDeclarationTableConfiguration(ResultDeclarationTableConfiguration resultDeclarationTableConfiguration, string updatedBy, CancellationToken cancellationToken);
+        Task<ServiceResponse> DeleteResultDeclarationTableConfiguration(Guid rdTableConfigId, string deletedBy, CancellationToken cancellationToken);
+
+        Task<ResultDeclarationForZPAndPsZoneViewModel> GetResultDeclarationForZPAndPsZone(
+    int electionType,
+    int stateMasterId,
+    int? districtMasterId,
+    int? assemblyMasterId,
+    int? fourthLevelHMasterId,
+    CancellationToken cancellationToken);
         #endregion
 
         #region PanchaytaMapping

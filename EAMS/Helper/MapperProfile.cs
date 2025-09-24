@@ -1071,6 +1071,36 @@ namespace EAMS.Helper
     .ReverseMap();
             #endregion
 
+            #region Result Declaration for ZP And Ps Zone
+
+            CreateMap<AddResultDeclarationTableConfigurationViewModel, ResultDeclarationTableConfiguration>()
+               .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+               .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+               .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+               .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
+               .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+               .ForMember(dest => dest.NoOfBooth, opt => opt.MapFrom(src => src.NoOfBooth))
+               .ForMember(dest => dest.NoOfRound, opt => opt.MapFrom(src => src.NoOfRound))
+               .ForMember(dest => dest.NoOfTable, opt => opt.MapFrom(src => src.NoOfTable))
+               .ForMember(dest => dest.IsFinalized, opt => opt.MapFrom(src => src.IsFinalized))
+               .ForMember(dest => dest.IsLocked, opt => opt.MapFrom(src => src.IsLocked))
+               .ReverseMap();
+
+            CreateMap<UpdateResultDeclarationTableConfigurationViewModel, ResultDeclarationTableConfiguration>()
+              .ForMember(dest => dest.RDTableConfigId, opt => opt.MapFrom(src => src.RDTableConfigId))
+              .ForMember(dest => dest.StateMasterId, opt => opt.MapFrom(src => src.StateMasterId))
+              .ForMember(dest => dest.DistrictMasterId, opt => opt.MapFrom(src => src.DistrictMasterId))
+              .ForMember(dest => dest.AssemblyMasterId, opt => opt.MapFrom(src => src.AssemblyMasterId))
+              .ForMember(dest => dest.FourthLevelHMasterId, opt => opt.MapFrom(src => src.FourthLevelHMasterId))
+              .ForMember(dest => dest.ElectionTypeMasterId, opt => opt.MapFrom(src => src.ElectionTypeMasterId))
+              .ForMember(dest => dest.NoOfBooth, opt => opt.MapFrom(src => src.NoOfBooth))
+              .ForMember(dest => dest.NoOfRound, opt => opt.MapFrom(src => src.NoOfRound))
+              .ForMember(dest => dest.NoOfTable, opt => opt.MapFrom(src => src.NoOfTable))
+              .ForMember(dest => dest.IsFinalized, opt => opt.MapFrom(src => src.IsFinalized))
+              .ForMember(dest => dest.IsLocked, opt => opt.MapFrom(src => src.IsLocked))
+              .ReverseMap();
+            #endregion
+
             //#region UpdateResultDeclarationViewModel  ResultDeclaration
             //CreateMap<UpdateResultDeclarationViewModel, ResultDeclaration>()
             //     .ForMember(dest => dest.ResultDeclarationMasterId, opt => opt.MapFrom(src => src.ResultDeclarationMasterId))
