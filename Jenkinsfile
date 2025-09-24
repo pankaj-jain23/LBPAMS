@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     parameters {
-        choice(name: 'DEPLOY_ENV', choices: ['staging', 'production'], description: 'Select the deployment environment')
+        choice(name: 'DEPLOY_ENV', choices: ['Staging', 'Production'], description: 'Select the deployment environment')
     }
 
     environment {
@@ -15,7 +15,7 @@ pipeline {
         stage('Set Environment Variables') {
             steps {
                 script {
-                    if (params.DEPLOY_ENV == 'production') {
+                    if (params.DEPLOY_ENV == 'Production') {
                         env.IMAGE_NAME = "lbpamsprod"
                         env.IMAGE_TAG = "1"
                         env.KUBE_YAML = "/Kubernates-deployments/LBPAMS_Kubernetes.yaml"
