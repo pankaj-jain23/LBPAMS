@@ -57,9 +57,7 @@ stage('Build Docker Image on Server1') {
                 # Force rebuild without cache to ensure latest appsettings are used
                 docker build --no-cache --build-arg ENVIRONMENT=${APP_ENV} -t ${IMAGE_NAME}:${IMAGE_TAG} .
                 docker save ${IMAGE_NAME}:${IMAGE_TAG} -o ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar
-
-                # Print the appsettings.json inside the image
-                docker run --rm ${IMAGE_NAME}:${IMAGE_TAG} cat /app/appsettings.json
+ 
             '
 
             echo "Copying Docker tar from Server1 to Server2..."
