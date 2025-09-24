@@ -44,26 +44,31 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image on Server1') {
-            steps {
-                script {
-                    sh """
-                    echo "Copying source code to Server1..."
-                    rsync -av -e "ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no" --exclude='*.tar' --exclude='.git' ${WORKSPACE_DIR}/ ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/
+stage('Build Docker Image on Server1') {
+    steps {
+        script {
+            sh """
+            echo "Copying source code to Server1..."
+            rsync -av -e "ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no" --exclude='*.tar' --exclude='.git' ${WORKSPACE_DIR}/ ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/
 
-                    echo "Building Docker image on ${SERVER1}..."
-                    ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no ${SSH_USER}@${SERVER1} '
-                        cd ${WORKSPACE_DIR}
-                        docker build --build-arg ENVIRONMENT=${APP_ENV} -t ${IMAGE_NAME}:${IMAGE_TAG} .
-                        docker save ${IMAGE_NAME}:${IMAGE_TAG} -o ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar
-                    '
+            echo "Building Docker image on ${SERVER1} for environment: ${APP_ENV}..."
+            ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no ${SSH_USER}@${SERVER1} '
+                cd ${WORKSPACE_DIR}
+                # Force rebuild without cache to ensure latest appsettings are used
+                docker build --no-cache --build-arg ENVIRONMENT=${APP_ENV} -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                docker save ${IMAGE_NAME}:${IMAGE_TAG} -o ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar
 
-                    echo "Copying Docker tar from Server1 to Server2..."
-                    scp -i ${SSH_KEY} -o StrictHostKeyChecking=no ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar ${SSH_USER}@${SERVER2}:/tmp/
-                    """
-                }
-            }
+                # Print the appsettings.json inside the image
+                docker run --rm ${IMAGE_NAME}:${IMAGE_TAG} cat /app/appsettings.json
+            '
+
+            echo "Copying Docker tar from Server1 to Server2..."
+            scp -i ${SSH_KEY} -o StrictHostKeyChecking=no ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar ${SSH_USER}@${SERVER2}:/tmp/
+            """
         }
+    }
+}
+
 
       stage('Approval Required') {
     steps {
