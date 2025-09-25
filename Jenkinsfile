@@ -36,63 +36,58 @@ pipeline {
             }
         }
 
-        stage('Checkout') {
+        stage('Checkout Latest Code') {
             steps {
-                git branch: 'uptomaster',
-                    url: 'https://github.com/pankaj-jain23/LBPAMS.git',
-                    credentialsId: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJsOkNK+PNfxziz/RVUye7nUxVFNkug8IkMIDRJsUZ+u serviceplus.pb@gmail.com'
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '*/uptomaster']],
+                    userRemoteConfigs: [[
+                        url: 'git@github.com:pankaj-jain23/LBPAMS.git',
+                        credentialsId: 'github-ssh-creds'   // <-- use Jenkins credentialsId here
+                    ]],
+                    extensions: [
+                        [$class: 'WipeWorkspace'], // ensures fresh clone every run
+                        [$class: 'CloneOption', noTags: false, shallow: false, depth: 0]
+                    ]
+                ])
             }
         }
 
-stage('Build Docker Image on Server1') {
-    steps {
-        script {
-            sh """
-            echo "Copying source code to Server1..."
-            rsync -av -e "ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no" --exclude='*.tar' --exclude='.git' ${WORKSPACE_DIR}/ ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/
+        stage('Build Docker Image on Server1') {
+            steps {
+                script {
+                    sh """
+                    echo "Copying source code to Server1..."
+                    rsync -av -e "ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no" --exclude='*.tar' --exclude='.git' ${WORKSPACE_DIR}/ ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/
 
-            echo "Building Docker image on ${SERVER1} for environment: ${APP_ENV}..."
-            ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no ${SSH_USER}@${SERVER1} '
-                cd ${WORKSPACE_DIR}
-                # Force rebuild without cache to ensure latest appsettings are used
-                docker build --no-cache --build-arg ENVIRONMENT=${APP_ENV} -t ${IMAGE_NAME}:${IMAGE_TAG} .
-                docker save ${IMAGE_NAME}:${IMAGE_TAG} -o ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar
+                    echo "Building Docker image on ${SERVER1} for environment: ${APP_ENV}..."
+                    ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no ${SSH_USER}@${SERVER1} '
+                        cd ${WORKSPACE_DIR}
+                        docker build --no-cache --build-arg ENVIRONMENT=${APP_ENV} -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                        docker save ${IMAGE_NAME}:${IMAGE_TAG} -o ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar
+                    '
+
+                    echo "Copying Docker tar from Server1 to Server2..."
+                    scp -i ${SSH_KEY} -o StrictHostKeyChecking=no ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar ${SSH_USER}@${SERVER2}:/tmp/
+                    """
+                }
+            }
+        }
+
+        stage('Approval Required') {
+            steps {
+                script {
+                    def approvers = ['lbpams-ap1','lbpams-ap2','lbpams-ap3']
+                    input(
+                        message: "Deploy to ${params.DEPLOY_ENV}? Approval required.",
+                        ok: 'Approve',
+                        submitter: approvers.join(',')
+                    )
+                }
+            }
+        }
+
  
-            '
-
-            echo "Copying Docker tar from Server1 to Server2..."
-            scp -i ${SSH_KEY} -o StrictHostKeyChecking=no ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar ${SSH_USER}@${SERVER2}:/tmp/
-            """
-        }
-    }
-}
-
-
-      stage('Approval Required') {
-    steps {
-        script {
-            def approvers = ['lbpams-ap1','lbpams-ap2','lbpams-ap3']
-
-            // Extra safety: error if someone else tries to approve
-            // if (!approvers.contains(env.JENKINS_USER_ID)) {
-            //     error "You are not authorized to approve this build."
-            // }
-
-            input(
-                message: "Deploy to ${params.DEPLOY_ENV}? Approval required.",
-                ok: 'Approve',
-                submitter: approvers.join(',')
-            )
-        }
-    }
-}
-
-
-        stage('Test') {
-            steps {
-                echo 'Running tests...'
-            }
-        }
 
         stage('Deploy to Kubernetes') {
             steps {
@@ -107,12 +102,9 @@ stage('Build Docker Image on Server1') {
 
                     echo "Deploying on Server2..."
                     ssh -i ${SSH_KEY} ${SSH_USER}@${SERVER2} '
-                        # Ensure tar file is in /tmp
                         if [ -f /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar ]; then
                             ctr -n k8s.io images import /tmp/${IMAGE_NAME}_${IMAGE_TAG}.tar
                         fi
-
-                        # Apply deployment and restart pods
                         kubectl apply -f ${KUBE_YAML} -n default
                         kubectl rollout restart deployment ${APP_LABEL} -n default
                     '
