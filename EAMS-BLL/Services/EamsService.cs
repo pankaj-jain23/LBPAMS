@@ -2575,17 +2575,25 @@ namespace EAMS_BLL.Services
         {
             return await _eamsRepository.DeleteResultDeclarationTableConfiguration(rdTableConfigId, deletedBy, cancellationToken);
         }
-        public async Task<ResultDeclarationForZPAndPsZoneViewModel> GetResultDeclarationForZPAndPsZone(
-    int electionType,
-    int stateMasterId,
-    int? districtMasterId,
-    int? assemblyMasterId,
-    int? fourthLevelHMasterId,
+        public async Task<string> GetResultDeclarationForZPAndPsZone(
+    RqByMasterIds request,
     CancellationToken cancellationToken)
-{
-    return await _eamsRepository.GetResultDeclarationForZPAndPsZone(
-        electionType, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, cancellationToken);
-}
+        {
+            return await _eamsRepository.GetResultDeclarationForZPAndPsZone(
+                request, cancellationToken);
+        }
+
+        //        public async Task<ResultDeclarationForZPAndPsZoneViewModel> GetResultDeclarationForZPAndPsZone(
+        //    int electionType,
+        //    int stateMasterId,
+        //    int? districtMasterId,
+        //    int? assemblyMasterId,
+        //    int? fourthLevelHMasterId,
+        //    CancellationToken cancellationToken)
+        //{
+        //    return await _eamsRepository.GetResultDeclarationForZPAndPsZone(
+        //        electionType, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, cancellationToken);
+        //}
 
 
         #endregion

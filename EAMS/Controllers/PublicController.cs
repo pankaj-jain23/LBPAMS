@@ -1521,27 +1521,27 @@ namespace EAMS.Controllers
 
             return Ok(result.Message);
         }
-        [HttpGet("GetResultDeclarationForZPAndPsZone")]
-        [Authorize]
-        public async Task<IActionResult> GetResultDeclarationForZPAndPsZone(
-     int electionType,
-     int stateMasterId,
-     int? districtMasterId,
-     int? assemblyMasterId,
-     int? fourthLevelHMasterId,
-     CancellationToken cancellationToken)
-        {
-            if (cancellationToken.IsCancellationRequested)
-                return StatusCode(499, "Request was canceled by the client.");
+        //[HttpGet("GetResultDeclarationForZPAndPsZone")]
+        //[Authorize]
+     //   public async Task<IActionResult> GetResultDeclarationForZPAndPsZone(
+     //int electionType,
+     //int stateMasterId,
+     //int? districtMasterId,
+     //int? assemblyMasterId,
+     //int? fourthLevelHMasterId,
+     //CancellationToken cancellationToken)
+     //   {
+     //       if (cancellationToken.IsCancellationRequested)
+     //           return StatusCode(499, "Request was canceled by the client.");
 
-            var result = await _eamsService.GetResultDeclarationForZPAndPsZone(
-                electionType, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, cancellationToken);
+     //       var result = await _eamsService.GetResultDeclarationForZPAndPsZone(
+     //           electionType, stateMasterId, districtMasterId, assemblyMasterId, fourthLevelHMasterId, cancellationToken);
 
-            if (result == null)
-                return NotFound("No result found.");
+     //       if (result == null)
+     //           return NotFound("No result found.");
 
-            return Ok(result);
-        }
+     //       return Ok(result);
+     //   }
 
 
         #endregion

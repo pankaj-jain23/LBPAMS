@@ -21941,94 +21941,107 @@ namespace EAMS_DAL.Repository
                 Message = "Table Configuration and related Round Formations marked as deleted successfully."
             };
         }
-        public async Task<ResultDeclarationForZPAndPsZoneViewModel> GetResultDeclarationForZPAndPsZone(
-    int electionType,
-    int stateMasterId,
-    int? districtMasterId,
-    int? assemblyMasterId,
-    int? fourthLevelHMasterId,
+        public async Task<string> GetResultDeclarationForZPAndPsZone(
+    RqByMasterIds request,
     CancellationToken cancellationToken)
         {
-            // Table configuration
-            var tableConfigQuery = _context.ResultDeclarationTableConfigurations
-                .Where(x => x.ElectionTypeMasterId == electionType && !x.IsDeleted && x.StateMasterId == stateMasterId);
+            var sql = "SELECT public.\"get_result_declaration_forzpandpszone\"(@p0,@p1,@p2,@p3,@p4)";
+            var result = await _context.Database.ExecuteSqlRawAsync(
+                sql,
+                parameters: new object[] { request.ElectionTypeMasterId, request.StateMasterId, request.DistrictMasterId, request.AssemblyMasterId, request.FourthLevelHMasterId },
+                cancellationToken: cancellationToken);
 
-            if (districtMasterId.HasValue)
-                tableConfigQuery = tableConfigQuery.Where(x => x.DistrictMasterId == districtMasterId.Value);
-
-            if (electionType == 2 && assemblyMasterId.HasValue) // Zila Parishad
-                tableConfigQuery = tableConfigQuery.Where(x => x.AssemblyMasterId == assemblyMasterId.Value);
-
-            if (electionType == 3 && fourthLevelHMasterId.HasValue) // Panchayat Samiti
-                tableConfigQuery = tableConfigQuery.Where(x => x.FourthLevelHMasterId == fourthLevelHMasterId.Value);
-
-            var tableConfig = await tableConfigQuery.FirstOrDefaultAsync(cancellationToken);
-            if (tableConfig == null) return null;
-
-            // Rounds
-            var rounds = await _context.ResultDeclarationRoundFormations
-                .Where(r => r.RDTableConfigId == tableConfig.RDTableConfigId && !r.IsDeleted)
-                .OrderBy(r => r.RoundNumber)
-                .ToListAsync(cancellationToken);
-
-            var roundConfiguration = rounds.Select(r => new RoundConfigurationViewModel
-            {
-                RoundNo = r.RoundNumber ?? 0,
-                IsLocked = r.IsLocked,
-                IsFinalize = r.IsFinalized
-            }).ToList();
-
-            // Candidates
-            IQueryable<Kyc> kycQuery = _context.Kyc.Where(k => k.StateMasterId == stateMasterId);
-
-            if (districtMasterId.HasValue) kycQuery = kycQuery.Where(k => k.DistrictMasterId == districtMasterId.Value);
-            if (electionType == 2 && assemblyMasterId.HasValue) kycQuery = kycQuery.Where(k => k.AssemblyMasterId == assemblyMasterId.Value);
-            if (electionType == 3 && fourthLevelHMasterId.HasValue) kycQuery = kycQuery.Where(k => k.FourthLevelHMasterId == fourthLevelHMasterId.Value);
-
-            var candidates = await kycQuery.ToListAsync(cancellationToken);
-
-            // Candidate results directly from ResultDeclarationRoundWise
-            var candidateResults = new List<CandidateResultViewModel>();
-            foreach (var candidate in candidates)
-            {
-                var roundResults = new List<CandidateRoundResultViewModel>();
-
-                foreach (var round in rounds)
-                {
-                    var roundWise = await _context.ResultDeclarationRoundWises
-                        .Where(rw => rw.KycMasterId == candidate.KycMasterId && rw.RDRoundFormationId == round.RDRoundFormationId)
-                        .FirstOrDefaultAsync(cancellationToken);
-
-                    roundResults.Add(new CandidateRoundResultViewModel
-                    {
-                        RoundNo = round.RoundNumber ?? 0,
-                        TotalVotes = roundWise?.TotalVotes ?? 0,
-                        TotalCummilative = roundWise?.TotalCommulativeVotes ?? 0
-                    });
-                }
-
-                candidateResults.Add(new CandidateResultViewModel
-                {
-                    Id = candidate.KycMasterId,
-                    Name = candidate.CandidateName,
-                    RoundResult = roundResults
-                });
-            }
-
-            return new ResultDeclarationForZPAndPsZoneViewModel
-            {
-                ElectionType = electionType,
-                StateMasterId = stateMasterId.ToString(),
-                DistrictMasterId = districtMasterId?.ToString(),
-                AssemblyMasterId = assemblyMasterId?.ToString(),
-                FourthLevelHMasterId = fourthLevelHMasterId?.ToString(),
-                TotalRounds = tableConfig.NoOfRound ?? 0,
-                TotalBooths = tableConfig.NoOfBooth ?? 0,
-                TotalTable = tableConfig.NoOfTable ?? 0,
-                RoundConfiguration = roundConfiguration,
-                Candidates = candidateResults
-            };
+            return result.ToString();
         }
+
+        //    public async Task<ResultDeclarationForZPAndPsZoneViewModel> GetResultDeclarationForZPAndPsZone(
+        //int electionType,
+        //int stateMasterId,
+        //int? districtMasterId,
+        //int? assemblyMasterId,
+        //int? fourthLevelHMasterId,
+        //CancellationToken cancellationToken)
+        //    {
+        //        // Table configuration
+        //        var tableConfigQuery = _context.ResultDeclarationTableConfigurations
+        //            .Where(x => x.ElectionTypeMasterId == electionType && !x.IsDeleted && x.StateMasterId == stateMasterId);
+
+        //        if (districtMasterId.HasValue)
+        //            tableConfigQuery = tableConfigQuery.Where(x => x.DistrictMasterId == districtMasterId.Value);
+
+        //        if (electionType == 2 && assemblyMasterId.HasValue) // Zila Parishad
+        //            tableConfigQuery = tableConfigQuery.Where(x => x.AssemblyMasterId == assemblyMasterId.Value);
+
+        //        if (electionType == 3 && fourthLevelHMasterId.HasValue) // Panchayat Samiti
+        //            tableConfigQuery = tableConfigQuery.Where(x => x.FourthLevelHMasterId == fourthLevelHMasterId.Value);
+
+        //        var tableConfig = await tableConfigQuery.FirstOrDefaultAsync(cancellationToken);
+        //        if (tableConfig == null) return null;
+
+        //        // Rounds
+        //        var rounds = await _context.ResultDeclarationRoundFormations
+        //            .Where(r => r.RDTableConfigId == tableConfig.RDTableConfigId && !r.IsDeleted)
+        //            .OrderBy(r => r.RoundNumber)
+        //            .ToListAsync(cancellationToken);
+
+        //        var roundConfiguration = rounds.Select(r => new RoundConfigurationViewModel
+        //        {
+        //            RoundNo = r.RoundNumber ?? 0,
+        //            IsLocked = r.IsLocked,
+        //            IsFinalize = r.IsFinalized
+        //        }).ToList();
+
+        //        // Candidates
+        //        IQueryable<Kyc> kycQuery = _context.Kyc.Where(k => k.StateMasterId == stateMasterId);
+
+        //        if (districtMasterId.HasValue) kycQuery = kycQuery.Where(k => k.DistrictMasterId == districtMasterId.Value);
+        //        if (electionType == 2 && assemblyMasterId.HasValue) kycQuery = kycQuery.Where(k => k.AssemblyMasterId == assemblyMasterId.Value);
+        //        if (electionType == 3 && fourthLevelHMasterId.HasValue) kycQuery = kycQuery.Where(k => k.FourthLevelHMasterId == fourthLevelHMasterId.Value);
+
+        //        var candidates = await kycQuery.ToListAsync(cancellationToken);
+
+        //        // Candidate results directly from ResultDeclarationRoundWise
+        //        var candidateResults = new List<CandidateResultViewModel>();
+        //        foreach (var candidate in candidates)
+        //        {
+        //            var roundResults = new List<CandidateRoundResultViewModel>();
+
+        //            foreach (var round in rounds)
+        //            {
+        //                var roundWise = await _context.ResultDeclarationRoundWises
+        //                    .Where(rw => rw.KycMasterId == candidate.KycMasterId && rw.RDRoundFormationId == round.RDRoundFormationId)
+        //                    .FirstOrDefaultAsync(cancellationToken);
+
+        //                roundResults.Add(new CandidateRoundResultViewModel
+        //                {
+        //                    RoundNo = round.RoundNumber ?? 0,
+        //                    TotalVotes = roundWise?.TotalVotes ?? 0,
+        //                    TotalCummilative = roundWise?.TotalCommulativeVotes ?? 0
+        //                });
+        //            }
+
+        //            candidateResults.Add(new CandidateResultViewModel
+        //            {
+        //                Id = candidate.KycMasterId,
+        //                Name = candidate.CandidateName,
+        //                RoundResult = roundResults
+        //            });
+        //        }
+
+        //        return new ResultDeclarationForZPAndPsZoneViewModel
+        //        {
+        //            ElectionType = electionType,
+        //            StateMasterId = stateMasterId.ToString(),
+        //            DistrictMasterId = districtMasterId?.ToString(),
+        //            AssemblyMasterId = assemblyMasterId?.ToString(),
+        //            FourthLevelHMasterId = fourthLevelHMasterId?.ToString(),
+        //            TotalRounds = tableConfig.NoOfRound ?? 0,
+        //            TotalBooths = tableConfig.NoOfBooth ?? 0,
+        //            TotalTable = tableConfig.NoOfTable ?? 0,
+        //            RoundConfiguration = roundConfiguration,
+        //            Candidates = candidateResults
+        //        };
+        //    }
 
 
         #endregion

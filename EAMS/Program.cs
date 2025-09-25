@@ -16,6 +16,7 @@ using EAMS_DAL.AuthRepository;
 using EAMS_DAL.DALHelper;
 using EAMS_DAL.DBContext;
 using EAMS_DAL.Repository;
+using LBPAMS.MinimalAPIs.PublicEndpoints.MinimalAPIEndpintMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -268,7 +269,7 @@ if (!app.Environment.IsStaging() && !app.Environment.IsProduction())
 
 app.MapGet("/health", () => Results.Ok("Healthy"));
 app.MapControllers();
-
+app.MapMinimalEndpoints();
 app.Run();
 
 

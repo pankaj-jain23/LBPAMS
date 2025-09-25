@@ -22,6 +22,7 @@ using EAMS_ACore.Models.PublicModels;
 using EAMS_ACore.Models.QueueModel;
 using EAMS_ACore.NotificationModels;
 using EAMS_ACore.ReportModels;
+using EAMS_ACore.ServiceModels;
 using LBPAMS.ViewModels;
 using LBPAMS.ViewModels.CommonModels;
 using LBPAMS.ViewModels.EventActivityViewModels;
@@ -1177,6 +1178,11 @@ namespace EAMS.Helper
                .ReverseMap();
             #endregion
 
+
+            #region RqByMasterIdsViewModel RqByMasterIds
+
+            CreateMap<RqByMasterIdsViewModel, RqByMasterIds>().ReverseMap();
+            #endregion
         }
         #region Convert DateTime UTC
         private DateTime? ParseAndConvertToUtc(string dateTimeString)
