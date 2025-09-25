@@ -434,14 +434,18 @@ namespace EAMS_ACore.Interfaces
         Task<ServiceResponse> AddResultDeclarationTableConfiguration(ResultDeclarationTableConfiguration resultDeclarationTableConfiguration, string createdBy, CancellationToken cancellationToken);
         Task<ServiceResponse> UpdateResultDeclarationTableConfiguration(ResultDeclarationTableConfiguration resultDeclarationTableConfiguration, string updatedBy, CancellationToken cancellationToken);
         Task<ServiceResponse> DeleteResultDeclarationTableConfiguration(Guid rdTableConfigId, string deletedBy, CancellationToken cancellationToken);
+        Task<string> GetResultDeclarationForZPAndPsZone(
+        RqByMasterIds  request,
+        CancellationToken cancellationToken);
 
-        Task<ResultDeclarationForZPAndPsZoneViewModel> GetResultDeclarationForZPAndPsZone(
-    int electionType,
-    int stateMasterId,
-    int? districtMasterId,
-    int? assemblyMasterId,
-    int? fourthLevelHMasterId,
-    CancellationToken cancellationToken);
+
+        //    Task<ResultDeclarationForZPAndPsZoneViewModel> GetResultDeclarationForZPAndPsZone(
+        //int electionType,
+        //int stateMasterId,
+        //int? districtMasterId,
+        //int? assemblyMasterId,
+        //int? fourthLevelHMasterId,
+        //CancellationToken cancellationToken);
         #endregion
 
         #region PanchaytaMapping
