@@ -12,21 +12,24 @@ namespace LBPAMS.MinimalAPIs.PublicEndpoints
         public static RouteGroupBuilder MapV1PublicEndpoint(this RouteGroupBuilder endpoints)
         {
 
-            endpoints.MapGet("/GetResultDeclarationForZPAndPsZone", async (
+            endpoints.MapPost("/GetResultDeclarationForZPAndPsZone", async (
     [FromBody]RqByMasterIdsViewModel request, // Change parameter type to ViewModel
     IMapper mapper,
     IEamsService eamsService,
     CancellationToken cancellationToken) =>
             {
-                // Map ViewModel → ServiceModel
-                var serviceRequest = mapper.Map<RqByMasterIds>(request);
+                try
+                {
+                    // ✅ Map body DTO -> domain model
+                    var serviceRequest = mapper.Map<RqByMasterIds>(request);
 
-                // Call service with correct type
-                var result = await eamsService.GetResultDeclarationForZPAndPsZone(serviceRequest, cancellationToken);
-
-                return string.IsNullOrEmpty(result)
-                    ? Results.NotFound("No result found.")
-                    : Results.Json(result);
+                    var result = await eamsService.GetResultDeclarationForZPAndPsZone(serviceRequest, cancellationToken);
+                    return Results.Text(result, "application/json");
+                }
+                catch (Exception ex)
+                {
+                    return Results.Problem($"Error retrieving dashboard data: {ex.Message}");
+                }
             })
 .WithName("GetResultDeclarationForZPAndPsZone")
     .WithOpenApi(operation => new(operation)

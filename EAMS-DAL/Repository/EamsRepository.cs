@@ -21941,18 +21941,32 @@ namespace EAMS_DAL.Repository
                 Message = "Table Configuration and related Round Formations marked as deleted successfully."
             };
         }
-        public async Task<string> GetResultDeclarationForZPAndPsZone(
-    RqByMasterIds request,
-    CancellationToken cancellationToken)
-        {
-            var sql = "SELECT public.\"get_result_declaration_forzpandpszone\"(@p0,@p1,@p2,@p3,@p4)";
-            var result = await _context.Database.ExecuteSqlRawAsync(
-                sql,
-                parameters: new object[] { request.ElectionTypeMasterId, request.StateMasterId, request.DistrictMasterId, request.AssemblyMasterId, request.FourthLevelHMasterId },
-                cancellationToken: cancellationToken);
 
-            return result.ToString();
+
+        public async Task<string> GetResultDeclarationForZPAndPsZone(RqByMasterIds request, CancellationToken cancellationToken)
+        {
+            await using var conn = await _dbHelper.GetOpenConnectionAsync(cancellationToken);
+
+            // Use your PostgreSQL function here
+            await using var cmd = new NpgsqlCommand(
+                "SELECT public.\"get_result_declaration_forzpandpszone\"(@electionType, @stateMasterId, @districtMasterId, @assemblyMasterId, @fourthLevelHMasterId)::text",
+                conn
+            );
+
+            // Add parameters
+            cmd.Parameters.AddWithValue("@electionType", request.ElectionTypeMasterId);
+            cmd.Parameters.AddWithValue("@stateMasterId", request.StateMasterId);
+
+            // Optional parameters (nullable)
+            cmd.Parameters.AddWithValue("@districtMasterId", (object?)request.DistrictMasterId ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@assemblyMasterId", (object?)request.AssemblyMasterId ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@fourthLevelHMasterId", (object?)request.FourthLevelHMasterId ?? DBNull.Value);
+
+            var result = (string?)await cmd.ExecuteScalarAsync(cancellationToken);
+            return result ?? "[]";
         }
+
+
 
         //    public async Task<ResultDeclarationForZPAndPsZoneViewModel> GetResultDeclarationForZPAndPsZone(
         //int electionType,
