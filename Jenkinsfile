@@ -1,21 +1,22 @@
+
 pipeline {
     agent any
 
     parameters {
-        choice(name: 'DEPLOY_ENV', choices: ['staging', 'production'], description: 'Select the deployment environment')
+        choice(name: 'DEPLOY_ENV', choices: ['Staging', 'Production'], description: 'Select the deployment environment')
     }
 
     environment {
         SSH_USER = "root"
         SSH_KEY = "/var/lib/jenkins/.ssh/id_ed25519_lbpams"
-        WORKSPACE_DIR = "/var/lib/jenkins/workspace/LPAMS-API-PIPELINE"
+        WORKSPACE_DIR = "/var/lib/jenkins/workspace/BN-Dev/LPAMS-API-PIPELINE/"
     }
 
     stages {
         stage('Set Environment Variables') {
             steps {
                 script {
-                    if (params.DEPLOY_ENV == 'production') {
+                    if (params.DEPLOY_ENV == 'Production') {
                         env.IMAGE_NAME = "lbpamsprod"
                         env.IMAGE_TAG = "1"
                         env.KUBE_YAML = "/Kubernates-deployments/LBPAMS_Kubernetes.yaml"
@@ -44,26 +45,29 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image on Server1') {
-            steps {
-                script {
-                    sh """
-                    echo "Copying source code to Server1..."
-                    rsync -av -e "ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no" --exclude='*.tar' --exclude='.git' ${WORKSPACE_DIR}/ ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/
+stage('Build Docker Image on Server1') {
+    steps {
+        script {
+            sh """
+            echo "Copying source code to Server1..."
+            rsync -av -e "ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no" --exclude='*.tar' --exclude='.git' ${WORKSPACE_DIR}/ ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/
 
-                    echo "Building Docker image on ${SERVER1}..."
-                    ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no ${SSH_USER}@${SERVER1} '
-                        cd ${WORKSPACE_DIR}
-                        docker build --build-arg ENVIRONMENT=${APP_ENV} -t ${IMAGE_NAME}:${IMAGE_TAG} .
-                        docker save ${IMAGE_NAME}:${IMAGE_TAG} -o ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar
-                    '
+            echo "Building Docker image on ${SERVER1} for environment: ${APP_ENV}..."
+            ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no ${SSH_USER}@${SERVER1} '
+                cd ${WORKSPACE_DIR}
+                # Force rebuild without cache to ensure latest appsettings are used
+                docker build --no-cache --build-arg ENVIRONMENT=${APP_ENV} -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                docker save ${IMAGE_NAME}:${IMAGE_TAG} -o ${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar
+ 
+            '
 
-                    echo "Copying Docker tar from Server1 to Server2..."
-                    scp -i ${SSH_KEY} -o StrictHostKeyChecking=no ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar ${SSH_USER}@${SERVER2}:/tmp/
-                    """
-                }
-            }
+            echo "Copying Docker tar from Server1 to Server2..."
+            scp -i ${SSH_KEY} -o StrictHostKeyChecking=no ${SSH_USER}@${SERVER1}:${WORKSPACE_DIR}/${IMAGE_NAME}_${IMAGE_TAG}.tar ${SSH_USER}@${SERVER2}:/tmp/
+            """
         }
+    }
+}
+
 
       stage('Approval Required') {
     steps {
