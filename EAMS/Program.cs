@@ -158,15 +158,15 @@ builder.Services.AddSwaggerGen(opt =>
 });
 
 // Add CORS
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(builder =>
-    {
-        builder.AllowAnyOrigin()
-             .AllowAnyHeader()
-               .AllowAnyMethod();
-    });
-});
+//builder.Services.AddCors(options =>
+//{
+//    options.AddDefaultPolicy(builder =>
+//    {
+//        builder.AllowAnyOrigin()
+//             .AllowAnyHeader()
+//               .AllowAnyMethod();
+//    });
+//});
 
 builder.Services.AddSignalR();
 
@@ -251,7 +251,7 @@ if (app.Environment.IsDevelopment()||app.Environment.IsStaging())
 
 }
 
-app.UseCors();
+//app.UseCors();
 app.UseWebSockets();
 
 app.UseAuthentication();
